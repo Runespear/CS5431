@@ -1,6 +1,6 @@
 package org.cs5431.controller;
 
-import org.cs5431.FSOType;
+import org.cs5431.model.FSOType;
 
 //TODO: should a FileController control all files or just a single file?
 public class FileController {
