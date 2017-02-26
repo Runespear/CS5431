@@ -34,7 +34,7 @@ public class GUI extends Application {
 
             }
         } catch (IOException e) {
-            System.err.println("Failed to load layout");
+            printNonFatalError("Failed to load layout");
             e.printStackTrace();
             tryStopping();
         }
@@ -44,7 +44,11 @@ public class GUI extends Application {
         try {
             stop();
         } catch (Exception e) {
-            System.err.println("Couldn't stop...");
+            printNonFatalError("Couldn't stop...");
         }
+    }
+    private void printNonFatalError(String message) {
+        //TODO: reconsider if printing to cerr is correct behaviour
+        System.err.println(message);
     }
 }

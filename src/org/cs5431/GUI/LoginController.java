@@ -5,6 +5,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -25,12 +26,26 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        loginButton.setOnMouseClicked(e -> {
+        loginButton.setOnAction(e -> {
             System.out.println("you clicked login");
         });
 
-        loginButton.setOnAction(e -> {
-            System.out.println("you clicked login");
+        txtUsername.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtPassword.requestFocus();
+            }
+        });
+
+        txtPassword.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtServer.requestFocus();
+            }
+        });
+
+        txtServer.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                loginButton.fire();
+            }
         });
     }
 }
