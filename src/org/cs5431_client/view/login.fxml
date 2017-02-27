@@ -10,7 +10,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.control.PasswordField?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.cs5431.GUI.LoginController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.cs5431_client.view.LoginController">
    <children>
       <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0">
          <children>

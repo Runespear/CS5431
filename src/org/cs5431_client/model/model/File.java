@@ -1,4 +1,4 @@
-package org.cs5431.model;
+package org.cs5431_client.model.model;
 
 public class File extends FileSystemObject {
     //TODO: THIS SHOULD NOT BE A STRING

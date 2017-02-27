@@ -1,4 +1,4 @@
-package org.cs5431.GUI;
+package org.cs5431_client.view;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

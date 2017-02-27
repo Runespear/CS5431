@@ -1,6 +1,6 @@
-package org.cs5431;
+package org.cs5431_server;
 
-import org.cs5431.fileserver.Server;
+import org.cs5431_server.fileserver.Server;
 
 import java.io.*;
 

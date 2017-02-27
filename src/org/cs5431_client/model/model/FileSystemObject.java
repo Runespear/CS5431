@@ -1,4 +1,4 @@
-package org.cs5431.model;
+package org.cs5431_client.model.model;
 
 public abstract class FileSystemObject {
     private int id;

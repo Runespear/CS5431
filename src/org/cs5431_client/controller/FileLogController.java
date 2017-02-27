@@ -1,6 +1,6 @@
-package org.cs5431.controller;
+package org.cs5431_client.controller;
 
-import org.cs5431.model.FileLog;
+import org.cs5431_client.model.model.FileLog;
 
 public class FileLogController {
     public void addLogEntry(FileLog log, String thingy) {

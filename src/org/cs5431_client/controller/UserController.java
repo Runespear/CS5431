@@ -1,6 +1,6 @@
-package org.cs5431.controller;
+package org.cs5431_client.controller;
 
-import org.cs5431.model.User;
+import org.cs5431_client.model.model.User;
 
 /**
  * A controller for an individual account, including both admins and users.

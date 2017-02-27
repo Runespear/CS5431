@@ -1,9 +1,9 @@
-package org.cs5431.fileserver;
+package org.cs5431_server.fileserver;
 
 
 import java.net.*;
 import java.io.*;
-import java.util.*;
+
 /**
  * Created on 26/2/2017.
  */

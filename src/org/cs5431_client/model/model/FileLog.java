@@ -1,4 +1,4 @@
-package org.cs5431.model;
+package org.cs5431_client.model.model;
 
 import java.util.List;
 

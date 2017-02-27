@@ -1,4 +1,4 @@
-package org.cs5431.controller;
+package org.cs5431_client.controller;
 
 /**
  * A controller for all accounts.

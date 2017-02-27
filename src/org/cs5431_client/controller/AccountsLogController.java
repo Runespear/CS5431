@@ -1,7 +1,7 @@
-package org.cs5431.controller;
+package org.cs5431_client.controller;
 
-import org.cs5431.model.AccountLog;
-import org.cs5431.model.User;
+import org.cs5431_client.model.model.AccountLog;
+import org.cs5431_client.model.model.User;
 
 public class AccountsLogController {
     private User user;
