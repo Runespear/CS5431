@@ -32,7 +32,7 @@ public class FileController {
     }
 
     /**
-     * Creates new file and uploads it to the server
+     * Creates new file and uploads it to the server. If successful, sends a log entry to server.
      * @param file File that is was returned from the javaFX dialogue box
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
@@ -42,25 +42,34 @@ public class FileController {
         File dbFile = new File("");
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
         if (canUpload) {
-            //TODO: upload dbFile to server
-            return dbFile;
-        }
+            //TODO: log first?? in case file sent but log not successful
+            FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
+            FileLogController fileLogController = new FileLogController();
+            FileLogEntry entrySent = fileLogController.sendLogToServer((logEntry));
 
+            if (entrySent != null) {
+                FileSystemObject fileSent = sendToServer(dbFile);
+                return dbFile;
+            }
+        }
         return null;
     }
 
     /**
-     * Creates a new folder and uploads it to the server
+     * Creates a new folder and uploads it to the server. If successful, sends a log entry to server.
      * @param folderName is the name of the folder that is to be created
      * @param parentFolder Folder where the file is to be uploaded
-     * @return the folder is created and uploaded to server successfully; null otherwise
+     * @return the folder that is created and uploaded to server successfully; null otherwise
      */
     public Folder createFolder(String folderName, Folder parentFolder) {
 
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             Folder newFolder = new Folder(new ArrayList<FileSystemObject>());
-            //TODO: send to server
+
+
+            FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
+
             return newFolder;
         }
 
@@ -83,7 +92,7 @@ public class FileController {
         boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
         if (canOverWrite) {
             originalFile.setFileContents(newFileContent);
-            //TODO: send modification to server
+            sendToServer(originalFile);
 
             FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
             //TODO: send log to server
@@ -93,12 +102,17 @@ public class FileController {
         return null; //TODO: to return null or throw exception?
     }
 
-    /*
-     * Renames the file/folder specified by path to newname
-     * Returns true on success, false otherwise
+    /**
+     * Attempts to rename the file. If the user has the permission, the changes are sent to the server.
+     * If successfully received by server, a log entry is created and sent to the server.
+     * @param systemObject is the file/folder to be renamed
+     * @param newName New name of the file/folder
+     * @return true if the name of the file/folder is successfully modified; false otherwise
      */
-    public boolean rename(FSOType type, String path, String newname) {
-        //TODO
+    public boolean rename(FileSystemObject systemObject, String path, String newName) {
+
+        //TODO: check if the name is acceptable (PARSE)
+
         return false;
     }
 
@@ -120,5 +134,14 @@ public class FileController {
 
     public void rollback() {
         //TODO
+    }
+
+    /**
+     * Sends the file/folder to the server with the serverIP attribute of the fileController.
+     * @param systemObject file/folder to be sent to the server
+     * @return the file/folder that is uploaded to server if successful; null otherwise
+     */
+    private FileSystemObject sendToServer(FileSystemObject systemObject) {
+        return null;
     }
 }
