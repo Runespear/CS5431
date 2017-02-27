@@ -32,7 +32,7 @@ public class FileController {
     }
 
     /**
-     * Creates new file and uploads it to the server. If successful, sends a log entry to server.
+     * Creates new file and uploads it to the server along with its log entry.
      * @param file File that is was returned from the javaFX dialogue box
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
@@ -44,19 +44,14 @@ public class FileController {
         if (canUpload) {
             //TODO: log first?? in case file sent but log not successful
             FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
-            FileLogController fileLogController = new FileLogController();
-            FileLogEntry entrySent = fileLogController.sendLogToServer((logEntry));
-
-            if (entrySent != null) {
-                FileSystemObject fileSent = sendToServer(dbFile);
-                return dbFile;
-            }
+            FileSystemObject fileSent = sendFSOToServer(dbFile, logEntry);
+            return (File) fileSent;
         }
         return null;
     }
 
     /**
-     * Creates a new folder and uploads it to the server. If successful, sends a log entry to server.
+     * Creates a new folder and uploads it to the server along with its log entry.
      * @param folderName is the name of the folder that is to be created
      * @param parentFolder Folder where the file is to be uploaded
      * @return the folder that is created and uploaded to server successfully; null otherwise
@@ -65,70 +60,106 @@ public class FileController {
 
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
-            Folder newFolder = new Folder(new ArrayList<FileSystemObject>());
-
-
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
-
-            return newFolder;
+            if (isAcceptableName(folderName)) {
+                Folder newFolder = new Folder(new ArrayList<FileSystemObject>());
+                FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
+                FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
+                return (Folder) folderSent;
+            }
+            else {
+                //TODO: unacceptable name
+            }
         }
-
         return null;
     }
 
     /**
      * Attempts to change the file contents to the originalFile contents of file. If the user has the permission,
-     * the changes are sent to the server. If successfully received by server, a log entry is created and sent to
-     * the server.
+     * the changes are sent to the server along with its log entry.
      * @param originalFile is the file to be overwritten
-     * @param parentFolder Folder where the file is to be uploaded
      * @param file object returned by the javaFX file picker dialogue box
-     * @return the file that is modified and uploaded to server successfully; null otherwise
+     * @return the file that is modified and uploaded to server successfully; null otherwise.
      */
-    public File overwrite(File originalFile, Folder parentFolder, java.io.File file) {
+    public File overwrite(File originalFile, java.io.File file) {
 
         String newFileContent = ""; // TODO: how to get file content from java.io.File object
 
         boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
         if (canOverWrite) {
             originalFile.setFileContents(newFileContent);
-            sendToServer(originalFile);
-
             FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
-            //TODO: send log to server
-
-            return originalFile;
+            FileSystemObject fileSent = modifyFSO(originalFile, logEntry);
+            //TODO are we going to send in an entire new file?? or function to modify
+            return (File) fileSent;
         }
         return null; //TODO: to return null or throw exception?
     }
 
     /**
-     * Attempts to rename the file. If the user has the permission, the changes are sent to the server.
-     * If successfully received by server, a log entry is created and sent to the server.
+     * Attempts to rename the file. If the user has the permission, the changes are sent to
+     * the server along with its log entry.
      * @param systemObject is the file/folder to be renamed
      * @param newName New name of the file/folder
      * @return true if the name of the file/folder is successfully modified; false otherwise
      */
     public boolean rename(FileSystemObject systemObject, String path, String newName) {
 
-        //TODO: check if the name is acceptable (PARSE)
-
+        boolean canRename = isAllowed(RENAME, systemObject);
+        if (canRename) {
+            if (isAcceptableName(newName)) {
+                FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
+                FileSystemObject fileSent = modifyFSO(systemObject, logEntry);
+                return (fileSent != null);
+            }
+            else {
+                //TODO: unacceptable name
+            }
+        }
         return false;
     }
 
-    public void download() {
-        //TODO
+    /**
+     * Gets the file from server and decrpyts it.
+     * @param fileId is ID of the file to be downloaded
+     * @return file if download is successful; false otherwise
+     */
+    public File download(int fileId) {
+        //TODO: can we download folders as well?
+        //TODO: get file from server or is it already somewhere local since we have the name?
+        //TODO: decrypt the file
+        return null;
     }
 
-    public void delete() {
+    /**
+     * Deletes the file from server entirely. No one is able to access it anymore.
+     * @param fileId is ID of the file to be deleted
+     * @return true if delete is successful; false otherwise
+     */
+    public boolean delete(int fileId) {
         //TODO
+        return false;
     }
 
-    public void addPriv() {
-        //TODO
+    /**
+     * Adds privileges the file/folder and sends the changes to the server.
+     * @param systemObject Privileges are added to this file/folder.
+     * @return true if privilege was added successfully; false otherwise.
+     */
+    public void addPriv(FileSystemObject systemObject, PrivType priv) {
+        boolean canAddPriv = isAllowed(ADD_PRIV, systemObject);
+        if (canAddPriv) {
+            FileLogEntry logEntry = new FileLogEntry(user.getId(), ADD_PRIV);
+            FileSystemObject fsoSent = modifyFSO(systemObject, logEntry);
+            return (fsoSent != null);
+        }
     }
 
-    public void removePriv() {
+    /**
+     * Removes privileges the file/folder and sends the changes to the server.
+     * @param systemObject Privileges are added to this file/folder.
+     * @return true if privilege was added successfully; false otherwise.
+     */
+    public void removePriv(FileSystemObject systemObject, PrivType priv) {
         //TODO
     }
 
@@ -141,7 +172,15 @@ public class FileController {
      * @param systemObject file/folder to be sent to the server
      * @return the file/folder that is uploaded to server if successful; null otherwise
      */
-    private FileSystemObject sendToServer(FileSystemObject systemObject) {
+    private FileSystemObject sendFSOToServer(FileSystemObject systemObject, FileLogEntry logEntry) {
         return null;
+    }
+
+    private FileSystemObject modifyFSO(FileSystemObject systemObject, FileLogEntry logEntry) {
+        return null;
+    }
+
+    private boolean isAcceptableName(String name) {
+        return false;
     }
 }
