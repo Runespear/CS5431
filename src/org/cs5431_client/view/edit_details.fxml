@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -8,11 +7,11 @@
             minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.cs5431_client.view.RegistrationController">
+            fx:controller="org.cs5431_client.view.EditDetailsController">
     <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0">
         <Text strokeType="OUTSIDE" strokeWidth="0.0"
-              text="Short writeup goes here. This secure file sharing system allows you to retrieve files securely from a server. Even the server admin does not know the content of your files. If there are any problems, email bcp39@cornell.edu to scold him."
-              textAlignment="CENTER" wrappingWidth="400.0"/>
+              text="Edit Account Details" textAlignment="CENTER"
+              wrappingWidth="400.0"/>
         <GridPane>
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
@@ -39,55 +38,43 @@
                                 vgrow="SOMETIMES"/>
             </rowConstraints>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                  text="Username*" GridPane.columnIndex="1"/>
+                  text="Old Password" GridPane.columnIndex="1"/>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                  text="Password*" GridPane.columnIndex="1"
+                  text="New Password" GridPane.columnIndex="1"
                   GridPane.rowIndex="1"/>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                  text="Confirm Password*" GridPane.columnIndex="1"
+                  text="Confirm New Password" GridPane.columnIndex="1"
                   GridPane.rowIndex="2"/>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Email"
-                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            <TextField fx:id="txtUsername" promptText="username"
-                       GridPane.columnIndex="2"/>
-            <HBox alignment="CENTER_LEFT" prefHeight="100.0"
-                  prefWidth="200.0" GridPane.columnIndex="1"
-                  GridPane.rowIndex="4">
-                <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="Server IP*"/>
-                <Text fx:id="txtIPHelp" fill="BLUE"
-                      strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="(?)" underline="true"/>
-            </HBox>
-            <PasswordField fx:id="txtPassword" promptText="password"
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Old Email" GridPane.columnIndex="1"
+                  GridPane.rowIndex="3"/>
+            <PasswordField fx:id="txtNewPassword"
+                           promptText="new password"
                            GridPane.columnIndex="2"
                            GridPane.rowIndex="1"/>
-            <PasswordField fx:id="txtConfirmPassword"
-                           promptText="password"
+            <PasswordField fx:id="txtConfirmNewPassword"
+                           promptText="new password"
                            GridPane.columnIndex="2"
                            GridPane.rowIndex="2"/>
-            <TextField fx:id="txtEmail" promptText="email"
+            <TextField fx:id="txtOldEmail" promptText="old email"
                        GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-            <TextField fx:id="txtIP" promptText="ip"
+            <TextField fx:id="txtNewEmail" promptText="new email"
                        GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-            <HBox alignment="CENTER_LEFT" prefHeight="100.0"
-                  prefWidth="200.0" GridPane.columnIndex="1"
-                  GridPane.rowIndex="5">
-                <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="Server Port*"/>
-                <Text fx:id="txtPortHelp" fill="BLUE"
-                      strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="(?)" underline="true"/>
-            </HBox>
-            <TextField fx:id="txtPort" promptText="port"
+            <TextField fx:id="txtConfirmNewEmail" promptText="new email"
                        GridPane.columnIndex="2" GridPane.rowIndex="5"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="New Email" GridPane.columnIndex="1"
+                  GridPane.rowIndex="4"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm New Email" GridPane.columnIndex="1"
+                  GridPane.rowIndex="5"/>
+            <PasswordField fx:id="txtOldPassword"
+                           promptText="old password"
+                           GridPane.columnIndex="2"/>
         </GridPane>
-        <Text strokeType="OUTSIDE" strokeWidth="0.0"
-              text="* indicates compulsory fields" textAlignment="CENTER"
-              wrappingWidth="400.0"/>
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
-            <Button fx:id="registerButton" mnemonicParsing="false"
-                    text="Register"/>
+            <Button fx:id="saveButton" mnemonicParsing="false"
+                    text="Save"/>
             <Button fx:id="cancelButton" mnemonicParsing="false"
                     text="Cancel"/>
         </HBox>

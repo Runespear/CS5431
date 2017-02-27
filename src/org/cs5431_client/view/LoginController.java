@@ -12,8 +12,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
-
-
     @FXML
     private TextField txtUsername;
 
