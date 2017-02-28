@@ -10,4 +10,9 @@ public class FileLogController {
     public void logContents() {
         //TODO
     }
+
+    public FileLog getFileLog() {
+        //TODO: connect to server
+        return null;
+    }
 }

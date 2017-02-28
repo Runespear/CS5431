@@ -14,9 +14,8 @@ public class FileController {
     private FileLogController logController;
     private String serverIP;
 
-    public FileController(User user, FileLogController logController, String serverIP) {
+    public FileController(User user, String serverIP) {
         this.user = user;
-        this.logController = logController;
         this.serverIP = serverIP;
     }
 
@@ -45,8 +44,10 @@ public class FileController {
             //TODO: log first?? in case file sent but log not successful
             FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
             FileSystemObject fileSent = sendFSOToServer(dbFile, logEntry);
-            return (File) fileSent;
-        }
+            if (fileSent != null) {
+                parentFolder.addChild((File) fileSent);
+                return (File) fileSent;
+            };        }
         return null;
     }
 
@@ -60,11 +61,14 @@ public class FileController {
 
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
-            if (isAcceptableName(folderName)) {
+            if (isAcceptableInput(folderName)) {
                 Folder newFolder = new Folder(new ArrayList<FileSystemObject>());
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
                 FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
-                return (Folder) folderSent;
+                if (folderSent != null) {
+                    parentFolder.addChild((Folder) folderSent);
+                    return (Folder) folderSent;
+                };
             }
             else {
                 //TODO: unacceptable name
@@ -106,7 +110,7 @@ public class FileController {
 
         boolean canRename = isAllowed(RENAME, systemObject);
         if (canRename) {
-            if (isAcceptableName(newName)) {
+            if (isAcceptableInput(newName)) {
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
                 FileSystemObject fileSent = modifyFSO(systemObject, logEntry);
                 return (fileSent != null);
@@ -160,12 +164,18 @@ public class FileController {
      * @param systemObject Privileges are added to this file/folder.
      * @return true if privilege was added successfully; false otherwise.
      */
-    public void removePriv(FileSystemObject systemObject, PrivType priv) {
-        //TODO
+    public boolean removePriv(FileSystemObject systemObject, PrivType priv) {
+        boolean canRemovePriv = isAllowed(ADD_PRIV, systemObject);
+        if (canRemovePriv) {
+            FileLogEntry logEntry = new FileLogEntry(user.getId(), ADD_PRIV);
+            FileSystemObject fsoSent = modifyFSO(systemObject, logEntry);
+            return (fsoSent != null);
+        }
+        return false;
     }
 
     public void rollback() {
-        //TODO
+        //TODO: how???
     }
 
     /**
@@ -177,11 +187,17 @@ public class FileController {
         return null;
     }
 
+    //might actually need to repeat this function depending on the api we have to send changes to the object
     private FileSystemObject modifyFSO(FileSystemObject systemObject, FileLogEntry logEntry) {
         return null;
     }
 
-    private boolean isAcceptableName(String name) {
+    /**
+     * Sanitizes the input to ensure that it is not at risk of causing SQL injection
+     * @param input raw data that is to be used in the sql query
+     * @return true if the input string is safe; false otherwise
+     */
+    private boolean isAcceptableInput(String input) {
         return false;
     }
 }
