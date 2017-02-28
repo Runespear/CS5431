@@ -23,8 +23,11 @@ public class ServerHandler extends Thread{
     }
 
 
-
-    public void transfer(){
+    /**
+     * Transfer file from client to the server here
+     * @param dirToSaveTo Saves file to the directory, checks if "/" is included at the end as well
+     */
+    public void transfer(String dirToSaveTo){
         try {
             DataInputStream input = new DataInputStream(s.getInputStream());
             DataInputStream clientData = new DataInputStream(input);
@@ -33,23 +36,31 @@ public class ServerHandler extends Thread{
             OutputStream output = new FileOutputStream(fileName);
             //Get the size of the file
             long size = clientData.readLong();
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[1024]; // Our byte array that will be our file
             // Transfer the file from client
             int bytesRead;
             while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1){
                 output.write(buffer, 0, bytesRead);
                 size -= bytesRead;
             }
+            //Check to see if directory path has '/' at the very end
+            char lastChar = dirToSaveTo.charAt(dirToSaveTo.length() - 1));
+            if ( lastChar != '/'){
+                dirToSaveTo = dirToSaveTo + "/";
+            }
+            //Now save the file
+            FileOutputStream fos = new FileOutputStream(dirToSaveTo+fileName);
+            fos.write(buffer);
             //close all streams
             input.close();
             clientData.close();
             output.close();
+            fos.close();
+
         }
         catch(IOException e){
             System.out.println("Connection:"+e.getMessage());
         }
-        // Closing the FileOutputStream handle
-
     }
 
     //sending a welcome message to client when the thread runs
