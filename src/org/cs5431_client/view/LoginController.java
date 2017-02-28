@@ -88,9 +88,7 @@ public class LoginController implements Initializable {
                 Client.fileViewNode = root;
                 FileViewController fvc = fxmlLoader.getController();
 
-                //TODO: fix this nonsense
-                System.out.println("reading: " + txtUsername.getCharacters().toString());
-                fvc.setUsername(txtUsername.getCharacters().toString());
+                fvc.setUsernameDisplay(txtUsername.getCharacters().toString());
                 fvc.setStage(stage);
                 scene.setRoot(root);
 
