@@ -9,6 +9,9 @@ public class File extends FileSystemObject {
         this.fileContents = fileContents;
     }
 
+    public void setFileContents(String fileContents) {
+        this.fileContents = fileContents;
+    }
 
 }
 

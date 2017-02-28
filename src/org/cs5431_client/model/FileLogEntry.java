@@ -6,4 +6,9 @@ public class FileLogEntry {
     public int timestamp;
     public FileActionType action; //TODO: make this enum instead of string?
     public String rollbackFilePath; //TODO: this should not be a string
+
+    public FileLogEntry(int userId, FileActionType action) {
+        this.userId = userId;
+        this.action = action;
+    }
 }
