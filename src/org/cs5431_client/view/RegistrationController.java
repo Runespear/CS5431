@@ -4,10 +4,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -33,10 +33,10 @@ public class RegistrationController implements Initializable {
     public TextField txtPort;
 
     @FXML
-    public Text txtIPHelp;
+    public Hyperlink txtIPHelp;
 
     @FXML
-    public Text txtPortHelp;
+    public Hyperlink txtPortHelp;
 
     @FXML
     public Button registerButton;
@@ -88,9 +88,9 @@ public class RegistrationController implements Initializable {
 
         cancelButton.setOnAction(e -> tryCancel());
 
-        txtIPHelp.setOnKeyPressed(e -> displayServerHelp());
+        txtIPHelp.setOnAction(e -> displayServerHelp());
 
-        txtPortHelp.setOnKeyPressed(e -> displayServerHelp());
+        txtPortHelp.setOnAction(e -> displayServerHelp());
     }
 
     private void tryRegister() {

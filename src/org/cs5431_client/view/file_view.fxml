@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.control.Hyperlink?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/8"
@@ -55,8 +56,7 @@
          <VBox prefWidth="100.0">
             <Text fx:id="txtUsername" strokeType="OUTSIDE"
                   strokeWidth="0.0" text="Username"/>
-            <Text fx:id="txtLogout" strokeType="OUTSIDE"
-                  strokeWidth="0.0" text="Log out" underline="true"/>
+            <Hyperlink fx:id="txtLogout" text="Log out"/>
          </VBox>
       </HBox>
    </ToolBar>

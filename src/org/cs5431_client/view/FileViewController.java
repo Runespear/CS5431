@@ -2,6 +2,7 @@ package org.cs5431_client.view;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
@@ -38,7 +39,7 @@ public class FileViewController implements Initializable {
     public Text txtUsername;
 
     @FXML
-    public Text txtLogout;
+    public Hyperlink txtLogout;
 
     @FXML
     public TreeView foldersTree;

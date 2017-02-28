@@ -1,6 +1,6 @@
 package org.cs5431_client.controller;
 
-import org.cs5431_client.model.model.AccountLog;
+import org.cs5431_client.model.AccountLog;
 import org.cs5431_client.model.User;
 
 public class AccountsLogController {
