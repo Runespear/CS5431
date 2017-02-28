@@ -11,7 +11,8 @@ import java.net.URL;
 
 public class Client extends Application {
 
-    static Parent guiNode;
+    static Parent loginNode;
+    static Parent fileViewNode;
 
     public static void main(String[] args) {
         launch(args);
@@ -26,8 +27,8 @@ public class Client extends Application {
                 System.err.println("Could not find the layout!");
                 tryStopping();
             } else {
-                guiNode = FXMLLoader.load(r);
-                final Scene scene = new Scene(guiNode);
+                loginNode = FXMLLoader.load(r);
+                final Scene scene = new Scene(loginNode);
                 stage.setScene(scene);
                 stage.setTitle("CS 5431: Pretty Secure File Sharing");
                 stage.show();

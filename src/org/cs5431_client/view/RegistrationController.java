@@ -44,7 +44,7 @@ public class RegistrationController implements Initializable {
     @FXML
     public Button cancelButton;
 
-    Stage stage;
+    private Stage stage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -99,7 +99,7 @@ public class RegistrationController implements Initializable {
 
     private void tryCancel() {
         Scene scene = stage.getScene();
-        scene.setRoot(Client.guiNode);
+        scene.setRoot(Client.loginNode);
         stage.show();
     }
 
@@ -107,7 +107,7 @@ public class RegistrationController implements Initializable {
         System.out.println("Hi! I'm Clippy. How can I help you?");
     }
 
-    public void setStage(Stage stage) {
+    void setStage(Stage stage) {
         this.stage = stage;
     }
 }

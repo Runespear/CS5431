@@ -2,10 +2,12 @@ package org.cs5431_client.view;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,6 +36,8 @@ public class EditDetailsController implements Initializable {
 
     @FXML
     public Button cancelButton;
+
+    private Stage stage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -82,7 +86,13 @@ public class EditDetailsController implements Initializable {
         System.out.println("Ding! save button pressed");
     }
 
+    void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
     private void cancel() {
-        System.out.println("Ding! cancel button pressed");
+        Scene scene = stage.getScene();
+        scene.setRoot(Client.fileViewNode);
+        stage.show();
     }
 }

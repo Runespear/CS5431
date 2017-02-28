@@ -80,7 +80,7 @@ public class LoginController implements Initializable {
             FXMLLoader fxmlLoader = new FXMLLoader(r);
             Parent root = fxmlLoader.load();
             //TODO: decide if login screen or file view screen is guiRoot:
-            //Client.guiNode = root;
+            Client.fileViewNode = root;
             FileViewController fvc = fxmlLoader.getController();
             fvc.setStage(stage);
             scene.setRoot(root);

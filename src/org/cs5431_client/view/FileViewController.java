@@ -1,7 +1,12 @@
 package org.cs5431_client.view;
 
+import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
@@ -12,7 +17,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class FileViewController implements Initializable {
-    Stage stage;
+    private Stage stage;
 
     @FXML
     public ImageView imgCreateFolder;
@@ -46,10 +51,36 @@ public class FileViewController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        //TODO
+        txtLogout.setOnAction(e -> tryLogout());
+
+        imgUserPicture.setOnMouseClicked(this::tryEditDetails);
     }
 
-    public void setStage(Stage stage) {
+    private void tryEditDetails(Event e) {
+        try {
+            Node node = (Node) e.getSource();
+            Stage stage = (Stage) node.getScene().getWindow();
+            Scene scene = stage.getScene();
+
+            final URL r = getClass().getResource("edit_details.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(r);
+            Parent root = fxmlLoader.load();
+            EditDetailsController edc = fxmlLoader.getController();
+            edc.setStage(stage);
+            scene.setRoot(root);
+
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    private void tryLogout() {
+        Scene scene = stage.getScene();
+        scene.setRoot(Client.loginNode);
+        stage.show();
+    }
+
+    void setStage(Stage stage) {
         this.stage = stage;
     }
 }
