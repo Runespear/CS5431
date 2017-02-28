@@ -8,8 +8,11 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import org.cs5431_client.controller.UserController;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class EditDetailsController implements Initializable {
@@ -35,9 +38,10 @@ public class EditDetailsController implements Initializable {
     public Button saveButton;
 
     @FXML
-    public Button cancelButton;
+    public Button exitButton;
 
     private Stage stage;
+    private UserController userController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -79,20 +83,68 @@ public class EditDetailsController implements Initializable {
 
         saveButton.setOnAction(e -> trySaveDetails());
 
-        cancelButton.setOnAction(e -> cancel());
+        exitButton.setOnAction(e -> exit());
     }
 
     private void trySaveDetails() {
-        System.out.println("Ding! save button pressed");
+        String oldPassword = txtOldPassword.getCharacters().toString();
+        String newPassword = txtNewPassword.getCharacters().toString();
+        String confirmNewPassword = txtConfirmNewPassword.getCharacters()
+                .toString();
+        String oldEmail = txtOldEmail.getCharacters().toString();
+        String newEmail = txtNewEmail.getCharacters().toString();
+        String confirmNewEmail = txtConfirmNewEmail.getCharacters()
+                .toString();
+        
+        List<String> messages = new ArrayList<>();
+        
+        if (!oldPassword.equals("") || !newPassword.equals("") ||
+            !confirmNewPassword.equals("")) {
+            if (oldPassword.equals("") || newPassword.equals("") ||
+                confirmNewPassword.equals("")) {
+                //TODO someone please change this message
+                messages.add("Some password field is empty");
+            } else if (!newPassword.equals(confirmNewPassword)){
+                messages.add("New passwords don't match");
+            } else {
+                userController.changePassword(oldPassword, newPassword);
+                messages.add("Password successfully changed");
+            }
+        }
+
+        //TODO add email validation
+        if (!oldEmail.equals("") || !newEmail.equals("") ||
+                !confirmNewEmail.equals("")) {
+            if (oldEmail.equals("") || newEmail.equals("") ||
+                    confirmNewEmail.equals("")) {
+                //TODO someone please change this message
+                messages.add("Some email field is empty");
+            } else if (!newEmail.equals(confirmNewEmail)){
+                messages.add("New emails don't match");
+            } else {
+                userController.changeEmail(oldEmail, newEmail);
+                //TODO check here
+                messages.add("Email successfully changed");
+            }
+        }
+
+        for (String message : messages) {
+            //TODO: print all the messages in alert instead of standard output
+            System.out.println(message);
+        }
     }
 
     void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    private void cancel() {
+    private void exit() {
         Scene scene = stage.getScene();
         scene.setRoot(Client.fileViewNode);
         stage.show();
+    }
+
+    void setUserController(UserController userController) {
+        this.userController = userController;
     }
 }

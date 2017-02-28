@@ -13,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.FileController;
+import org.cs5431_client.controller.UserController;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
 
@@ -56,12 +57,11 @@ public class FileViewController implements Initializable {
     private User user;
     private String ip;
     private String port;
+    private UserController userController;
     private FileController fileController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        fileController = new FileController(user,ip,port);
-
         imgCreateFolder.setOnMouseClicked(e -> createFolder());
 
         imgUserPicture.setOnMouseClicked(this::tryEditDetails);
@@ -88,6 +88,7 @@ public class FileViewController implements Initializable {
             Parent root = fxmlLoader.load();
             EditDetailsController edc = fxmlLoader.getController();
             edc.setStage(stage);
+            edc.setUserController(userController);
             scene.setRoot(root);
 
         } catch (Exception e1) {
@@ -106,13 +107,12 @@ public class FileViewController implements Initializable {
         this.stage = stage;
     }
 
-    void setUser(User user) {
+    void setUserDetails(User user, String ip, String port) {
         this.user = user;
-        txtUsername.setText(user.getUsername());
-    }
-
-    void setServerDetails(String ip, String port) {
         this.ip = ip;
         this.port = port;
+        txtUsername.setText(user.getUsername());
+        fileController = new FileController(user,ip,port);
+        userController = new UserController(user,ip,port);
     }
 }
