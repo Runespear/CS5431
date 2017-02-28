@@ -9,6 +9,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import org.cs5431_client.controller.AccountsController;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -45,6 +46,7 @@ public class RegistrationController implements Initializable {
     public Button cancelButton;
 
     private Stage stage;
+    private AccountsController accountsController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -86,7 +88,7 @@ public class RegistrationController implements Initializable {
 
         registerButton.setOnAction(e -> tryRegister());
 
-        cancelButton.setOnAction(e -> tryCancel());
+        cancelButton.setOnAction(e -> tryExitToLogin());
 
         txtIPHelp.setOnAction(e -> displayServerHelp());
 
@@ -94,20 +96,41 @@ public class RegistrationController implements Initializable {
     }
 
     private void tryRegister() {
+        try {
+            int userId = accountsController.createUser(
+                    txtUsername.getCharacters().toString(),
+                    txtPassword.getCharacters().toString(),
+                    txtEmail.getCharacters().toString(),
+                    txtIP.getCharacters().toString(),
+                    txtPort.getCharacters().toString());
+
+            //TODO: IDK what to do with the user id?
+            if (userId != -1) {
+                tryExitToLogin();
+            }
+        } catch (AccountsController.RegistrationFailException rfe) {
+            //TODO change this to alert box
+            System.out.println(rfe.getMessage());
+        }
         System.out.println("Ding! register button pressed");
     }
 
-    private void tryCancel() {
+    private void tryExitToLogin() {
         Scene scene = stage.getScene();
         scene.setRoot(Client.loginNode);
         stage.show();
     }
 
     private void displayServerHelp() {
+        //TODO: change to dialog
         System.out.println("Hi! I'm Clippy. How can I help you?");
     }
 
     void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    void setAccountsController(AccountsController accountsController) {
+        this.accountsController = accountsController;
     }
 }

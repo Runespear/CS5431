@@ -11,7 +11,9 @@ public class AccountsController {
     * @return userId if successful
     * @throws RegistrationFailException if unsuccessful
     */
-    public int createUser(String username, String password, String email) throws RegistrationFailException {
+    public int createUser(String username, String password, String email,
+                          String ip, String port)
+            throws RegistrationFailException {
         //TODO
         return -1;
     }
@@ -31,15 +33,17 @@ public class AccountsController {
      * @param username Username to be used for this server
      * @param password Password associated with username
      * @param serverIP IP of server to be connected to
+     * @param serverPort Port of server to be connected to
      * @return true if successful, false otherwise.
      */
-    public boolean login(String username, String password, String serverIP) {
+    public boolean login(String username, String password, String serverIP,
+                         String serverPort) {
         //TODO: establish connection
 
         //TODO: attempt to connect with given credentials
 
         //TODO: create relevant controllers? and pass them? ???
-        return false;
+        return true;
     }
 
     public class RegistrationFailException extends Exception {

@@ -48,8 +48,9 @@ public class Client extends Application {
             printNonFatalError("Couldn't stop...");
         }
     }
-    private void printNonFatalError(String message) {
-        //TODO: reconsider if printing to cerr is correct behaviour
+
+    static void printNonFatalError(String message) {
+        //TODO: reconsider if printing to standard error is correct behaviour
         System.err.println(message);
     }
 }

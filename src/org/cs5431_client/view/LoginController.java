@@ -13,6 +13,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import org.cs5431_client.controller.AccountsController;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -36,8 +37,12 @@ public class LoginController implements Initializable {
     @FXML
     public Hyperlink txtNoAcct;
 
+    private AccountsController acccountsController;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        acccountsController = new AccountsController();
+
         loginButton.setOnAction(this::tryLogin);
 
         txtUsername.setOnKeyPressed(key -> {
@@ -64,34 +69,38 @@ public class LoginController implements Initializable {
             }
         });
 
-        txtNoAcct.setOnAction(this::tryRegister);
+        txtNoAcct.setOnAction(this::goToRegistration);
     }
 
     private void tryLogin(Event e) {
-        //just an example of how to grab the info off the textfield
-        String server = txtServer.getCharacters().toString();
-        //TODO: if (login(username, etc, etc) {
-        try {
-            Node node = (Node) e.getSource();
-            Stage stage = (Stage) node.getScene().getWindow();
-            Scene scene = stage.getScene();
+        if (acccountsController.login(txtUsername.getCharacters().toString(),
+                txtPassword.getCharacters().toString(),
+                txtServer.getCharacters().toString(),
+                txtPort.getCharacters().toString())) {
+            try {
+                Node node = (Node) e.getSource();
+                Stage stage = (Stage) node.getScene().getWindow();
+                Scene scene = stage.getScene();
 
-            final URL r = getClass().getResource("file_view.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(r);
-            Parent root = fxmlLoader.load();
-            //TODO: decide if login screen or file view screen is guiRoot:
-            Client.fileViewNode = root;
-            FileViewController fvc = fxmlLoader.getController();
-            fvc.setStage(stage);
-            scene.setRoot(root);
+                final URL r = getClass().getResource("file_view.fxml");
+                FXMLLoader fxmlLoader = new FXMLLoader(r);
+                Parent root = fxmlLoader.load();
+                Client.fileViewNode = root;
+                FileViewController fvc = fxmlLoader.getController();
 
-        } catch (Exception e1) {
-            e1.printStackTrace();
+                //TODO: fix this nonsense
+                System.out.println("reading: " + txtUsername.getCharacters().toString());
+                fvc.setUsername(txtUsername.getCharacters().toString());
+                fvc.setStage(stage);
+                scene.setRoot(root);
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         }
-        //}
     }
 
-    private void tryRegister(Event e) {
+    private void goToRegistration(Event e) {
         try {
             Node node = (Node) e.getSource();
             Stage stage = (Stage) node.getScene().getWindow();
@@ -102,6 +111,7 @@ public class LoginController implements Initializable {
             Parent root = fxmlLoader.load();
             RegistrationController rc = fxmlLoader.getController();
             rc.setStage(stage);
+            rc.setAccountsController(acccountsController);
             scene.setRoot(root);
 
         } catch (Exception e1) {

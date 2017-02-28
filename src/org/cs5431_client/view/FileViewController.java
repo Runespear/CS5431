@@ -49,8 +49,17 @@ public class FileViewController implements Initializable {
     @FXML
     public TreeView foldersTree;
 
+    private String username;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        if (username == null) {
+            Client.printNonFatalError("No username set?!");
+            username = "username";
+        }
+        System.out.println(username);
+        txtUsername.setText(username);
+
         txtLogout.setOnAction(e -> tryLogout());
 
         imgUserPicture.setOnMouseClicked(this::tryEditDetails);
@@ -80,7 +89,12 @@ public class FileViewController implements Initializable {
         stage.show();
     }
 
+    //TODO: check if can put this in some constructor instead? :/
     void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    void setUsername(String username) {
+        this.username = username;
     }
 }
