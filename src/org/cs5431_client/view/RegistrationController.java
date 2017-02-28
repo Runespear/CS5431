@@ -99,7 +99,8 @@ public class RegistrationController implements Initializable {
 
     private void tryCancel() {
         Scene scene = stage.getScene();
-        scene.setRoot(GUI.guiNode);
+        scene.setRoot(Client.guiNode);
+        stage.show();
     }
 
     private void displayServerHelp() {

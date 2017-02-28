@@ -79,7 +79,8 @@ public class LoginController implements Initializable {
             final URL r = getClass().getResource("file_view.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(r);
             Parent root = fxmlLoader.load();
-            GUI.guiNode = root;
+            //TODO: decide if login screen or file view screen is guiRoot:
+            //Client.guiNode = root;
             FileViewController fvc = fxmlLoader.getController();
             fvc.setStage(stage);
             scene.setRoot(root);
@@ -99,7 +100,6 @@ public class LoginController implements Initializable {
             final URL r = getClass().getResource("registration.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(r);
             Parent root = fxmlLoader.load();
-            GUI.guiNode = root;
             RegistrationController rc = fxmlLoader.getController();
             rc.setStage(stage);
             scene.setRoot(root);
