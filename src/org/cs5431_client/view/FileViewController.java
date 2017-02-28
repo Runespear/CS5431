@@ -12,8 +12,12 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.cs5431_client.controller.FileController;
+import org.cs5431_client.model.Folder;
+import org.cs5431_client.model.User;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class FileViewController implements Initializable {
@@ -49,11 +53,28 @@ public class FileViewController implements Initializable {
     @FXML
     public TreeView foldersTree;
 
+    private User user;
+    private String ip;
+    private String port;
+    private FileController fileController;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        txtLogout.setOnAction(e -> tryLogout());
+        fileController = new FileController(user,ip,port);
+
+        imgCreateFolder.setOnMouseClicked(e -> createFolder());
 
         imgUserPicture.setOnMouseClicked(this::tryEditDetails);
+
+        txtLogout.setOnAction(e -> tryLogout());
+    }
+
+    private void createFolder() {
+        //TODO: get an alert box to name the folder?
+        String folderName = "New Folder";
+        Folder folder = new Folder(new ArrayList<>());
+        fileController.createFolder(folderName, folder);
+        //TODO: repopulate list of files/folders
     }
 
     private void tryEditDetails(Event e) {
@@ -85,7 +106,13 @@ public class FileViewController implements Initializable {
         this.stage = stage;
     }
 
-    void setUsernameDisplay(String username) {
-        txtUsername.setText(username);
+    void setUser(User user) {
+        this.user = user;
+        txtUsername.setText(user.getUsername());
+    }
+
+    void setServerDetails(String ip, String port) {
+        this.ip = ip;
+        this.port = port;
     }
 }

@@ -34,16 +34,16 @@ public class AccountsController {
      * @param password Password associated with username
      * @param serverIP IP of server to be connected to
      * @param serverPort Port of server to be connected to
-     * @return true if successful, false otherwise.
+     * @return userId if successful
      */
-    public boolean login(String username, String password, String serverIP,
+    public int login(String username, String password, String serverIP,
                          String serverPort) {
         //TODO: establish connection
 
         //TODO: attempt to connect with given credentials
 
         //TODO: create relevant controllers? and pass them? ???
-        return true;
+        return 1;
     }
 
     public class RegistrationFailException extends Exception {

@@ -13,10 +13,12 @@ public class FileController {
     private User user;
     private FileLogController logController;
     private String serverIP;
+    private String serverPort;
 
-    public FileController(User user, String serverIP) {
+    public FileController(User user, String serverIP, String serverPort) {
         this.user = user;
         this.serverIP = serverIP;
+        this.serverPort = serverPort;
     }
 
     /**
