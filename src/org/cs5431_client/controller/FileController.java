@@ -145,13 +145,14 @@ public class FileController {
      * @param systemObject Privileges are added to this file/folder.
      * @return true if privilege was added successfully; false otherwise.
      */
-    public void addPriv(FileSystemObject systemObject, PrivType priv) {
+    public boolean addPriv(FileSystemObject systemObject, PrivType priv) {
         boolean canAddPriv = isAllowed(ADD_PRIV, systemObject);
         if (canAddPriv) {
             FileLogEntry logEntry = new FileLogEntry(user.getId(), ADD_PRIV);
             FileSystemObject fsoSent = modifyFSO(systemObject, logEntry);
             return (fsoSent != null);
         }
+        return false;
     }
 
     /**
