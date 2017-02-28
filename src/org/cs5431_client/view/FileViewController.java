@@ -5,11 +5,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class FileViewController implements Initializable {
+    Stage stage;
 
     @FXML
     public ImageView imgCreateFolder;
@@ -44,5 +46,9 @@ public class FileViewController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         //TODO
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }

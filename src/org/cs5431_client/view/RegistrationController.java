@@ -2,11 +2,13 @@ package org.cs5431_client.view;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -41,6 +43,8 @@ public class RegistrationController implements Initializable {
 
     @FXML
     public Button cancelButton;
+
+    Stage stage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -82,6 +86,8 @@ public class RegistrationController implements Initializable {
 
         registerButton.setOnAction(e -> tryRegister());
 
+        cancelButton.setOnAction(e -> tryCancel());
+
         txtIPHelp.setOnKeyPressed(e -> displayServerHelp());
 
         txtPortHelp.setOnKeyPressed(e -> displayServerHelp());
@@ -91,7 +97,16 @@ public class RegistrationController implements Initializable {
         System.out.println("Ding! register button pressed");
     }
 
+    private void tryCancel() {
+        Scene scene = stage.getScene();
+        scene.setRoot(GUI.guiNode);
+    }
+
     private void displayServerHelp() {
         System.out.println("Hi! I'm Clippy. How can I help you?");
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }
