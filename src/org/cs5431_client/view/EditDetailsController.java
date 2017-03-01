@@ -86,6 +86,12 @@ public class EditDetailsController implements Initializable {
         exitButton.setOnAction(e -> exit());
     }
 
+    /**
+     * Tries to save the details in the form above using the UserController.
+     * If the password fields are blank, no request to change the password is
+     * made. Likewise for the email fields.
+     * Nothing is done if all fields are blank.
+     */
     private void trySaveDetails() {
         String oldPassword = txtOldPassword.getCharacters().toString();
         String newPassword = txtNewPassword.getCharacters().toString();
@@ -97,7 +103,8 @@ public class EditDetailsController implements Initializable {
                 .toString();
         
         List<String> messages = new ArrayList<>();
-        
+
+        //Tries to change the password if the password fields are not blank.
         if (!oldPassword.equals("") || !newPassword.equals("") ||
             !confirmNewPassword.equals("")) {
             if (oldPassword.equals("") || newPassword.equals("") ||
@@ -112,6 +119,7 @@ public class EditDetailsController implements Initializable {
             }
         }
 
+        //Tries to change the email if the email fields are not blank.
         //TODO add email validation
         if (!oldEmail.equals("") || !newEmail.equals("") ||
                 !confirmNewEmail.equals("")) {
@@ -128,22 +136,37 @@ public class EditDetailsController implements Initializable {
             }
         }
 
+        //prints all success+failure messages.
+        //currently prints to System.out
         for (String message : messages) {
             //TODO: print all the messages in alert instead of standard output
             System.out.println(message);
         }
     }
 
+    /**
+     * When changing to edit_details, it is necessary to pass along the
+     * caller's stage so exit() knows how to restore it.
+     * @param stage Stage of the caller
+     */
     void setStage(Stage stage) {
         this.stage = stage;
     }
 
+    /**
+     * Exits back to the file viewer.
+     */
     private void exit() {
         Scene scene = stage.getScene();
         scene.setRoot(Client.fileViewNode);
         stage.show();
     }
 
+    /**
+     * When changing to edit_details, it is necessary to pass along the
+     * UserController that will perform the password and email changes.
+     * @param userController UserController associated with this user
+     */
     void setUserController(UserController userController) {
         this.userController = userController;
     }

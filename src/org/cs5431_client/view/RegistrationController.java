@@ -88,13 +88,19 @@ public class RegistrationController implements Initializable {
 
         registerButton.setOnAction(e -> tryRegister());
 
-        cancelButton.setOnAction(e -> tryExitToLogin());
+        cancelButton.setOnAction(e -> exit());
 
         txtIPHelp.setOnAction(e -> displayServerHelp());
 
         txtPortHelp.setOnAction(e -> displayServerHelp());
     }
 
+    /**
+     * Tries to register an account with the server specified in the form
+     * above using the user credentials in the form above.
+     * If the registration is successful, returns to the login page.
+     * Otherwise displays an error message and remains on this page.
+     */
     private void tryRegister() {
         try {
             int userId = accountsController.createUser(
@@ -106,7 +112,7 @@ public class RegistrationController implements Initializable {
 
             //TODO: IDK what to do with the user id?
             if (userId != -1) {
-                tryExitToLogin();
+                exit();
             }
         } catch (AccountsController.RegistrationFailException rfe) {
             //TODO change this to alert box
@@ -115,21 +121,39 @@ public class RegistrationController implements Initializable {
         System.out.println("Ding! register button pressed");
     }
 
-    private void tryExitToLogin() {
+    /**
+     * Exits back to the login page.
+     */
+    private void exit() {
         Scene scene = stage.getScene();
         scene.setRoot(Client.loginNode);
         stage.show();
     }
 
+    /**
+     * Displays a dialog box with help that explains the server IP and server
+     * port fields.
+     */
     private void displayServerHelp() {
         //TODO: change to dialog
         System.out.println("Hi! I'm Clippy. How can I help you?");
     }
 
+    /**
+     * When changing to registration, it is necessary to pass along the
+     * caller's stage so exit() knows how to restore it.
+     * @param stage Stage of the caller
+     */
     void setStage(Stage stage) {
         this.stage = stage;
     }
 
+    /**
+     * When changing to log_view, it is helpful to pass along the
+     * AccountsController that will perform the registration.
+     * @param accountsController AccountsController that will perform the
+     *                           registration
+     */
     void setAccountsController(AccountsController accountsController) {
         this.accountsController = accountsController;
     }

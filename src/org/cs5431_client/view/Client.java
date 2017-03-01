@@ -32,7 +32,6 @@ public class Client extends Application {
                 stage.setScene(scene);
                 stage.setTitle("CS 5431: Pretty Secure File Sharing");
                 stage.show();
-
             }
         } catch (IOException e) {
             printNonFatalError("Failed to load layout");
@@ -49,6 +48,11 @@ public class Client extends Application {
         }
     }
 
+    /**
+     * Prints a non fatal error in a manner of our choice.
+     * Currently prints to System.err
+     * @param message The message to be printed
+     */
     static void printNonFatalError(String message) {
         //TODO: reconsider if printing to standard error is correct behaviour
         System.err.println(message);

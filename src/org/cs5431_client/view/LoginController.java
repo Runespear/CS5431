@@ -73,6 +73,12 @@ public class LoginController implements Initializable {
         txtNoAcct.setOnAction(this::goToRegistration);
     }
 
+    /**
+     * Tries to login to the server specified in the form above using the
+     * user credentials in the form above.
+     * If the login is successful, tries to open the file_view page to view
+     * the user's files.
+     */
     private void tryLogin(Event e) {
         String username = txtUsername.getCharacters().toString();
         String password = txtPassword.getCharacters().toString();
@@ -100,6 +106,10 @@ public class LoginController implements Initializable {
         }
     }
 
+    /**
+     * Tries to open the registration page to allow the user to create an
+     * account with a server.
+     */
     private void goToRegistration(Event e) {
         try {
             Node node = (Node) e.getSource();
