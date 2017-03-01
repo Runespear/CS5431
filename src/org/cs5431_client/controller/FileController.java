@@ -2,8 +2,6 @@ package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.*;
@@ -26,35 +24,40 @@ public class FileController {
      * @param action FileActionType that the user intends to perform
      * @return true if the user has the permission; false otherwise
      */
-    private boolean isAllowed(FileActionType action, FileSystemObject fileObject) {
+    private boolean isAllowed(FileActionType action, FileSystemObject fso) {
         //TODO: get permissions of the fileObject, iterate through
-
-        return false;
-    }
+        List<Integer> usersWithPermission = fso.getEditors();
+        if (action == DOWNLOAD) {
+            usersWithPermission.addAll(fso.getViewers());
+        }
+        return (usersWithPermission.contains(user.getId()));    }
 
     /**
-     * Creates new file and uploads it to the server along with its log entry.
+     * Creates new file and uploads it to the server along with its log entry. Adds the file as a child
+     * of the parent folder.
      * @param file File that is was returned from the javaFX dialogue box
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
      */
     public File uploadFile(java.io.File file, Folder parentFolder){
         String name = file.getName();
-        File dbFile = new File("");
+        //TODO get file contents and size from java.io.file
+        File dbFile = new File(name, user.getUserLogId(), parentFolder.getFolderId(), 0, "");
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
         if (canUpload) {
-            //TODO: log first?? in case file sent but log not successful
             FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
             FileSystemObject fileSent = sendFSOToServer(dbFile, logEntry);
             if (fileSent != null) {
-                parentFolder.addChild((File) fileSent);
+                parentFolder.addChild((fileSent.getId()));
                 return (File) fileSent;
-            };        }
+            }
+        }
         return null;
     }
 
     /**
-     * Creates a new folder and uploads it to the server along with its log entry.
+     * Creates a new folder and uploads it to the server along with its log entry. Adds the new folder as a
+     * child of the parent folder.
      * @param folderName is the name of the folder that is to be created
      * @param parentFolder Folder where the file is to be uploaded
      * @return the folder that is created and uploaded to server successfully; null otherwise
@@ -64,13 +67,13 @@ public class FileController {
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             if (isAcceptableInput(folderName)) {
-                Folder newFolder = new Folder(new ArrayList<FileSystemObject>());
+                Folder newFolder = new Folder(folderName, user.getId(), parentFolder.getFolderId(), 0);
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
                 FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
                 if (folderSent != null) {
-                    parentFolder.addChild((Folder) folderSent);
+                    parentFolder.addChild(folderSent.getId());
                     return (Folder) folderSent;
-                };
+                }
             }
             else {
                 //TODO: unacceptable name
@@ -108,7 +111,7 @@ public class FileController {
      * @param newName New name of the file/folder
      * @return true if the name of the file/folder is successfully modified; false otherwise
      */
-    public boolean rename(FileSystemObject systemObject, String path, String newName) {
+    public boolean rename(FileSystemObject systemObject, String newName) {
 
         boolean canRename = isAllowed(RENAME, systemObject);
         if (canRename) {
@@ -137,11 +140,11 @@ public class FileController {
 
     /**
      * Deletes the file from server entirely. No one is able to access it anymore.
-     * @param fileId is ID of the file to be deleted
+     * @param fsoId is ID of the file to be deleted
      * @return true if delete is successful; false otherwise
      */
     public boolean delete(int fsoId) {
-        //TODO
+        //TODO: remove from db
         return false;
     }
 
