@@ -6,7 +6,9 @@ public class User extends Account {
     private String email;
 
     public User(int id, String username, String email) {
-        //TODO
+        this.id = id;
+        this.username = username;
+        this.email = email;
     }
 
     public int getUserLogId() {

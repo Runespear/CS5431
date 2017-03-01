@@ -4,13 +4,13 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.FileController;
 import org.cs5431_client.controller.UserController;
@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class FileViewController implements Initializable {
-    private Stage stage;
+    @FXML
+    public ImageView imgBack;
 
     @FXML
     public ImageView imgCreateFolder;
@@ -32,6 +33,9 @@ public class FileViewController implements Initializable {
 
     @FXML
     public ImageView imgDownload;
+
+    @FXML
+    public ImageView imgViewLog;
 
     @FXML
     public ImageView imgEdit;
@@ -46,7 +50,7 @@ public class FileViewController implements Initializable {
     public ImageView imgUserPicture;
 
     @FXML
-    public Text txtUsername;
+    public Hyperlink txtUsername;
 
     @FXML
     public Hyperlink txtLogout;
@@ -54,6 +58,7 @@ public class FileViewController implements Initializable {
     @FXML
     public TreeView foldersTree;
 
+    private Stage stage;
     private User user;
     private String ip;
     private String port;
@@ -62,9 +67,14 @@ public class FileViewController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        txtUsername.setPadding(new Insets(0,0,0,4));
+        txtLogout.setPadding(new Insets(0,0,0,4));
+
         imgCreateFolder.setOnMouseClicked(e -> createFolder());
 
         imgUserPicture.setOnMouseClicked(this::tryEditDetails);
+
+        txtUsername.setOnMouseClicked(this::tryEditDetails);
 
         txtLogout.setOnAction(e -> tryLogout());
     }
