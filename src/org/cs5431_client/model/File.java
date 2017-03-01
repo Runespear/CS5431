@@ -11,6 +11,7 @@ public class File extends FileSystemObject {
 
     public void setFileContents(String fileContents) {
         this.fileContents = fileContents;
+        this.type = FSOType.FILE;
     }
 
 }

@@ -8,6 +8,7 @@ public class Folder extends FileSystemObject {
     //TODO: populated from database instead?
     public Folder(List<FileSystemObject> children) {
         this.children = children;
+        this.type = FSOType.FOLDER;
     }
 
     public void addChild(FileSystemObject child) {

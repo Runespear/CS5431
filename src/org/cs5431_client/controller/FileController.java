@@ -125,13 +125,12 @@ public class FileController {
     }
 
     /**
-     * Gets the file from server and decrpyts it.
-     * @param fileId is ID of the file to be downloaded
+     * Gets the file/folder contents from server and decrpyts it.
+     * @param fsoId is ID of the file to be downloaded
      * @return file if download is successful; false otherwise
      */
-    public File download(int fileId) {
-        //TODO: can we download folders as well?
-        //TODO: get file from server or is it already somewhere local since we have the name?
+    public File download(int fsoId) {
+        FileSystemObject file = getFSO(fsoId);
         //TODO: decrypt the file
         return null;
     }
@@ -141,7 +140,7 @@ public class FileController {
      * @param fileId is ID of the file to be deleted
      * @return true if delete is successful; false otherwise
      */
-    public boolean delete(int fileId) {
+    public boolean delete(int fsoId) {
         //TODO
         return false;
     }
@@ -176,7 +175,7 @@ public class FileController {
         return false;
     }
 
-    public void rollback() {
+    public void rollback(int rollbackToThisfileId) {
         //TODO: how???
     }
 
@@ -190,7 +189,12 @@ public class FileController {
     }
 
     //might actually need to repeat this function depending on the api we have to send changes to the object
+    //or send the entire file again since we want to rollback
     private FileSystemObject modifyFSO(FileSystemObject systemObject, FileLogEntry logEntry) {
+        return null;
+    }
+
+    private FileSystemObject getFSO(int fsoId) {
         return null;
     }
 

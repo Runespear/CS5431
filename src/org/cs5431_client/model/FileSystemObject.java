@@ -1,5 +1,7 @@
 package org.cs5431_client.model;
 
+import java.util.Date;
+
 public abstract class FileSystemObject {
     private int id;
     private FileSystemObject parentFolder;
@@ -8,4 +10,7 @@ public abstract class FileSystemObject {
     private int viewerIds[];
     private String name;
     private int size;
+    private Date lastModified;
+    public FSOType type;
+
 }
