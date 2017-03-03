@@ -105,10 +105,10 @@ public class EditDetailsController implements Initializable {
         List<String> messages = new ArrayList<>();
 
         //Tries to change the password if the password fields are not blank.
-        if (!oldPassword.equals("") || !newPassword.equals("") ||
-            !confirmNewPassword.equals("")) {
-            if (oldPassword.equals("") || newPassword.equals("") ||
-                confirmNewPassword.equals("")) {
+        if (!oldPassword.isEmpty() || !newPassword.isEmpty() ||
+            !confirmNewPassword.isEmpty()) {
+            if (oldPassword.isEmpty() || newPassword.isEmpty() ||
+                confirmNewPassword.isEmpty()) {
                 //TODO someone please change this message
                 messages.add("Some password field is empty");
             } else if (!newPassword.equals(confirmNewPassword)){
@@ -121,10 +121,10 @@ public class EditDetailsController implements Initializable {
 
         //Tries to change the email if the email fields are not blank.
         //TODO add email validation
-        if (!oldEmail.equals("") || !newEmail.equals("") ||
-                !confirmNewEmail.equals("")) {
-            if (oldEmail.equals("") || newEmail.equals("") ||
-                    confirmNewEmail.equals("")) {
+        if (!oldEmail.isEmpty() || !newEmail.isEmpty() ||
+                !confirmNewEmail.isEmpty()) {
+            if (oldEmail.isEmpty() || newEmail.isEmpty() ||
+                    confirmNewEmail.isEmpty()) {
                 //TODO someone please change this message
                 messages.add("Some email field is empty");
             } else if (!newEmail.equals(confirmNewEmail)){

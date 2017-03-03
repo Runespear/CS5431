@@ -12,6 +12,8 @@ import javafx.stage.Stage;
 import org.cs5431_client.controller.AccountsController;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class RegistrationController implements Initializable {
@@ -103,22 +105,41 @@ public class RegistrationController implements Initializable {
      */
     private void tryRegister() {
         try {
-            int userId = accountsController.createUser(
-                    txtUsername.getCharacters().toString(),
-                    txtPassword.getCharacters().toString(),
-                    txtEmail.getCharacters().toString(),
-                    txtIP.getCharacters().toString(),
-                    txtPort.getCharacters().toString());
+            String username = txtUsername.getCharacters().toString();
+            String password = txtPassword.getCharacters().toString();
+            String confirmPwd = txtConfirmPassword.getCharacters().toString();
+            String email = txtEmail.getCharacters().toString();
+            String ip = txtIP.getCharacters().toString();
+            String port = txtPort.getCharacters().toString();
+            //Client side validation
 
-            //TODO: IDK what to do with the user id?
-            if (userId != -1) {
+            List<String> errMessages = new ArrayList<>();
+            if (username.isEmpty())
+                errMessages.add("The username field is required.");
+            if (password.isEmpty() || confirmPwd.isEmpty()) {
+                errMessages.add("The passwords field is required.");
+            } else if (!password.equals(confirmPwd)) {
+                errMessages.add("The passwords entered do not match.");
+            }
+            //TODO: email validation
+            if (ip.isEmpty())
+                errMessages.add("The server IP field is required.");
+            if (port.isEmpty())
+                errMessages.add("The server port field is required.");
+
+
+            //TODO: print error messages
+
+            if(errMessages.isEmpty()) {
+                int userId = accountsController.createUser(username, password, email, ip, port);
+                //TODO: IDK what to do with the user id?
+                //TODO maybe print a success message here?
                 exit();
             }
         } catch (AccountsController.RegistrationFailException rfe) {
             //TODO change this to alert box
             System.out.println(rfe.getMessage());
         }
-        System.out.println("Ding! register button pressed");
     }
 
     /**
