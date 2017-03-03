@@ -5,14 +5,19 @@ public class File extends FileSystemObject {
     private String fileContents;
 
     //TODO: populate from database instead?
-    public File(String fileContents) {
+    public File(String name, int ownerId, int parentFolderId, int size, String fileContents) {
+        super(name, ownerId, parentFolderId, size);
         this.fileContents = fileContents;
+        this.type = FSOType.FILE;
+        //TODO: date modified set by DB timestamp
     }
 
     public void setFileContents(String fileContents) {
         this.fileContents = fileContents;
-        this.type = FSOType.FILE;
     }
+
+    public String getFileContents() {return fileContents; }
+
 
 }
 

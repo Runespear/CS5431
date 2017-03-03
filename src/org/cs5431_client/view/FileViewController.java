@@ -87,8 +87,8 @@ public class FileViewController implements Initializable {
     private void createFolder() {
         //TODO: get an alert box to name the folder?
         String folderName = "New Folder";
-        Folder folder = new Folder(new ArrayList<>());
-        fileController.createFolder(folderName, folder);
+        //Folder folder = new Folder();
+        //fileController.createFolder(folderName, folder);
         //TODO: repopulate list of files/folders
     }
 
