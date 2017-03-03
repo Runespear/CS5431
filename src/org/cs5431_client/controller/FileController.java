@@ -2,6 +2,7 @@ package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
 
+import java.nio.file.FileSystem;
 import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.*;
@@ -135,6 +136,16 @@ public class FileController {
     public File download(int fsoId) {
         FileSystemObject file = getFSO(fsoId);
         //TODO: decrypt the file
+        return null;
+    }
+
+    /**
+     * Gets all children of the folderId
+     * @param folderId downloads the children of folderId
+     * @return List of fso if download is successful; false null
+     */
+    public List<FileSystemObject> downloadFolder(int folderId) {
+        //TODO: get from server all children
         return null;
     }
 
