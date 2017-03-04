@@ -104,7 +104,8 @@ public class FileViewController implements Initializable {
         fileList.setOnMouseClicked(e -> {
             FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
             showAppropriateImages(true,
-                    fileController.isAllowed(FileActionType.OVERWRITE, fso));
+                    fileController.isAllowed(FileActionType.OVERWRITE, fso),
+                    fso instanceof org.cs5431_client.model.File);
         });
         //TODO: figure out how to get list view to lose its focus...
     }
@@ -158,7 +159,8 @@ public class FileViewController implements Initializable {
      * Downloads the file that is currently highlighted from the server.
      */
     private void downloadFile() {
-        //TODO
+        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+        fileController.download(fso.getId());
     }
 
     /**
@@ -166,7 +168,18 @@ public class FileViewController implements Initializable {
      * chosen using a file chooser dialog.
      */
     private void overwriteFile() {
-        //TODO
+        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+
+        //TODO: grab correct parent folder
+        Folder parentFolder = new Folder("fake_folder",-1,-1,-1);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose file to upload");
+        File fileToUpload = fileChooser.showOpenDialog(stage);
+
+        if (fileToUpload != null) {
+            fileController.overwrite((org.cs5431_client.model.File) fso, fileToUpload);
+        }
     }
 
     /**
@@ -174,13 +187,16 @@ public class FileViewController implements Initializable {
      * add privileges or remove privileges
      */
     private void changePrivileges() {
-        //TODO
+        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+        //todo dialog
     }
 
     /**
      * Deletes the file that is currently highlighted.
      */
     private void deleteFile() {
+        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm deletion of file");
         //TODO: change "this file" to the actual filename
@@ -188,8 +204,7 @@ public class FileViewController implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
-            //TODO: change -1 to the actual file id that is highlighted
-            fileController.delete(-1);
+            fileController.delete(fso.getId());
         }
     }
 
@@ -220,7 +235,8 @@ public class FileViewController implements Initializable {
      * the file that is currently highlighted
      */
     private void viewFileLog(Event e) {
-        //TODO: think of how to retrieve the file id of highlighted file.
+        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+
         try {
             Node node = (Node) e.getSource();
             Stage stage = (Stage) node.getScene().getWindow();
@@ -231,8 +247,7 @@ public class FileViewController implements Initializable {
             Parent root = fxmlLoader.load();
             LogViewController lvc = fxmlLoader.getController();
             lvc.setStage(stage);
-            //TODO: change -1 to file id
-            lvc.setDetails(fileController, -1);
+            lvc.setDetails(fileController, fso.getId());
             scene.setRoot(root);
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -279,6 +294,10 @@ public class FileViewController implements Initializable {
         // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
         List<FileSystemObject> fsoList = new ArrayList<>();
         //populating with some dummy stuff instead
+        Folder dummyFolder = new Folder("fake folder1", -1,-1,100);
+        fsoList.add(dummyFolder);
+        dummyFolder = new Folder("fake folder2", -1,-1,100);
+        fsoList.add(dummyFolder);
         org.cs5431_client.model.File dummyFile =
                 new org.cs5431_client.model.File("fake file1",-1,-1,100,
                 "lalala");
@@ -307,13 +326,15 @@ public class FileViewController implements Initializable {
     }
     
     private void showAppropriateImages(boolean fileSelected, boolean
-            editAllowed) {
-        imgDownload.setVisible(fileSelected);
-        imgDownload.setDisable(!fileSelected);
+            editAllowed, boolean isFile) {
+        if (isFile) {
+            imgDownload.setVisible(fileSelected);
+            imgDownload.setDisable(!fileSelected);
+            imgEdit.setVisible(editAllowed);
+            imgEdit.setDisable(!editAllowed);
+        }
         imgViewLog.setVisible(fileSelected);
         imgViewLog.setDisable(!fileSelected);
-        imgEdit.setVisible(editAllowed);
-        imgEdit.setDisable(!editAllowed);
         imgShare.setVisible(editAllowed);
         imgShare.setDisable(!editAllowed);
         imgDelete.setVisible(editAllowed);

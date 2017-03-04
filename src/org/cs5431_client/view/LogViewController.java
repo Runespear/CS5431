@@ -37,7 +37,6 @@ public class LogViewController implements Initializable {
      * Exits back to the file viewer.
      */
     private void exit() {
-        System.out.println("EXIT!!!");
         Scene scene = stage.getScene();
         scene.setRoot(Client.fileViewNode);
         stage.show();
