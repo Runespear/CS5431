@@ -1,5 +1,7 @@
 package org.cs5431_client.view;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -14,16 +16,15 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import org.cs5431_client.controller.FileController;
 import org.cs5431_client.controller.UserController;
+import org.cs5431_client.model.FileActionType;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.file.FileSystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -99,6 +100,13 @@ public class FileViewController implements Initializable {
         txtUsername.setOnMouseClicked(this::tryEditDetails);
 
         txtLogout.setOnAction(e -> tryLogout());
+
+        fileList.setOnMouseClicked(e -> {
+            FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+            showAppropriateImages(true,
+                    fileController.isAllowed(FileActionType.OVERWRITE, fso));
+        });
+        //TODO: figure out how to get list view to lose its focus...
     }
 
     /**
@@ -296,5 +304,19 @@ public class FileViewController implements Initializable {
 
         fileList.setCellFactory(
                 listView ->  new FileViewCell());
+    }
+    
+    private void showAppropriateImages(boolean fileSelected, boolean
+            editAllowed) {
+        imgDownload.setVisible(fileSelected);
+        imgDownload.setDisable(!fileSelected);
+        imgViewLog.setVisible(fileSelected);
+        imgViewLog.setDisable(!fileSelected);
+        imgEdit.setVisible(editAllowed);
+        imgEdit.setDisable(!editAllowed);
+        imgShare.setVisible(editAllowed);
+        imgShare.setDisable(!editAllowed);
+        imgDelete.setVisible(editAllowed);
+        imgDelete.setDisable(!editAllowed);
     }
 }
