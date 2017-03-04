@@ -1,5 +1,7 @@
 package org.cs5431_client.view;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,17 +10,23 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.cs5431_client.controller.FileController;
 import org.cs5431_client.controller.UserController;
+import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
 
+import java.io.File;
 import java.net.URL;
+import java.nio.file.FileSystem;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class FileViewController implements Initializable {
@@ -56,7 +64,7 @@ public class FileViewController implements Initializable {
     public Hyperlink txtLogout;
 
     @FXML
-    public TreeView foldersTree;
+    public ListView<FileSystemObject> fileList;
 
     private Stage stage;
     private User user;
@@ -70,7 +78,21 @@ public class FileViewController implements Initializable {
         txtUsername.setPadding(new Insets(0,0,0,4));
         txtLogout.setPadding(new Insets(0,0,0,4));
 
+        imgBack.setOnMouseClicked(e -> gotoParentFolder());
+
         imgCreateFolder.setOnMouseClicked(e -> createFolder());
+
+        imgUpload.setOnMouseClicked(e -> uploadFile());
+
+        imgDownload.setOnMouseClicked(e -> downloadFile());
+
+        imgViewLog.setOnMouseClicked(this::viewFileLog);
+
+        imgEdit.setOnMouseClicked(e -> overwriteFile());
+
+        imgShare.setOnMouseClicked(e -> changePrivileges());
+
+        imgDelete.setOnMouseClicked(e -> deleteFile());
 
         imgUserPicture.setOnMouseClicked(this::tryEditDetails);
 
@@ -80,16 +102,87 @@ public class FileViewController implements Initializable {
     }
 
     /**
+     * Navigates back to the parent folder
+     */
+    private void gotoParentFolder() {
+        //TODO: retrieve parent folder
+        //TODO: set file controller based on that
+        //TODO: repopulate list view
+    }
+
+    /**
      * Creates a new folder using the FileController, with the current user
      * as the owner.
      * Creates a new prompt to ask for the folder name.
      */
     private void createFolder() {
-        //TODO: get an alert box to name the folder?
-        String folderName = "New Folder";
-        //Folder folder = new Folder();
-        //fileController.createFolder(folderName, folder);
+        //TODO: grab correct parent folder
+        Folder parentFolder = new Folder("fake_folder",-1,-1,-1);
+
+        TextInputDialog dialog = new TextInputDialog("folder name");
+        dialog.setTitle("Create new folder");
+        dialog.setContentText("Folder name:");
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(folderName ->
+                fileController.createFolder(folderName,parentFolder));
+
         //TODO: repopulate list of files/folders
+    }
+
+    /**
+     * Uploads the file chosen in the file chooser dialog to the server.
+     * The uploader is automatically set as the owner.
+     */
+    private void uploadFile() {
+        //TODO: grab correct parent folder
+        Folder parentFolder = new Folder("fake_folder",-1,-1,-1);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose file to upload");
+        File fileToUpload = fileChooser.showOpenDialog(stage);
+
+        if (fileToUpload != null) {
+            fileController.uploadFile(fileToUpload, parentFolder);
+        }
+    }
+
+    /**
+     * Downloads the file that is currently highlighted from the server.
+     */
+    private void downloadFile() {
+        //TODO
+    }
+
+    /**
+     * Overwrites the file that is currently highlighted by a file that is
+     * chosen using a file chooser dialog.
+     */
+    private void overwriteFile() {
+        //TODO
+    }
+
+    /**
+     * Changes the privileges of the file that is currently highlighted: can
+     * add privileges or remove privileges
+     */
+    private void changePrivileges() {
+        //TODO
+    }
+
+    /**
+     * Deletes the file that is currently highlighted.
+     */
+    private void deleteFile() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm deletion of file");
+        //TODO: change "this file" to the actual filename
+        alert.setContentText("Are you sure you want to delete this file?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK){
+            //TODO: change -1 to the actual file id that is highlighted
+            fileController.delete(-1);
+        }
     }
 
     /**
@@ -118,7 +211,7 @@ public class FileViewController implements Initializable {
      * Tries to open the file_view page to view the file log associated with
      * the file that is currently highlighted
      */
-    private void tryViewFileLog(Event e) {
+    private void viewFileLog(Event e) {
         //TODO: think of how to retrieve the file id of highlighted file.
         try {
             Node node = (Node) e.getSource();
@@ -152,7 +245,6 @@ public class FileViewController implements Initializable {
      * caller's stage so exit() knows how to restore it.
      * @param stage Stage of the caller
      */
-    //TODO: check if can put this in some constructor instead? :/
     void setStage(Stage stage) {
         this.stage = stage;
     }
@@ -171,5 +263,38 @@ public class FileViewController implements Initializable {
         txtUsername.setText(user.getUsername());
         fileController = new FileController(user,ip,port);
         userController = new UserController(user,ip,port);
+        populateListView();
+    }
+
+    private void populateListView() {
+        //TODO: uncomment following line once UserController fully implemented
+        // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
+        List<FileSystemObject> fsoList = new ArrayList<>();
+        //populating with some dummy stuff instead
+        org.cs5431_client.model.File dummyFile =
+                new org.cs5431_client.model.File("fake file1",-1,-1,100,
+                "lalala");
+        fsoList.add(dummyFile);
+        dummyFile =
+                new org.cs5431_client.model.File("fake file2",-1,-1,100,
+                        "lalala");
+        fsoList.add(dummyFile);
+        dummyFile =
+                new org.cs5431_client.model.File("fake file3",-1,-1,100,
+                        "lalala");
+        fsoList.add(dummyFile);
+        dummyFile =
+                new org.cs5431_client.model.File("fake file4",-1,-1,100,
+                        "lalala");
+        fsoList.add(dummyFile);
+
+        ObservableList<FileSystemObject> observableList =
+                FXCollections.observableArrayList();
+        observableList.setAll(fsoList);
+
+        fileList.setItems(observableList);
+
+        fileList.setCellFactory(
+                listView ->  new FileViewCell());
     }
 }

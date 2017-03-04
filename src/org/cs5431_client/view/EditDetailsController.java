@@ -3,6 +3,7 @@ package org.cs5431_client.view;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -109,13 +110,12 @@ public class EditDetailsController implements Initializable {
             !confirmNewPassword.isEmpty()) {
             if (oldPassword.isEmpty() || newPassword.isEmpty() ||
                 confirmNewPassword.isEmpty()) {
-                //TODO someone please change this message
-                messages.add("Some password field is empty");
+                messages.add("At least one password field is empty.");
             } else if (!newPassword.equals(confirmNewPassword)){
-                messages.add("New passwords don't match");
+                messages.add("New passwords don't match.");
             } else {
                 userController.changePassword(oldPassword, newPassword);
-                messages.add("Password successfully changed");
+                messages.add("Password successfully changed.");
             }
         }
 
@@ -125,23 +125,25 @@ public class EditDetailsController implements Initializable {
                 !confirmNewEmail.isEmpty()) {
             if (oldEmail.isEmpty() || newEmail.isEmpty() ||
                     confirmNewEmail.isEmpty()) {
-                //TODO someone please change this message
-                messages.add("Some email field is empty");
+                messages.add("At least one email field is empty.");
             } else if (!newEmail.equals(confirmNewEmail)){
-                messages.add("New emails don't match");
+                messages.add("New emails don't match.");
             } else {
                 userController.changeEmail(oldEmail, newEmail);
                 //TODO check here
-                messages.add("Email successfully changed");
+                messages.add("Email successfully changed.");
             }
         }
 
         //prints all success+failure messages.
-        //currently prints to System.out
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        StringBuilder content = new StringBuilder();
         for (String message : messages) {
-            //TODO: print all the messages in alert instead of standard output
-            System.out.println(message);
+            content.append(message);
+            content.append('\n');
         }
+        alert.setContentText(content.toString());
+        alert.showAndWait();
     }
 
     /**

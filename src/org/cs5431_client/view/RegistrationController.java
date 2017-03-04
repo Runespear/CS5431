@@ -3,10 +3,7 @@ package org.cs5431_client.view;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.AccountsController;
@@ -128,9 +125,17 @@ public class RegistrationController implements Initializable {
                 errMessages.add("The server port field is required.");
 
 
-            //TODO: print error messages
-
-            if(errMessages.isEmpty()) {
+            if (!errMessages.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Registration failed");
+                StringBuilder content = new StringBuilder();
+                for (String message : errMessages) {
+                    content.append(message);
+                    content.append('\n');
+                }
+                alert.setContentText(content.toString());
+                alert.showAndWait();
+            } else {
                 int userId = accountsController.createUser(username, password, email, ip, port);
                 //TODO: IDK what to do with the user id?
                 //TODO maybe print a success message here?

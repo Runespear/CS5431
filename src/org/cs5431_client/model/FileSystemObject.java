@@ -24,6 +24,8 @@ public abstract class FileSystemObject {
         this.editorIds.add(ownerId);
         this.size = size;
         //TODO: date modified set by DB timestamp
+        //TODO: remove following line that's currently used for display purposes
+        lastModified = new Date();
     }
 
 
