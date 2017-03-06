@@ -21,6 +21,11 @@ public class ServerHandler extends Thread{
 
     }
 
+    /* Records the action taken:PLACEHOLDER FOR NOW */
+    private void record(String action){
+        System.out.printf(action);
+    }
+
 
     /**
      * Transfer file from client to the server here
@@ -43,7 +48,7 @@ public class ServerHandler extends Thread{
                 size -= bytesRead;
             }
             //Check to see if directory path has '/' at the very end
-            char lastChar = dirToSaveTo.charAt(dirToSaveTo.length() - 1));
+            char lastChar = dirToSaveTo.charAt(dirToSaveTo.length() - 1);
             if ( lastChar != '/'){
                 dirToSaveTo = dirToSaveTo + "/";
             }
@@ -70,22 +75,24 @@ public class ServerHandler extends Thread{
 
             PrintWriter Out = new PrintWriter(s.getOutputStream(), true);
 
-            Out.println("Hello"); //sending a hello message to client
+            Out.println("Hello from the server"); //sending a hello message to client
 
             while (true){
                 String client_msg = in.readLine();
-                System.out.printf(client_msg); //printing out client message
+                System.out.println(client_msg); //printing out client message
+
             }
 
         }catch (IOException error){
-            System.out.printf("placeholder error");
+            System.out.println("Closing client...\n");
         }
 
         finally{
             try {
                 s.close(); //closing socket as clean up code
+                System.out.println("Connection Successfully Closed\n");
             }catch (IOException error){
-                System.out.printf("placeholder error");
+                System.out.println("placeholder error 2\n");
             }
         }
     }

@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -53,8 +54,7 @@ public class Client extends Application {
      * Currently prints to System.err
      * @param message The message to be printed
      */
-    static void printNonFatalError(String message) {
-        //TODO: reconsider if printing to standard error is correct behaviour
+    public static void printNonFatalError(String message) {
         System.err.println(message);
     }
 }

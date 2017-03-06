@@ -1,5 +1,7 @@
 package org.cs5431_client.view;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -21,7 +23,7 @@ public class LogViewController implements Initializable {
     public ImageView imgExit;
 
     @FXML
-    public ListView listViewLog;
+    public ListView<String> listViewLog;
 
     private Stage stage;
     private FileController fileController;
@@ -60,7 +62,11 @@ public class LogViewController implements Initializable {
     void setDetails(FileController fileController, int fileId) {
         this.fileController = fileController;
         //TODO: update txtFilename based on file id?
-        //TODO: populate listViewLog here
+
+        ObservableList<String> items = FXCollections.observableArrayList();
+        //TODO: populate listViewLog
+        items.add("Sample log text");
+        listViewLog.setItems(items);
     }
 
 }

@@ -25,7 +25,7 @@ public class FileController {
      * @param action FileActionType that the user intends to perform
      * @return true if the user has the permission; false otherwise
      */
-    private boolean isAllowed(FileActionType action, FileSystemObject fso) {
+    public boolean isAllowed(FileActionType action, FileSystemObject fso) {
         //TODO: get permissions of the fileObject, iterate through
         List<Integer> usersWithPermission = fso.getEditors();
         if (action == DOWNLOAD) {
