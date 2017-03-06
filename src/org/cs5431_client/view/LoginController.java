@@ -87,6 +87,7 @@ public class LoginController implements Initializable {
         //TODO: catch login failure
         int userId = accountsController.login(username, password, server,
                 port);
+
         try {
             Node node = (Node) e.getSource();
             Stage stage = (Stage) node.getScene().getWindow();

@@ -2,6 +2,8 @@ package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.nio.file.FileSystem;
 import java.util.List;
 
@@ -40,16 +42,17 @@ public class FileController {
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
      */
-    public File uploadFile(java.io.File file, Folder parentFolder){
+    public File uploadFile(java.io.File file, Folder parentFolder) throws FileNotFoundException {
         String name = file.getName();
         //TODO get file contents and size from java.io.file
-        File dbFile = new File(name, user.getUserLogId(), parentFolder.getFolderId(), 0, "");
+        FileReader reader = new FileReader(file);
+        File dbFile = new File(name, parentFolder, 0, "");
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
         if (canUpload) {
             FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
             FileSystemObject fileSent = sendFSOToServer(dbFile, logEntry);
             if (fileSent != null) {
-                parentFolder.addChild((fileSent.getId()));
+                parentFolder.addChild(fileSent);
                 return (File) fileSent;
             }
         }
@@ -68,11 +71,11 @@ public class FileController {
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             if (isAcceptableInput(folderName)) {
-                Folder newFolder = new Folder(folderName, user.getId(), parentFolder.getFolderId());
+                Folder newFolder = new Folder(folderName, user.getUserParentFolder());
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
                 FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
                 if (folderSent != null) {
-                    parentFolder.addChild(folderSent.getId());
+                    parentFolder.addChild(folderSent);
                     return (Folder) folderSent;
                 }
             }

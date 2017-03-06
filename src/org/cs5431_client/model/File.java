@@ -5,8 +5,8 @@ public class File extends FileSystemObject {
     private String fileContents;
 
     //TODO: populate from database instead?
-    public File(String name, int ownerId, int parentFolderId, int size, String fileContents) {
-        super(name, ownerId, parentFolderId);
+    public File(String name, Folder parentFolder, long size, String fileContents) {
+        super(name, parentFolder);
         this.size = size;
         this.fileContents = fileContents;
         //remove this type?

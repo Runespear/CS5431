@@ -6,19 +6,18 @@ import java.util.List;
 
 public abstract class FileSystemObject {
     protected int id;
-    protected int parentFolderId;
+    protected Folder parentFolder;
     protected int ownerId;
     protected List<Integer> editorIds;
     protected List<Integer> viewerIds;
     protected String name;
-    protected int size;
+    protected long size;
     protected Date lastModified;
     protected FSOType type;
 
-    public FileSystemObject (String name, int ownerId, int parentFolderId) {
+    public FileSystemObject (String name, Folder parentFolder) {
         this.name = name;
-        this.ownerId = ownerId;
-        this.parentFolderId = parentFolderId;
+        this.parentFolder = parentFolder;
         this.viewerIds = new ArrayList<>();
         this.editorIds = new ArrayList<>();
         this.editorIds.add(ownerId);
@@ -34,7 +33,7 @@ public abstract class FileSystemObject {
 
     public String getFileName() {return name; }
 
-    public int getFileSize() {return size; }
+    public long getFileSize() {return size; }
 
     public Date getLastModified() {return lastModified; }
 

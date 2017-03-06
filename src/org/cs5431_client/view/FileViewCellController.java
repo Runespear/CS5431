@@ -52,7 +52,7 @@ public class FileViewCellController {
     {
         fileName.setText(fso.getFileName());
         lastModified.setText(fso.getLastModified().toString());
-        size.setText(Integer.toString(fso.getFileSize()));
+        size.setText(Long.toString(fso.getFileSize()));
         //default image is file, so if it's folder change img to folder
         if (fso instanceof File)
             imgFile.setImage(

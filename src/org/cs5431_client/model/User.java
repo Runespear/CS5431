@@ -22,4 +22,9 @@ public class User extends Account {
     public String getEmail() {
         return email;
     }
+
+    public void setUserParentFolder(Folder parentFolder) {
+        this.userParentFolder = parentFolder;
+    }
+
 }
