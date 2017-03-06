@@ -6,8 +6,10 @@ public class File extends FileSystemObject {
 
     //TODO: populate from database instead?
     public File(String name, int ownerId, int parentFolderId, int size, String fileContents) {
-        super(name, ownerId, parentFolderId, size);
+        super(name, ownerId, parentFolderId);
+        this.size = size;
         this.fileContents = fileContents;
+        //remove this type?
         this.type = FSOType.FILE;
         //TODO: date modified set by DB timestamp
     }

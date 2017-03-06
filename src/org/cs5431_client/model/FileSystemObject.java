@@ -15,14 +15,13 @@ public abstract class FileSystemObject {
     protected Date lastModified;
     protected FSOType type;
 
-    public FileSystemObject (String name, int ownerId, int parentFolderId, int size) {
+    public FileSystemObject (String name, int ownerId, int parentFolderId) {
         this.name = name;
         this.ownerId = ownerId;
         this.parentFolderId = parentFolderId;
         this.viewerIds = new ArrayList<>();
         this.editorIds = new ArrayList<>();
         this.editorIds.add(ownerId);
-        this.size = size;
         //TODO: date modified set by DB timestamp
         //TODO: remove following line that's currently used for display purposes
         lastModified = new Date();
@@ -40,4 +39,6 @@ public abstract class FileSystemObject {
     public Date getLastModified() {return lastModified; }
 
     public int getId() {return id;}
+
+    public void rename(String newName) { this.name = newName; }
 }

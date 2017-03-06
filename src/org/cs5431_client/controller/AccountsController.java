@@ -1,5 +1,7 @@
 package org.cs5431_client.controller;
 
+import org.cs5431_client.model.Folder;
+
 /**
  * A controller for all accounts.
  * The controller for an individual account is called UserController.
@@ -44,6 +46,11 @@ public class AccountsController {
 
         //TODO: create relevant controllers? and pass them? ???
         return 1;
+    }
+
+    public Folder getFolderFromId(int folderId) {
+        //TODO: send to server and get the corresponding folder
+        return null;
     }
 
     public class RegistrationFailException extends Exception {

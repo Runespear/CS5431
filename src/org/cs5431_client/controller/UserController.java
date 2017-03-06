@@ -3,7 +3,6 @@ package org.cs5431_client.controller;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +47,8 @@ public class UserController {
     }
 
     public List<FileSystemObject> getFileSystemObjects() {
-        int parentFolderId = user.getUserParentFolderId();
+        int parentFolderId = user.getUserParentFolder().getFolderId();
+
         //TODO: query server to get all children associated with this folderId
         //TODO: decrpyt file names
         return null;

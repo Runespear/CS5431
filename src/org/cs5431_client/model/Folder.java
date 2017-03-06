@@ -13,10 +13,11 @@ public class Folder extends FileSystemObject {
         //TODO: database stuff?
     }
 
-    public Folder (String name, int ownerId, int parentFolderId, int size) {
-        super(name, ownerId, parentFolderId, size);
+    public Folder (String name, int ownerId, int parentFolderId) {
+        super(name, ownerId, parentFolderId);
         this.type = FSOType.FOLDER;
         this.children = new ArrayList<>();
+        this.size = 0;
         //TODO: date modified set by DB timestamp
     }
 
@@ -28,6 +29,10 @@ public class Folder extends FileSystemObject {
         return children.add(child);
     }
 
+    public void removeChild(int fsoId) { this.children.remove(fsoId); }
+
     public int getFolderId() {return id; }
-    //TODO
+
+    //TODO: update size to be sum of size of children
+
 }

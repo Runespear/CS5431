@@ -125,8 +125,8 @@ public class FileViewController implements Initializable {
      * Creates a new prompt to ask for the folder name.
      */
     private void createFolder() {
-        //TODO: grab correct parent folder
-        Folder parentFolder = new Folder("fake_folder",-1,-1,-1);
+
+        Folder parentFolder = user.getUserParentFolder();
 
         TextInputDialog dialog = new TextInputDialog("folder name");
         dialog.setTitle("Create new folder");
@@ -143,8 +143,7 @@ public class FileViewController implements Initializable {
      * The uploader is automatically set as the owner.
      */
     private void uploadFile() {
-        //TODO: grab correct parent folder
-        Folder parentFolder = new Folder("fake_folder",-1,-1,-1);
+        Folder parentFolder = user.getUserParentFolder();
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file to upload");
@@ -170,8 +169,7 @@ public class FileViewController implements Initializable {
     private void overwriteFile() {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
 
-        //TODO: grab correct parent folder
-        Folder parentFolder = new Folder("fake_folder",-1,-1,-1);
+        user.getUserParentFolder();
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file to upload");
@@ -204,7 +202,7 @@ public class FileViewController implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
-            fileController.delete(fso.getId());
+            fileController.delete(fso.getId(), user.getUserParentFolder());
         }
     }
 
@@ -294,9 +292,9 @@ public class FileViewController implements Initializable {
         // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
         List<FileSystemObject> fsoList = new ArrayList<>();
         //populating with some dummy stuff instead
-        Folder dummyFolder = new Folder("fake folder1", -1,-1,100);
+        Folder dummyFolder = new Folder("fake folder1", -1,-1);
         fsoList.add(dummyFolder);
-        dummyFolder = new Folder("fake folder2", -1,-1,100);
+        dummyFolder = new Folder("fake folder2", -1,-1);
         fsoList.add(dummyFolder);
         org.cs5431_client.model.File dummyFile =
                 new org.cs5431_client.model.File("fake file1",-1,-1,100,

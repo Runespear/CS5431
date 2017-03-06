@@ -68,16 +68,13 @@ public class FileController {
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             if (isAcceptableInput(folderName)) {
-                Folder newFolder = new Folder(folderName, user.getId(), parentFolder.getFolderId(), 0);
+                Folder newFolder = new Folder(folderName, user.getId(), parentFolder.getFolderId());
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
                 FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
                 if (folderSent != null) {
                     parentFolder.addChild(folderSent.getId());
                     return (Folder) folderSent;
                 }
-            }
-            else {
-                //TODO: unacceptable name
             }
         }
         return null;
@@ -107,7 +104,8 @@ public class FileController {
 
     /**
      * Attempts to rename the file. If the user has the permission, the changes are sent to
-     * the server along with its log entry.
+     * the server along with its log entry. If rename is successful on the server,
+     * the system object on client side is renamed as well.
      * @param systemObject is the file/folder to be renamed
      * @param newName New name of the file/folder
      * @return true if the name of the file/folder is successfully modified; false otherwise
@@ -115,10 +113,13 @@ public class FileController {
     public boolean rename(FileSystemObject systemObject, String newName) {
 
         boolean canRename = isAllowed(RENAME, systemObject);
-        if (canRename) {
+        if (canRename && isAcceptableInput(newName)) {
             FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
             FileSystemObject fileSent = modifyFSO(systemObject, logEntry);
-            return (fileSent != null);
+            if (fileSent != null) {
+                systemObject.rename(newName);
+                return true;
+            }
         }
         return false;
     }
@@ -145,12 +146,14 @@ public class FileController {
     }
 
     /**
-     * Deletes the file from server entirely. No one is able to access it anymore.
+     * Deletes the file from server entirely and from parentFolder No one is able to access it anymore.
      * @param fsoId is ID of the file to be deleted
+     * @param parentFolder is parentFolder of the fso associated with the id
      * @return true if delete is successful; false otherwise
      */
-    public boolean delete(int fsoId) {
+    public boolean delete(int fsoId, Folder parentFolder) {
         //TODO: remove from db
+        parentFolder.removeChild(fsoId);
         return false;
     }
 

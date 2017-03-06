@@ -2,7 +2,7 @@ package org.cs5431_client.model;
 
 public class User extends Account {
     private int userLogId;
-    private int userParentFolderId;
+    private Folder userParentFolder;
     private String email;
 
     public User(int id, String username, String email) {
@@ -15,8 +15,8 @@ public class User extends Account {
         return userLogId;
     }
 
-    public int getUserParentFolderId() {
-        return userParentFolderId;
+    public Folder getUserParentFolder() {
+        return userParentFolder;
     }
 
     public String getEmail() {
