@@ -1,0 +1,49 @@
+
+
+CREATE TABLE FileSystemObjects (fsoid CHAR(20) PRIMARY KEY, ownerid CHAR(20) NOT NULL,
+parentFolderid CHAR(20) NOT NULL, fsoName CHAR(20) NOT NULL, size CHAR(20) NOT NULL, 
+lastModified DATETIME, isFile boolean NOT NULL, 
+FOREIGN KEY (ownerid) REFERENCES Users(uid),
+FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid));
+#add contents how?
+
+CREATE TABLE Users (uid CHAR(20) PRIMARY KEY, username CHAR(20) NOT NULL, 
+pwd CHAR(20) NOT NULL, parentFolderid CHAR(20) NOT NULL, email CHAR(20), 
+FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);
+
+CREATE TABLE Editors (fsoid CHAR(20) NOT NULL,
+uid CHAR(20) NOT NULL,
+FOREIGN KEY (uid) REFERENCES Users(uid),
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
+
+CREATE TABLE Viewers (fsoid CHAR(20) NOT NULL,
+uid CHAR(20) NOT NULL,
+FOREIGN KEY (uid) REFERENCES Users(uid),
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
+
+CREATE TABLE FileLog (fsoid CHAR(20) NOT NULL,
+uid CHAR(20) NOT NULL, 
+modified DATETIME, actionType CHAR(20)
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid)
+FOREIGN KEY (uid) REFERENCES Users(uid));
+
+CREATE TABLE FolderChild (fsoid CHAR(20) NOT NULL,
+childid CHAR(20) NOT NULL);
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid)
+FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid));
+
+
+
+insert into Users values ();
+
+insert into FileSystemObjects values ();
+
+SELECT F.childid FROM FolderChild F
+WHERE F.fsoid = 1;
+
+SELECT F.fsoName, F.size, F.lastModified, 
+F.parentFolderid, F.isFile FROM FileSystemObjects F
+WHERE F.fsoid = 1;
+
+DELETE FROM FolderChild F 
+WHERE fsoid = 1 AND childid = 1;
