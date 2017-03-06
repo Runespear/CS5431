@@ -116,14 +116,9 @@ public class FileController {
 
         boolean canRename = isAllowed(RENAME, systemObject);
         if (canRename) {
-            if (isAcceptableInput(newName)) {
-                FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
-                FileSystemObject fileSent = modifyFSO(systemObject, logEntry);
-                return (fileSent != null);
-            }
-            else {
-                //TODO: unacceptable name
-            }
+            FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
+            FileSystemObject fileSent = modifyFSO(systemObject, logEntry);
+            return (fileSent != null);
         }
         return false;
     }
@@ -136,7 +131,7 @@ public class FileController {
     public File download(int fsoId) {
         FileSystemObject file = getFSO(fsoId);
         //TODO: decrypt the file
-        return null;
+        return (File) file;
     }
 
     /**
