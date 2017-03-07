@@ -128,7 +128,9 @@ public class client_tcp extends Thread{
     /**
      * Requests a hard coded file from specific directory from server
      * Writes to hard coded location
-     * called cats.txt
+     * Hard coded folder is current working directory/receive
+     * Test file is cats.txt
+     * If using cmd line, invoke using "h"
      */
     public void requestHardCodedFile(Socket s){
         OutputStream ostream = null;

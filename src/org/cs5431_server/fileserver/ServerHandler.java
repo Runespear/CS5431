@@ -100,6 +100,9 @@ public class ServerHandler extends Thread{
 
     /**
      * Sends cats.txt to server
+     * From hard coded generated folder
+     * Folder is current working directory/send
+     * File is cats.txt
      */
     public void sendHardClient(){
         String fileName = "cats.txt";
