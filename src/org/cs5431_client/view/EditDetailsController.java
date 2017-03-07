@@ -136,12 +136,13 @@ public class EditDetailsController implements Initializable {
         }
 
         //prints all success+failure messages.
-        Alert alert = new Alert(Alert.AlertType.NONE);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         StringBuilder content = new StringBuilder();
         for (String message : messages) {
             content.append(message);
-            content.append('\n');
+            content.append("\n");
         }
+        System.out.println(content.toString());
         alert.setContentText(content.toString());
         alert.showAndWait();
     }
