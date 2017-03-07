@@ -69,16 +69,14 @@ public class ServerHandler extends Thread{
                 os = s.getOutputStream();
                 System.out.println("Sending "+fileName+" of size "+ mybytearray.length + " bytes.");
                 os.write(mybytearray,0,mybytearray.length);
-                os.flush();
                 System.out.println("Done");
+                os.flush();
             }
             catch (IOException e){
                 e.printStackTrace();
             }
             finally{
                 try{
-                    if (bis != null) bis.close();
-                    if (fis != null) fis.close();
                     if (os != null) os.close();
                 }
                 catch(Exception e){
@@ -103,6 +101,7 @@ public class ServerHandler extends Thread{
 
 
     //sending a welcome message to client when the thread runs
+    // Overwrites default run
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -120,12 +119,10 @@ public class ServerHandler extends Thread{
                             break;
                         case "transfer": System.out.println("Transferring file to client");
                             sendToClient(in.readLine());
-                            break;
-                        default: break;
+                            //break;
+                        default: //break;
                     }
                 }
-
-
             }
 
         }catch (IOException error){
