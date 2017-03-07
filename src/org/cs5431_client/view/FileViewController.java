@@ -323,15 +323,12 @@ public class FileViewController implements Initializable {
     }
 
     private void populateListView() {
-
         ObservableList<FileSystemObject> observableList =
                 FXCollections.observableArrayList();
         observableList.setAll(user.getUserParentFolder().getChildren());
 
         fileList.setItems(observableList);
-
-        fileList.setCellFactory(
-                listView ->  new FileViewCell());
+        fileList.setCellFactory(listView ->  new FileViewCell(fileController));
     }
     
     private void showAppropriateImages(boolean fileSelected, boolean

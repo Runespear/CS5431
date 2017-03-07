@@ -1,5 +1,7 @@
 package org.cs5431_client.view;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +14,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import org.cs5431_client.controller.FileController;
 import org.cs5431_client.model.File;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
@@ -41,6 +44,7 @@ public class FileViewCellController implements Initializable {
     @FXML
     private Label size;
 
+    private FileController fileController;
     private FileSystemObject fso;
 
     @Override
@@ -59,30 +63,37 @@ public class FileViewCellController implements Initializable {
         TextField renameBox = new TextField(fileName.getText());
         renameBox.setPrefWidth(300);
         nameBox.getChildren().add(0,renameBox);
-        System.out.println("Clicked " + fso.getId() + "!");
 
         renameBox.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
-                System.out.println(renameBox.getCharacters().toString());
-                //TODO send request to server
-                currLabel.setText(renameBox.getCharacters().toString());
-                nameBox.getChildren().remove(0);
-                nameBox.getChildren().add(0,currLabel);
+                performRename(renameBox, currLabel);
+            }
+        });
+
+        renameBox.focusedProperty().addListener(
+            (arg0, oldPropertyValue, newPropertyValue) -> {
+            if (!newPropertyValue) {
+                performRename(renameBox, currLabel);
             }
         });
     }
 
-    public FileViewCellController()
-    {
+    private void performRename(TextField renameBox, Label currLabel) {
+        if (fileController.rename(fso,renameBox.getCharacters().toString())) {
+            currLabel.setText(renameBox.getCharacters().toString());
+        }
+        nameBox.getChildren().remove(0);
+        nameBox.getChildren().add(0, currLabel);
+    }
+
+    public FileViewCellController(FileController fileController) {
+        this.fileController = fileController;
         final URL r = getClass().getResource("file_view_cell.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(r);
         fxmlLoader.setController(this);
-        try
-        {
+        try {
             fxmlLoader.load();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             printNonFatalError("Failed to load layout");
             e.printStackTrace();
         }
