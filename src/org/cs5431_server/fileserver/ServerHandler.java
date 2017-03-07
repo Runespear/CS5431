@@ -3,6 +3,7 @@ package org.cs5431_server.fileserver;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * Created on 26/2/2017.
@@ -32,6 +33,8 @@ public class ServerHandler extends Thread{
      * @param fileName file requested by client
      */
     public void sendToClient(String fileName){
+
+        System.out.println("Sending "+fileName + " to client.");
 
         int SOCKET_PORT = s.getPort();
 
@@ -94,8 +97,9 @@ public class ServerHandler extends Thread{
 
     }
 
+
+
     //sending a welcome message to client when the thread runs
-    //TODO: Call transfer() when appropriate?
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -108,6 +112,14 @@ public class ServerHandler extends Thread{
                 String client_msg = in.readLine();
                 if (client_msg != null){
                     System.out.println(client_msg); //printing out client message
+                    switch (client_msg){
+                        case "exit": System.out.println("Client disconnected");
+                            break;
+                        case "transfer": System.out.println("Transferring file to client");
+                            sendToClient(client_msg);
+                            break;
+                        default: break;
+                    }
                 }
 
 

@@ -7,7 +7,11 @@ import java.util.*;
 
 public class client_tcp extends Thread{
 
-    public boolean waitforuser(){
+    /**
+     * @param s passes socket for file transfer etc.
+     * @return 0 if exit, 1 if transfer, 666 if unrecognised
+     */
+    public int waitforuser(Socket s){
         Scanner scanner = new Scanner (System.in);
         System.out.println("Enter 'e' to exit:");
         System.out.println("Enter 't filename' to request file:");
@@ -19,18 +23,25 @@ public class client_tcp extends Thread{
 
         if (Objects.equals("e",elements[0])){
             System.out.println("Bye bye");
-            return true;
+            return 0;
         }
 
         else if (Objects.equals("t",elements[0])){
             // No restrictions on file to be transferred yet
-            System.out.println("Requesting file "+ elements[1]);
-            requestFromServer(elements[1]);
-            return false;
+            String hardFile = "~/Desktop/cats.txt";
+            requestFromServer(hardFile,s);
+            //
+
+            //System.out.println("Requesting file "+ elements[1]);
+            //requestFromServer(elements[1]);
+
+
+            return 1;
         }
 
         else{
-            return false;
+            System.out.println("Please enter valid command");
+            return 666;
         }
     }
 
@@ -39,14 +50,13 @@ public class client_tcp extends Thread{
     /**
      * Requests file from server
      * @param fileName Path to file to be transferred
+     * @param s Socket
      * Obviously very vulnerable right now (Can overwrite important binaries)
      * http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
      * http://way2java.com/networking/sending-file-contents-two-way-communication/
      *
      * */
-    public void requestFromServer(String fileName){
-
-        Socket s = null;
+    public void requestFromServer(String fileName,Socket s){
 
         OutputStream ostream = null;
         PrintWriter pwrite = null;
@@ -59,11 +69,11 @@ public class client_tcp extends Thread{
         //Hard code the directory
         String hardDir = "~/Desktop/";
         try{
-            String serverAddress = "localhost"; // to be filled in
-            int socket = 10000; //to be filled in
+            //String serverAddress = "localhost"; // to be filled in
+            //int socket = 10000; //to be filled in
 
             //Making the connection
-            s = new Socket(serverAddress, socket);
+            //s = new Socket(serverAddress, socket);
 
             //Send file name over
             ostream = s.getOutputStream( );
@@ -119,12 +129,19 @@ public class client_tcp extends Thread{
         System.out.println(server_msg); //printing out server message
 
         while (true){
-            if (waitforuser()){
-                Out.println("Client "+ s.getInetAddress() + " port " + s.getPort() + " says bye!");
-                break;
+            switch (waitforuser(s)) {
+                case 0: Out.println("exit");
+                    System.exit(0);
+                case 1:  Out.println("transfer");
+                    break;
+                case 2:  System.out.println("Enter valid command please");
+                    break;
+                default: System.out.println("Enter valid command please");
+                    break;
             }
+            break;
         }
-        System.exit(0);
+
     }
 
     /* RUNNING THE CLIENT APPLICATION*/
