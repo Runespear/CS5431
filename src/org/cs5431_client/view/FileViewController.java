@@ -111,8 +111,7 @@ public class FileViewController implements Initializable {
             FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
             showAppropriateImages(true,
                     fileController.isAllowed(FileActionType.OVERWRITE, fso),
-                    fso instanceof org.cs5431_client.model.File);
-            //TODO: use isallowed here??
+            fso instanceof org.cs5431_client.model.File);
             if (e.getButton() == MouseButton.PRIMARY &&
                     e.getClickCount() == 2 && fso instanceof Folder) {
                 path.add(currParent);

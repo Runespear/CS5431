@@ -36,7 +36,6 @@ public class FileController {
         if (action == DOWNLOAD) {
             usersWithPermission.addAll(fso.getViewers());
         }
-        System.out.print("user id:" + user.getId());
         return (usersWithPermission.contains(user.getId()));
     }
 

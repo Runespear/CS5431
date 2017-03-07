@@ -78,10 +78,11 @@ public class FileViewCellController implements Initializable {
 
     private void performRename(TextField renameBox, Label currLabel) {
         fso.rename(renameBox.getCharacters().toString()); //TODO: delete once the other function starts working
-        //TODO: how to refresh view after this
-        if (fileController.rename(fso,renameBox.getCharacters().toString())) {
+        currLabel.setText(renameBox.getCharacters().toString());
+
+        /*if (fileController.rename(fso,renameBox.getCharacters().toString())) {
             currLabel.setText(renameBox.getCharacters().toString());
-        }
+        }*/
         nameBox.getChildren().remove(0);
         nameBox.getChildren().add(0, currLabel);
     }
