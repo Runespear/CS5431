@@ -72,6 +72,8 @@ public class FileViewCellController implements Initializable {
                 performRename(renameBox, currLabel);
             }
         });
+        renameBox.requestFocus();
+        renameBox.selectAll();
     }
 
     private void performRename(TextField renameBox, Label currLabel) {
