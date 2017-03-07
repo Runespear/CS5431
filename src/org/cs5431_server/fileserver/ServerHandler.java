@@ -33,6 +33,9 @@ public class ServerHandler extends Thread{
      * @param fileName file requested by client
      */
     public void sendToClient(String fileName){
+        String hardDir = System.getProperty("user.home") + "/Desktop/send/";
+
+        fileName = hardDir + fileName;
 
         System.out.println("Sending "+fileName + " to client.");
 
@@ -45,41 +48,41 @@ public class ServerHandler extends Thread{
         Socket sock = null;
 
         try{
-            servsock = new ServerSocket(SOCKET_PORT);
-            while(true){
-                System.out.println("Waiting...");
+            //servsock = new ServerSocket(SOCKET_PORT);
+            System.out.println("Waiting...");
+            try{
+                //sock = servsock.accept();
+                System.out.println("Connected to:" + s);
+
+                //Send the file to client
+                File myFile = new File(fileName);
+
+                //Read the file into byte array
+                byte[] mybytearray = new byte[(int) myFile.length()];
+
+                System.out.println(myFile.getAbsolutePath());
+
+                fis = new FileInputStream(myFile);
+                bis = new BufferedInputStream(fis);
+                bis.read(mybytearray,0,mybytearray.length);
+
+                os = s.getOutputStream();
+                System.out.println("Sending "+fileName+" of size "+ mybytearray.length + " bytes.");
+                os.write(mybytearray,0,mybytearray.length);
+                os.flush();
+                System.out.println("Done");
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            finally{
                 try{
-                    sock = servsock.accept();
-                    System.out.println("Connected to:" + sock);
-
-                    //Send the file to client
-                    File myFile = new File(fileName);
-
-                    //Read the file into byte array
-                    byte[] mybytearray = new byte[(int) myFile.length()];
-                    fis = new FileInputStream(myFile);
-                    bis = new BufferedInputStream(fis);
-                    bis.read(mybytearray,0,mybytearray.length);
-
-                    os = sock.getOutputStream();
-                    System.out.println("Sending "+fileName+" of size "+ mybytearray.length + " bytes.");
-                    os.write(mybytearray,0,mybytearray.length);
-                    os.flush();
-                    System.out.println("Done");
+                    if (bis != null) bis.close();
+                    if (fis != null) fis.close();
+                    if (os != null) os.close();
                 }
-                catch (IOException e){
+                catch(Exception e){
                     e.printStackTrace();
-                }
-                finally{
-                    try{
-                        if (bis != null) bis.close();
-                        if (fis != null) fis.close();
-                        if (os != null) os.close();
-                        if (sock != null) sock.close();
-                    }
-                    catch(Exception e){
-                        e.printStackTrace();
-                    }
                 }
             }
         }
@@ -88,7 +91,7 @@ public class ServerHandler extends Thread{
         }
         finally{
             try{
-                if (servsock != null) servsock.close();
+                //if (servsock != null) servsock.close();
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -116,7 +119,7 @@ public class ServerHandler extends Thread{
                         case "exit": System.out.println("Client disconnected");
                             break;
                         case "transfer": System.out.println("Transferring file to client");
-                            sendToClient(client_msg);
+                            sendToClient(in.readLine());
                             break;
                         default: break;
                     }
@@ -126,6 +129,7 @@ public class ServerHandler extends Thread{
             }
 
         }catch (IOException error){
+            error.printStackTrace();
             System.out.println("Closing client...\n");
         }
 

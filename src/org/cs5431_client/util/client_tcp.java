@@ -19,6 +19,7 @@ public class client_tcp extends Thread{
         String command = scanner.nextLine(); // Obtain user's command
 
         String[] elements = command.trim().split("\\s+");
+
         System.out.println(Arrays.toString(elements));
 
         if (Objects.equals("e",elements[0])){
@@ -28,7 +29,7 @@ public class client_tcp extends Thread{
 
         else if (Objects.equals("t",elements[0])){
             // No restrictions on file to be transferred yet
-            String hardFile = "~/Desktop/cats.txt";
+            String hardFile = "cats.txt";
             requestFromServer(hardFile,s);
             //
 
@@ -67,7 +68,7 @@ public class client_tcp extends Thread{
 
 
         //Hard code the directory
-        String hardDir = "~/Desktop/";
+        String hardDir = System.getProperty("user.home")+"/Desktop/receive/";
         try{
             //String serverAddress = "localhost"; // to be filled in
             //int socket = 10000; //to be filled in
@@ -78,11 +79,13 @@ public class client_tcp extends Thread{
             //Send file name over
             ostream = s.getOutputStream( );
             pwrite = new PrintWriter(ostream, true);
+            pwrite.println("transfer");
             pwrite.println(fileName);
 
             //Get file from server
             istream = s.getInputStream();
-            fos = new FileOutputStream(fileName);
+
+            fos = new FileOutputStream(hardDir + fileName);
             bos = new BufferedOutputStream(fos);
 
             byte[] buffer = new byte[4096];
@@ -104,7 +107,7 @@ public class client_tcp extends Thread{
 
                 if (pwrite != null) pwrite.close();
                 if (ostream!=null) ostream.close();
-                if (s != null) s.close();
+                //if (s != null) s.close();
             }
             catch (Exception e){
                 //e.printStackTrace();
@@ -132,7 +135,7 @@ public class client_tcp extends Thread{
             switch (waitforuser(s)) {
                 case 0: Out.println("exit");
                     System.exit(0);
-                case 1:  Out.println("transfer");
+                case 1:
                     break;
                 case 2:  System.out.println("Enter valid command please");
                     break;
