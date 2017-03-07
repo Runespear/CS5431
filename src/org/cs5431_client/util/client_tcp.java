@@ -70,7 +70,7 @@ public class client_tcp extends Thread{
         catch (IOException readException){
             readException.printStackTrace();
         }
-        // Only need to close if not even opened
+        // Only need to close if opened
         finally {
             try{
                 if (fos!=null) fos.close();
@@ -107,7 +107,7 @@ public class client_tcp extends Thread{
         System.out.println(server_msg); //printing out server message
 
         while (true){
-            if (waitforuser()==true){
+            if (waitforuser()){
                 break;
             }
         }
@@ -120,6 +120,7 @@ public class client_tcp extends Thread{
     public static void main (String[] args) throws Exception{
         client_tcp client = new client_tcp();
         client.connectToServer();
+        client.requestFromServer("cats.txt");
 
     }
 }

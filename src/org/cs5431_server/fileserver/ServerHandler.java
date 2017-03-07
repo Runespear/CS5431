@@ -29,42 +29,69 @@ public class ServerHandler extends Thread{
 
     /**
      * Transfer file from client to the server here
-     * @param dirToSaveTo Saves file to the directory, checks if "/" is included at the end as well
+     * @param fileName file requested by client
      */
-    public void transfer(String dirToSaveTo){
-        try {
-            DataInputStream input = new DataInputStream(s.getInputStream());
-            DataInputStream clientData = new DataInputStream(input);
-            //Read the filename
-            String fileName = clientData.readUTF();
-            OutputStream output = new FileOutputStream(fileName);
-            //Get the size of the file
-            long size = clientData.readLong();
-            byte[] buffer = new byte[1024]; // Our byte array that will be our file
-            // Transfer the file from client
-            int bytesRead;
-            while (size > 0 && (bytesRead = clientData.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1){
-                output.write(buffer, 0, bytesRead);
-                size -= bytesRead;
-            }
-            //Check to see if directory path has '/' at the very end
-            char lastChar = dirToSaveTo.charAt(dirToSaveTo.length() - 1);
-            if ( lastChar != '/'){
-                dirToSaveTo = dirToSaveTo + "/";
-            }
-            //Now save the file
-            FileOutputStream fos = new FileOutputStream(dirToSaveTo+fileName);
-            fos.write(buffer);
-            //close all streams
-            input.close();
-            clientData.close();
-            output.close();
-            fos.close();
+    public void sendToClient(String fileName){
 
+        int SOCKET_PORT = s.getPort();
+
+        FileInputStream fis = null;
+        BufferedInputStream bis = null;
+        OutputStream os = null;
+        ServerSocket servsock = null;
+        Socket sock = null;
+
+        try{
+            servsock = new ServerSocket(SOCKET_PORT);
+            while(true){
+                System.out.println("Waiting...");
+                try{
+                    sock = servsock.accept();
+                    System.out.println("Connected to:" + sock);
+
+                    //Send the file to client
+                    File myFile = new File(fileName);
+
+                    //Read the file into byte array
+                    byte[] mybytearray = new byte[(int) myFile.length()];
+                    fis = new FileInputStream(myFile);
+                    bis = new BufferedInputStream(fis);
+                    bis.read(mybytearray,0,mybytearray.length);
+
+                    os = sock.getOutputStream();
+                    System.out.println("Sending "+fileName+" of size "+ mybytearray.length + " bytes.");
+                    os.write(mybytearray,0,mybytearray.length);
+                    os.flush();
+                    System.out.println("Done");
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+                finally{
+                    try{
+                        if (bis != null) bis.close();
+                        if (fis != null) fis.close();
+                        if (os != null) os.close();
+                        if (sock != null) sock.close();
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
-        catch(IOException e){
-            System.out.println("Connection:"+e.getMessage());
+        catch(Exception e){
+            e.printStackTrace();
         }
+        finally{
+            try{
+                if (servsock != null) servsock.close();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
     }
 
     //sending a welcome message to client when the thread runs
