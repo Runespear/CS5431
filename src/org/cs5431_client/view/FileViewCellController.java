@@ -1,8 +1,5 @@
 package org.cs5431_client.view;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -12,12 +9,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import org.cs5431_client.controller.FileController;
 import org.cs5431_client.model.File;
 import org.cs5431_client.model.FileSystemObject;
-import org.cs5431_client.model.Folder;
 
 import java.io.IOException;
 import java.net.URL;
@@ -104,7 +99,7 @@ public class FileViewCellController implements Initializable {
         this.fso = fso;
         fileName.setText(fso.getFileName());
         lastModified.setText(fso.getLastModified().toString());
-        size.setText(Long.toString(fso.getFileSize()));
+        size.setText(formatSize(fso.getFileSize()));
         //default image is file, so if it's folder change img to folder
         if (fso instanceof File)
             imgFile.setImage(
@@ -115,6 +110,18 @@ public class FileViewCellController implements Initializable {
         imgFile.setPreserveRatio(true);
         //TODO: don't hardcode this number?
         imgFile.setFitHeight(20);
+    }
+
+    /**
+     * Prints the number of bytes of a file in a human readable format
+     * @param size Number of bytes to be formatted
+     * @return A human readable string of the number of bytes (e.g. "10 MB")
+     */
+    private String formatSize(long size) {
+        if (size < 1024) return size + " B";
+        int zeros = (63 - Long.numberOfLeadingZeros(size)) / 10;
+        return String.format("%.1f %sB", (double)size/ (1L << (zeros*10)),
+                ("MGTPE").charAt(zeros));
     }
 
     public HBox getBox()

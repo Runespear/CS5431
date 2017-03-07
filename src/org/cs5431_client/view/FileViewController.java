@@ -14,6 +14,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.FileController;
@@ -22,8 +23,10 @@ import org.cs5431_client.model.FileActionType;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
+import org.cs5431_client.util.client_tcp;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +76,8 @@ public class FileViewController implements Initializable {
     private String port;
     private UserController userController;
     private FileController fileController;
+    private Folder currParent;
+    private List<Folder> path;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -91,7 +96,7 @@ public class FileViewController implements Initializable {
 
         imgEdit.setOnMouseClicked(e -> overwriteFile());
 
-        imgShare.setOnMouseClicked(e -> changePrivileges());
+        imgShare.setOnMouseClicked(this::tryChangePrivileges);
 
         imgDelete.setOnMouseClicked(e -> deleteFile());
 
@@ -106,6 +111,15 @@ public class FileViewController implements Initializable {
             showAppropriateImages(true,
                     fileController.isAllowed(FileActionType.OVERWRITE, fso),
                     fso instanceof org.cs5431_client.model.File);
+
+            if (e.getButton() == MouseButton.PRIMARY &&
+                    e.getClickCount() == 2 && fso instanceof Folder) {
+                path.add(currParent);
+                currParent = (Folder) fso;
+                populateListView();
+                imgBack.setOpacity(1.0);
+                imgBack.setDisable(false);
+            }
         });
         //TODO: figure out how to get list view to lose its focus...
     }
@@ -114,9 +128,13 @@ public class FileViewController implements Initializable {
      * Navigates back to the parent folder
      */
     private void gotoParentFolder() {
-        //TODO: retrieve parent folder
-        //TODO: set file controller based on that
-        //TODO: repopulate list view
+        currParent = path.get(path.size()-1);
+        path.remove(path.size()-1);
+        populateListView();
+        if (currParent == user.getUserParentFolder()) {
+            imgBack.setOpacity(0.7);
+            imgBack.setDisable(true);
+        }
     }
 
     /**
@@ -164,6 +182,17 @@ public class FileViewController implements Initializable {
     private void downloadFile() {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
         fileController.download(fso.getId());
+
+        //TODO: remove after demo: simply to demo our tcp connection
+        client_tcp clientTcp = new client_tcp();
+        clientTcp.start();
+        try {
+            clientTcp.connectToServer();
+        } catch(IOException e) {
+            System.err.println("Encountered IOException when trying to " +
+                    "connect to server");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -186,9 +215,23 @@ public class FileViewController implements Initializable {
      * Changes the privileges of the file that is currently highlighted: can
      * add privileges or remove privileges
      */
-    private void changePrivileges() {
+    private void tryChangePrivileges(Event e) {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-        //todo dialog
+        try {
+            Node node = (Node) e.getSource();
+            Stage stage = (Stage) node.getScene().getWindow();
+            Scene scene = stage.getScene();
+
+            final URL r = getClass().getResource("priv_view.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(r);
+            Parent root = fxmlLoader.load();
+            PrivViewController pvc = fxmlLoader.getController();
+            pvc.setStage(stage);
+            pvc.setDetails(fileController, fso);
+            scene.setRoot(root);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
     }
 
     /**
@@ -285,6 +328,9 @@ public class FileViewController implements Initializable {
         this.ip = ip;
         this.port = port;
         txtUsername.setText(user.getUsername());
+        currParent = user.getUserParentFolder();
+        path = new ArrayList<>();
+        path.add(currParent);
         fileController = new FileController(user,ip,port);
         userController = new UserController(user,ip,port);
         initFakeFiles();
@@ -295,37 +341,41 @@ public class FileViewController implements Initializable {
         //TODO: uncomment following line once UserController fully implemented
         // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
         user.setUserParentFolder(new Folder(user.getUsername(), null));
-        Folder parentFolder = user.getUserParentFolder();
-
+        currParent = user.getUserParentFolder();
         //populating with some dummy stuff instead
-        Folder dummyFolder = new Folder("fake folder1", parentFolder);
-        parentFolder.addChild(dummyFolder);
-        dummyFolder = new Folder("fake folder2", parentFolder);
-        parentFolder.addChild(dummyFolder);
+        Folder dummyFolder = new Folder("fake folder1", currParent);
+        currParent.addChild(dummyFolder);
+        Folder dummyFolder2 = new Folder("fake folder2", currParent);
+        currParent.addChild(dummyFolder2);
         org.cs5431_client.model.File dummyFile;
         dummyFile =
-                new org.cs5431_client.model.File("fake file1", parentFolder, 100,
+                new org.cs5431_client.model.File("fake file1", currParent, 100,
                         "lalala");
-        parentFolder.addChild(dummyFile);
+        currParent.addChild(dummyFile);
+        dummyFolder.addChild(dummyFile);
+        dummyFolder2.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File("fake file2", parentFolder, 100,
+                new org.cs5431_client.model.File("fake file2", currParent, 100,
                         "lalala");
-        parentFolder.addChild(dummyFile);
+        currParent.addChild(dummyFile);
+        dummyFolder.addChild(dummyFile);
+        dummyFolder2.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File("fake file3", parentFolder, 100,
+                new org.cs5431_client.model.File("fake file3", currParent, 100,
                         "lalala");
-        parentFolder.addChild(dummyFile);
+        currParent.addChild(dummyFile);
+        dummyFolder.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File("fake file4", parentFolder, 100,
+                new org.cs5431_client.model.File("fake file4", currParent, 100,
                         "lalala");
-        parentFolder.addChild(dummyFile);
-
+        currParent.addChild(dummyFile);
+        dummyFolder2.addChild(dummyFolder);
     }
 
     private void populateListView() {
         ObservableList<FileSystemObject> observableList =
                 FXCollections.observableArrayList();
-        observableList.setAll(user.getUserParentFolder().getChildren());
+        observableList.setAll(currParent.getChildren());
 
         fileList.setItems(observableList);
         fileList.setCellFactory(listView ->  new FileViewCell(fileController));
@@ -341,9 +391,15 @@ public class FileViewController implements Initializable {
         }
         imgViewLog.setVisible(fileSelected);
         imgViewLog.setDisable(!fileSelected);
+        /*TODO uncomment
         imgShare.setVisible(editAllowed);
         imgShare.setDisable(!editAllowed);
         imgDelete.setVisible(editAllowed);
         imgDelete.setDisable(!editAllowed);
+        */
+        imgShare.setVisible(fileSelected);
+        imgShare.setDisable(!fileSelected);
+        imgDelete.setVisible(fileSelected);
+        imgDelete.setDisable(!fileSelected);
     }
 }
