@@ -1,10 +1,16 @@
 package org.cs5431_client.view;
 
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import org.cs5431_client.model.File;
 import org.cs5431_client.model.FileSystemObject;
@@ -12,15 +18,19 @@ import org.cs5431_client.model.Folder;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ResourceBundle;
 
 import static org.cs5431_client.view.Client.printNonFatalError;
 
-public class FileViewCellController {
+public class FileViewCellController implements Initializable {
     @FXML
     private HBox hBox;
 
     @FXML
     private ImageView imgFile;
+
+    @FXML
+    private HBox nameBox;
 
     @FXML
     private Label fileName;
@@ -31,6 +41,36 @@ public class FileViewCellController {
     @FXML
     private Label size;
 
+    private FileSystemObject fso;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        fileName.setOnMouseClicked(click -> {
+            if (click.getButton() == MouseButton.PRIMARY &&
+                    click.getClickCount() == 2) {
+                renameFile();
+            }
+        });
+    }
+
+    private void renameFile() {
+        Label currLabel = fileName;
+        nameBox.getChildren().remove(0);
+        TextField renameBox = new TextField(fileName.getText());
+        renameBox.setPrefWidth(300);
+        nameBox.getChildren().add(0,renameBox);
+        System.out.println("Clicked " + fso.getId() + "!");
+
+        renameBox.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                System.out.println(renameBox.getCharacters().toString());
+                //TODO send request to server
+                currLabel.setText(renameBox.getCharacters().toString());
+                nameBox.getChildren().remove(0);
+                nameBox.getChildren().add(0,currLabel);
+            }
+        });
+    }
 
     public FileViewCellController()
     {
@@ -50,6 +90,7 @@ public class FileViewCellController {
 
     public void setInfo(FileSystemObject fso)
     {
+        this.fso = fso;
         fileName.setText(fso.getFileName());
         lastModified.setText(fso.getLastModified().toString());
         size.setText(Long.toString(fso.getFileSize()));
