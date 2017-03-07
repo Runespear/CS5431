@@ -13,8 +13,8 @@ public class Folder extends FileSystemObject {
         //TODO: database stuff?
     }
 
-    public Folder (String name, Folder parentFolder) {
-        super(name, parentFolder);
+    public Folder (String name, Folder parentFolder, int ownerId) {
+        super(name, parentFolder, ownerId);
         this.type = FSOType.FOLDER;
         this.children = new ArrayList<>();
         this.size = 0;
@@ -25,7 +25,7 @@ public class Folder extends FileSystemObject {
         return children;
     }
 
-    public void removeChild(int fsoId) { this.children.remove(fsoId); }
+    public void removeChild(FileSystemObject fso) { this.children.remove(fso); }
 
     public int getFolderId() {return id; }
 

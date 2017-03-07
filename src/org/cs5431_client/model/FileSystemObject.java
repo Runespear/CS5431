@@ -7,7 +7,7 @@ import java.util.List;
 public abstract class FileSystemObject {
     protected int id;
     protected Folder parentFolder;
-    protected int ownerId;
+    //protected int ownerId;
     protected List<Integer> editorIds;
     protected List<Integer> viewerIds;
     protected String name;
@@ -15,7 +15,7 @@ public abstract class FileSystemObject {
     protected Date lastModified;
     protected FSOType type;
 
-    public FileSystemObject (String name, Folder parentFolder) {
+    public FileSystemObject (String name, Folder parentFolder, int ownerId) {
         this.name = name;
         this.parentFolder = parentFolder;
         this.viewerIds = new ArrayList<>();

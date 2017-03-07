@@ -5,12 +5,13 @@ public class File extends FileSystemObject {
     private String fileContents;
 
     //TODO: populate from database instead?
-    public File(String name, Folder parentFolder, long size, String fileContents) {
-        super(name, parentFolder);
+    public File(String name, Folder parentFolder, int ownerId, long size, String fileContents) {
+        super(name, parentFolder, ownerId);
         this.size = size;
         this.fileContents = fileContents;
         //remove this type?
         this.type = FSOType.FILE;
+        System.out.println("editors: "+ this.getEditors());
         //TODO: date modified set by DB timestamp
     }
 

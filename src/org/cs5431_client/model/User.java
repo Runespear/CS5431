@@ -9,6 +9,7 @@ public class User extends Account {
         this.id = id;
         this.username = username;
         this.email = email;
+        this.userParentFolder = new Folder(username, null, id);
     }
 
     public int getUserLogId() {
@@ -21,10 +22,6 @@ public class User extends Account {
 
     public String getEmail() {
         return email;
-    }
-
-    public void setUserParentFolder(Folder parentFolder) {
-        this.userParentFolder = parentFolder;
     }
 
 }

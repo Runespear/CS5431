@@ -1,10 +1,13 @@
 package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
+import org.cs5431_client.util.client_tcp;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.*;
@@ -33,7 +36,9 @@ public class FileController {
         if (action == DOWNLOAD) {
             usersWithPermission.addAll(fso.getViewers());
         }
-        return (usersWithPermission.contains(user.getId()));    }
+        System.out.print("user id:" + user.getId());
+        return (usersWithPermission.contains(user.getId()));
+    }
 
     /**
      * Creates new file and uploads it to the server along with its log entry. Adds the file as a child
@@ -42,11 +47,12 @@ public class FileController {
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
      */
-    public File uploadFile(java.io.File file, Folder parentFolder) throws FileNotFoundException {
+    public File uploadFile(java.io.File file, Folder parentFolder) throws IOException {
         String name = file.getName();
         //TODO get file contents and size from java.io.file
         FileReader reader = new FileReader(file);
-        File dbFile = new File(name, parentFolder, 0, "");
+
+        File dbFile = new File(name, parentFolder, user.getId(),0, "");
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
         if (canUpload) {
             FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
@@ -71,7 +77,7 @@ public class FileController {
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             if (isAcceptableInput(folderName)) {
-                Folder newFolder = new Folder(folderName, user.getUserParentFolder());
+                Folder newFolder = new Folder(folderName, user.getUserParentFolder(), user.getId());
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
                 FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
                 if (folderSent != null) {
@@ -150,13 +156,13 @@ public class FileController {
 
     /**
      * Deletes the file from server entirely and from parentFolder No one is able to access it anymore.
-     * @param fsoId is ID of the file to be deleted
+     * @param fso is the file to be deleted
      * @param parentFolder is parentFolder of the fso associated with the id
      * @return true if delete is successful; false otherwise
      */
-    public boolean delete(int fsoId, Folder parentFolder) {
+    public boolean delete(FileSystemObject fso, Folder parentFolder) {
         //TODO: remove from db
-        parentFolder.removeChild(fsoId);
+        parentFolder.removeChild(fso);
         return false;
     }
 
@@ -219,6 +225,6 @@ public class FileController {
      * @return true if the input string is safe; false otherwise
      */
     private boolean isAcceptableInput(String input) {
-        return false;
+        return true;
     }
 }
