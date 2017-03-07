@@ -48,11 +48,12 @@ public class PrivViewCellController implements Initializable {
                 } else {
                     success = fileController.removePriv(fso, PrivType.EDIT);
                 }
-                if (!success) {
+                //TODO: handle failure of changing of privilege
+                /*if (!success) {
                     //TODO change to alert box?
                     System.out.println("FAILED");
                     canEdit.setSelected(oldPropertyValue);
-                }
+                }*/
             });
 
         canView.selectedProperty().addListener(
@@ -63,11 +64,12 @@ public class PrivViewCellController implements Initializable {
                 } else {
                     success = fileController.removePriv(fso, PrivType.VIEW);
                 }
-                if (!success) {
+                //TODO: handle failure of changing of privilege
+                /*if (!success) {
                     //TODO change to alert box?
                     System.out.println("FAILED");
                     canView.setSelected(oldPropertyValue);
-                }
+                }*/
             });
     }
 
