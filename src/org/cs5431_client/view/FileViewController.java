@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -184,16 +185,24 @@ public class FileViewController implements Initializable {
         fileController.download(fso.getId());
 
         //TODO: remove after demo: simply to demo our tcp connection
-        client_tcp clientTcp = new client_tcp();
-        clientTcp.start();
-        try {
-            clientTcp.connectToServer();
-            clientTcp.requestHardCodedFile();
-        } catch(IOException e) {
-            System.err.println("Encountered IOException when trying to " +
-                    "connect to server");
-            e.printStackTrace();
-        }
+        Task task = new Task<Void>() {
+            @Override
+            public Void call() {
+                //SIMULATE A FILE DOWNLOAD
+                client_tcp clientTcp = new client_tcp();
+                clientTcp.setDaemon(true);
+                try {
+                    clientTcp.connectToServer();
+                    clientTcp.requestHardCodedFile();
+                } catch(IOException e) {
+                    System.err.println("Encountered IOException when trying to " +
+                            "connect to server");
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+        new Thread(task).start();
     }
 
     /**
