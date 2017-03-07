@@ -7,6 +7,7 @@ import java.util.*;
 
 public class client_tcp extends Thread{
 
+    public Socket socket;
     /**
      * @param s passes socket for file transfer etc.
      * @return 0 if exit, 1 if transfer, 666 if unrecognised
@@ -44,7 +45,7 @@ public class client_tcp extends Thread{
         }
 
         else if(Objects.equals("h",elements[0])){
-            requestHardCodedFile(s);
+            requestHardCodedFile();
             return 2;
         }
 
@@ -132,7 +133,8 @@ public class client_tcp extends Thread{
      * Test file is cats.txt
      * If using cmd line, invoke using "h"
      */
-    public void requestHardCodedFile(Socket s){
+    public void requestHardCodedFile(){
+        Socket s = this.socket;
         OutputStream ostream = null;
         PrintWriter pwrite = null;
 
@@ -197,13 +199,14 @@ public class client_tcp extends Thread{
         }
     }
 
+
     public void connectToServer() throws IOException{
         String serverAddress = "localhost"; // to be filled in
         int socket = 10000; //to be filled in
 
         //Making the connection
         Socket s = new Socket(serverAddress, socket);
-
+        this.socket = s;
         BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
         PrintWriter Out = new PrintWriter(s.getOutputStream(), true);
