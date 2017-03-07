@@ -6,7 +6,9 @@
 <HBox xmlns:fx="http://javafx.com/fxml" fx:id="hBox" prefWidth="600">
     <ImageView fx:id="imgFile" pickOnBounds="true" preserveRatio="true">
     </ImageView>
-    <Label fx:id="fileName" prefWidth="300"/>
+    <HBox fx:id="nameBox" prefWidth="300">
+        <Label fx:id="fileName"/>
+    </HBox>
     <Label fx:id="lastModified" prefWidth="200"/>
     <Label fx:id="size" prefWidth="100"/>
 </HBox>
