@@ -111,7 +111,7 @@ public class FileViewController implements Initializable {
             showAppropriateImages(true,
                     fileController.isAllowed(FileActionType.OVERWRITE, fso),
                     fso instanceof org.cs5431_client.model.File);
-
+            //TODO: use isallowed here??
             if (e.getButton() == MouseButton.PRIMARY &&
                     e.getClickCount() == 2 && fso instanceof Folder) {
                 path.add(currParent);
@@ -144,17 +144,14 @@ public class FileViewController implements Initializable {
      */
     private void createFolder() {
 
-        Folder parentFolder = user.getUserParentFolder();
-
         TextInputDialog dialog = new TextInputDialog("folder name");
         dialog.setTitle("Create new folder");
         dialog.setContentText("Folder name:");
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(folderName ->
-                //fileController.createFolder(folderName,parentFolder) TODO: to be returned when backend is up
-                user.getUserParentFolder().addChild(new Folder(folderName, parentFolder)));
+                //fileController.createFolder(folderName,currParent) TODO: to be returned when backend is up
+                currParent.addChild(new Folder(folderName, currParent, user.getId())));
 
-        //TODO: repopulate list of files/folders
         populateListView();
     }
 
@@ -163,15 +160,15 @@ public class FileViewController implements Initializable {
      * The uploader is automatically set as the owner.
      */
     private void uploadFile() {
-        Folder parentFolder = user.getUserParentFolder();
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file to upload");
         File fileToUpload = fileChooser.showOpenDialog(stage);
 
         if (fileToUpload != null) {
-            //fileController.uploadFile(fileToUpload, parentFolder); TODO: to be returned when backend is up
-            user.getUserParentFolder().addChild(new org.cs5431_client.model.File(fileToUpload.getName(), parentFolder, fileToUpload.length(), ""));
+            //fileController.uploadFile(fileToUpload, currParent); TODO: to be returned when backend is up
+            currParent.addChild(new org.cs5431_client.model.File
+                    (fileToUpload.getName(), currParent, user.getId(), fileToUpload.length(), ""));
         }
         populateListView();
     }
@@ -248,9 +245,9 @@ public class FileViewController implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
-            //fileController.delete(fso.getId(), user.getUserParentFolder());
-            user.getUserParentFolder().removeChild(fso.getId());
+            fileController.delete(fso, currParent);
         }
+        populateListView();
     }
 
     /**
@@ -334,6 +331,7 @@ public class FileViewController implements Initializable {
         path.add(currParent);
         fileController = new FileController(user,ip,port);
         userController = new UserController(user,ip,port);
+        currParent = user.getUserParentFolder();
         initFakeFiles();
         populateListView();
     }
@@ -341,39 +339,48 @@ public class FileViewController implements Initializable {
     private void initFakeFiles() {
         //TODO: uncomment following line once UserController fully implemented
         // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
-        user.setUserParentFolder(new Folder(user.getUsername(), null));
+        System.out.print("Initializing fake files...");
+        user.setUserParentFolder(new Folder(user.getUsername(), null, user.getId()));
         currParent = user.getUserParentFolder();
         //populating with some dummy stuff instead
-        Folder dummyFolder = new Folder("fake folder1", currParent);
+        Folder dummyFolder = new Folder("fake folder1", currParent, user.getId());
+        org.cs5431_client.model.File dummyChild =
+                new org.cs5431_client.model.File("fake child1", dummyFolder, user.getId(),100,
+                "lalala");
         currParent.addChild(dummyFolder);
-        Folder dummyFolder2 = new Folder("fake folder2", currParent);
+        dummyFolder.addChild(dummyChild);
+        dummyChild =
+                new org.cs5431_client.model.File("fake child2", dummyFolder, user.getId(),100,
+                        "lalala");
+        dummyFolder.addChild(dummyChild);
+        Folder dummyFolder2 = new Folder("fake folder2", currParent, user.getId());
         currParent.addChild(dummyFolder2);
         org.cs5431_client.model.File dummyFile;
         dummyFile =
-                new org.cs5431_client.model.File("fake file1", currParent, 100,
+                new org.cs5431_client.model.File("fake file1", currParent, user.getId(),100,
                         "lalala");
         currParent.addChild(dummyFile);
         dummyFolder.addChild(dummyFile);
         dummyFolder2.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File("fake file2", currParent, 100,
+                new org.cs5431_client.model.File("fake file2", currParent, user.getId(), 100,
                         "lalala");
         currParent.addChild(dummyFile);
         dummyFolder.addChild(dummyFile);
         dummyFolder2.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File("fake file3", currParent, 100,
+                new org.cs5431_client.model.File("fake file3", currParent, user.getId(),100,
                         "lalala");
         currParent.addChild(dummyFile);
         dummyFolder.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File("fake file4", currParent, 100,
+                new org.cs5431_client.model.File("fake file4", currParent, user.getId(),100,
                         "lalala");
         currParent.addChild(dummyFile);
         dummyFolder2.addChild(dummyFolder);
     }
 
-    private void populateListView() {
+    public void populateListView() {
         ObservableList<FileSystemObject> observableList =
                 FXCollections.observableArrayList();
         observableList.setAll(currParent.getChildren());
