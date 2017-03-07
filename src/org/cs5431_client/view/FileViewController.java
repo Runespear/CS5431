@@ -186,7 +186,7 @@ public class FileViewController implements Initializable {
             public Void call() {
                 //SIMULATE A FILE DOWNLOAD
                 client_tcp clientTcp = new client_tcp();
-                clientTcp.setDaemon(true);
+                clientTcp.start();
                 try {
                     clientTcp.connectToServer();
                     clientTcp.requestHardCodedFile();
