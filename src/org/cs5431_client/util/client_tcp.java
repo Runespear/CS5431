@@ -15,12 +15,15 @@ public class client_tcp extends Thread{
         Scanner scanner = new Scanner (System.in);
         System.out.println("Enter 'e' to exit:");
         System.out.println("Enter 't filename' to request file:");
+        System.out.println("Enter 'h' to request hard coded:");
         // Use nextLine() instead of next to get whitespace
         String command = scanner.nextLine(); // Obtain user's command
 
         String[] elements = command.trim().split("\\s+");
 
         System.out.println(Arrays.toString(elements));
+
+        //TODO: Use case switch
 
         if (Objects.equals("e",elements[0])){
             System.out.println("Bye bye");
@@ -38,6 +41,11 @@ public class client_tcp extends Thread{
 
 
             return 1;
+        }
+
+        else if(Objects.equals("h",elements[0])){
+            requestHardCodedFile(s);
+            return 2;
         }
 
         else{
@@ -69,6 +77,75 @@ public class client_tcp extends Thread{
 
         //Hard code the directory
         String hardDir = System.getProperty("user.home")+"/Desktop/receive/";
+        System.out.println("Writing to directory: " + hardDir);
+        try{
+            //Send file name over
+            ostream = s.getOutputStream( );
+            pwrite = new PrintWriter(ostream, true);
+            //These 2 lines send command to server
+            pwrite.println("transfer");
+            pwrite.println(fileName);
+
+            //Get file from server
+            istream = s.getInputStream();
+
+
+
+            fos = new FileOutputStream(hardDir + fileName);
+            bos = new BufferedOutputStream(fos);
+
+            //No of bytes read in one read() call
+            int bytesRead = 0;
+            byte[] contents = new byte[4096];
+
+            while((bytesRead=istream.read(contents))!=-1){
+                bos.write(contents, 0, bytesRead);
+                System.out.println(bytesRead);
+            }
+            System.out.println("Is it done?");
+            bos.flush();
+            System.out.println("Done");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        // Only need to flush if opened
+        finally {
+            try{
+                if (fos!=null) fos.flush();
+                if (bos!=null) bos.flush();
+
+                if (pwrite != null) pwrite.flush();
+                if (ostream!=null) ostream.flush();
+                //if (s != null) s.close();
+            }
+            catch (Exception e){
+                //e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Requests a hard coded file from specific directory from server
+     * Writes to hard coded location
+     * Hard coded folder is current working directory/receive
+     * Test file is cats.txt
+     * If using cmd line, invoke using "h"
+     */
+    public void requestHardCodedFile(Socket s){
+        OutputStream ostream = null;
+        PrintWriter pwrite = null;
+
+        InputStream istream = null;
+        FileOutputStream fos = null;
+        BufferedOutputStream bos = null;
+
+        //Hard code the directory
+        new File(System.getProperty("user.dir")+"/receive").mkdirs();
+
+        //Hard code the file
+        String fileName = System.getProperty("user.dir")+"/receive/cats.txt";
+
         try{
             //String serverAddress = "localhost"; // to be filled in
             //int socket = 10000; //to be filled in
@@ -79,34 +156,39 @@ public class client_tcp extends Thread{
             //Send file name over
             ostream = s.getOutputStream( );
             pwrite = new PrintWriter(ostream, true);
-            pwrite.println("transfer");
+            //These 2 lines send command to server
+            pwrite.println("hard transfer");
             pwrite.println(fileName);
 
             //Get file from server
             istream = s.getInputStream();
 
-            fos = new FileOutputStream(hardDir + fileName);
+            fos = new FileOutputStream( fileName);
             bos = new BufferedOutputStream(fos);
 
-            byte[] buffer = new byte[4096];
-
+            //No of bytes read in one read() call
             int bytesRead;
-            while ((bytesRead = istream.read(buffer)) > 0) {
-                bos.write(buffer, 0, bytesRead);
+            byte[] contents = new byte[4096];
+
+            while((bytesRead=istream.read(contents))!=-1){
+                bos.write(contents, 0, bytesRead);
+                System.out.println(bytesRead);
             }
+            System.out.println("Is it done?");
+            bos.flush();
+            System.out.println("Done");
         }
-        catch (IOException readException){
-            //readException.printStackTrace();
+        catch (Exception e){
+            e.printStackTrace();
         }
-        // Only need to close if opened
+        // Only need to flush if opened
         finally {
             try{
-                if (fos!=null) fos.close();
-                if (bos!=null) bos.close();
-                if (istream !=null ) istream.close();
+                if (fos!=null) fos.flush();
+                if (bos!=null) bos.flush();
 
-                if (pwrite != null) pwrite.close();
-                if (ostream!=null) ostream.close();
+                if (pwrite != null) pwrite.flush();
+                if (ostream!=null) ostream.flush();
                 //if (s != null) s.close();
             }
             catch (Exception e){
@@ -132,12 +214,13 @@ public class client_tcp extends Thread{
         System.out.println(server_msg); //printing out server message
 
         while (true){
+            System.out.println("Input a command");
             switch (waitforuser(s)) {
                 case 0: Out.println("exit");
                     System.exit(0);
-                case 1:
+                case 1:  System.out.println("Test transfer");
                     break;
-                case 2:  System.out.println("Enter valid command please");
+                case 2:  System.out.println("Requesting hard coded file");
                     break;
                 default: System.out.println("Enter valid command please");
                     break;
