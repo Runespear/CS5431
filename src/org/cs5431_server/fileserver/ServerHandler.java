@@ -98,7 +98,77 @@ public class ServerHandler extends Thread{
 
     }
 
+    /**
+     * Sends cats.txt to server
+     */
+    public void sendHardClient(){
+        String fileName = "cats.txt";
+        String hardDir = System.getProperty("user.dir") + "/send";
 
+        new File(hardDir).mkdirs();
+
+        System.out.println("Sending "+fileName + " to client.");
+
+        FileInputStream fis;
+        BufferedInputStream bis;
+        OutputStream os = null;
+
+        try{
+            System.out.println("Waiting...");
+            try{
+                System.out.println("Connected to:" + s);
+
+                //Send the file to client
+                File myFile = new File(hardDir + "/" + fileName);
+                System.out.println(myFile.getAbsolutePath());
+                myFile.createNewFile();
+                // if file already exists will do nothing
+
+                BufferedWriter out = new BufferedWriter(new FileWriter(myFile.getAbsolutePath()));
+                out.write( "Make sure all printed\n" );
+                out.write("Cats are cute\n");
+                out.write("Keegan has too much free time\n");
+                out.close();
+
+                //Read the file into byte array
+                byte[] mybytearray = new byte[(int) myFile.length()];
+
+                System.out.println(myFile.getAbsolutePath());
+
+                fis = new FileInputStream(myFile);
+                bis = new BufferedInputStream(fis);
+                bis.read(mybytearray,0,mybytearray.length);
+
+                os = s.getOutputStream();
+                System.out.println("Sending "+fileName+" of size "+ mybytearray.length + " bytes.");
+                os.write(mybytearray,0,mybytearray.length);
+                System.out.println("Done");
+                os.flush();
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            finally{
+                try{
+                    if (os != null) os.close();
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            try{
+                //if (servsock != null) servsock.close();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
 
     //sending a welcome message to client when the thread runs
     // Overwrites default run
@@ -119,8 +189,11 @@ public class ServerHandler extends Thread{
                             break;
                         case "transfer": System.out.println("Transferring file to client");
                             sendToClient(in.readLine());
-                            //break;
-                        default: //break;
+                            break;
+                        case "hard transfer": System.out.println("Transferring hard coded file");
+                            sendHardClient();
+                        default:
+                            break;
                     }
                 }
             }
