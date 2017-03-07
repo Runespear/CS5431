@@ -119,6 +119,7 @@ public class FileViewController implements Initializable {
                 populateListView();
                 imgBack.setOpacity(1.0);
                 imgBack.setDisable(false);
+                showAppropriateImages(false, false, false);
             }
         });
         //TODO: figure out how to get list view to lose its focus...
@@ -131,6 +132,7 @@ public class FileViewController implements Initializable {
         currParent = path.get(path.size()-1);
         path.remove(path.size()-1);
         populateListView();
+        showAppropriateImages(false, false, false);
         if (currParent == user.getUserParentFolder()) {
             imgBack.setOpacity(0.7);
             imgBack.setDisable(true);
@@ -256,6 +258,7 @@ public class FileViewController implements Initializable {
             fileController.delete(fso, currParent);
         }
         populateListView();
+        showAppropriateImages(false, false, false);
     }
 
     /**
@@ -308,6 +311,7 @@ public class FileViewController implements Initializable {
      * Exits back to the login page.
      */
     private void tryLogout() {
+        showAppropriateImages(false, false, false);
         Scene scene = stage.getScene();
         scene.setRoot(Client.loginNode);
         stage.show();
@@ -401,11 +405,11 @@ public class FileViewController implements Initializable {
     
     private void showAppropriateImages(boolean fileSelected, boolean
             editAllowed, boolean isFile) {
-        if (isFile) {
-            imgDownload.setVisible(fileSelected);
-            imgDownload.setDisable(!fileSelected);
-            imgEdit.setVisible(editAllowed);
-            imgEdit.setDisable(!editAllowed);
+        if (fileSelected) {
+            imgDownload.setVisible(isFile);
+            imgDownload.setDisable(!isFile);
+            imgEdit.setVisible(isFile);
+            imgEdit.setDisable(!isFile);
         }
         imgViewLog.setVisible(fileSelected);
         imgViewLog.setDisable(!fileSelected);
