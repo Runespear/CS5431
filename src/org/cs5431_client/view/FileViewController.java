@@ -340,7 +340,6 @@ public class FileViewController implements Initializable {
         //TODO: uncomment following line once UserController fully implemented
         // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
         System.out.print("Initializing fake files...");
-        user.setUserParentFolder(new Folder(user.getUsername(), null, user.getId()));
         currParent = user.getUserParentFolder();
         //populating with some dummy stuff instead
         Folder dummyFolder = new Folder("fake folder1", currParent, user.getId());
