@@ -106,7 +106,10 @@ public class ServerHandler extends Thread{
 
             while (true){
                 String client_msg = in.readLine();
-                System.out.println(client_msg); //printing out client message
+                if (client_msg != null){
+                    System.out.println(client_msg); //printing out client message
+                }
+
 
             }
 

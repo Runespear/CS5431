@@ -55,9 +55,7 @@
                   GridPane.rowIndex="4">
                 <Text strokeType="OUTSIDE" strokeWidth="0.0"
                       text="Server IP*"/>
-                <Text fx:id="txtIPHelp" fill="BLUE"
-                      strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="(?)" underline="true"/>
+                <Hyperlink fx:id="txtIPHelp" text="(?)"/>
             </HBox>
             <PasswordField fx:id="txtPassword" promptText="password"
                            GridPane.columnIndex="2"
@@ -75,9 +73,7 @@
                   GridPane.rowIndex="5">
                 <Text strokeType="OUTSIDE" strokeWidth="0.0"
                       text="Server Port*"/>
-                <Text fx:id="txtPortHelp" fill="BLUE"
-                      strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="(?)" underline="true"/>
+                <Hyperlink fx:id="txtPortHelp" text="(?)"/>
             </HBox>
             <TextField fx:id="txtPort" promptText="port"
                        GridPane.columnIndex="2" GridPane.rowIndex="5"/>

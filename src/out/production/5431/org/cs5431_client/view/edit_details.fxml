@@ -75,8 +75,8 @@
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
             <Button fx:id="saveButton" mnemonicParsing="false"
                     text="Save"/>
-            <Button fx:id="cancelButton" mnemonicParsing="false"
-                    text="Cancel"/>
+            <Button fx:id="exitButton" mnemonicParsing="false"
+                    text="Exit"/>
         </HBox>
     </VBox>
 </AnchorPane>

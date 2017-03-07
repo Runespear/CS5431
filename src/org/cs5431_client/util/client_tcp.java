@@ -10,11 +10,25 @@ public class client_tcp extends Thread{
     public boolean waitforuser(){
         Scanner scanner = new Scanner (System.in);
         System.out.println("Enter 'e' to exit:");
-        String command = scanner.next(); // Obtain user's command
+        System.out.println("Enter 't filename' to request file:");
+        // Use nextLine() instead of next to get whitespace
+        String command = scanner.nextLine(); // Obtain user's command
 
-        if (Objects.equals("e",command)){
+        String[] elements = command.trim().split("\\s+");
+        System.out.println(Arrays.toString(elements));
+
+        if (Objects.equals("e",elements[0])){
+            System.out.println("Bye bye");
             return true;
         }
+
+        else if (Objects.equals("t",elements[0])){
+            // No restrictions on file to be transferred yet
+            System.out.println("Requesting file "+ elements[1]);
+            requestFromServer(elements[1]);
+            return false;
+        }
+
         else{
             return false;
         }
@@ -69,7 +83,7 @@ public class client_tcp extends Thread{
             }
         }
         catch (IOException readException){
-            readException.printStackTrace();
+            //readException.printStackTrace();
         }
         // Only need to close if opened
         finally {
@@ -83,12 +97,9 @@ public class client_tcp extends Thread{
                 if (s != null) s.close();
             }
             catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
             }
-
         }
-
-
     }
 
     public void connectToServer() throws IOException{
@@ -109,13 +120,12 @@ public class client_tcp extends Thread{
 
         while (true){
             if (waitforuser()){
+                Out.println("Client "+ s.getInetAddress() + " port " + s.getPort() + " says bye!");
                 break;
             }
         }
         System.exit(0);
-
     }
-
 
     /* RUNNING THE CLIENT APPLICATION*/
     public static void main (String[] args) throws Exception{
