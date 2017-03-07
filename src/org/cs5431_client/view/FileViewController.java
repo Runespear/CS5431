@@ -394,7 +394,10 @@ public class FileViewController implements Initializable {
         observableList.setAll(currParent.getChildren());
 
         fileList.setItems(observableList);
-        fileList.setCellFactory(listView ->  new FileViewCell(fileController));
+        fileList.setCellFactory(listView -> new FileViewCell(fileController));
+
+        fileList.setVisible(!currParent.getChildren().isEmpty());
+        fileList.setDisable(currParent.getChildren().isEmpty());
     }
     
     private void showAppropriateImages(boolean fileSelected, boolean
