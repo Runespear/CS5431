@@ -14,9 +14,10 @@
             fx:controller="org.cs5431_client.view.PrivViewController">
     <ToolBar prefHeight="46.0" prefWidth="600.0"/>
     <HBox layoutY="46.0" prefHeight="34.0" prefWidth="600.0">
-        <Label prefWidth="400.0" text="Username"/>
+        <Label prefWidth="350.0" text="Username"/>
         <Label prefWidth="100.0" text="Can Edit"/>
         <Label prefWidth="100.0" text="Can View"/>
+        <Label prefWidth="50.0" text="Delete"/>
     </HBox>
     <ListView fx:id="listViewPriv" layoutY="70.0" prefHeight="330.0"
               prefWidth="600.0"/>

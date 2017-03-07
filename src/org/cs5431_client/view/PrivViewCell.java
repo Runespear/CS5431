@@ -31,8 +31,9 @@ public class PrivViewCell extends ListCell<PrivBundle> {
         // priv?
         boolean success = fileController.removePriv(fso, PrivType.EDIT);
         success &= fileController.removePriv(fso, PrivType.VIEW);
-        if (success) {
+        //TODO check for success when hooked up to server
+        //if (success) {
             getListView().getItems().remove(getItem());
-        }
+        //}
     }
 }

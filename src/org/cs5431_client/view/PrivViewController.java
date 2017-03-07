@@ -109,7 +109,7 @@ public class PrivViewController implements Initializable{
         for (Integer editor : fso.getEditors()) {
             observableList.add(new PrivBundle(editor, fso, true,true));
         }
-        for (Integer viewer : fso.getEditors()) {
+        for (Integer viewer : fso.getViewers()) {
             observableList.add(new PrivBundle(viewer, fso,false,true));
         }
 

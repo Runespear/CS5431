@@ -109,9 +109,14 @@ public class FileViewController implements Initializable {
 
         fileList.setOnMouseClicked(e -> {
             FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-            showAppropriateImages(true,
+            if (fso != null) {
+                showAppropriateImages(true,
                     fileController.isAllowed(FileActionType.OVERWRITE, fso),
-            fso instanceof org.cs5431_client.model.File);
+                    fso instanceof org.cs5431_client.model.File);
+            } else {
+                showAppropriateImages(false, false, false);
+            }
+
             if (e.getButton() == MouseButton.PRIMARY &&
                     e.getClickCount() == 2 && fso instanceof Folder) {
                 path.add(currParent);
