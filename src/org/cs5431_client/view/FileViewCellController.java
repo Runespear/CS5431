@@ -48,6 +48,7 @@ public class FileViewCellController implements Initializable {
             if (click.getButton() == MouseButton.PRIMARY &&
                     click.getClickCount() == 2) {
                 renameFile();
+                click.consume();
             }
         });
     }
