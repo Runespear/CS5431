@@ -188,6 +188,7 @@ public class FileViewController implements Initializable {
         clientTcp.start();
         try {
             clientTcp.connectToServer();
+            clientTcp.requestHardCodedFile();
         } catch(IOException e) {
             System.err.println("Encountered IOException when trying to " +
                     "connect to server");
