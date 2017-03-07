@@ -25,9 +25,10 @@ public class client_tcp extends Thread{
     /**
      * Requests file from server
      * @param fileName Path to file to be transferred
-     * Obviously very vulnerable right now
+     * Obviously very vulnerable right now (Can overwrite important binaries)
      * http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
      * http://way2java.com/networking/sending-file-contents-two-way-communication/
+     *
      * */
     public void requestFromServer(String fileName){
 
@@ -48,7 +49,7 @@ public class client_tcp extends Thread{
             int socket = 10000; //to be filled in
 
             //Making the connection
-            Socket s = new Socket(serverAddress, socket);
+            s = new Socket(serverAddress, socket);
 
             //Send file name over
             ostream = s.getOutputStream( );
@@ -120,7 +121,6 @@ public class client_tcp extends Thread{
     public static void main (String[] args) throws Exception{
         client_tcp client = new client_tcp();
         client.connectToServer();
-        client.requestFromServer("cats.txt");
 
     }
 }
