@@ -16,6 +16,7 @@ import org.cs5431_client.model.FileSystemObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ResourceBundle;
 
 import static org.cs5431_client.view.Client.printNonFatalError;
@@ -123,11 +124,11 @@ public class FileViewCellController implements Initializable {
      * @param size Number of bytes to be formatted
      * @return A human readable string of the number of bytes (e.g. "10 MB")
      */
-    private String formatSize(long size) {
-        if (size < 1024) return size + " B";
-        int zeros = (63 - Long.numberOfLeadingZeros(size)) / 10;
-        return String.format("%.1f %sB", (double)size/ (1L << (zeros*10)),
-                ("MGTPE").charAt(zeros));
+    public String formatSize(long size) {
+        if(size <= 0) return "0";
+        final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
+        int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 
     public HBox getBox()
