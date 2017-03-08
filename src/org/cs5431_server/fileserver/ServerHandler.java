@@ -142,19 +142,29 @@ public class ServerHandler extends Thread{
                     out.close();
                 }
 
-
-                //Read the file into byte array
-                byte[] mybytearray = new byte[(int) myFile.length()];
-
-                System.out.println(myFile.getAbsolutePath());
-
                 fis = new FileInputStream(myFile);
                 bis = new BufferedInputStream(fis);
-                bis.read(mybytearray,0,mybytearray.length);
-
                 os = s.getOutputStream();
-                System.out.println("Sending "+fileName+" of size "+ mybytearray.length + " bytes.");
-                os.write(mybytearray,0,mybytearray.length);
+
+                //Read File Contents into contents array
+                byte[] contents;
+                long fileLength = myFile.length();
+                long current = 0;
+
+                while(current!=fileLength){
+                    int size = 10000;
+                    if(fileLength - current >= size)
+                        current += size;
+                    else{
+                        size = (int)(fileLength - current);
+                        current = fileLength;
+                    }
+                    contents = new byte[size];
+                    bis.read(contents, 0, size);
+                    os.write(contents);
+                    System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
+                }
+
                 System.out.println("Done");
                 os.flush();
             }

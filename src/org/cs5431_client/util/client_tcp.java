@@ -171,13 +171,15 @@ public class client_tcp extends Thread{
             bos = new BufferedOutputStream(fos);
 
             //No of bytes read in one read() call
-            int bytesRead;
+            int bytesRead; int totalRead = 0;
             byte[] contents = new byte[4096];
 
             while((bytesRead=istream.read(contents))!=-1){
                 bos.write(contents, 0, bytesRead);
+                totalRead += bytesRead;
                 System.out.println(bytesRead);
             }
+            System.out.println("Total bytes read "+bytesRead);
             System.out.println("Is it done?");
             bos.flush();
             System.out.println("Done");
