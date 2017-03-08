@@ -133,7 +133,7 @@ public class ServerHandler extends Thread{
                 out.write("Cats are cute\n");
                 out.write("Keegan has too much free time\n");
                 DateFormat df = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM,
-                        new Locale ("en", "EN"));
+                        new Locale ("en", "US"));
                 String formattedDate = df.format (new Date ());
                 out.write(formattedDate+"\n");
                 out.close();

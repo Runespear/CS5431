@@ -201,7 +201,8 @@ public class client_tcp extends Thread{
 
 
     public void connectToServer() throws IOException{
-        String serverAddress = "10.148.9.41"; // to be filled in
+        //String serverAddress = "10.148.9.41"; // to be filled in
+        String serverAddress = "localhost";
         int port = 10000; //to be filled in
 
         //Making the connection
