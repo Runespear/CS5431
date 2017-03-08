@@ -106,8 +106,9 @@ public class ServerHandler extends Thread{
      * File is cats.txt
      */
     public void sendHardClient(){
-        String fileName = "M1.pdf";
+        //String fileName = "M1.pdf";
         //String fileName = "cats.txt";
+        String fileName = "knn_1_a.png";
         String hardDir = System.getProperty("user.dir") + "/send";
 
         new File(hardDir).mkdirs();
@@ -128,17 +129,20 @@ public class ServerHandler extends Thread{
                 System.out.println(myFile.getAbsolutePath());
                 myFile.createNewFile();
                 // if file already exists will do nothing
-                /*
-                BufferedWriter out = new BufferedWriter(new FileWriter(myFile.getAbsolutePath()));
-                out.write( "Make sure all printed\n" );
-                out.write("Cats are cute\n");
-                out.write("Keegan has too much free time\n");
-                DateFormat df = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM,
-                        new Locale ("en", "US"));
-                String formattedDate = df.format (new Date ());
-                out.write(formattedDate+"\n");
-                out.close();
-                */
+
+                if (Objects.equals(fileName,"cats.txt") ){
+                    BufferedWriter out = new BufferedWriter(new FileWriter(myFile.getAbsolutePath()));
+                    out.write( "Make sure all printed\n" );
+                    out.write("Cats are cute\n");
+                    out.write("Keegan has too much free time\n");
+                    DateFormat df = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM,
+                            new Locale ("en", "US"));
+                    String formattedDate = df.format (new Date ());
+                    out.write(formattedDate+"\n");
+                    out.close();
+                }
+
+
                 //Read the file into byte array
                 byte[] mybytearray = new byte[(int) myFile.length()];
 

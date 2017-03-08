@@ -146,7 +146,9 @@ public class client_tcp extends Thread{
         new File(System.getProperty("user.dir")+"/receive").mkdirs();
 
         //Hard code the file
-        String fileName = System.getProperty("user.dir")+"/receive/M1.pdf";
+        String fileName = "knn_1_a.png";
+        //String fileName = "cats.txt";
+        fileName = System.getProperty("user.dir")+"/receive/" + fileName;
 
         try{
             //String serverAddress = "localhost"; // to be filled in
@@ -203,7 +205,7 @@ public class client_tcp extends Thread{
     public void connectToServer() throws IOException{
         //String serverAddress = "10.148.9.41"; // to be filled in
         String serverAddress = "localhost";
-        int port = 8008; //to be filled in
+        int port = 8080; //to be filled in
 
         //Making the connection
         Socket s = new Socket(serverAddress, port);
