@@ -1,4 +1,8 @@
 Make sure all printed
 Cats are cute
 Keegan has too much free time
+<<<<<<< HEAD
 Mar 8, 2017 3:50:44 PM
+=======
+Mar 7, 2017 10:02:39 PM
+>>>>>>> ac5c0495ab24161afb62240d708b8cff20eaa030

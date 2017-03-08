@@ -10,6 +10,8 @@ public class User extends Account {
         this.username = username;
         this.email = email;
         this.userParentFolder = new Folder(username, null, id);
+        //TODO: get user's logid from controller/server
+        this.userLogId = -1;
     }
 
     public int getUserLogId() {
