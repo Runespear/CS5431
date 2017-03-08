@@ -219,16 +219,19 @@ public class client_tcp extends Thread{
         while (true){
             System.out.println("Input a command");
             switch (waitforuser(s)) {
-                case 0: Out.println("exit");
+                case 0:
+                    Out.println("exit");
                     System.exit(0);
-                case 1:  System.out.println("Test transfer");
+                case 1:
+                    System.out.println("Test transfer");
                     break;
-                case 2:  System.out.println("Requesting hard coded file");
+                case 2:
+                    System.out.println("Requesting hard coded file");
                     break;
-                default: System.out.println("Enter valid command please");
+                default:
+                    System.out.println("Enter valid command please");
                     break;
             }
-            break;
         }
 
     }

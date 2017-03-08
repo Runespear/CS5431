@@ -77,7 +77,7 @@ public class ServerHandler extends Thread{
             }
             finally{
                 try{
-                    if (os != null) os.close();
+                    //if (os != null) os.close();
                 }
                 catch(Exception e){
                     e.printStackTrace();
