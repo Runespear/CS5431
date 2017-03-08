@@ -146,8 +146,9 @@ public class client_tcp extends Thread{
         new File(System.getProperty("user.dir")+"/receive").mkdirs();
 
         //Hard code the file
-        String fileName = "knn_1_a.png";
+        //String fileName = "knn_1_a.png";
         //String fileName = "cats.txt";
+        String fileName = "Lecture5.pdf";
         fileName = System.getProperty("user.dir")+"/receive/" + fileName;
 
         try{
@@ -171,14 +172,16 @@ public class client_tcp extends Thread{
             bos = new BufferedOutputStream(fos);
 
             //No of bytes read in one read() call
-            int bytesRead; int totalRead = 0;
-            byte[] contents = new byte[4096];
+            int bytesRead = 0; int totalRead = 0;
+            byte[] contents = new byte[2];
 
-            while((bytesRead=istream.read(contents))!=-1){
+            do{
+                bytesRead = istream.read(contents);
                 bos.write(contents, 0, bytesRead);
                 totalRead += bytesRead;
                 System.out.println(bytesRead);
-            }
+            }while(istream.available() > 0);
+
             System.out.println("Total bytes read "+bytesRead);
             System.out.println("Is it done?");
             bos.flush();
@@ -206,7 +209,7 @@ public class client_tcp extends Thread{
 
     public void connectToServer() throws IOException{
         //String serverAddress = "10.148.9.41"; // to be filled in
-        String serverAddress = "localhost";
+        String serverAddress = "10.148.3.216";
         int port = 8080; //to be filled in
 
         //Making the connection
