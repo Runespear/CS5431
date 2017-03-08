@@ -146,7 +146,7 @@ public class client_tcp extends Thread{
         new File(System.getProperty("user.dir")+"/receive").mkdirs();
 
         //Hard code the file
-        //String fileName = "knn_1_a.png";
+        //String fileName`x = "knn_1_a.png";
         //String fileName = "cats.txt";
         String fileName = "Lecture5.pdf";
         fileName = System.getProperty("user.dir")+"/receive/" + fileName;

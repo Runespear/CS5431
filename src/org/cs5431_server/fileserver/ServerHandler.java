@@ -108,7 +108,8 @@ public class ServerHandler extends Thread{
     public void sendHardClient(){
         //String fileName = "M1.pdf";
         //String fileName = "cats.txt";
-        String fileName = "knn_1_a.png";
+        //String fileName = "knn_1_a.png";
+        String fileName = "Opt2.pdf";
         String hardDir = System.getProperty("user.dir") + "/send";
 
         new File(hardDir).mkdirs();
@@ -152,7 +153,7 @@ public class ServerHandler extends Thread{
                 long current = 0;
 
                 while(current!=fileLength){
-                    int size = 10000;
+                    int size = 4096;
                     if(fileLength - current >= size)
                         current += size;
                     else{
@@ -162,7 +163,7 @@ public class ServerHandler extends Thread{
                     contents = new byte[size];
                     bis.read(contents, 0, size);
                     os.write(contents);
-                    System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
+                    System.out.println("Sending file ... "+(current*100)/fileLength+"% complete!");
                 }
 
                 System.out.println("Done");
