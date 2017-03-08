@@ -4,6 +4,7 @@ package org.cs5431_server.fileserver;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.text.*;
 
 /**
  * Created on 26/2/2017.
@@ -131,6 +132,10 @@ public class ServerHandler extends Thread{
                 out.write( "Make sure all printed\n" );
                 out.write("Cats are cute\n");
                 out.write("Keegan has too much free time\n");
+                DateFormat df = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM,
+                        new Locale ("en", "EN"));
+                String formattedDate = df.format (new Date ());
+                out.write(formattedDate+"\n");
                 out.close();
 
                 //Read the file into byte array

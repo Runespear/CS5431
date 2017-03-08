@@ -201,11 +201,11 @@ public class client_tcp extends Thread{
 
 
     public void connectToServer() throws IOException{
-        String serverAddress = "localhost"; // to be filled in
-        int socket = 10000; //to be filled in
+        String serverAddress = "10.148.9.41"; // to be filled in
+        int port = 10000; //to be filled in
 
         //Making the connection
-        Socket s = new Socket(serverAddress, socket);
+        Socket s = new Socket(serverAddress, port);
         this.socket = s;
         BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
