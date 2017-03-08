@@ -47,7 +47,7 @@ public class UserController {
     }
 
     public List<FileSystemObject> getFileSystemObjects() {
-        int parentFolderId = user.getUserParentFolder().getFolderId();
+        int parentFolderId = user.getUserParentFolder().getId();
 
         //TODO: query server to get all children associated with this folderId
         //TODO: decrpyt file names

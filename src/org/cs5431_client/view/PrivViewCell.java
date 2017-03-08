@@ -29,8 +29,8 @@ public class PrivViewCell extends ListCell<PrivBundle> {
     private void removeUser() {
         //TODO: how to check success? what if deleted user doesn't have edit
         // priv?
-        boolean success = fileController.removePriv(fso, PrivType.EDIT);
-        success &= fileController.removePriv(fso, PrivType.VIEW);
+        boolean success = fileController.removePriv(fso, -1, PrivType.EDIT);
+        success &= fileController.removePriv(fso, -1, PrivType.VIEW);
         //TODO check for success when hooked up to server
         //if (success) {
             getListView().getItems().remove(getItem());

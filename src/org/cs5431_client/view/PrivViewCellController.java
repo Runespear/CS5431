@@ -44,9 +44,9 @@ public class PrivViewCellController implements Initializable {
             (arg0, oldPropertyValue, newPropertyValue) -> {
                 boolean success;
                 if (newPropertyValue) {
-                    success = fileController.addPriv(fso, PrivType.EDIT);
+                    success = fileController.addPriv(fso, -1, PrivType.EDIT);
                 } else {
-                    success = fileController.removePriv(fso, PrivType.EDIT);
+                    success = fileController.removePriv(fso, -1, PrivType.EDIT);
                 }
                 //TODO: handle failure of changing of privilege
                 /*if (!success) {
@@ -60,9 +60,9 @@ public class PrivViewCellController implements Initializable {
             (arg0, oldPropertyValue, newPropertyValue) -> {
                 boolean success;
                 if (newPropertyValue) {
-                    success = fileController.addPriv(fso, PrivType.VIEW);
+                    success = fileController.addPriv(fso, -1, PrivType.VIEW);
                 } else {
-                    success = fileController.removePriv(fso, PrivType.VIEW);
+                    success = fileController.removePriv(fso, -1, PrivType.VIEW);
                 }
                 //TODO: handle failure of changing of privilege
                 /*if (!success) {

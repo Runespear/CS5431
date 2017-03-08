@@ -109,6 +109,7 @@ public class ServerHandler extends Thread{
         //String fileName = "M1.pdf";
         //String fileName = "cats.txt";
         //String fileName = "knn_1_a.png";
+        //String fileName = "Lecture5.pdf";
         String fileName = "Opt2.pdf";
         String hardDir = System.getProperty("user.dir") + "/send";
 

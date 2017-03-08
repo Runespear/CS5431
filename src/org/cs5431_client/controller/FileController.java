@@ -1,13 +1,9 @@
 package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
-import org.cs5431_client.util.client_tcp;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
 import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.*;
@@ -51,11 +47,10 @@ public class FileController {
         //TODO get file contents and size from java.io.file
         FileReader reader = new FileReader(file);
 
-        File dbFile = new File(name, parentFolder, user.getId(),0, "");
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
         if (canUpload) {
             FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
-            FileSystemObject fileSent = sendFSOToServer(dbFile, logEntry);
+            FileSystemObject fileSent = sendFileToServer(file, parentFolder.getId(), logEntry);
             if (fileSent != null) {
                 parentFolder.addChild(fileSent);
                 return (File) fileSent;
@@ -78,7 +73,7 @@ public class FileController {
             if (isAcceptableInput(folderName)) {
                 Folder newFolder = new Folder(folderName, user.getUserParentFolder(), user.getId());
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
-                FileSystemObject folderSent = sendFSOToServer(newFolder, logEntry);
+                FileSystemObject folderSent = sendFolderToServer(folderName, parentFolder.getId(), logEntry);
                 if (folderSent != null) {
                     parentFolder.addChild(folderSent);
                     return (Folder) folderSent;
@@ -97,17 +92,14 @@ public class FileController {
      */
     public File overwrite(File originalFile, java.io.File file) {
 
-        String newFileContent = ""; // TODO: how to get file content from java.io.File object
-
         boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
         if (canOverWrite) {
-            originalFile.setFileContents(newFileContent);
+            //originalFile.setFileContents(newFileContent);
             FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
-            FileSystemObject fileSent = modifyFSO(originalFile, logEntry);
-            //TODO are we going to send in an entire new file?? or function to modify
+            FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
             return (File) fileSent;
         }
-        return null; //TODO: to return null or throw exception?
+        return null; // to return null or throw exception?
     }
 
     /**
@@ -123,7 +115,7 @@ public class FileController {
         boolean canRename = isAllowed(RENAME, systemObject);
         if (canRename && isAcceptableInput(newName)) {
             FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
-            FileSystemObject fileSent = modifyFSO(systemObject, logEntry);
+            FileSystemObject fileSent = modifyFSOName(systemObject.getId(), newName, logEntry);
             if (fileSent != null) {
                 systemObject.rename(newName);
                 return true;
@@ -170,12 +162,15 @@ public class FileController {
      * @param systemObject Privileges are added to this file/folder.
      * @return true if privilege was added successfully; false otherwise.
      */
-    public boolean addPriv(FileSystemObject systemObject, PrivType priv) {
+    public boolean addPriv(FileSystemObject systemObject, int userId, PrivType priv) {
         boolean canAddPriv = isAllowed(ADD_PRIV, systemObject);
         if (canAddPriv) {
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), ADD_PRIV);
-            FileSystemObject fsoSent = modifyFSO(systemObject, logEntry);
-            return (fsoSent != null);
+            FileLogEntry logEntry = new FileLogEntry(userId, ADD_PRIV);
+            FileSystemObject fsoSent = addFSOPriv(systemObject.getId(), userId, priv, logEntry);
+            if (fsoSent != null) {
+                systemObject.addPriv(priv, userId);
+                return true;
+            }
         }
         return false;
     }
@@ -185,12 +180,15 @@ public class FileController {
      * @param systemObject Privileges are added to this file/folder.
      * @return true if privilege was added successfully; false otherwise.
      */
-    public boolean removePriv(FileSystemObject systemObject, PrivType priv) {
+    public boolean removePriv(FileSystemObject systemObject, int userId, PrivType priv) {
         boolean canRemovePriv = isAllowed(ADD_PRIV, systemObject);
         if (canRemovePriv) {
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), ADD_PRIV);
-            FileSystemObject fsoSent = modifyFSO(systemObject, logEntry);
-            return (fsoSent != null);
+            FileLogEntry logEntry = new FileLogEntry(userId, ADD_PRIV);
+            FileSystemObject fsoSent = removeFSOPriv(systemObject.getId(), userId, priv, logEntry);
+            if (fsoSent != null) {
+                systemObject.removePriv(priv, userId);
+                return true;
+            }
         }
         return false;
     }
@@ -201,19 +199,66 @@ public class FileController {
 
     /**
      * Sends the file/folder to the server with the serverIP attribute of the fileController.
-     * @param systemObject file/folder to be sent to the server
+     * @param file File to be sent to the server
+     * @param parentFolderId Refers to the parent of the file to be added
+     * @param logEntry to be sent
      * @return the file/folder that is uploaded to server if successful; null otherwise
      */
-    private FileSystemObject sendFSOToServer(FileSystemObject systemObject, FileLogEntry logEntry) {
+    private FileSystemObject sendFileToServer(java.io.File file, int parentFolderId, FileLogEntry logEntry) {
         return null;
     }
 
-    //might actually need to repeat this function depending on the api we have to send changes to the object
-    //or send the entire file again since we want to rollback
-    private FileSystemObject modifyFSO(FileSystemObject systemObject, FileLogEntry logEntry) {
+    /**
+     * Sends the folder to the server with the serverIP attribute of the fileController.
+     * @param name Name of the new folder created
+     * @param parentFolderId Refers to the parent of the file to be added
+     * @param logEntry to be sent      * @return the file/folder that is uploaded to server if successful; null otherwise
+     */
+    private FileSystemObject sendFolderToServer(String name, int parentFolderId, FileLogEntry logEntry) {
         return null;
     }
 
+    /**
+     * Sends the update of privileges to the server with the serverIP attribute of the fileController.
+     * @param fsoId ID of fso modified
+     * @param userId Refers to the user that is given more privileges
+     * @param priv Type of priv to be given
+     * @param logEntry to be sent
+     * * @return the file/folder that is uploaded to server if successful; null otherwise
+     */
+    private FileSystemObject addFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
+        //TODO: remember to add new file to parent folder of userId
+        //TODO: remember to change priv to child too
+        return null;
+    }
+
+    /**
+     * Sends the update of privileges to the server with the serverIP attribute of the fileController.
+     * @param fsoId ID of fso modified
+     * @param userId Refers to the user that is to have his/her privileges removed
+     * @param priv Type of priv to be given
+     * @param logEntry to be sent
+     * * @return the file/folder that is uploaded to server if successful; null otherwise
+     */
+    private FileSystemObject removeFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
+        //TODO: remember to remove the file from parent folder of userId if view privileges are removed
+        //TODO: remember to change priv to child too
+        return null;
+    }
+
+    private FileSystemObject modifyFSOName(int fsoId, String newName, FileLogEntry logEntry) {
+        return null;
+    }
+
+    private FileSystemObject modifyFSOContents(int fsoId, java.io.File file, FileLogEntry logEntry) {
+        return null;
+    }
+
+    /**
+     * Retrieves file/folder associated with the fsoId
+     * @param fsoId ID that is used to query the database
+     * @return the corresponding file/folder that had been uploaded to server if successful; null otherwise
+     */
     private FileSystemObject getFSO(int fsoId) {
         return null;
     }

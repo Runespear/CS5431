@@ -11,7 +11,7 @@ public class File extends FileSystemObject {
         this.fileContents = fileContents;
         //remove this type?
         this.type = FSOType.FILE;
-        System.out.println("editors: "+ this.getEditors());
+        //System.out.println("editors: "+ this.getEditors());
         //TODO: date modified set by DB timestamp
     }
 

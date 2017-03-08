@@ -1,8 +1,6 @@
 package org.cs5431_client.model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public abstract class FileSystemObject {
     protected int id;
@@ -40,4 +38,20 @@ public abstract class FileSystemObject {
     public int getId() {return id;}
 
     public void rename(String newName) { this.name = newName; }
+
+    public void removePriv(PrivType priv, int userId) {
+        if (priv == PrivType.EDIT) {
+            editorIds.remove(userId);
+        } else {
+            viewerIds.remove(userId);
+        }
+    }
+
+    public void addPriv(PrivType priv, int userId) {
+        if (priv == PrivType.EDIT) {
+            editorIds.add(userId);
+        } else {
+            viewerIds.add(userId);
+        }
+    }
 }
