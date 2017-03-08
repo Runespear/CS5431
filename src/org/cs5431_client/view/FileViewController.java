@@ -185,7 +185,9 @@ public class FileViewController implements Initializable {
      */
     private void downloadFile() {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-        fileController.download(fso.getId());
+        org.cs5431_client.model.File file = fileController.download(fso.getId
+                ());
+        //TODO use file somehow
 
         //TODO: remove after demo: simply to demo our tcp connection
         Task task = new Task<Void>() {

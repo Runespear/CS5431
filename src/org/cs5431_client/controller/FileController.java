@@ -49,7 +49,7 @@ public class FileController {
     public File uploadFile(java.io.File file, Folder parentFolder) throws IOException {
         String name = file.getName();
         //TODO get file contents and size from java.io.file
-        FileReader reader = new FileReader(file);
+        //FileReader reader = new FileReader(file);
 
         File dbFile = new File(name, parentFolder, user.getId(),0, "");
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
