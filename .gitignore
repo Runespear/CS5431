@@ -86,6 +86,13 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+#==============
+Archives
+#=============
+.zip
+.tar
+.gz
+
 #=====================
 # Hard coded folders
 #=====================
