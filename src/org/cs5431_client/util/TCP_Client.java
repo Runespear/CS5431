@@ -89,7 +89,7 @@ public class TCP_Client{
 
     public static void main(String[] args) {
         String[] fileNames = new String[2];
-        fileNames = new String[] {"Lecture5.pdf", "Opt2.pdf"};
+        fileNames = new String[] {"data_generation_Fall16.xls", "Opt2.pdf"};
         TCP_Client fc = new TCP_Client("localhost", 8080, fileNames);
 
     }
