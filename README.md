@@ -12,3 +12,51 @@ Run org.cs5431_client.util.client_tcp as the main class.
 ###Client (GUI)###
 Run org.cs5431_client.view.Client as the main class.
 If testing the download button, run Server first.
+
+Currently Server client above not working as intended.
+
+###TCP_Server (Working Test Version so use this first)
+Run TCP_Server. This server waits for a client to upload a file.
+It will automatically generate a folder called "receive" in the 
+current working directory and download the file from client.
+
+Port is currently hardcoded as 8080 for you.
+
+Note that receive is gitignored, but the code will generate the folder
+for you automatically
+
+###TCP_Client (Working Test version so use this first)
+Run TCP_Client. This client connects to TCP_Server, and automatically
+uploads a file. It tells the server how big the file size is as well.
+
+The directory that it sends from is called "send" in your working directory.
+
+"cats.txt" is a test text file that is automatically generated for you 
+and it contains 4 lines, where the 4th line is a time stamp (USE time).
+
+Port is currently hardcoded as 8080 for you. 
+
+Under main:
+
+```Java
+public static void main(String[] args) {
+        String[] fileNames = new String[2];
+        fileNames = new String[] {"data_generation_Fall16.xls", "Opt2.pdf"};
+        TCP_Client fc = new TCP_Client("localhost", 8080, fileNames);
+
+    }
+```
+
+The 1st filename in the array will be transferred (multiple file transfer
+functionality not yet done) They will already be in "send".
+
+If you want to test other files, place the one you want in
+the 1st element of the array (i.e. position 0), the available ones are:
+
+"Lecture5.pdf"
+"Opt2.pdf"
+"cats.txt" (This one will be automatically created for you with a timestamp)
+"data_generation_Fall16.xls"
+
+You should expect to see the correct file in "receive" (On the server side,
+or in the same place if running on localhost)
