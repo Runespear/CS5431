@@ -12,6 +12,7 @@ public class Main {
         if (args.length != 1){
             throw new RuntimeException("Give the port number as argument");
         }
+        System.out.println(args[0]);
         new Server(Integer.parseInt(args[0])); //launches server with a port for connecting
     }
 }

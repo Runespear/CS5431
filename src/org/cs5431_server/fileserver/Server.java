@@ -17,7 +17,8 @@ public class Server {
                 System.out.println("Waiting... ");
                 Socket client = server.accept();
                 System.out.println("New Client Connected from " + client.getInetAddress());
-                ServerHandler handler = new ServerHandler(client);
+                ServerHandler_New handler = new ServerHandler_New(client);
+                System.out.println("Starting handler");
                 handler.start();
             }
         }finally{

@@ -4,16 +4,17 @@ package org.cs5431_client.util;
 import java.net.*;
 import java.io.*;
 import java.util.*;
-
+import java.text.*;
 
 public class client_tcp extends Thread{
 
-    public Socket socket;
+    protected Socket socket;
+
     /**
      * @param s passes socket for file transfer etc.
      * @return 0 if exit, 1 if transfer, 666 if unrecognised
      */
-    public int waitforuser(Socket s){
+    public int waitforuser(Socket s) throws IOException{
         Scanner scanner = new Scanner (System.in);
         System.out.println("Enter 'e' to exit:");
         System.out.println("Enter 't filename' to request file:");
@@ -134,78 +135,75 @@ public class client_tcp extends Thread{
      * Test file is cats.txt
      * If using cmd line, invoke using "h"
      */
-    public void requestHardCodedFile(){
+    public void requestHardCodedFile() throws IOException{
         Socket s = this.socket;
-        OutputStream ostream = null;
-        PrintWriter pwrite = null;
 
-        InputStream istream = null;
-        FileOutputStream fos = null;
-        BufferedOutputStream bos = null;
+        String file = "cats.txt";
 
-        //Hard code the directory
-        new File(System.getProperty("user.dir")+"/receive").mkdirs();
+        String dir = "/receive/";
+        String absPath = System.getProperty("user.dir") + dir;
 
-        //Hard code the file
-        //String fileName`x = "knn_1_a.png";
+        File directory = new File(absPath);
+        directory.mkdirs();
+
+        File toReceive = new File(absPath + file);
+        System.out.println(toReceive.getAbsolutePath());
+
+
+        //Request file from server
+
+        OutputStream ostream = s.getOutputStream( );
+        PrintWriter pwrite = new PrintWriter(ostream, true);
+        //Send name of file requested to server
+        pwrite.println("hard transfer");
+        pwrite.println(file);
+
+        String fileName;
+        int filesize;
+        //Receive file name and size from server
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        String client_msg = in.readLine(); // fileName + space + filesize
+
+        String[] elements = client_msg.trim().split("\\s+");
+        System.out.println(Arrays.toString(elements));
+        fileName = elements[0];
+        filesize = Integer.parseInt(elements[1]);
+
+
+        System.out.println("Incoming File");
+
         //String fileName = "cats.txt";
-        String fileName = "Lecture5.pdf";
         //String fileName = "Opt2.pdf";
-        fileName = System.getProperty("user.dir")+"/receive/" + fileName;
 
-        try{
-            //String serverAddress = "localhost"; // to be filled in
-            //int socket = 10000; //to be filled in
 
-            //Making the connection
-            //s = new Socket(serverAddress, socket);
+        DataInputStream dis = new DataInputStream(s.getInputStream());
+        FileOutputStream fos = new FileOutputStream(toReceive);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
 
-            //Send file name over
-            ostream = s.getOutputStream( );
-            pwrite = new PrintWriter(ostream, true);
-            //These 2 lines send command to server
-            pwrite.println("hard transfer");
-            pwrite.println(fileName);
 
-            //Get file from server
-            istream = s.getInputStream();
 
-            fos = new FileOutputStream( fileName);
-            bos = new BufferedOutputStream(fos);
 
-            //No of bytes read in one read() call
-            int bytesRead = 0; int totalRead = 0;
-            byte[] contents = new byte[4096];
 
-            do{
-                bytesRead = istream.read(contents);
-                bos.write(contents, 0, bytesRead);
-                totalRead += bytesRead;
-                System.out.println("Total bytes read: " + totalRead + "|" + bytesRead);
-            }while((bytesRead = istream.read(contents)) != -1);
+        byte[] buffer = new byte[4096];
+        int read = 0;
+        int totalRead = 0;
+        int remaining = filesize;
 
-            System.out.println("Total bytes read "+totalRead);
-            System.out.println("Is it done?");
-            bos.flush();
-            System.out.println("Done");
+        System.out.println("Saving "+toReceive.getAbsolutePath() + " of size "+ filesize + " bytes.");
+
+        while((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
+            totalRead += read;
+            remaining -= read;
+            System.out.println("read " + totalRead + " bytes.");
+            fos.write(buffer, 0, read);
         }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        // Only need to flush if opened
-        finally {
-            try{
-                if (fos!=null) fos.flush();
-                if (bos!=null) bos.flush();
 
-                if (pwrite != null) pwrite.flush();
-                if (ostream!=null) ostream.flush();
-                //if (s != null) s.close();
-            }
-            catch (Exception e){
-                //e.printStackTrace();
-            }
-        }
+        System.out.println("Done");
+
+        fos.flush();
+        bos.flush();
+
+
     }
 
 
@@ -250,6 +248,5 @@ public class client_tcp extends Thread{
     public static void main (String[] args) throws Exception{
         client_tcp client = new client_tcp();
         client.connectToServer();
-
     }
 }
