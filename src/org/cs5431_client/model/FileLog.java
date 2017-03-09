@@ -6,5 +6,7 @@ public class FileLog {
     private int fileId;
     private List<FileLogEntry> logEntries;
 
-    //TODO
+    public void addLogEntry(FileLogEntry logEntry){this.logEntries.add(logEntry); }
+
+    public List<FileLogEntry> getLogEntries(){return this.logEntries; }
 }

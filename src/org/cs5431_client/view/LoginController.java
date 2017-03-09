@@ -98,7 +98,9 @@ public class LoginController implements Initializable {
             Parent root = fxmlLoader.load();
             Client.fileViewNode = root;
             FileViewController fvc = fxmlLoader.getController();
-            fvc.setUserDetails(new User(userId,username, password),server,port);
+            AccountsController accountsController = new AccountsController();
+            User user = accountsController.createUser(username,password,"",server,port);
+            fvc.setUserDetails(user, server, port);
             fvc.setStage(stage);
             scene.setRoot(root);
 

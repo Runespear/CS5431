@@ -16,7 +16,7 @@ public class UserController {
     private String serverPort;
 
     /**
-     * Creates a new UserController with its associated AccountsLogController
+     * Creates a new UserController
      * @param user The user to control
      */
     public UserController(User user, String serverIP, String serverPort) {

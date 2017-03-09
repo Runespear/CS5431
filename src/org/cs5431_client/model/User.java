@@ -5,11 +5,11 @@ public class User extends Account {
     private Folder userParentFolder;
     private String email;
 
-    public User(int id, String username, String email) {
+    public User(int id, String username, String email, Folder userParentFolder) {
         this.id = id;
         this.username = username;
         this.email = email;
-        this.userParentFolder = new Folder(username, null, id);
+        this.userParentFolder = userParentFolder;
         //TODO: get user's logid from controller/server
         this.userLogId = -1;
     }

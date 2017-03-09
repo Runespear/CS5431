@@ -2,7 +2,6 @@ package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -11,7 +10,6 @@ import static org.cs5431_client.model.FileActionType.*;
 //TODO: should a FileController control all files or just a single file?
 public class FileController {
     private User user;
-    private FileLogController logController;
     private String serverIP;
     private String serverPort;
 
@@ -53,6 +51,7 @@ public class FileController {
             FileSystemObject fileSent = sendFileToServer(file, parentFolder.getId(), logEntry);
             if (fileSent != null) {
                 parentFolder.addChild(fileSent);
+                fileSent.getFileLog().addLogEntry(logEntry);
                 return (File) fileSent;
             }
         }
@@ -71,11 +70,11 @@ public class FileController {
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             if (isAcceptableInput(folderName)) {
-                Folder newFolder = new Folder(folderName, user.getUserParentFolder(), user.getId());
                 FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
                 FileSystemObject folderSent = sendFolderToServer(folderName, parentFolder.getId(), logEntry);
                 if (folderSent != null) {
                     parentFolder.addChild(folderSent);
+                    folderSent.getFileLog().addLogEntry(logEntry);
                     return (Folder) folderSent;
                 }
             }
@@ -97,6 +96,7 @@ public class FileController {
             //originalFile.setFileContents(newFileContent);
             FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
             FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
+            fileSent.getFileLog().addLogEntry(logEntry);
             return (File) fileSent;
         }
         return null; // to return null or throw exception?
@@ -118,6 +118,7 @@ public class FileController {
             FileSystemObject fileSent = modifyFSOName(systemObject.getId(), newName, logEntry);
             if (fileSent != null) {
                 systemObject.rename(newName);
+                fileSent.getFileLog().addLogEntry(logEntry);
                 return true;
             }
         }
@@ -169,6 +170,7 @@ public class FileController {
             FileSystemObject fsoSent = addFSOPriv(systemObject.getId(), userId, priv, logEntry);
             if (fsoSent != null) {
                 systemObject.addPriv(priv, userId);
+                fsoSent.getFileLog().addLogEntry(logEntry);
                 return true;
             }
         }
@@ -187,6 +189,7 @@ public class FileController {
             FileSystemObject fsoSent = removeFSOPriv(systemObject.getId(), userId, priv, logEntry);
             if (fsoSent != null) {
                 systemObject.removePriv(priv, userId);
+                fsoSent.getFileLog().addLogEntry(logEntry);
                 return true;
             }
         }

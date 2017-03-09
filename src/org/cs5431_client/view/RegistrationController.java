@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.AccountsController;
+import org.cs5431_client.model.User;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -136,7 +137,7 @@ public class RegistrationController implements Initializable {
                 alert.setContentText(content.toString());
                 alert.showAndWait();
             } else {
-                int userId = accountsController.createUser(username, password, email, ip, port);
+                User user = accountsController.createUser(username, password, email, ip, port);
                 //TODO: IDK what to do with the user id?
                 //TODO maybe print a success message here?
                 exit();
