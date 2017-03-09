@@ -89,9 +89,9 @@ fabric.properties
 #==============
 Archives
 #=============
-.zip
-.tar
-.gz
+src.zip
+src.tar
+src.gz
 
 #=====================
 # Hard coded folders
