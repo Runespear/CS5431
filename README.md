@@ -54,7 +54,7 @@ Under main:
 ```Java
 public static void main(String[] args) {
         String[] fileNames = new String[2];
-        fileNames = new String[] {"data_generation_Fall16.xls", "Opt2.pdf"};
+        fileNames = new String[] {"cats.txt", "Opt2.pdf"};
         TCP_Client fc = new TCP_Client("localhost", 8080, fileNames);
 
 }
@@ -63,13 +63,6 @@ public static void main(String[] args) {
 The 1st filename in the array will be transferred (multiple file transfer
 functionality not yet done) They will already be in "send".
 
-If you want to test other files, place the one you want in
-the 1st element of the array (i.e. position 0), the available ones are:
-
-* "Lecture5.pdf"
-* "Opt2.pdf"
-* "cats.txt" (This one will be automatically created for you with a timestamp)
-* "data_generation_Fall16.xls"
 
 You should expect to see the correct file in "receive" (On the server side,
 or in the same place if running on localhost)
