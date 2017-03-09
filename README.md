@@ -57,7 +57,7 @@ public static void main(String[] args) {
         fileNames = new String[] {"data_generation_Fall16.xls", "Opt2.pdf"};
         TCP_Client fc = new TCP_Client("localhost", 8080, fileNames);
 
-    }
+}
 ```
 
 The 1st filename in the array will be transferred (multiple file transfer
