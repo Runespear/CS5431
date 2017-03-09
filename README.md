@@ -6,9 +6,9 @@ We are currently working on IntelliJ, and have not determined a proper build
 as a whole yet. Open up the following files below and right click to run
 to preview the:
 
-1) File-Transfer capabilities between TCP_Client and TCP_Server
+* 1) File-Transfer capabilities between TCP_Client and TCP_Server
     In this case, it is client uploading to server
-2) GUI which is almost done, but not yet hooked up to a working server backend.
+* 2) GUI which is almost done, but not yet hooked up to a working server backend.
 
 
 ###Server (for sending to client_TCP)###
@@ -62,10 +62,10 @@ functionality not yet done) They will already be in "send".
 If you want to test other files, place the one you want in
 the 1st element of the array (i.e. position 0), the available ones are:
 
-"Lecture5.pdf"
-"Opt2.pdf"
-"cats.txt" (This one will be automatically created for you with a timestamp)
-"data_generation_Fall16.xls"
+* "Lecture5.pdf"
+* "Opt2.pdf"
+* "cats.txt" (This one will be automatically created for you with a timestamp)
+* "data_generation_Fall16.xls"
 
 You should expect to see the correct file in "receive" (On the server side,
 or in the same place if running on localhost)
