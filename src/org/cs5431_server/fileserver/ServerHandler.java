@@ -110,9 +110,13 @@ public class ServerHandler extends Thread{
         //String fileName = "cats.txt";
         //String fileName = "knn_1_a.png";
         String fileName = "Lecture5.pdf";
+        //String fileName = "Opt2.pdf";
         String hardDir = System.getProperty("user.dir") + "/send";
 
-        new File(hardDir).mkdirs();
+        File dir = new File(hardDir);
+
+        if (!dir.exists()) dir.mkdirs();
+        //new File(hardDir).mkdirs();
 
         System.out.println("Sending "+fileName + " to client.");
 
@@ -128,7 +132,7 @@ public class ServerHandler extends Thread{
                 //Send the file to client
                 File myFile = new File(hardDir + "/" + fileName);
                 System.out.println(myFile.getAbsolutePath());
-                myFile.createNewFile();
+                if (!myFile.exists()) myFile.createNewFile();
                 // if file already exists will do nothing
 
                 if (Objects.equals(fileName,"cats.txt") ){
