@@ -2,6 +2,15 @@
 
 ##How to run this system##
 
+We are currently working on IntelliJ, and have not determined a proper build
+as a whole yet. Open up the following files below and right click to run
+to preview the:
+
+1) File-Transfer capabilities between TCP_Client and TCP_Server
+    In this case, it is client uploading to server
+2) GUI which is almost done, but not yet hooked up to a working server backend.
+
+
 ###Server (for sending to client_TCP)###
 Run org.cs5431_server.Main as the main class with program argument 8080 (which indicates the port #). Currently our code is hardcoded to use port 8080 but this will change in the future
 
