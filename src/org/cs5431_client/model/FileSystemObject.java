@@ -12,6 +12,7 @@ public abstract class FileSystemObject {
     protected long size;
     protected Date lastModified;
     protected FSOType type;
+    protected  FileLog fileLog;
 
     public FileSystemObject (String name, Folder parentFolder, int ownerId) {
         this.name = name;
@@ -19,6 +20,7 @@ public abstract class FileSystemObject {
         this.viewerIds = new ArrayList<>();
         this.editorIds = new ArrayList<>();
         this.editorIds.add(ownerId);
+        this.fileLog = new FileLog();
         //TODO: date modified set by DB timestamp
         //TODO: remove following line that's currently used for display purposes
         lastModified = new Date();
@@ -54,4 +56,6 @@ public abstract class FileSystemObject {
             viewerIds.add(userId);
         }
     }
+
+    public FileLog getFileLog() {return this.fileLog; }
 }

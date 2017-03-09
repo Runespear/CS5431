@@ -1,6 +1,7 @@
 package org.cs5431_client.controller;
 
 import org.cs5431_client.model.Folder;
+import org.cs5431_client.model.User;
 
 /**
  * A controller for all accounts.
@@ -10,14 +11,16 @@ public class AccountsController {
 
     /**
     * Creates user with the username, password, and email provided.
-    * @return userId if successful
+    * @return user if successful
     * @throws RegistrationFailException if unsuccessful
     */
-    public int createUser(String username, String password, String email,
-                          String ip, String port)
+    public User createUser(String username, String password, String email,
+                           String ip, String port)
             throws RegistrationFailException {
-        //TODO
-        return -1;
+        //TODO: send to server new account info and create user with the right info
+        //TODO: create new user parent folder in database
+        Folder parentFolder = new Folder(username, null, -1);
+        return new User(-1, username, email, parentFolder);
     }
 
     /**
