@@ -1,13 +1,11 @@
 package org.cs5431_server.setup;
 
-import org.bouncycastle.asn1.pkcs.RSAPublicKey;
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.KeyGenerationParameters;
-import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
-import org.bouncycastle.util.io.pem.PemWriter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.File;
-import java.io.StringWriter;
+import java.io.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Scanner;
 
@@ -27,29 +25,51 @@ public class ServerSetup {
         System.out.println("Enter the port address of the server:");
         String port = scanner.nextLine();
 
-        KeyGenerationParameters parameters = new KeyGenerationParameters(new
-                SecureRandom(), 2048); //TODO change key size?
-        RSAKeyPairGenerator kpg = new RSAKeyPairGenerator();
-        kpg.init(parameters);
-        AsymmetricCipherKeyPair keyPair = kpg.generateKeyPair();
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
+                    BouncyCastleProvider());
+            kpg.initialize(2048, new SecureRandom());
+            KeyPair keyPair = kpg.generateKeyPair();
 
-        //TODO write name, ip, port, public key to name.config file in
-        // /user-config
-        //keyPair.getPublic()
+            File userDir = new File("./user-config/");
+            if (!userDir.exists()){
+                if (!userDir.mkdir())
+                    System.err.println("Could not make user config folder");
+            }
 
-        //TODO write private key in /server-config
-        //keyPair.getPrivate()
-        File serverDir = new File("./server-config/");
-        if (!serverDir.exists()){
-            if (!serverDir.mkdir())
-                System.err.println("Could not make server config folder");
+            //writes the server details into an easily distributable config file
+            File configFile = new File("./user-config/"+name+".config");
+            Writer writer = new BufferedWriter(new OutputStreamWriter(new
+                    FileOutputStream(configFile)));
+            writer.write(name+"\n"+ip+"\n"+port+"\n");
+            writer.close();
+            //writes the server public key into an easily distributable file
+            File pubKeyFile = new File("./user-config/"+name+".pub");
+            ObjectOutputStream publicKeyOS= new ObjectOutputStream(
+                    new FileOutputStream(pubKeyFile));
+            publicKeyOS.writeObject(keyPair.getPublic());
+            publicKeyOS.close();
+
+            //writes the server private key into a file
+            File serverDir = new File("./server-config/");
+            if (!serverDir.exists()){
+                if (!serverDir.mkdir())
+                    System.err.println("Could not make server config folder");
+            }
+            File privKeyFile = new File("./server-config/"+name+".priv");
+            ObjectOutputStream privateKeyOS = new ObjectOutputStream(
+                    new FileOutputStream(privKeyFile));
+            privateKeyOS.writeObject(keyPair.getPrivate());
+            privateKeyOS.close();
+
+        } catch (NoSuchAlgorithmException | IOException e) {
+            e.printStackTrace();
         }
-        File privKeyFile = new File("./server-config/"+name+".priv");
-        //TODO store private key in this file
+
 
         //TODO create databases
 
-        System.out.println("Distribute the "+name+".config file found in the " +
-                "/user-config folder to your users.");
+        System.out.println("Distribute the "+name+".config and the "+name+
+                        ".pub file found in the /user-config folder to your users.");
     }
 }

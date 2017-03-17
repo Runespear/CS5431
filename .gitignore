@@ -99,3 +99,8 @@ src.gz
 
 receive
 
+#========================
+# Server config and keys
+#========================
+server-config/*
+user-config/*
