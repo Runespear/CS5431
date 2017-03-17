@@ -104,3 +104,8 @@ receive
 #========================
 server-config/*
 user-config/*
+
+#===============
+# Maven target
+#===============
+target/*
