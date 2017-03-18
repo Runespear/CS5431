@@ -28,20 +28,23 @@ public class SQL_Connection {
             PreparedStatement createUser = null;
             PreparedStatement createFolder = null;
             PreparedStatement createLog = null;
+            PreparedStatement addPermission = null;
 
             String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, pubKey)"
                     + " values (?, ?, ?, ?, ?, ?, ?)";
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
-            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
-                    + "values (?, ?, ?, ?, ?)";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
+                    + "values (?, ?, ?, ?)";
+            String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
 
             try {
                 connection.setAutoCommit(false);
                 createFolder = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
                 createUser = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS);
                 createLog = connection.prepareStatement(insertLog);
+                addPermission = connection.prepareStatement(insertEditor);
 
                 Timestamp currDate = new Timestamp(System.currentTimeMillis());
                 createFolder.setInt (1, 0);
@@ -70,12 +73,16 @@ public class SQL_Connection {
                 rs.next();
                 uid = rs.getInt(1);
                 createLog.setInt(1, 0);
-                createLog.setInt (2, folderid);
-                createLog.setInt(3, uid);
-                createLog.setTimestamp(4, currDate);
-                createLog.setString(5, "CREATE_USER");
+                createLog.setInt(2, uid);
+                createLog.setTimestamp(3, currDate);
+                createLog.setString(4, "CREATE_USER");
                 createLog.executeUpdate();
                 System.out.println("created log");
+
+                addPermission.setInt(1, folderid);
+                addPermission.setInt(2, uid);
+                addPermission.executeUpdate();
+                System.out.println("added owner as editor");
 
                 connection.commit();
 
@@ -98,6 +105,9 @@ public class SQL_Connection {
                 }
                 if (createLog != null) {
                     createLog.close();
+                }
+                if (addPermission != null) {
+                    addPermission.close();
                 }
                 connection.setAutoCommit(true);
                 return uid;
@@ -188,7 +198,7 @@ public class SQL_Connection {
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        System.out.print(createFso());
+        System.out.print(createUser());
     }
 
 }
