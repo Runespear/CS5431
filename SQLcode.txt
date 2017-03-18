@@ -1,36 +1,45 @@
 
 
-CREATE TABLE FileSystemObjects (fsoid CHAR(20) PRIMARY KEY, ownerid CHAR(20) NOT NULL,
-parentFolderid CHAR(20) NOT NULL, fsoName CHAR(20) NOT NULL, size CHAR(20) NOT NULL, 
-lastModified DATETIME, isFile boolean NOT NULL, 
-FOREIGN KEY (ownerid) REFERENCES Users(uid),
+CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
+parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(20) NOT NULL, size VARCHAR(20) NOT NULL, 
+lastModified TIMESTAMP, isFile boolean NOT NULL, 
 FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid));
 #add contents how?
+#last modified default now()?
 
-CREATE TABLE Users (uid CHAR(20) PRIMARY KEY, username CHAR(20) NOT NULL, 
-pwd CHAR(20) NOT NULL, parentFolderid CHAR(20) NOT NULL, email CHAR(20), 
+CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(20) NOT NULL, 
+pwd VARCHAR(20) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(20), 
+privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL,
 FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);
+#key size?	
 
-CREATE TABLE Editors (fsoid CHAR(20) NOT NULL,
-uid CHAR(20) NOT NULL,
+CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,
+uid INT UNSIGNED NOT NULL,
 FOREIGN KEY (uid) REFERENCES Users(uid),
 FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
 
-CREATE TABLE Viewers (fsoid CHAR(20) NOT NULL,
-uid CHAR(20) NOT NULL,
+CREATE TABLE Viewers (fsoid INT UNSIGNED NOT NULL,
+uid INT UNSIGNED NOT NULL,
 FOREIGN KEY (uid) REFERENCES Users(uid),
 FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
 
-CREATE TABLE FileLog (fsoid CHAR(20) NOT NULL,
-uid CHAR(20) NOT NULL, 
-modified DATETIME, actionType CHAR(20)
-FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid)
+CREATE TABLE FileLog (fileLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+fsoid INT UNSIGNED NOT NULL,
+uid INT UNSIGNED NOT NULL, 
+lastModified TIMESTAMP, actionType CHAR(20),
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid),
 FOREIGN KEY (uid) REFERENCES Users(uid));
+#last modified default now()?
 
-CREATE TABLE FolderChild (fsoid CHAR(20) NOT NULL,
-childid CHAR(20) NOT NULL);
-FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid)
+CREATE TABLE FolderChild (fsoid INT UNSIGNED NOT NULL,
+childid INT UNSIGNED NOT NULL,
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid),
 FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid));
+
+CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL,
+encKey CHAR(100) NOT NULL,
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
+#key how long 
 
 
 
@@ -47,3 +56,10 @@ WHERE F.fsoid = 1;
 
 DELETE FROM FolderChild F 
 WHERE fsoid = 1 AND childid = 1;
+
+
+CREATE USER 'admin'@'localhost' IDENTIFIED BY '$walaotwod0tseven$';
+GRANT ALL ON cs5431.* TO 'admin'@'localhost' IDENTIFIED BY '$walaotwod0tseven$';
+
+
+
