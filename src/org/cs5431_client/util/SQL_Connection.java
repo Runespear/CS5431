@@ -116,7 +116,6 @@ public class SQL_Connection {
         } catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         }
-
     }
 
     private static int createFso() {
@@ -132,12 +131,14 @@ public class SQL_Connection {
             System.out.println("Database connected!");
             PreparedStatement createFolder = null;
             PreparedStatement createLog = null;
+            PreparedStatement addPermission = null;
 
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                     + "values (?, ?, ?, ?, ?)";
+            String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
 
             try {
                 connection.setAutoCommit(false);
@@ -168,6 +169,11 @@ public class SQL_Connection {
                 createLog.executeUpdate();
                 System.out.println("created log");
 
+                addPermission.setInt(1, fsoid);
+                addPermission.setInt(2, 2); //TODO: update UID
+                addPermission.executeUpdate();
+                System.out.println("added owner as editor");
+
                 connection.commit();
 
             } catch (SQLException e ) {
@@ -187,6 +193,9 @@ public class SQL_Connection {
                 if (createLog != null) {
                     createLog.close();
                 }
+                if (addPermission != null) {
+                    addPermission.close();
+                }
                 connection.setAutoCommit(true);
                 return fsoid;
             }
@@ -198,7 +207,7 @@ public class SQL_Connection {
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        System.out.print(createUser());
+        System.out.print(createFso());
     }
 
 }
