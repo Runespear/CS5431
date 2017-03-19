@@ -1,9 +1,11 @@
 package org.cs5431_client.util;
 
+import org.json.JSONObject;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
+
 
 public class SQL_Connection {
 
@@ -17,7 +19,6 @@ public class SQL_Connection {
         this.port = port;
     }
 
-    //TODO: make sure username if unique
     private static  boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -89,7 +90,7 @@ public class SQL_Connection {
                 createFolder.setString (3, "myFolderName");
                 createFolder.setString   (4, Integer.toString(10));
                 createFolder.setTimestamp (5, currDate);
-                createFolder.setBoolean    (6, true);
+                createFolder.setBoolean    (6, false);
                 createFolder.executeUpdate();
                 System.out.println("created folder");
 
@@ -155,10 +156,9 @@ public class SQL_Connection {
         }
     }
 
-    private static int createFso() {
+    private static int createFso(JSONObject fso) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
 
         System.out.println("Connecting to database...");
         int fsoid = 0;
@@ -242,7 +242,9 @@ public class SQL_Connection {
         }
     }
 
-    private static int authenticate(String username, String encPwd) {
+    /** Compares username and encrypted password with row of User table.
+     * @Return h(privKey) of the user if the authentication is valid. **/
+    private static String authenticate(String username, String encPwd) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -252,7 +254,7 @@ public class SQL_Connection {
             System.out.println("Database connected!");
             PreparedStatement verifyUser = null;
 
-            String checkPassword = "SELECT U.uid FROM Users U WHERE U.username = ? AND U.pwd = ?";
+            String checkPassword = "SELECT U.privKey FROM Users U WHERE U.username = ? AND U.pwd = ?";
             verifyUser = connection.prepareStatement(checkPassword);
             //TODO: salting?
 
@@ -264,8 +266,8 @@ public class SQL_Connection {
                 if (rs.next()) {
                     //user valid
                     System.out.println("Valid user");
-                    int uid = rs.getInt(1);
-                    return uid;
+                    String privKey = rs.getString(1);
+                    return privKey;
                 }
             } finally {
                 if (verifyUser != null) {
@@ -277,12 +279,12 @@ public class SQL_Connection {
         }
         //TODO: log the number of failed authentications?
         System.out.println("Invalid user");
-        return -1;
+        return null;
     }
 
-    private static ArrayList<Integer> getChildren(int parentFolderid, int uid) {
+    private static ArrayList<JSONObject> getChildren(int parentFolderid, int uid) {
 
-        ArrayList<Integer> files = new ArrayList<>();
+        ArrayList<JSONObject> files = new ArrayList<>();
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -291,7 +293,8 @@ public class SQL_Connection {
             System.out.println("Database connected!");
             PreparedStatement getFiles = null;
 
-            String selectFiles = "SELECT F.fsoid FROM FileSystemObjects F " +
+            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile " +
+                    "FROM FileSystemObjects F " +
                     "WHERE F.parentFolderid = ? AND EXISTS" +
                     "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
                     "(SELECT * FROM Viewers V WHERE V.uid=?);";
@@ -304,7 +307,18 @@ public class SQL_Connection {
                 getFiles.setInt(3, uid);
                 ResultSet rs = getFiles.executeQuery();
                 while (rs.next()) {
-                    files.add(rs.getInt(1));
+                    JSONObject fso = new JSONObject();
+                    fso.put("id", rs.getInt(1));
+                    fso.put("name", rs.getString(2));
+                    fso.put("size", rs.getString(3));
+                    fso.put("lastModified", rs.getTimestamp(4));
+
+                    if (rs.getBoolean(5)) {
+                        fso.put("FSOType", "FILE");
+                    } else {
+                        fso.put("FSOType", "FOLDER");
+                    }
+                    files.add(fso);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
