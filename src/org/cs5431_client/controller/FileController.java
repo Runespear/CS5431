@@ -1,8 +1,11 @@
 package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.*;
@@ -40,19 +43,25 @@ public class FileController {
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
      */
-    public File uploadFile(java.io.File file, Folder parentFolder) throws IOException {
+    public File uploadFile(java.io.File file, Folder parentFolder) throws IOException, JSONException {
         String name = file.getName();
-        //TODO get file contents and size from java.io.file
-        //FileReader reader = new FileReader(file);
+        long size = file.length();
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
         if (canUpload) {
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), UPLOAD_FILE);
-            FileSystemObject fileSent = sendFileToServer(file, parentFolder.getId(), logEntry);
-            if (fileSent != null) {
+            JSONObject fso = new JSONObject();
+            fso.put("uid", user.getId());
+            fso.put("parentFolderid", parentFolder.getId());
+            fso.put("fsoName", name);
+            fso.put("size", size);
+            fso.put("lastModified", lastModified);
+            fso.put("isFile", true);
+            int fileSentid = sendFSO(fso, file);
+            if (fileSentid != -1) {
+                File fileSent = new File(fileSentid, name, parentFolder, user.getId(), size, lastModified);
                 parentFolder.addChild(fileSent);
-                fileSent.getFileLog().addLogEntry(logEntry);
-                return (File) fileSent;
+                return fileSent;
             }
         }
         return null;
@@ -65,17 +74,25 @@ public class FileController {
      * @param parentFolder Folder where the file is to be uploaded
      * @return the folder that is created and uploaded to server successfully; null otherwise
      */
-    public Folder createFolder(String folderName, Folder parentFolder) {
+    public Folder createFolder(String folderName, Folder parentFolder) throws JSONException {
+
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
         if (canCreateFolder) {
             if (isAcceptableInput(folderName)) {
-                FileLogEntry logEntry = new FileLogEntry(user.getId(), CREATE_FOLDER);
-                FileSystemObject folderSent = sendFolderToServer(folderName, parentFolder.getId(), logEntry);
-                if (folderSent != null) {
+                JSONObject fso = new JSONObject();
+                fso.put("uid", user.getId());
+                fso.put("parentFolderid", parentFolder.getId());
+                fso.put("fsoName", folderName);
+                fso.put("size", 0);
+                fso.put("lastModified", lastModified);
+                fso.put("isFile", false);
+                int folderSentId = sendFSO(fso, null);
+                if (folderSentId != -1) {
+                    Folder folderSent = new Folder(folderSentId, folderName, parentFolder, user.getId(), lastModified);
                     parentFolder.addChild(folderSent);
-                    folderSent.getFileLog().addLogEntry(logEntry);
-                    return (Folder) folderSent;
+                    return folderSent;
                 }
             }
         }
@@ -203,22 +220,11 @@ public class FileController {
     /**
      * Sends the file/folder to the server with the serverIP attribute of the fileController.
      * @param file File to be sent to the server
-     * @param parentFolderId Refers to the parent of the file to be added
-     * @param logEntry to be sent
-     * @return the file/folder that is uploaded to server if successful; null otherwise
+     * @param fso Refers to the json of the file/folder to be sent to the db
+     * @return the id of the file/folder that is uploaded to server if successful; null otherwise
      */
-    private FileSystemObject sendFileToServer(java.io.File file, int parentFolderId, FileLogEntry logEntry) {
-        return null;
-    }
-
-    /**
-     * Sends the folder to the server with the serverIP attribute of the fileController.
-     * @param name Name of the new folder created
-     * @param parentFolderId Refers to the parent of the file to be added
-     * @param logEntry to be sent      * @return the file/folder that is uploaded to server if successful; null otherwise
-     */
-    private FileSystemObject sendFolderToServer(String name, int parentFolderId, FileLogEntry logEntry) {
-        return null;
+    private int sendFSO(JSONObject fso, java.io.File file) {
+        return -1;
     }
 
     /**

@@ -55,12 +55,13 @@ public class SQL_Connection {
         return false;
     }
 
-    private static int createUser(JSONObject user) {
+    private static JSONObject createUser(JSONObject user) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
         int uid = 0;
+        JSONObject jsonUser = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             System.out.println("Database connected!");
@@ -84,7 +85,7 @@ public class SQL_Connection {
             if (user.has("email")) {
                 email = (String) user.get("email");
             }
-            String privKey = (String) user.get("privKey");
+            String privKey = (String) user.get("privKey"); //TODO: in json or pass as arg
             String pubKey = (String) user.get("pubKey");
 
             try {
@@ -98,7 +99,7 @@ public class SQL_Connection {
                 createFolder.setInt (1, 0);
                 createFolder.setInt (2, 1); //TODO: what to set as parent folder id?
                 createFolder.setString (3, username);
-                createFolder.setString   (4, Integer.toString(10)); //TODO: how to get size
+                createFolder.setString   (4, Integer.toString(10));
                 createFolder.setTimestamp (5, currDate);
                 createFolder.setBoolean    (6, false);
                 createFolder.executeUpdate();
@@ -134,6 +135,14 @@ public class SQL_Connection {
 
                 connection.commit();
 
+                jsonUser = new JSONObject();
+                jsonUser.put("username", username);
+                jsonUser.put("uid", uid);
+                jsonUser.put("parentFolderid", folderid);
+                jsonUser.put("email", email);
+                jsonUser.put("privKey", privKey);
+                jsonUser.put("pubKey", pubKey);
+
             } catch (SQLException e ) {
                 e.printStackTrace();
                 if (connection != null) {
@@ -158,7 +167,7 @@ public class SQL_Connection {
                     addPermission.close();
                 }
                 connection.setAutoCommit(true);
-                return uid;
+                return jsonUser;
             }
 
         } catch (SQLException e) {
@@ -166,7 +175,7 @@ public class SQL_Connection {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return -1;
+        return jsonUser;
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * @Return fsoid of created fso **/
@@ -292,17 +301,19 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @Return h(privKey) of the user if the authentication is valid. **/
-    private static String authenticate(String username, String encPwd) {
+    private static JSONObject authenticate(String username, String encPwd) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
+        JSONObject user = new JSONObject();
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             System.out.println("Database connected!");
             PreparedStatement verifyUser = null;
 
-            String checkPassword = "SELECT U.privKey FROM Users U WHERE U.username = ? AND U.pwd = ?";
+            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey" +
+                    " FROM Users U WHERE U.username = ? AND U.pwd = ?";
             verifyUser = connection.prepareStatement(checkPassword);
             //TODO: salting?
 
@@ -314,9 +325,20 @@ public class SQL_Connection {
                 if (rs.next()) {
                     //user valid
                     System.out.println("Valid user");
-                    String privKey = rs.getString(1);
-                    return privKey;
+                    int uid = rs.getInt(1);
+                    int parentFolderid = rs.getInt(2);
+                    String email = rs.getString(3);
+                    String privKey = rs.getString(4);
+                    String pubKey = rs.getString(5);
+                    user.put("uid", uid);
+                    user.put("parentFolderid", parentFolderid);
+                    user.put("email", email);
+                    user.put("privKey", privKey);
+                    user.put("pubKey", pubKey);
+                    return user;
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             } finally {
                 if (verifyUser != null) {
                     verifyUser.close();
@@ -444,7 +466,6 @@ public class SQL_Connection {
 
         return null;
     }
-
 
 
     public static void main(String[] args) {

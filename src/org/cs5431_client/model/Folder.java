@@ -1,5 +1,6 @@
 package org.cs5431_client.model;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -14,8 +15,8 @@ public class Folder extends FileSystemObject {
         //TODO: database stuff?
     }
 
-    public Folder (String name, Folder parentFolder, int ownerId) {
-        super(name, parentFolder, ownerId);
+    public Folder (int id, String name, Folder parentFolder, int ownerId, Timestamp lastModified) {
+        super(id, name, parentFolder, ownerId, lastModified);
         this.type = FSOType.FOLDER;
         this.children = new ArrayList<>();
         this.size = 0;

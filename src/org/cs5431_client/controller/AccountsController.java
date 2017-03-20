@@ -1,7 +1,14 @@
 package org.cs5431_client.controller;
 
+import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.crypto.SecretKey;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 
 /**
  * A controller for all accounts.
@@ -18,9 +25,30 @@ public class AccountsController {
                            String ip, String port)
             throws RegistrationFailException {
         //TODO: send to server new account info and create user with the right info
-        //TODO: create new user parent folder in database
-        Folder parentFolder = new Folder(username, null, -1);
-        return new User(-1, username, email, parentFolder);
+
+        try {
+            JSONObject user = new JSONObject();
+            user.put("username", username);
+            user.put("pwd", password);
+            user.put("email", email);
+
+            JSONObject newUser = sendUser(user);
+            int uid = newUser.getInt("uid");
+            int parentFolderid = newUser.getInt("parentFolderid");
+            SecretKey privKey = (SecretKey) user.get("privKey"); //TODO: how to convert to secret key
+            SecretKey pubKey = (SecretKey) user.get("pubKey"); //TODO: how to convert to secret key
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            Folder parentFolder = new Folder(parentFolderid, username, null, uid, lastModified);
+            return new User(uid, username, email, parentFolder, privKey, pubKey);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private JSONObject sendUser(JSONObject user) {
+        //TODO: send to server
+        return null;
     }
 
     /**
@@ -46,8 +74,25 @@ public class AccountsController {
         //TODO: establish connection
 
         //TODO: attempt to connect with given credentials
+        JSONObject allegedUser = new JSONObject();
+        try {
+            allegedUser.put("username", username);
+            allegedUser.put("pwd", password);
+            //TODO: send allegeduser to server and check
 
-        //TODO: create relevant controllers? and pass them? ???
+            JSONObject user = new JSONObject();
+            int uid = user.getInt("uid");
+            int parentFolderid = user.getInt("parentFolderid");
+            String email = user.getString("email");
+            SecretKey privKey = (SecretKey) user.get("privKey"); //TODO: how to convert to secret key
+            SecretKey pubKey = (SecretKey) user.get("pubKey"); //TODO: how to convert to secret key
+            Folder parentFolder = getFolderFromId(parentFolderid);
+            User currUser = new User(uid, username, email, parentFolder, privKey,pubKey);
+
+            //TODO: create relevant controllers? and pass them? ???
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return 1;
     }
 

@@ -1,5 +1,6 @@
 package org.cs5431_client.model;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 public abstract class FileSystemObject {
@@ -10,11 +11,12 @@ public abstract class FileSystemObject {
     protected List<Integer> viewerIds;
     protected String name;
     protected long size;
-    protected Date lastModified;
+    protected Timestamp lastModified;
     protected FSOType type;
     protected  FileLog fileLog;
 
-    public FileSystemObject (String name, Folder parentFolder, int ownerId) {
+    public FileSystemObject (int id, String name, Folder parentFolder, int ownerId, Timestamp lastModified) {
+        this.id = id;
         this.name = name;
         this.parentFolder = parentFolder;
         this.viewerIds = new ArrayList<>();
@@ -23,7 +25,7 @@ public abstract class FileSystemObject {
         this.fileLog = new FileLog();
         //TODO: date modified set by DB timestamp
         //TODO: remove following line that's currently used for display purposes
-        lastModified = new Date();
+        this.lastModified = lastModified;
     }
 
 
