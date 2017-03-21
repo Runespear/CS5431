@@ -2,6 +2,8 @@ package org.cs5431_client.util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.crypto.SecretKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
@@ -55,7 +57,7 @@ public class SQL_Connection {
         return false;
     }
 
-    public JSONObject createUser(JSONObject user) {
+    public JSONObject createUser(JSONObject user, String privKey, String pubKey) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -85,8 +87,6 @@ public class SQL_Connection {
             if (user.has("email")) {
                 email = (String) user.get("email");
             }
-            String privKey = (String) user.get("privKey"); //TODO: in json or pass as arg
-            String pubKey = (String) user.get("pubKey");
 
             try {
                 connection.setAutoCommit(false);
@@ -301,7 +301,7 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @Return h(privKey) of the user if the authentication is valid. **/
-    public JSONObject authenticate(String username, String encPwd) {
+    public JSONObject authenticate(JSONObject allegedUser) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -315,6 +315,9 @@ public class SQL_Connection {
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
             verifyUser = connection.prepareStatement(checkPassword);
+
+            String username = allegedUser.getString("username");
+            String encPwd = allegedUser.getString("pwd");
             //TODO: salting?
 
             try {
@@ -336,6 +339,8 @@ public class SQL_Connection {
                     user.put("privKey", privKey);
                     user.put("pubKey", pubKey);
                     return user;
+                } else {
+                    return null;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -345,6 +350,8 @@ public class SQL_Connection {
                 }
             }
         } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         //TODO: log the number of failed authentications?

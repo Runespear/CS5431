@@ -1,14 +1,13 @@
 package org.cs5431_client.controller;
 
-import org.cs5431_client.model.FileSystemObject;
-import org.cs5431_client.model.Folder;
-import org.cs5431_client.model.User;
+import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -19,6 +18,11 @@ import java.util.Base64;
  */
 public class AccountsController {
 
+    private SQL_Connection sql_connection;
+
+    public AccountsController(){
+        this.sql_connection = new SQL_Connection("localhost", 3306);
+    }
     /**
     * Creates user with the username, password, and email provided.
     * @return user if successful
@@ -38,11 +42,19 @@ public class AccountsController {
             JSONObject newUser = sendUser(user);
             int uid = newUser.getInt("uid");
             int parentFolderid = newUser.getInt("parentFolderid");
-            SecretKey privKey = (SecretKey) user.get("privKey"); //TODO: how to convert to secret key
-            SecretKey pubKey = (SecretKey) user.get("pubKey"); //TODO: how to convert to secret key
+
+            //TODO: uncomment when privKey and pubKeys are implemented
+            /*String encodedPrivKey = user.getString("privKey");
+            byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
+            SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+
+            String encodedPubKey = user.getString("privKey");
+            byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
+            SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
+
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
             Folder parentFolder = new Folder(parentFolderid, username, null, uid, lastModified);
-            return new User(uid, username, email, parentFolder, privKey, pubKey);
+            return new User(uid, username, email, parentFolder, null, null);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -51,8 +63,8 @@ public class AccountsController {
 
     private JSONObject sendUser(JSONObject user) {
         //TODO: send to server
-        SQL_Connection sql_connection = new SQL_Connection("localhost", 3306);
-        JSONObject newUser = sql_connection.createUser(user);
+
+        JSONObject newUser = sql_connection.createUser(user, "", "");
         return newUser;
     }
 
@@ -84,23 +96,26 @@ public class AccountsController {
             allegedUser.put("username", username);
             allegedUser.put("pwd", password);
             //TODO: send allegeduser to server and check
+            JSONObject user = sql_connection.authenticate(allegedUser);
 
-            JSONObject user = new JSONObject();
-            int uid = user.getInt("uid");
-            int parentFolderid = user.getInt("parentFolderid");
-            String email = user.getString("email");
+            if (user != null) {
+                int uid = user.getInt("uid");
+                int parentFolderid = user.getInt("parentFolderid");
+                String email = user.getString("email");
 
-            String encodedPrivKey = user.getString("privKey");
-            byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
-            SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+                //TODO: uncomment when keys are up
+                /*String encodedPrivKey = user.getString("privKey");
+                byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
+                SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
 
-            String encodedPubKey = user.getString("privKey");
-            byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
-            SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");
+                String encodedPubKey = user.getString("privKey");
+                byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
+                SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
 
-            Folder parentFolder = getFolderFromId(parentFolderid);
-            User currUser = new User(uid, username, email, parentFolder, privKey,pubKey);
-            return currUser;
+                Folder parentFolder = getFolderFromId(parentFolderid, uid);
+                User currUser = new User(uid, username, email, parentFolder, null,null);
+                return currUser;
+            }
             //TODO: create relevant controllers? and pass them? ???
         } catch (JSONException e) {
             e.printStackTrace();
@@ -108,9 +123,29 @@ public class AccountsController {
         return null;
     }
 
-    public Folder getFolderFromId(int folderId) {
+    public Folder getFolderFromId(int folderId, int uid) {
         //TODO: send to server and get the corresponding folder
-        return null;
+        Folder parentFolder = new Folder(folderId, "", null, uid,null);
+        ArrayList<JSONObject> children = sql_connection.getChildren(folderId, uid);
+        for (JSONObject c : children) {
+            try {
+                int id = c.getInt("id");
+                String name = c.getString("name");
+                long size = Long.getLong(c.getString("size"));
+                Timestamp lastModified = (Timestamp) c.get("lastModified");
+                String type = c.getString("FSOType");
+                if (type == "FOLDER") {
+                    Folder childFolder = new Folder(id, name, parentFolder, -1, lastModified);
+                    parentFolder.addChild(childFolder);
+                } else {
+                    File childFile = new File(id, name, parentFolder, -1, size, lastModified);
+                    parentFolder.addChild(childFile);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return parentFolder;
     }
 
     public class RegistrationFailException extends Exception {
