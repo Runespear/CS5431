@@ -7,6 +7,9 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.Scanner;
 
 /**
@@ -66,8 +69,24 @@ public class ServerSetup {
             e.printStackTrace();
         }
 
+        //TODO create database
+        String url = "jdbc:mysql://localhost";
 
-        //TODO create databases
+        // Defines username and password to connect to database server.
+        String username = "root";
+        String password = "root";
+
+        // SQL command to create a database in MySQL.
+        String sql = "CREATE DATABASE IF NOT EXISTS DEMODB";
+
+        try {
+            Connection connection = DriverManager.getConnection(url, username, password);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         System.out.println("Distribute the "+name+".config and the "+name+
                         ".pub file found in the /user-config folder to your users.");
