@@ -93,14 +93,36 @@ public class ServerSetup {
         }
 
         String url = "jdbc:mysql://" + ip + ":" + port;
-        String sql = "CREATE DATABASE IF NOT EXISTS cs5431";
+        String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
+        String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT " +
+                "UNSIGNED AUTO_INCREMENT PRIMARY KEY, " +
+                "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) " +
+                "NOT NULL, size VARCHAR(20) NOT NULL, " +
+                "lastModified TIMESTAMP, isFile boolean NOT NULL, " +
+                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects" +
+                "(fsoid))";
+        String createUsers = "CREATE TABLE Users (uid INT UNSIGNED " +
+                "AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, " +
+                "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT " +
+                "NULL, email VARCHAR(50), " +
+                "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL," +
+                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects" +
+                "(fsoid) ON DELETE CASCADE)";
 
         //TODO make tables as well?
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = connection.prepareStatement(createDB);
             statement.execute();
+            connection.close();
+            connection = DriverManager.getConnection(url+"/cs5431",
+                    username, password);
+            statement = connection.prepareStatement(createFSO);
+            statement.execute();
+            statement = connection.prepareStatement(createUsers);
+            statement.execute();
+            connection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
