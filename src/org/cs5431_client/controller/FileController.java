@@ -1,6 +1,7 @@
 package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
+import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,11 +16,13 @@ public class FileController {
     private User user;
     private String serverIP;
     private String serverPort;
+    private SQL_Connection sql_connection; //TODO: to pass or create new one each time
 
     public FileController(User user, String serverIP, String serverPort) {
         this.user = user;
         this.serverIP = serverIP;
         this.serverPort = serverPort;
+        this.sql_connection = new SQL_Connection("localhost", 3306);
     }
 
     /**
@@ -28,7 +31,7 @@ public class FileController {
      * @return true if the user has the permission; false otherwise
      */
     public boolean isAllowed(FileActionType action, FileSystemObject fso) {
-        //TODO: get permissions of the fileObject, iterate through
+        //TODO: to be done on server side
         List<Integer> usersWithPermission = fso.getEditors();
         if (action == DOWNLOAD) {
             usersWithPermission.addAll(fso.getViewers());
@@ -54,7 +57,7 @@ public class FileController {
             fso.put("uid", user.getId());
             fso.put("parentFolderid", parentFolder.getId());
             fso.put("fsoName", name);
-            fso.put("size", size);
+            fso.put("size", String.valueOf(size));
             fso.put("lastModified", lastModified);
             fso.put("isFile", true);
             int fileSentid = sendFSO(fso, file);
@@ -85,7 +88,7 @@ public class FileController {
                 fso.put("uid", user.getId());
                 fso.put("parentFolderid", parentFolder.getId());
                 fso.put("fsoName", folderName);
-                fso.put("size", 0);
+                fso.put("size", "0");
                 fso.put("lastModified", lastModified);
                 fso.put("isFile", false);
                 int folderSentId = sendFSO(fso, null);
@@ -224,7 +227,8 @@ public class FileController {
      * @return the id of the file/folder that is uploaded to server if successful; null otherwise
      */
     private int sendFSO(JSONObject fso, java.io.File file) {
-        return -1;
+        int fsoid = sql_connection.createFso(fso, "");
+        return fsoid;
     }
 
     /**

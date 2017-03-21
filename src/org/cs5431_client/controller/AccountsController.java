@@ -33,17 +33,20 @@ public class AccountsController {
             throws RegistrationFailException {
         //TODO: send to server new account info and create user with the right info
 
-        try {
-            JSONObject user = new JSONObject();
-            user.put("username", username);
-            user.put("pwd", password);
-            user.put("email", email);
+        boolean isUniqueUsername = sql_connection.isUniqueUsername(username);
 
-            JSONObject newUser = sendUser(user);
-            int uid = newUser.getInt("uid");
-            int parentFolderid = newUser.getInt("parentFolderid");
+        if (isUniqueUsername) {
+            try {
+                JSONObject user = new JSONObject();
+                user.put("username", username);
+                user.put("pwd", password);
+                user.put("email", email);
 
-            //TODO: uncomment when privKey and pubKeys are implemented
+                JSONObject newUser = sendUser(user);
+                int uid = newUser.getInt("uid");
+                int parentFolderid = newUser.getInt("parentFolderid");
+
+                //TODO: uncomment when privKey and pubKeys are implemented
             /*String encodedPrivKey = user.getString("privKey");
             byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
             SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
@@ -52,11 +55,12 @@ public class AccountsController {
             byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
             SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
 
-            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-            Folder parentFolder = new Folder(parentFolderid, username, null, uid, lastModified);
-            return new User(uid, username, email, parentFolder, null, null);
-        } catch (JSONException e) {
-            e.printStackTrace();
+                Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                Folder parentFolder = new Folder(parentFolderid, username, null, uid, lastModified);
+                return new User(uid, username, email, parentFolder, null, null);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -131,14 +135,15 @@ public class AccountsController {
             try {
                 int id = c.getInt("id");
                 String name = c.getString("name");
-                long size = Long.getLong(c.getString("size"));
+                String size = c.getString("size");
+                long longSize = Long.valueOf(size);
                 Timestamp lastModified = (Timestamp) c.get("lastModified");
                 String type = c.getString("FSOType");
                 if (type == "FOLDER") {
                     Folder childFolder = new Folder(id, name, parentFolder, -1, lastModified);
                     parentFolder.addChild(childFolder);
                 } else {
-                    File childFile = new File(id, name, parentFolder, -1, size, lastModified);
+                    File childFile = new File(id, name, parentFolder, -1, longSize, lastModified);
                     parentFolder.addChild(childFile);
                 }
             } catch (JSONException e) {

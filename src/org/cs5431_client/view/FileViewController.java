@@ -161,13 +161,12 @@ public class FileViewController implements Initializable {
         result.ifPresent(folderName -> {
                     try {
                         fileController.createFolder(folderName, currParent);
+                        populateListView();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }); //TODO: to be returned when backend is up
+                });
                 //currParent.addChild(new Folder(folderName, currParent, user.getId())));
-
-        populateListView();
     }
 
     /**
@@ -182,7 +181,7 @@ public class FileViewController implements Initializable {
 
         if (fileToUpload != null) {
             try {
-                fileController.uploadFile(fileToUpload, currParent); //TODO: to be returned when backend is up
+                fileController.uploadFile(fileToUpload, currParent);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {

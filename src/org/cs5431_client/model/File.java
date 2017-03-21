@@ -10,9 +10,7 @@ public class File extends FileSystemObject {
     public File(int id, String name, Folder parentFolder, int ownerId, long size, Timestamp lastModified) {
         super(id, name, parentFolder, ownerId, lastModified);
         this.size = size;
-        //remove this type?
         this.type = FSOType.FILE;
-        //System.out.println("editors: "+ this.getEditors());
     }
 
     public void setFileContents(String fileContents) {

@@ -15,6 +15,7 @@ public abstract class FileSystemObject {
     protected FSOType type;
     protected  FileLog fileLog;
 
+    //ownerId only used when creating new file; otherwise not saved
     public FileSystemObject (int id, String name, Folder parentFolder, int ownerId, Timestamp lastModified) {
         this.id = id;
         this.name = name;

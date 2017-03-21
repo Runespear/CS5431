@@ -22,7 +22,7 @@ public class SQL_Connection {
         this.port = port;
     }
 
-    public  boolean isUniqueUsername(String username) {
+    public boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -99,7 +99,7 @@ public class SQL_Connection {
                 createFolder.setInt (1, 0);
                 createFolder.setInt (2, 1); //TODO: what to set as parent folder id?
                 createFolder.setString (3, username);
-                createFolder.setString   (4, Integer.toString(10));
+                createFolder.setString   (4, Integer.toString(0));
                 createFolder.setTimestamp (5, currDate);
                 createFolder.setBoolean    (6, false);
                 createFolder.executeUpdate();
@@ -189,12 +189,12 @@ public class SQL_Connection {
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
             System.out.println("Database connected!");
-            int uid = (int) fso.get("uid");
-            int parentFolderid = (int) fso.get("parentFolderid");
-            String fsoName = (String) fso.get("fsoName");
-            long size = (long) fso.get("size");
+            int uid = fso.getInt("uid");
+            int parentFolderid = fso.getInt("parentFolderid");
+            String fsoName = fso.getString("fsoName");
+            String size = fso.getString("size");
             Timestamp lastModified = (Timestamp) fso.get("lastModified");
-            boolean isFile = (boolean) fso.get("isFile");
+            boolean isFile = fso.getBoolean("isFile");
 
             PreparedStatement createFso = null;
             PreparedStatement addKey = null;
@@ -221,7 +221,7 @@ public class SQL_Connection {
                 createFso.setInt(1, 0);
                 createFso.setInt(2, parentFolderid);
                 createFso.setString(3, fsoName);
-                createFso.setString(4, Long.toString(size));
+                createFso.setString(4, size);
                 createFso.setTimestamp(5, lastModified);
                 createFso.setBoolean(6, isFile);
                 createFso.executeUpdate();
@@ -378,7 +378,7 @@ public class SQL_Connection {
                     "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
                     "(SELECT * FROM Viewers V WHERE V.uid=?);";
             getFiles = connection.prepareStatement(selectFiles);
-            //TODO: salting?
+            //TODO: get enc key as well
 
             try {
                 getFiles.setInt(1, parentFolderid);

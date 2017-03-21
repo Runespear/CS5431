@@ -1,11 +1,10 @@
 
-
+#to increase size of all names 
 CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
 parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(20) NOT NULL, size VARCHAR(20) NOT NULL, 
 lastModified TIMESTAMP, isFile boolean NOT NULL, 
 FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid));
 #add contents how?
-#last modified default now()?
 
 CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(20) NOT NULL, 
 pwd VARCHAR(20) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(20), 
@@ -29,23 +28,31 @@ uid INT UNSIGNED NOT NULL,
 lastModified TIMESTAMP, actionType CHAR(20),
 FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid),
 FOREIGN KEY (uid) REFERENCES Users(uid));
-#last modified default now()?
 
+CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+uid INT UNSIGNED NOT NULL, 
+lastModified TIMESTAMP, actionType CHAR(20),
+FOREIGN KEY (uid) REFERENCES Users(uid));
+
+#dont need the following, just find parentFolderid
 CREATE TABLE FolderChild (fsoid INT UNSIGNED NOT NULL,
 childid INT UNSIGNED NOT NULL,
 FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid),
 FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid));
 
-CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL,
-encKey CHAR(100) NOT NULL,
+CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL, uid INT UNSIGNED NOT NULL,
+encKey CHAR(100) NOT NULL, 
+FOREIGN KEY (uid) REFERENCES Users(uid),
 FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
 #key how long 
 
+CREATE TABLE FileContents (fsoid INT UNSIGNED NOT NULL, path VARCHAR(100),
+FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));
+#path how
+
+CREATE TABLE Salts ()
 
 
-insert into Users values ();
-
-insert into FileSystemObjects values ();
 
 SELECT F.childid FROM FolderChild F
 WHERE F.fsoid = 1;
