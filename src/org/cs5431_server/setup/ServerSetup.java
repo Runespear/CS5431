@@ -1,5 +1,6 @@
 package org.cs5431_server.setup;
 
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.*;
@@ -19,14 +20,35 @@ import java.util.Scanner;
 public class ServerSetup {
 
     public static void main(String[] args) {
-        //TODO validation for IP address and port
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter the name of the server:");
+        System.out.println("Enter the name of the server (that your users " +
+                "will see):");
         String name = scanner.nextLine();
         System.out.println("Enter the IP address of the server:");
-        String ip = scanner.nextLine();
+        InetAddressValidator IPValidator = new InetAddressValidator();
+        String ip;
+        while (true) {
+            ip = scanner.nextLine();
+            if (IPValidator.isValid(ip))
+                break;
+            System.out.println("Please enter a valid IP address:");
+        }
         System.out.println("Enter the port address of the server:");
-        String port = scanner.nextLine();
+        Integer port;
+        while (true) {
+            try {
+                port = Integer.parseInt(scanner.nextLine());
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid port:");
+            }
+        }
+        System.out.println("Enter the username you use to login to your MySQL" +
+                " server");
+        String username = scanner.nextLine();
+        System.out.println("Enter the password you use to login to your MySQL" +
+                " server");
+        String password = scanner.nextLine();
 
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
@@ -69,15 +91,10 @@ public class ServerSetup {
             e.printStackTrace();
         }
 
-        //TODO create database
-        String url = "jdbc:mysql://localhost";
+        String url = "jdbc:mysql://" + ip + ":" + port;
+        String sql = "CREATE DATABASE IF NOT EXISTS cs5431";
 
-        // Defines username and password to connect to database server.
-        String username = "root";
-        String password = "root";
-
-        // SQL command to create a database in MySQL.
-        String sql = "CREATE DATABASE IF NOT EXISTS DEMODB";
+        //TODO make tables as well?
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
