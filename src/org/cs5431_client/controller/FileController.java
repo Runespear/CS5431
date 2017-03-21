@@ -2,6 +2,7 @@ package org.cs5431_client.controller;
 
 import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
+import org.cs5431_client.util.Validator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -131,6 +132,8 @@ public class FileController {
      * @return true if the name of the file/folder is successfully modified; false otherwise
      */
     public boolean rename(FileSystemObject systemObject, String newName) {
+        if (!Validator.validFileName(newName))
+            return false;
 
         boolean canRename = isAllowed(RENAME, systemObject);
         if (canRename && isAcceptableInput(newName)) {

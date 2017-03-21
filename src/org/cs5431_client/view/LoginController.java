@@ -7,14 +7,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.AccountsController;
 import org.cs5431_client.model.User;
+import org.cs5431_client.util.Validator;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -71,7 +69,15 @@ public class LoginController implements Initializable {
     private void tryLogin(Event e) {
         String username = txtUsername.getCharacters().toString();
         String password = txtPassword.getCharacters().toString();
-        //TODO: catch login failure
+        if (!Validator.validUsername(username) ||
+                !Validator.validPassword(password)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Login error");
+            alert.setContentText("Username or password not valid.");
+            alert.showAndWait();
+        } else {
+            //TODO: catch login failure
+        }
 
         try {
             Node node = (Node) e.getSource();

@@ -13,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.stage.Stage;
+import org.cs5431_client.util.Validator;
 
 import java.io.*;
 import java.net.URL;
@@ -55,12 +56,18 @@ public class ConnectController implements Initializable {
 
     private void connect(Event e) {
         try {
-            File configFile = new File("./user-config/" + serverDropdown.getValue
-                    () + ".config");
+            String serverName = serverDropdown.getValue();
+            File configFile = new File("./user-config/" + serverName +
+                    ".config");
             BufferedReader br = new BufferedReader(new FileReader(configFile));
-            String serverName = br.readLine(); //TODO: validate this?
+            String nameInFile = br.readLine(); //TODO: validate this?
             String server = br.readLine();
             String port = br.readLine();
+            if (!serverName.equals(nameInFile) || !Validator.validIP(server)
+                || !Validator.validPort(port)){
+                throw new IOException("Config file tampered with");
+            }
+
             File pubKeyFile = new File("./user-config/" + serverDropdown.getValue
                     () + ".pub");
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream
@@ -96,7 +103,6 @@ public class ConnectController implements Initializable {
             LoginController lc = fxmlLoader.getController();
             Client.loginNode = root;
             lc.setStage(stage);
-            //TODO: change connection details to read from choicebox
             lc.setConnectionDetails(server,port);
             scene.setRoot(root);
 

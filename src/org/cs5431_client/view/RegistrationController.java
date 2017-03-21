@@ -3,13 +3,15 @@ package org.cs5431_client.view;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.apache.commons.validator.routines.InetAddressValidator;
 import org.cs5431_client.controller.AccountsController;
 import org.cs5431_client.model.User;
+import org.cs5431_client.util.Validator;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -89,14 +91,20 @@ public class RegistrationController implements Initializable {
             List<String> errMessages = new ArrayList<>();
             if (username.isEmpty())
                 errMessages.add("The username field is required.");
+            else if (!Validator.validUsername(username)) {
+                errMessages.add("Username should consist of 5-30 characters " +
+                        "that are alphanumeric, _ or -");
+            }
             if (password.isEmpty() || confirmPwd.isEmpty()) {
                 errMessages.add("The passwords field is required.");
             } else if (!password.equals(confirmPwd)) {
                 errMessages.add("The passwords entered do not match.");
+            } else if (!Validator.validPassword(password)) {
+                errMessages.add("Passwords should be at least 16 characters " +
+                        "long.");
             }
 
-            EmailValidator emailValidator = EmailValidator.getInstance();
-            if (emailValidator.isValid(email))
+            if (!Validator.validEmail(email))
                 errMessages.add("The email entered is invalid.");
 
             if (!errMessages.isEmpty()) {
