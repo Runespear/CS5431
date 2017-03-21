@@ -6,6 +6,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.cs5431_client.controller.AccountsController;
 import org.cs5431_client.model.User;
 
@@ -28,18 +30,6 @@ public class RegistrationController implements Initializable {
     public TextField txtEmail;
 
     @FXML
-    public TextField txtIP;
-
-    @FXML
-    public TextField txtPort;
-
-    @FXML
-    public Hyperlink txtIPHelp;
-
-    @FXML
-    public Hyperlink txtPortHelp;
-
-    @FXML
     public Button registerButton;
 
     @FXML
@@ -47,6 +37,9 @@ public class RegistrationController implements Initializable {
 
     private Stage stage;
     private AccountsController accountsController;
+
+    private String server;
+    private String port;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -70,18 +63,6 @@ public class RegistrationController implements Initializable {
 
         txtEmail.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
-                txtIP.requestFocus();
-            }
-        });
-
-        txtIP.setOnKeyPressed(key -> {
-            if (key.getCode().equals(KeyCode.ENTER)) {
-                txtPort.requestFocus();
-            }
-        });
-
-        txtPort.setOnKeyPressed(key -> {
-            if (key.getCode().equals(KeyCode.ENTER)) {
                 registerButton.fire();
             }
         });
@@ -89,10 +70,6 @@ public class RegistrationController implements Initializable {
         registerButton.setOnAction(e -> tryRegister());
 
         cancelButton.setOnAction(e -> exit());
-
-        txtIPHelp.setOnAction(e -> displayServerHelp());
-
-        txtPortHelp.setOnAction(e -> displayServerHelp());
     }
 
     /**
@@ -107,8 +84,6 @@ public class RegistrationController implements Initializable {
             String password = txtPassword.getCharacters().toString();
             String confirmPwd = txtConfirmPassword.getCharacters().toString();
             String email = txtEmail.getCharacters().toString();
-            String ip = txtIP.getCharacters().toString();
-            String port = txtPort.getCharacters().toString();
             //Client side validation
 
             List<String> errMessages = new ArrayList<>();
@@ -119,12 +94,10 @@ public class RegistrationController implements Initializable {
             } else if (!password.equals(confirmPwd)) {
                 errMessages.add("The passwords entered do not match.");
             }
-            //TODO: email validation
-            if (ip.isEmpty())
-                errMessages.add("The server IP field is required.");
-            if (port.isEmpty())
-                errMessages.add("The server port field is required.");
 
+            EmailValidator emailValidator = EmailValidator.getInstance();
+            if (emailValidator.isValid(email))
+                errMessages.add("The email entered is invalid.");
 
             if (!errMessages.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -137,7 +110,8 @@ public class RegistrationController implements Initializable {
                 alert.setContentText(content.toString());
                 alert.showAndWait();
             } else {
-                User user = accountsController.createUser(username, password, email, ip, port);
+                User user = accountsController.createUser(username, password,
+                        email, server, port);
                 //TODO: IDK what to do with the user id?
                 //TODO maybe print a success message here?
                 exit();
@@ -158,15 +132,6 @@ public class RegistrationController implements Initializable {
     }
 
     /**
-     * Displays a dialog box with help that explains the server IP and server
-     * port fields.
-     */
-    private void displayServerHelp() {
-        //TODO: change to dialog
-        System.out.println("Hi! I'm Clippy. How can I help you?");
-    }
-
-    /**
      * When changing to registration, it is necessary to pass along the
      * caller's stage so exit() knows how to restore it.
      * @param stage Stage of the caller
@@ -183,5 +148,10 @@ public class RegistrationController implements Initializable {
      */
     void setAccountsController(AccountsController accountsController) {
         this.accountsController = accountsController;
+    }
+
+    void setConnectionDetails(String server, String port) {
+        this.server = server;
+        this.port = port;
     }
 }

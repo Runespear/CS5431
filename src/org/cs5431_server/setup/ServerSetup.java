@@ -21,6 +21,7 @@ public class ServerSetup {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        //TODO validation for server name
         System.out.println("Enter the name of the server (that your users " +
                 "will see):");
         String name = scanner.nextLine();

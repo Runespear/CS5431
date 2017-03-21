@@ -27,24 +27,25 @@ public class LoginController implements Initializable {
     private PasswordField txtPassword;
 
     @FXML
-    private TextField txtServer;
-
-    @FXML
-    private TextField txtPort;
-
-    @FXML
     private Button loginButton;
+
+    @FXML
+    private Button disconnectButton;
 
     @FXML
     public Hyperlink txtNoAcct;
 
     private AccountsController accountsController;
+    private Stage stage;
+    private String server;
+    private String port;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         accountsController = new AccountsController();
 
         loginButton.setOnAction(this::tryLogin);
+        disconnectButton.setOnAction(e -> disconnect());
 
         txtUsername.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
@@ -53,18 +54,6 @@ public class LoginController implements Initializable {
         });
 
         txtPassword.setOnKeyPressed(key -> {
-            if (key.getCode().equals(KeyCode.ENTER)) {
-                txtServer.requestFocus();
-            }
-        });
-
-        txtServer.setOnKeyPressed(key -> {
-            if (key.getCode().equals(KeyCode.ENTER)) {
-                txtPort.requestFocus();
-            }
-        });
-
-        txtPort.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
                 loginButton.fire();
             }
@@ -82,10 +71,7 @@ public class LoginController implements Initializable {
     private void tryLogin(Event e) {
         String username = txtUsername.getCharacters().toString();
         String password = txtPassword.getCharacters().toString();
-        String server = txtServer.getCharacters().toString();
-        String port = txtPort.getCharacters().toString();
         //TODO: catch login failure
-
 
         try {
             Node node = (Node) e.getSource();
@@ -130,5 +116,27 @@ public class LoginController implements Initializable {
         } catch (Exception e1) {
             e1.printStackTrace();
         }
+    }
+
+
+    /**
+     * When changing to registration, it is necessary to pass along the
+     * caller's stage so disconnect() knows how to restore it.
+     * @param stage Stage of the caller
+     */
+    void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    private void disconnect() {
+        //TODO close secure channel
+        Scene scene = stage.getScene();
+        scene.setRoot(Client.connectNode);
+        stage.show();
+    }
+
+    void setConnectionDetails(String server, String port) {
+        this.server = server;
+        this.port = port;
     }
 }

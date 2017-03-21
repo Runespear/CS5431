@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/8"
@@ -33,10 +33,6 @@
                                 vgrow="SOMETIMES"/>
                 <RowConstraints minHeight="10.0" prefHeight="30.0"
                                 vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0"
-                                vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0"
-                                vgrow="SOMETIMES"/>
             </rowConstraints>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
                   text="Username*" GridPane.columnIndex="1"/>
@@ -50,13 +46,6 @@
                   GridPane.columnIndex="1" GridPane.rowIndex="3"/>
             <TextField fx:id="txtUsername" promptText="username"
                        GridPane.columnIndex="2"/>
-            <HBox alignment="CENTER_LEFT" prefHeight="100.0"
-                  prefWidth="200.0" GridPane.columnIndex="1"
-                  GridPane.rowIndex="4">
-                <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="Server IP*"/>
-                <Hyperlink fx:id="txtIPHelp" text="(?)"/>
-            </HBox>
             <PasswordField fx:id="txtPassword" promptText="password"
                            GridPane.columnIndex="2"
                            GridPane.rowIndex="1"/>
@@ -66,17 +55,6 @@
                            GridPane.rowIndex="2"/>
             <TextField fx:id="txtEmail" promptText="email"
                        GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-            <TextField fx:id="txtIP" promptText="ip"
-                       GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-            <HBox alignment="CENTER_LEFT" prefHeight="100.0"
-                  prefWidth="200.0" GridPane.columnIndex="1"
-                  GridPane.rowIndex="5">
-                <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                      text="Server Port*"/>
-                <Hyperlink fx:id="txtPortHelp" text="(?)"/>
-            </HBox>
-            <TextField fx:id="txtPort" promptText="port"
-                       GridPane.columnIndex="2" GridPane.rowIndex="5"/>
         </GridPane>
         <Text strokeType="OUTSIDE" strokeWidth="0.0"
               text="* indicates compulsory fields" textAlignment="CENTER"
