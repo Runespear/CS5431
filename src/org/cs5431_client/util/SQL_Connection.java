@@ -2,6 +2,8 @@ package org.cs5431_client.util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.crypto.SecretKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
@@ -20,7 +22,7 @@ public class SQL_Connection {
         this.port = port;
     }
 
-    private static  boolean isUniqueUsername(String username) {
+    public  boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -55,7 +57,7 @@ public class SQL_Connection {
         return false;
     }
 
-    private static JSONObject createUser(JSONObject user) {
+    public JSONObject createUser(JSONObject user, String privKey, String pubKey) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -85,8 +87,6 @@ public class SQL_Connection {
             if (user.has("email")) {
                 email = (String) user.get("email");
             }
-            String privKey = (String) user.get("privKey"); //TODO: in json or pass as arg
-            String pubKey = (String) user.get("pubKey");
 
             try {
                 connection.setAutoCommit(false);
@@ -179,7 +179,7 @@ public class SQL_Connection {
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * @Return fsoid of created fso **/
-    private static int createFso(JSONObject fso, String sk) {
+    public int createFso(JSONObject fso, String sk) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -301,7 +301,7 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @Return h(privKey) of the user if the authentication is valid. **/
-    private static JSONObject authenticate(String username, String encPwd) {
+    public JSONObject authenticate(JSONObject allegedUser) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -315,6 +315,9 @@ public class SQL_Connection {
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
             verifyUser = connection.prepareStatement(checkPassword);
+
+            String username = allegedUser.getString("username");
+            String encPwd = allegedUser.getString("pwd");
             //TODO: salting?
 
             try {
@@ -336,6 +339,8 @@ public class SQL_Connection {
                     user.put("privKey", privKey);
                     user.put("pubKey", pubKey);
                     return user;
+                } else {
+                    return null;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -346,6 +351,8 @@ public class SQL_Connection {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         //TODO: log the number of failed authentications?
         System.out.println("Invalid user");
@@ -354,7 +361,7 @@ public class SQL_Connection {
 
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * @Return An array of JsonObjects of all childrens  **/
-    private static ArrayList<JSONObject> getChildren(int parentFolderid, int uid) {
+    public ArrayList<JSONObject> getChildren(int parentFolderid, int uid) {
 
         ArrayList<JSONObject> files = new ArrayList<>();
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
@@ -405,14 +412,14 @@ public class SQL_Connection {
         return files;
     }
 
-    private static java.io.File getFile(int fsoid) {
+    public java.io.File getFile(int fsoid) {
         //TODO: get file content
         return new java.io.File("pathname");
     }
 
     /** Gets all viewers and editors of the fso.
      * @Return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value  **/
-    private static JSONObject getPermissions(int fsoid) {
+    public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -427,8 +434,8 @@ public class SQL_Connection {
             verifyEditors = connection.prepareStatement(selectEditors);
             verifyViewers = connection.prepareStatement(selectViewers);
 
-            ArrayList<Integer> editors = new ArrayList<>();
-            ArrayList<Integer> viewers = new ArrayList<>();
+            ArrayList<Integer> editors = new ArrayList<Integer>();
+            ArrayList<Integer> viewers = new ArrayList<Integer>();
 
             try {
                 verifyEditors.setInt(1, fsoid);
@@ -470,7 +477,7 @@ public class SQL_Connection {
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        System.out.print(getPermissions(30));
+        //System.out.print(getPermissions(30));
     }
 
 }
