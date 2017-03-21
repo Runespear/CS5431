@@ -85,7 +85,7 @@ public class LoginController implements Initializable {
         String server = txtServer.getCharacters().toString();
         String port = txtPort.getCharacters().toString();
         //TODO: catch login failure
-        int userId = accountsController.login(username, password, server,
+        User user = accountsController.login(username, password, server,
                 port);
 
         try {
@@ -99,7 +99,7 @@ public class LoginController implements Initializable {
             Client.fileViewNode = root;
             FileViewController fvc = fxmlLoader.getController();
             AccountsController accountsController = new AccountsController();
-            User user = accountsController.createUser(username,password,"",server,port);
+            user = accountsController.createUser(username,password,"",server,port);
             fvc.setUserDetails(user, server, port);
             fvc.setStage(stage);
             scene.setRoot(root);

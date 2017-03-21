@@ -3,12 +3,15 @@ package org.cs5431_client.controller;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
+import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Base64;
 
 /**
  * A controller for all accounts.
@@ -48,7 +51,9 @@ public class AccountsController {
 
     private JSONObject sendUser(JSONObject user) {
         //TODO: send to server
-        return null;
+        SQL_Connection sql_connection = new SQL_Connection("localhost", 3306);
+        JSONObject newUser = sql_connection.createUser(user);
+        return newUser;
     }
 
     /**
@@ -69,7 +74,7 @@ public class AccountsController {
      * @param serverPort Port of server to be connected to
      * @return userId if successful
      */
-    public int login(String username, String password, String serverIP,
+    public User login(String username, String password, String serverIP,
                          String serverPort) {
         //TODO: establish connection
 
@@ -84,16 +89,23 @@ public class AccountsController {
             int uid = user.getInt("uid");
             int parentFolderid = user.getInt("parentFolderid");
             String email = user.getString("email");
-            SecretKey privKey = (SecretKey) user.get("privKey"); //TODO: how to convert to secret key
-            SecretKey pubKey = (SecretKey) user.get("pubKey"); //TODO: how to convert to secret key
+
+            String encodedPrivKey = user.getString("privKey");
+            byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
+            SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+
+            String encodedPubKey = user.getString("privKey");
+            byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
+            SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");
+
             Folder parentFolder = getFolderFromId(parentFolderid);
             User currUser = new User(uid, username, email, parentFolder, privKey,pubKey);
-
+            return currUser;
             //TODO: create relevant controllers? and pass them? ???
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return 1;
+        return null;
     }
 
     public Folder getFolderFromId(int folderId) {
