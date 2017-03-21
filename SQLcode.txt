@@ -1,16 +1,16 @@
 
 #to increase size of all names 
 CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
-parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(20) NOT NULL, size VARCHAR(20) NOT NULL, 
+parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, 
 lastModified TIMESTAMP, isFile boolean NOT NULL, 
 FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid));
 #add contents how?
 
-CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(20) NOT NULL, 
-pwd VARCHAR(20) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(20), 
+CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, 
+pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), 
 privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL,
 FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);
-#key size?	
+#key size? to add salt as another column? 
 
 CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,
 uid INT UNSIGNED NOT NULL,
