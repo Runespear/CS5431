@@ -412,15 +412,17 @@ public class FileViewController implements Initializable {
     }
 
     public void populateListView() {
+        List<FileSystemObject> children = fileController.getChildren(currParent);
+
         ObservableList<FileSystemObject> observableList =
                 FXCollections.observableArrayList();
-        observableList.setAll(currParent.getChildren());
+        observableList.setAll(children);
 
         fileList.setItems(observableList);
         fileList.setCellFactory(listView -> new FileViewCell(fileController));
 
-        fileList.setVisible(!currParent.getChildren().isEmpty());
-        fileList.setDisable(currParent.getChildren().isEmpty());
+        fileList.setVisible(!children.isEmpty());
+        fileList.setDisable(children.isEmpty());
     }
     
     private void showAppropriateImages(boolean fileSelected, boolean

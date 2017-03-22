@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.*;
@@ -64,6 +65,7 @@ public class FileController {
             if (fileSentid != -1) {
                 File fileSent = new File(fileSentid, name, parentFolder, user.getId(), size, lastModified);
                 parentFolder.addChild(fileSent);
+                System.out.print(parentFolder.getChildren());
                 return fileSent;
             }
         }
@@ -164,6 +166,32 @@ public class FileController {
     public List<FileSystemObject> downloadFolder(int folderId) {
         //TODO: get from server all children
         return null;
+    }
+
+    public List<FileSystemObject> getChildren(Folder parentFolder) {
+        int parentFolderid = parentFolder.getId();
+        ArrayList<FileSystemObject> children = new ArrayList<>();
+        ArrayList<JSONObject> jsonChildren = sql_connection.getChildren(parentFolderid, user.getId());
+        for (JSONObject c : jsonChildren) {
+            try {
+                int id = c.getInt("id");
+                String name = c.getString("name");
+                String size = c.getString("size");
+                Long longSize = Long.valueOf(size);
+                Timestamp lastModified = (Timestamp) c.get("lastModified");
+                String type = c.getString("FSOType");
+                FileSystemObject child;
+                if (type == "FOLDER") {
+                    child = new Folder(id, name, parentFolder, 0, lastModified);
+                } else {
+                    child = new File(id, name, parentFolder, 0, longSize, lastModified);
+                }
+                children.add(child);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return children;
     }
 
     /**
