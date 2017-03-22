@@ -2,6 +2,7 @@ package org.cs5431_server.setup;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cs5431_client.util.Validator;
 
 import java.io.*;
 import java.security.KeyPair;
@@ -26,29 +27,23 @@ public class ServerSetup {
                 "will see):");
         String name = scanner.nextLine();
         System.out.println("Enter the IP address of the server:");
-        InetAddressValidator IPValidator = new InetAddressValidator();
+
         String ip;
-        while (true) {
-            ip = scanner.nextLine();
-            if (IPValidator.isValid(ip))
-                break;
+        while (Validator.validIP(ip = scanner.nextLine())) {
             System.out.println("Please enter a valid IP address:");
         }
+
         System.out.println("Enter the port address of the server:");
-        Integer port;
-        while (true) {
-            try {
-                port = Integer.parseInt(scanner.nextLine());
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid port:");
-            }
+        String port;
+        while (Validator.validPort(port = scanner.nextLine())) {
+            System.out.println("Please enter a valid port:");
         }
+
         System.out.println("Enter the username you use to login to your MySQL" +
-                " server");
+                " server:");
         String username = scanner.nextLine();
         System.out.println("Enter the password you use to login to your MySQL" +
-                " server");
+                " server:");
         String password = scanner.nextLine();
 
         try {
