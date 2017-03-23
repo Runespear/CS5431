@@ -577,43 +577,319 @@ public class SQL_Connection {
     }
 
     public static int renameFso(int fsoid, int uid, String newName) {
+
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement renameFso = null;
-
-            System.out.println("Connecting to database...");
+            PreparedStatement createLog = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
-
                 String updateName = "UPDATE FileSystemObjects SET fsoName = ? WHERE fsoid =  ?";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?, ?)";
                 renameFso = connection.prepareStatement(updateName);
+                createLog = connection.prepareStatement(insertLog);
 
                 try {
+                    connection.setAutoCommit(false);
                     renameFso.setString(1, newName);
                     renameFso.setInt(2, fsoid);
                     renameFso.executeUpdate();
+                    System.out.println("renamed fso");
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RENAME");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
 
                 } catch (SQLException e) {
                     e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
                 } finally {
                     if (renameFso != null) {
                         renameFso.close();
                     }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
                     return fsoid;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+        System.out.println("failed to rename");
+        return -1;
+    }
+
+    public static int addEditPriv(int fsoid, int uid, int newUid) {
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            System.out.println("Can rename fso");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement addEditor = null;
+            PreparedStatement createLog = null;
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?, ?)";
+                createLog = connection.prepareStatement(insertLog);
+                addEditor = connection.prepareStatement(insertEditor);
+
+                try {
+                    connection.setAutoCommit(false);
+                    addEditor.setInt(1, fsoid);
+                    addEditor.setInt(2, newUid);
+                    addEditor.executeUpdate();
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_PRIV");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                } finally {
+                    if (addEditor != null) {
+                        addEditor.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
+                    return newUid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("failed to add priv");
+        return -1;
+    }
+
+    public static int addViewPriv(int fsoid, int uid, int newUid) {
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            System.out.println("Can rename fso");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement addViewer = null;
+            PreparedStatement createLog = null;
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?, ?)";
+                createLog = connection.prepareStatement(insertLog);
+                addViewer = connection.prepareStatement(insertViewer);
+
+                try {
+                    connection.setAutoCommit(false);
+                    addViewer.setInt(1, fsoid);
+                    addViewer.setInt(2, newUid);
+                    addViewer.executeUpdate();
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_PRIV");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                } finally {
+                    if (addViewer != null) {
+                        addViewer.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
+                    return newUid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("failed to add priv");
+        return -1;
+    }
+
+    public static int removeViewPriv(int fsoid, int uid, int rmUid) {
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            System.out.println("Can rename fso");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement rmViewer = null;
+            PreparedStatement createLog = null;
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                String deleteViewer = "DELETE FROM Viewers WHERE fsoid = ? AND uid = ?";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?, ?)";
+                createLog = connection.prepareStatement(insertLog);
+                rmViewer = connection.prepareStatement(deleteViewer);
+
+                try {
+                    connection.setAutoCommit(false);
+                    rmViewer.setInt(1, fsoid);
+                    rmViewer.setInt(2, rmUid);
+                    rmViewer.executeUpdate();
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_PRIV");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                } finally {
+                    if (rmViewer != null) {
+                        rmViewer.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
+                    return rmUid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("failed to remove viewer");
+        return -1;
+    }
+
+    public static int removeEditPriv(int fsoid, int uid, int rmUid) {
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            System.out.println("Can rename fso");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement rmEditor = null;
+            PreparedStatement createLog = null;
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                String deleteEditor = "DELETE FROM Editors WHERE fsoid = ? AND uid = ?";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?, ?)";
+                createLog = connection.prepareStatement(insertLog);
+                rmEditor = connection.prepareStatement(deleteEditor);
+
+                try {
+                    connection.setAutoCommit(false);
+                    rmEditor.setInt(1, fsoid);
+                    rmEditor.setInt(2, rmUid);
+                    rmEditor.executeUpdate();
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_PRIV");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                } finally {
+                    if (rmEditor != null) {
+                        rmEditor.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
+                    return rmUid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("failed to remove editor");
         return -1;
     }
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        System.out.print(renameFso(54, 22, "changename??"));
+        System.out.print(renameFso(54, 22, "changedagain"));
     }
 
 }

@@ -199,17 +199,18 @@ public class FileController {
      * @return true if privilege was added successfully; false otherwise.
      */
     public boolean addPriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        boolean canAddPriv = isAllowed(ADD_PRIV, systemObject);
-        if (canAddPriv) {
-            FileLogEntry logEntry = new FileLogEntry(userId, ADD_PRIV);
-            FileSystemObject fsoSent = addFSOPriv(systemObject.getId(), userId, priv, logEntry);
-            if (fsoSent != null) {
-                systemObject.addPriv(priv, userId);
-                fsoSent.getFileLog().addLogEntry(logEntry);
-                return true;
-            }
+        int newUser;
+        if (priv == PrivType.EDIT) {
+            newUser = sql_connection.addEditPriv(systemObject.getId(), user.getId(), userId);
+        } else {
+            newUser = sql_connection.addViewPriv(systemObject.getId(), user.getId(), userId);
         }
-        return false;
+        if (newUser != -1) {
+            systemObject.addPriv(priv, userId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
