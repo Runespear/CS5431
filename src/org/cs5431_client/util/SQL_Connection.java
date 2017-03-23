@@ -474,6 +474,9 @@ public class SQL_Connection {
         return null;
     }
 
+    public JSONObject getFileLog(int fsoid) {
+        return null;
+    }
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
