@@ -1,5 +1,6 @@
 package org.cs5431_client.util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class SQL_Connection {
@@ -417,9 +419,9 @@ public class SQL_Connection {
         return new java.io.File("pathname");
     }
 
-    /** Gets all viewers and editors of the fso.
-     * @Return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value  **/
-    public JSONObject getPermissions(int fsoid) {
+    /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
+     * @Return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
+    public static JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -474,13 +476,97 @@ public class SQL_Connection {
         return null;
     }
 
-    public JSONObject getFileLog(int fsoid) {
+    public static boolean verifyEditPermission(int fsoid, int uid) {
+        JSONObject permissions = getPermissions(fsoid);
+        boolean hasPermission = false;
+        if (permissions != null) {
+            try {
+                JSONArray editors = permissions.getJSONArray("editors");
+                for (int i = 0; i < editors.length(); i++) {
+                    int editorid = (int) editors.get(i);
+                    if (editorid == uid) {
+                        hasPermission = true;
+                    }
+                }
+            } catch (JSONException e1) {
+                System.out.println("Unable to parse JSON object.");
+                e1.printStackTrace();
+            }
+        }
+        return hasPermission;
+    }
+
+    public static boolean verifyViewPermission(int fsoid, int uid) {
+        JSONObject permissions = getPermissions(fsoid);
+        boolean hasPermission = false;
+        if (permissions != null) {
+            try {
+                JSONArray viewers = permissions.getJSONArray("viewers");
+                for (int i = 0; i < viewers.length(); i++) {
+                    int viewerid = (int) viewers.get(i);
+                    if (viewerid == uid) {
+                        hasPermission = true;
+                    }
+                }
+            } catch (JSONException e1) {
+                System.out.println("Unable to parse JSON object.");
+                e1.printStackTrace();
+            }
+        }
+        return hasPermission;
+    }
+
+    /** Checks the permissions of the uid before getting all file log entries of this fsoid.
+     * @Return A JsonArray of filelog entries; returns null otherwise  **/
+    public static JSONArray getFileLog(int fsoid, int uid) {
+        boolean canView = verifyViewPermission(fsoid,uid);
+        boolean canEdit = verifyEditPermission(fsoid,uid);
+        if (canEdit | canView) {
+            System.out.println("Can view file logs");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement getFileLog = null;
+
+            System.out.println("Connecting to database...");
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+
+                String selectLog = "SELECT L.uid, L.lastModified, L.actionType FROM FileLog L WHERE L.fsoid = ?";
+                getFileLog = connection.prepareStatement(selectLog);
+                JSONArray fileLogArray = new JSONArray();
+
+                try {
+                    getFileLog.setInt(1, fsoid);
+                    ResultSet rs = getFileLog.executeQuery();
+
+                    while (rs.next()) {
+                        JSONObject log = new JSONObject();
+                        log.put("uid", rs.getInt(1));
+                        log.put("lastModified", rs.getTimestamp(2));
+                        log.put("actionType", rs.getString(3));
+                        fileLogArray.put(log);
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (getFileLog != null) {
+                        getFileLog.close();
+                    }
+                    return fileLogArray;
+                }
+        } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         return null;
     }
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        //System.out.print(getPermissions(30));
+        System.out.print(getFileLog(54,22 ));
     }
 
 }
