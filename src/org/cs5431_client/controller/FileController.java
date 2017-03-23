@@ -219,17 +219,18 @@ public class FileController {
      * @return true if privilege was added successfully; false otherwise.
      */
     public boolean removePriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        boolean canRemovePriv = isAllowed(ADD_PRIV, systemObject);
-        if (canRemovePriv) {
-            FileLogEntry logEntry = new FileLogEntry(userId, ADD_PRIV);
-            FileSystemObject fsoSent = removeFSOPriv(systemObject.getId(), userId, priv, logEntry);
-            if (fsoSent != null) {
-                systemObject.removePriv(priv, userId);
-                fsoSent.getFileLog().addLogEntry(logEntry);
-                return true;
-            }
+        int rmUser;
+        if (priv == PrivType.EDIT) {
+            rmUser = sql_connection.removeEditPriv(systemObject.getId(), user.getId(), userId);
+        } else {
+            rmUser = sql_connection.removeViewPriv(systemObject.getId(), user.getId(), userId);
         }
-        return false;
+        if (rmUser != -1) {
+            systemObject.removePriv(priv, userId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void rollback(int rollbackToThisfileId) {
