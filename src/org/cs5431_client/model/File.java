@@ -7,8 +7,8 @@ public class File extends FileSystemObject {
     private String fileContents;
 
     //TODO: populate from database instead?
-    public File(int id, String name, Folder parentFolder, int ownerId, long size, Timestamp lastModified) {
-        super(id, name, parentFolder, ownerId, lastModified);
+    public File(int id, String name, Folder parentFolder, long size, Timestamp lastModified) {
+        super(id, name, parentFolder, lastModified);
         this.size = size;
         this.type = FSOType.FILE;
     }

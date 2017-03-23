@@ -16,13 +16,12 @@ public abstract class FileSystemObject {
     protected  FileLog fileLog;
 
     //ownerId only used when creating new file; otherwise not saved
-    public FileSystemObject (int id, String name, Folder parentFolder, int ownerId, Timestamp lastModified) {
+    public FileSystemObject (int id, String name, Folder parentFolder, Timestamp lastModified) {
         this.id = id;
         this.name = name;
         this.parentFolder = parentFolder;
         this.viewerIds = new ArrayList<>();
         this.editorIds = new ArrayList<>();
-        this.editorIds.add(ownerId);
         this.fileLog = new FileLog();
         //TODO: date modified set by DB timestamp
         //TODO: remove following line that's currently used for display purposes

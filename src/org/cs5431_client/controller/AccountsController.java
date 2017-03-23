@@ -56,7 +56,7 @@ public class AccountsController {
             SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
 
                 Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-                Folder parentFolder = new Folder(parentFolderid, username, null, uid, lastModified);
+                Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
                 return new User(uid, username, email, parentFolder, null, null);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -129,7 +129,7 @@ public class AccountsController {
 
     public Folder getFolderFromId(int folderId, int uid) {
         //TODO: send to server and get the corresponding folder
-        Folder parentFolder = new Folder(folderId, "", null, uid,null);
+        Folder parentFolder = new Folder(folderId, "", null,null);
         ArrayList<JSONObject> children = sql_connection.getChildren(folderId, uid);
         for (JSONObject c : children) {
             try {
@@ -140,10 +140,10 @@ public class AccountsController {
                 Timestamp lastModified = (Timestamp) c.get("lastModified");
                 String type = c.getString("FSOType");
                 if (type == "FOLDER") {
-                    Folder childFolder = new Folder(id, name, parentFolder, -1, lastModified);
+                    Folder childFolder = new Folder(id, name, parentFolder, lastModified);
                     parentFolder.addChild(childFolder);
                 } else {
-                    File childFile = new File(id, name, parentFolder, -1, longSize, lastModified);
+                    File childFile = new File(id, name, parentFolder, longSize, lastModified);
                     parentFolder.addChild(childFile);
                 }
             } catch (JSONException e) {

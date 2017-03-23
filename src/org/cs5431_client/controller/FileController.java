@@ -53,22 +53,20 @@ public class FileController {
         long size = file.length();
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-        boolean canUpload = isAllowed(UPLOAD_FILE, parentFolder);
-        if (canUpload) {
-            JSONObject fso = new JSONObject();
-            fso.put("uid", user.getId());
-            fso.put("parentFolderid", parentFolder.getId());
-            fso.put("fsoName", name);
-            fso.put("size", String.valueOf(size));
-            fso.put("lastModified", lastModified);
-            fso.put("isFile", true);
-            int fileSentid = sendFSO(fso, file);
-            if (fileSentid != -1) {
-                File fileSent = new File(fileSentid, name, parentFolder, user.getId(), size, lastModified);
-                parentFolder.addChild(fileSent);
-                System.out.print(parentFolder.getChildren());
-                return fileSent;
-            }
+        JSONObject fso = new JSONObject();
+        fso.put("uid", user.getId());
+        fso.put("parentFolderid", parentFolder.getId());
+        fso.put("fsoName", name);
+        fso.put("size", String.valueOf(size));
+        fso.put("lastModified", lastModified);
+        fso.put("isFile", true);
+        int fileSentid = sendFSO(fso, file);
+        if (fileSentid != -1) {
+            File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
+            parentFolder.addChild(fileSent);
+            fileSent.addPriv(PrivType.EDIT, user.getId());
+            System.out.print(parentFolder.getChildren());
+            return fileSent;
         }
         return null;
     }
@@ -83,23 +81,20 @@ public class FileController {
     public Folder createFolder(String folderName, Folder parentFolder) throws JSONException {
 
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-
-        boolean canCreateFolder = isAllowed(CREATE_FOLDER, parentFolder);
-        if (canCreateFolder) {
-            if (isAcceptableInput(folderName)) {
-                JSONObject fso = new JSONObject();
-                fso.put("uid", user.getId());
-                fso.put("parentFolderid", parentFolder.getId());
-                fso.put("fsoName", folderName);
-                fso.put("size", "0");
-                fso.put("lastModified", lastModified);
-                fso.put("isFile", false);
-                int folderSentId = sendFSO(fso, null);
-                if (folderSentId != -1) {
-                    Folder folderSent = new Folder(folderSentId, folderName, parentFolder, user.getId(), lastModified);
-                    parentFolder.addChild(folderSent);
-                    return folderSent;
-                }
+        if (isAcceptableInput(folderName)) {
+            JSONObject fso = new JSONObject();
+            fso.put("uid", user.getId());
+            fso.put("parentFolderid", parentFolder.getId());
+            fso.put("fsoName", folderName);
+            fso.put("size", "0");
+            fso.put("lastModified", lastModified);
+            fso.put("isFile", false);
+            int folderSentId = sendFSO(fso, null);
+            if (folderSentId != -1) {
+                Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
+                folderSent.addPriv(PrivType.EDIT, user.getId()); //TODO: do we even need this
+                parentFolder.addChild(folderSent);
+                return folderSent;
             }
         }
         return null;
@@ -137,15 +132,9 @@ public class FileController {
         if (!Validator.validFileName(newName))
             return false;
 
-        boolean canRename = isAllowed(RENAME, systemObject);
-        if (canRename && isAcceptableInput(newName)) {
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), RENAME);
-            FileSystemObject fileSent = modifyFSOName(systemObject.getId(), newName, logEntry);
-            if (fileSent != null) {
-                systemObject.rename(newName);
-                fileSent.getFileLog().addLogEntry(logEntry);
-                return true;
-            }
+        int edited = sql_connection.renameFso(systemObject.getId(), user.getId(), newName);
+        if (edited != -1) {
+            return true;
         }
         return false;
     }
@@ -163,14 +152,9 @@ public class FileController {
 
     /**
      * Gets all children of the folderId
-     * @param folderId downloads the children of folderId
+     * @param parentFolder gets the children of parentFolder
      * @return List of fso if download is successful; false null
      */
-    public List<FileSystemObject> downloadFolder(int folderId) {
-        //TODO: get from server all children
-        return null;
-    }
-
     public List<FileSystemObject> getChildren(Folder parentFolder) {
         int parentFolderid = parentFolder.getId();
         ArrayList<FileSystemObject> children = new ArrayList<>();
@@ -185,9 +169,9 @@ public class FileController {
                 String type = c.getString("FSOType");
                 FileSystemObject child;
                 if (type == "FOLDER") {
-                    child = new Folder(id, name, parentFolder, 0, lastModified);
+                    child = new Folder(id, name, parentFolder, lastModified);
                 } else {
-                    child = new File(id, name, parentFolder, 0, longSize, lastModified);
+                    child = new File(id, name, parentFolder, longSize, lastModified);
                 }
                 children.add(child);
             } catch (JSONException e) {

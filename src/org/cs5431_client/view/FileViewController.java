@@ -374,38 +374,38 @@ public class FileViewController implements Initializable {
         System.out.print("Initializing fake files...");
         currParent = user.getUserParentFolder();
         //populating with some dummy stuff instead
-        Folder dummyFolder = new Folder(1, "fake folder1", currParent, user.getId(), new Timestamp(System.currentTimeMillis()));
+        Folder dummyFolder = new Folder(1, "fake folder1", currParent, new Timestamp(System.currentTimeMillis()));
         org.cs5431_client.model.File dummyChild =
-                new org.cs5431_client.model.File(2, "fake child1", dummyFolder, user.getId(),100,
+                new org.cs5431_client.model.File(2, "fake child1", dummyFolder,100,
                 new Timestamp(System.currentTimeMillis()));
         currParent.addChild(dummyFolder);
         dummyFolder.addChild(dummyChild);
         dummyChild =
-                new org.cs5431_client.model.File(3, "fake child2", dummyFolder, user.getId(),100,
+                new org.cs5431_client.model.File(3, "fake child2", dummyFolder, 100,
                         new Timestamp(System.currentTimeMillis()));
         dummyFolder.addChild(dummyChild);
-        Folder dummyFolder2 = new Folder(4,"fake folder2", currParent, user.getId(), new Timestamp(System.currentTimeMillis()));
+        Folder dummyFolder2 = new Folder(4,"fake folder2", currParent, new Timestamp(System.currentTimeMillis()));
         currParent.addChild(dummyFolder2);
         org.cs5431_client.model.File dummyFile;
         dummyFile =
-                new org.cs5431_client.model.File(5,"fake file1", currParent, user.getId(),100,
+                new org.cs5431_client.model.File(5,"fake file1", currParent,100,
                         new Timestamp(System.currentTimeMillis()));
         currParent.addChild(dummyFile);
         dummyFolder.addChild(dummyFile);
         dummyFolder2.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File(6,"fake file2", currParent, user.getId(), 100,
+                new org.cs5431_client.model.File(6,"fake file2", currParent, 100,
                         new Timestamp(System.currentTimeMillis()));
         currParent.addChild(dummyFile);
         dummyFolder.addChild(dummyFile);
         dummyFolder2.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File(7,"fake file3", currParent, user.getId(),100,
+                new org.cs5431_client.model.File(7,"fake file3", currParent, 100,
                         new Timestamp(System.currentTimeMillis()));
         currParent.addChild(dummyFile);
         dummyFolder.addChild(dummyFile);
         dummyFile =
-                new org.cs5431_client.model.File(8, "fake file4", currParent, user.getId(),100,
+                new org.cs5431_client.model.File(8, "fake file4", currParent, 100,
                         new Timestamp(System.currentTimeMillis()));
         currParent.addChild(dummyFile);
         dummyFolder2.addChild(dummyFolder);

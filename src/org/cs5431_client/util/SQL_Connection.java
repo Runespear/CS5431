@@ -4,13 +4,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.SecretKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
-
 
 public class SQL_Connection {
 
@@ -183,6 +180,7 @@ public class SQL_Connection {
      * @Return fsoid of created fso **/
     public int createFso(JSONObject fso, String sk) {
 
+
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -198,100 +196,103 @@ public class SQL_Connection {
             Timestamp lastModified = (Timestamp) fso.get("lastModified");
             boolean isFile = fso.getBoolean("isFile");
 
-            PreparedStatement createFso = null;
-            PreparedStatement addKey = null;
-            PreparedStatement createLog = null;
-            PreparedStatement addPermission = null;
-            PreparedStatement addFile = null;
+            boolean hasPermission = verifyEditPermission(parentFolderid, uid);
 
-            String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
-                    "lastModified, isFile)"
-                    + " values (?, ?, ?, ?, ?, ?)";
-            String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
-            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
-                    + "values (?, ?, ?, ?, ?)";
-            String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
-            String insertFilePath = "INSERT INTO FileContents (fsoid, path) values (?,?)"; //TODO: how to get path
+            if (hasPermission) {
+                PreparedStatement createFso = null;
+                PreparedStatement addKey = null;
+                PreparedStatement createLog = null;
+                PreparedStatement addPermission = null;
+                PreparedStatement addFile = null;
 
-            try {
-                connection.setAutoCommit(false);
-                createFso = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
-                createLog = connection.prepareStatement(insertLog);
-                addPermission = connection.prepareStatement(insertEditor);
-                addKey = connection.prepareStatement(insertKey);
+                String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
+                        "lastModified, isFile)"
+                        + " values (?, ?, ?, ?, ?, ?)";
+                String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?, ?)";
+                String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
+                String insertFilePath = "INSERT INTO FileContents (fsoid, path) values (?,?)"; //TODO: how to get path
 
-                createFso.setInt(1, 0);
-                createFso.setInt(2, parentFolderid);
-                createFso.setString(3, fsoName);
-                createFso.setString(4, size);
-                createFso.setTimestamp(5, lastModified);
-                createFso.setBoolean(6, isFile);
-                createFso.executeUpdate();
-                System.out.println("created folder");
+                try {
+                    connection.setAutoCommit(false);
+                    createFso = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
+                    createLog = connection.prepareStatement(insertLog);
+                    addPermission = connection.prepareStatement(insertEditor);
+                    addKey = connection.prepareStatement(insertKey);
 
-                ResultSet rs = createFso.getGeneratedKeys();
-                rs.next();
-                fsoid = rs.getInt(1);
+                    createFso.setInt(1, 0);
+                    createFso.setInt(2, parentFolderid);
+                    createFso.setString(3, fsoName);
+                    createFso.setString(4, size);
+                    createFso.setTimestamp(5, lastModified);
+                    createFso.setBoolean(6, isFile);
+                    createFso.executeUpdate();
+                    System.out.println("created folder");
 
-                addKey.setInt(1, fsoid);
-                addKey.setInt(2, uid);
-                addKey.setString(3, sk);
-                addKey.executeUpdate();
-                System.out.println("added added sk");
+                    ResultSet rs = createFso.getGeneratedKeys();
+                    rs.next();
+                    fsoid = rs.getInt(1);
 
-                String actionType;
-                if (isFile) {
-                    actionType = "UPLOAD_FILE";
-                } else {
-                    actionType = "CREATE_FOLDER";
-                }
-                createLog.setInt(1, 0);
-                createLog.setInt(2, fsoid);
-                createLog.setInt(3, uid);
-                createLog.setTimestamp(4, lastModified);
-                createLog.setString(5, actionType);
-                createLog.executeUpdate();
-                System.out.println("created log");
+                    addKey.setInt(1, fsoid);
+                    addKey.setInt(2, uid);
+                    addKey.setString(3, sk);
+                    addKey.executeUpdate();
+                    System.out.println("added added sk");
 
-                addPermission.setInt(1, fsoid);
-                addPermission.setInt(2, uid);
-                addPermission.executeUpdate();
-                System.out.println("added owner as editor");
-
-                if (isFile) {
-                    addFile = connection.prepareStatement(insertFilePath);
-                    addFile.setInt(1, fsoid);
-                    addFile.setString(2, "path");
-                    addFile.executeUpdate();
-                    System.out.println("added file path");
-                }
-
-                connection.commit();
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
+                    String actionType;
+                    if (isFile) {
+                        actionType = "UPLOAD_FILE";
+                    } else {
+                        actionType = "CREATE_FOLDER";
                     }
-                }
-            } finally {
-                if (createFso != null) {
-                    createFso.close();
-                }
-                if (createLog != null) {
-                    createLog.close();
-                }
-                if (addPermission != null) {
-                    addPermission.close();
-                }
-                connection.setAutoCommit(true);
-                return fsoid;
-            }
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, actionType);
+                    createLog.executeUpdate();
+                    System.out.println("created log");
 
+                    addPermission.setInt(1, fsoid);
+                    addPermission.setInt(2, uid);
+                    addPermission.executeUpdate();
+                    System.out.println("added owner as editor");
+
+                    if (isFile) {
+                        addFile = connection.prepareStatement(insertFilePath);
+                        addFile.setInt(1, fsoid);
+                        addFile.setString(2, "path");
+                        addFile.executeUpdate();
+                        System.out.println("added file path");
+                    }
+
+                    connection.commit();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                } finally {
+                    if (createFso != null) {
+                        createFso.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    if (addPermission != null) {
+                        addPermission.close();
+                    }
+                    connection.setAutoCommit(true);
+                    return fsoid;
+                }
+            }
 
         } catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
@@ -363,55 +364,60 @@ public class SQL_Connection {
 
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * @Return An array of JsonObjects of all childrens  **/
-    public ArrayList<JSONObject> getChildren(int parentFolderid, int uid) {
+    public static ArrayList<JSONObject> getChildren(int parentFolderid, int uid) {
 
-        ArrayList<JSONObject> files = new ArrayList<>();
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        boolean hasPermission = verifyEditPermission(parentFolderid, uid);
+        if (hasPermission) {
+            ArrayList<JSONObject> files = new ArrayList<>();
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
-        System.out.println("Connecting to database...");
+            System.out.println("Connecting to database...");
 
-        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            System.out.println("Database connected!");
-            PreparedStatement getFiles = null;
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                PreparedStatement getFiles = null;
 
-            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile " +
-                    "FROM FileSystemObjects F " +
-                    "WHERE F.parentFolderid = ? AND EXISTS" +
-                    "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
-                    "(SELECT * FROM Viewers V WHERE V.uid=?);";
-            getFiles = connection.prepareStatement(selectFiles);
-            //TODO: get enc key as well
+                String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile " +
+                        "FROM FileSystemObjects F " +
+                        "WHERE F.parentFolderid = ? AND EXISTS" +
+                        "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
+                        "(SELECT * FROM Viewers V WHERE V.uid=?);";
+                getFiles = connection.prepareStatement(selectFiles);
+                //TODO: get enc key as well
 
-            try {
-                getFiles.setInt(1, parentFolderid);
-                getFiles.setInt(2, uid);
-                getFiles.setInt(3, uid);
-                ResultSet rs = getFiles.executeQuery();
-                while (rs.next()) {
-                    JSONObject fso = new JSONObject();
-                    fso.put("id", rs.getInt(1));
-                    fso.put("name", rs.getString(2));
-                    fso.put("size", rs.getString(3));
-                    fso.put("lastModified", rs.getTimestamp(4));
+                try {
+                    getFiles.setInt(1, parentFolderid);
+                    getFiles.setInt(2, uid);
+                    getFiles.setInt(3, uid);
+                    ResultSet rs = getFiles.executeQuery();
+                    while (rs.next()) {
+                        JSONObject fso = new JSONObject();
+                        fso.put("id", rs.getInt(1));
+                        fso.put("name", rs.getString(2));
+                        fso.put("size", rs.getString(3));
+                        fso.put("lastModified", rs.getTimestamp(4));
 
-                    if (rs.getBoolean(5)) {
-                        fso.put("FSOType", "FILE");
-                    } else {
-                        fso.put("FSOType", "FOLDER");
+                        if (rs.getBoolean(5)) {
+                            fso.put("FSOType", "FILE");
+                        } else {
+                            fso.put("FSOType", "FOLDER");
+                        }
+                        files.add(fso);
                     }
-                    files.add(fso);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (getFiles != null) {
+                        getFiles.close();
+                    }
+                    return files;
                 }
-            } catch (Exception e) {
+            } catch (SQLException e) {
                 e.printStackTrace();
-            } finally {
-                if (getFiles != null) {
-                    getFiles.close();
-                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return files;
+        System.out.println("User does not have permission to edit");
+        return null;
     }
 
     public java.io.File getFile(int fsoid) {
@@ -496,7 +502,7 @@ public class SQL_Connection {
         return hasPermission;
     }
 
-    public static boolean verifyViewPermission(int fsoid, int uid) {
+    public static boolean verifyBothPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         boolean hasPermission = false;
         if (permissions != null) {
@@ -505,6 +511,13 @@ public class SQL_Connection {
                 for (int i = 0; i < viewers.length(); i++) {
                     int viewerid = (int) viewers.get(i);
                     if (viewerid == uid) {
+                        hasPermission = true;
+                    }
+                }
+                JSONArray editors = permissions.getJSONArray("editors");
+                for (int i = 0; i < editors.length(); i++) {
+                    int editorid = (int) viewers.get(i);
+                    if (editorid == uid) {
                         hasPermission = true;
                     }
                 }
@@ -519,9 +532,8 @@ public class SQL_Connection {
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @Return A JsonArray of filelog entries; returns null otherwise  **/
     public static JSONArray getFileLog(int fsoid, int uid) {
-        boolean canView = verifyViewPermission(fsoid,uid);
-        boolean canEdit = verifyEditPermission(fsoid,uid);
-        if (canEdit | canView) {
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
+        if (hasPermission) {
             System.out.println("Can view file logs");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement getFileLog = null;
@@ -564,9 +576,44 @@ public class SQL_Connection {
         return null;
     }
 
+    public static int renameFso(int fsoid, int uid, String newName) {
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            System.out.println("Can rename fso");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement renameFso = null;
+
+            System.out.println("Connecting to database...");
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+
+                String updateName = "UPDATE FileSystemObjects SET fsoName = ? WHERE fsoid =  ?";
+                renameFso = connection.prepareStatement(updateName);
+
+                try {
+                    renameFso.setString(1, newName);
+                    renameFso.setInt(2, fsoid);
+                    renameFso.executeUpdate();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (renameFso != null) {
+                        renameFso.close();
+                    }
+                    return fsoid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        System.out.print(getFileLog(54,22 ));
+        System.out.print(renameFso(54, 22, "changename??"));
     }
 
 }

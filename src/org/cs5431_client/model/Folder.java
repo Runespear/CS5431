@@ -15,8 +15,8 @@ public class Folder extends FileSystemObject {
         //TODO: database stuff?
     }
 
-    public Folder (int id, String name, Folder parentFolder, int ownerId, Timestamp lastModified) {
-        super(id, name, parentFolder, ownerId, lastModified);
+    public Folder (int id, String name, Folder parentFolder, Timestamp lastModified) {
+        super(id, name, parentFolder, lastModified);
         this.type = FSOType.FOLDER;
         this.children = new ArrayList<>();
         this.size = 0;
@@ -32,6 +32,12 @@ public class Folder extends FileSystemObject {
     //TODO: update size to be sum of size of children
     public void addPriv(PrivType priv, int userId) {
         if (priv == PrivType.EDIT) {
+            editorIds.add(userId);
+        } else {
+            viewerIds.add(userId);
+        }
+
+        /*if (priv == PrivType.EDIT) {
             editorIds.add(userId);
                 PriorityQueue<FileSystemObject> fsoToAddPriv = new PriorityQueue<>();
                 for (int i = 0; i < children.size(); i++) {
@@ -61,11 +67,16 @@ public class Folder extends FileSystemObject {
                     }
                 }
             }
-        }
+        }*/
     }
 
     public void removePriv(PrivType priv, int userId) {
         if (priv == PrivType.EDIT) {
+            editorIds.remove((Integer) userId);
+        } else {
+            viewerIds.remove((Integer) userId);
+        }
+        /*if (priv == PrivType.EDIT) {
             editorIds.remove((Integer) userId);
             PriorityQueue<FileSystemObject> fsoToAddPriv = new PriorityQueue<>();
             for (int i = 0; i < children.size(); i++) {
@@ -95,6 +106,6 @@ public class Folder extends FileSystemObject {
                     }
                 }
             }
-        }
+        }*/
     }
 }
