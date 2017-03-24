@@ -76,29 +76,36 @@ public class LoginController implements Initializable {
             alert.setContentText("Username or password not valid.");
             alert.showAndWait();
         } else {
-            //TODO: catch login failure
+            try {
+                User user = accountsController.login(username, password, server, port);
+                if (user == null) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Login error");
+                    alert.setContentText("Could not login to server. Please " +
+                            "try again or register an account.");
+                    alert.showAndWait();
+                } else {
+                    Node node = (Node) e.getSource();
+                    Stage stage = (Stage) node.getScene().getWindow();
+                    Scene scene = stage.getScene();
+
+                    final URL r = getClass().getResource("file_view.fxml");
+                    FXMLLoader fxmlLoader = new FXMLLoader(r);
+                    Parent root = fxmlLoader.load();
+                    Client.fileViewNode = root;
+                    FileViewController fvc = fxmlLoader.getController();
+                    //AccountsController accountsController = new AccountsController();
+                    fvc.setUserDetails(user, server, port);
+                    fvc.setStage(stage);
+                    scene.setRoot(root);
+                }
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         }
 
-        try {
-            Node node = (Node) e.getSource();
-            Stage stage = (Stage) node.getScene().getWindow();
-            Scene scene = stage.getScene();
 
-            final URL r = getClass().getResource("file_view.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(r);
-            Parent root = fxmlLoader.load();
-            Client.fileViewNode = root;
-            FileViewController fvc = fxmlLoader.getController();
-            AccountsController accountsController = new AccountsController();
-            User user = accountsController.login(username, password, server, port);
-            //User user = accountsController.createUser(username,password,"",server,port);
-            fvc.setUserDetails(user, server, port);
-            fvc.setStage(stage);
-            scene.setRoot(root);
-
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
     }
 
     /**

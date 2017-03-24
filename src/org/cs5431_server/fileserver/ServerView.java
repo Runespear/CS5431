@@ -108,14 +108,17 @@ public class ServerView {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter the username of the user to delete:");
-            String command = scanner.nextLine();
-            String[] elements = command.trim().split("\\s+");
+            String userToDelete = scanner.nextLine();
 
-            String userToDelete = elements[0];
-            String url = "jdbc:mysql://" + server + ":" + dbPort + "/cs5431";
-            Connection connection = DriverManager.getConnection(url, username, password);
-            PreparedStatement deleteUser = null; //TODO
-            //TODO: maybe call SQL_Connection in util instead
+            System.out.println("Please confirm the username of the user to " +
+                    "delete by entering it again:");
+            String confirm = scanner.nextLine();
+            if (userToDelete.equals(confirm)) {
+                String url = "jdbc:mysql://" + server + ":" + dbPort + "/cs5431";
+                Connection connection = DriverManager.getConnection(url, username, password);
+                PreparedStatement deleteUser = null; //TODO
+                //TODO: maybe call SQL_Connection in util instead
+            }
         }
     }
 }

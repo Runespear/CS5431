@@ -120,13 +120,25 @@ public class RegistrationController implements Initializable {
             } else {
                 User user = accountsController.createUser(username, password,
                         email, server, port);
-                //TODO: IDK what to do with the user id?
-                //TODO maybe print a success message here?
+                if (user == null) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Registration failed");
+                    alert.setContentText("Could not create new user. Please " +
+                            "try again.");
+                    alert.showAndWait();
+                }
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Registration successful");
+                alert.setContentText("Registration successful! Bringing you " +
+                        "back to the login page...");
+                alert.showAndWait();
                 exit();
+
             }
         } catch (AccountsController.RegistrationFailException rfe) {
             //TODO change this to alert box
-            System.out.println(rfe.getMessage());
+            System.err.println(rfe.getMessage());
+            rfe.printStackTrace();
         }
     }
 
