@@ -23,6 +23,14 @@
                 </cursor>
                 <Image url="@../assets/ic_arrow_back.png"/>
             </ImageView>
+            <ImageView fx:id="imgRefresh" fitHeight="36.0"
+                       fitWidth="36.0" pickOnBounds="true"
+                       preserveRatio="true">
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+                <Image url="@../assets/ic_refresh.png"/>
+            </ImageView>
             <ImageView fx:id="imgCreateFolder" fitHeight="36.0"
                        fitWidth="36.0" pickOnBounds="true"
                        preserveRatio="true">

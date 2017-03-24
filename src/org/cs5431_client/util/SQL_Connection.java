@@ -1,13 +1,19 @@
 package org.cs5431_client.util;
 
+import org.bouncycastle.crypto.PBEParametersGenerator;
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
+import org.bouncycastle.crypto.params.KeyParameter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Random;
 
 public class SQL_Connection {
 
@@ -82,6 +88,7 @@ public class SQL_Connection {
 
             String username = (String) user.get("username");
             String pwd = (String) user.get("pwd");
+
             String email = null;
             if (user.has("email")) {
                 email = (String) user.get("email");
