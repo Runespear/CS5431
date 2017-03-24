@@ -10,6 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.UserController;
+import org.cs5431_client.util.Validator;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -113,6 +114,9 @@ public class EditDetailsController implements Initializable {
                 messages.add("At least one password field is empty.");
             } else if (!newPassword.equals(confirmNewPassword)){
                 messages.add("New passwords don't match.");
+            } else if (!Validator.validPassword(newPassword)) {
+                messages.add("Passwords should be at least 16 characters " +
+                        "long.");
             } else {
                 userController.changePassword(oldPassword, newPassword);
                 messages.add("Password successfully changed.");
@@ -120,7 +124,6 @@ public class EditDetailsController implements Initializable {
         }
 
         //Tries to change the email if the email fields are not blank.
-        //TODO add email validation
         if (!oldEmail.isEmpty() || !newEmail.isEmpty() ||
                 !confirmNewEmail.isEmpty()) {
             if (oldEmail.isEmpty() || newEmail.isEmpty() ||
@@ -128,6 +131,8 @@ public class EditDetailsController implements Initializable {
                 messages.add("At least one email field is empty.");
             } else if (!newEmail.equals(confirmNewEmail)){
                 messages.add("New emails don't match.");
+            } else if (!Validator.validEmail(newEmail)) {
+                messages.add("The email entered is invalid.");
             } else {
                 userController.changeEmail(oldEmail, newEmail);
                 //TODO check here
