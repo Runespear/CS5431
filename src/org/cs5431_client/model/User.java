@@ -26,4 +26,7 @@ public class User extends Account {
         return email;
     }
 
+    public SecretKey getPrivKey() {
+        return privKey;
+    }
 }
