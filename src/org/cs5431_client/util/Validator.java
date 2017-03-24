@@ -34,7 +34,7 @@ public class Validator {
 
     public static boolean validFileName(String fileName) {
         Pattern pattern = Pattern.compile("[^/./\\:*?\"<>|]");
-        if (!pattern.matcher(fileName).find()) {
+        if (pattern.matcher(fileName).find()) {
             try {
                 File file = new File("./" + fileName);
                 if (file.createNewFile()) {

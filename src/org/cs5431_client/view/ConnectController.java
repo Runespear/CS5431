@@ -60,11 +60,9 @@ public class ConnectController implements Initializable {
             File configFile = new File("./user-config/" + serverName +
                     ".config");
             BufferedReader br = new BufferedReader(new FileReader(configFile));
-            String nameInFile = br.readLine(); //TODO: validate this?
             String server = br.readLine();
             String port = br.readLine();
-            if (!serverName.equals(nameInFile) || !Validator.validIP(server)
-                || !Validator.validPort(port)){
+            if (!Validator.validIP(server)|| !Validator.validPort(port)){
                 throw new IOException("Config file tampered with");
             }
 

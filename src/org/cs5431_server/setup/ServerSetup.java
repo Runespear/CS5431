@@ -1,6 +1,5 @@
 package org.cs5431_server.setup;
 
-import org.apache.commons.validator.routines.InetAddressValidator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.util.Validator;
 
@@ -22,20 +21,30 @@ public class ServerSetup {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        //TODO validation for server name
+
         System.out.println("Enter the name of the server (that your users " +
                 "will see):");
-        String name = scanner.nextLine();
-        System.out.println("Enter the IP address of the server:");
+        String name;
+        while (!Validator.validFileName(name = scanner.nextLine())) {
+            System.out.println("Please enter a server name that can be used " +
+                    "as a file name:");
+        }
 
+        System.out.println("Enter the IP address of the server/database:");
         String ip;
-        while (Validator.validIP(ip = scanner.nextLine())) {
+        while (!Validator.validIP(ip = scanner.nextLine())) {
             System.out.println("Please enter a valid IP address:");
         }
 
-        System.out.println("Enter the port address of the server:");
-        String port;
-        while (Validator.validPort(port = scanner.nextLine())) {
+        System.out.println("Enter the port of the MYSQL database:");
+        String dbPort;
+        while (!Validator.validPort(dbPort = scanner.nextLine())) {
+            System.out.println("Please enter a valid IP address:");
+        }
+
+        System.out.println("Enter the outward-facing port of the server:");
+        String outPort;
+        while (!Validator.validPort(outPort = scanner.nextLine())) {
             System.out.println("Please enter a valid port:");
         }
 
@@ -58,11 +67,12 @@ public class ServerSetup {
                     System.err.println("Could not make user config folder");
             }
 
-            //writes the server details into an easily distributable config file
+            //writes the server details that the user needs to know into an
+            // easily distributable config file
             File configFile = new File("./user-config/"+name+".config");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(configFile)));
-            writer.write(name+"\n"+ip+"\n"+port+"\n");
+            writer.write(ip+"\n"+outPort+"\n");
             writer.close();
             //writes the server public key into an easily distributable file
             File pubKeyFile = new File("./user-config/"+name+".pub");
@@ -71,12 +81,20 @@ public class ServerSetup {
             publicKeyOS.writeObject(keyPair.getPublic());
             publicKeyOS.close();
 
-            //writes the server private key into a file
             File serverDir = new File("./server-config/");
             if (!serverDir.exists()){
                 if (!serverDir.mkdir())
                     System.err.println("Could not make server config folder");
             }
+            //writes the server details that the server needs to know into a
+            // config file
+            File serverConfigFile = new File("./server-config/"+name+"" +
+                    ".config");
+            writer = new BufferedWriter(new OutputStreamWriter(new
+                    FileOutputStream(serverConfigFile)));
+            writer.write(ip+"\n"+dbPort+"\n"+outPort+"\n");
+            writer.close();
+            //writes the server private key into a file
             File privKeyFile = new File("./server-config/"+name+".priv");
             ObjectOutputStream privateKeyOS = new ObjectOutputStream(
                     new FileOutputStream(privKeyFile));
@@ -87,7 +105,7 @@ public class ServerSetup {
             e.printStackTrace();
         }
 
-        String url = "jdbc:mysql://" + ip + ":" + port;
+        String url = "jdbc:mysql://" + ip + ":" + dbPort;
         String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT " +
                 "UNSIGNED AUTO_INCREMENT PRIMARY KEY, " +
@@ -103,8 +121,37 @@ public class ServerSetup {
                 "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL," +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects" +
                 "(fsoid) ON DELETE CASCADE)";
-
-        //TODO make tables as well?
+        String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT " +
+                "NULL," +
+                "uid INT UNSIGNED NOT NULL," +
+                "FOREIGN KEY (uid) REFERENCES Users(uid)," +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid))";
+        String createViewers = "CREATE TABLE Viewers (fsoid INT UNSIGNED NOT " +
+                "NULL," +
+                "uid INT UNSIGNED NOT NULL," +
+                "FOREIGN KEY (uid) REFERENCES Users(uid)," +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid))";
+        String createFileLog = "CREATE TABLE FileLog (fileLogid INT UNSIGNED " +
+                "AUTO_INCREMENT PRIMARY KEY," +
+                "fsoid INT UNSIGNED NOT NULL," +
+                "uid INT UNSIGNED NOT NULL, " +
+                "lastModified TIMESTAMP, actionType CHAR(20)," +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid)," +
+                "FOREIGN KEY (uid) REFERENCES Users(uid))";
+        String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED " +
+                "AUTO_INCREMENT PRIMARY KEY," +
+                "uid INT UNSIGNED NOT NULL," +
+                "lastModified TIMESTAMP, actionType CHAR(20)," +
+                "FOREIGN KEY (uid) REFERENCES Users(uid))";
+        String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED" +
+                " NOT NULL, uid INT UNSIGNED NOT NULL," +
+                "encKey CHAR(100) NOT NULL," +
+                "FOREIGN KEY (uid) REFERENCES Users(uid)," +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));";
+        String createFileContents = "CREATE TABLE FileContents (fsoid INT " +
+                "UNSIGNED NOT NULL, path VARCHAR(100)," +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid))";
+        //String createSalts = "CREATE TABLE Salts ()";
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
@@ -117,13 +164,29 @@ public class ServerSetup {
             statement.execute();
             statement = connection.prepareStatement(createUsers);
             statement.execute();
+            statement = connection.prepareStatement(createEditors);
+            statement.execute();
+            statement = connection.prepareStatement(createViewers);
+            statement.execute();
+            statement = connection.prepareStatement(createFileLog);
+            statement.execute();
+            statement = connection.prepareStatement(createUserLog);
+            statement.execute();
+            statement = connection.prepareStatement(createFSOEnc);
+            statement.execute();
+            statement = connection.prepareStatement(createFileContents);
+            statement.execute();
+            //statement = connection.prepareStatement(createSalts);
+            //statement.execute();
             connection.close();
+            System.out.println("Distribute the "+name+".config and the "+name+
+                    ".pub file found in the /user-config folder to your users.");
         } catch (Exception e) {
             e.printStackTrace();
+            System.err.println("Problem when trying to initialise server. " +
+                    "Please delete the "+name+".config and the "+name+
+                    ".pub file found in the /user-config and /server-config " +
+                    "folders and try again.");
         }
-
-
-        System.out.println("Distribute the "+name+".config and the "+name+
-                        ".pub file found in the /user-config folder to your users.");
     }
 }

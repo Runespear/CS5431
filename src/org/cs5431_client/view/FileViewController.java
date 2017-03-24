@@ -1,7 +1,5 @@
 package org.cs5431_client.view;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -30,7 +28,6 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +37,9 @@ import java.util.ResourceBundle;
 public class FileViewController implements Initializable {
     @FXML
     public ImageView imgBack;
+
+    @FXML
+    public ImageView imgRefresh;
 
     @FXML
     public ImageView imgCreateFolder;
@@ -89,6 +89,8 @@ public class FileViewController implements Initializable {
         txtLogout.setPadding(new Insets(0,0,0,4));
 
         imgBack.setOnMouseClicked(e -> gotoParentFolder());
+
+        imgRefresh.setOnMouseClicked(e -> populateListView());
 
         imgCreateFolder.setOnMouseClicked(e -> createFolder());
 
@@ -411,7 +413,7 @@ public class FileViewController implements Initializable {
         dummyFolder2.addChild(dummyFolder);
     }
 
-    public void populateListView() {
+    private void populateListView() {
         List<FileSystemObject> children = fileController.getChildren(currParent);
 
         ObservableList<FileSystemObject> observableList =
