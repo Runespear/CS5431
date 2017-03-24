@@ -45,6 +45,7 @@ public class SQL_Connection {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                return false;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
@@ -56,7 +57,7 @@ public class SQL_Connection {
         return false;
     }
 
-    public JSONObject createUser(JSONObject user, String privKey, String pubKey) {
+    public JSONObject createUser(JSONObject user, String privKey, String pubKey, String salt) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -71,8 +72,8 @@ public class SQL_Connection {
             PreparedStatement createLog = null;
             PreparedStatement addPermission = null;
 
-            String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, pubKey)"
-                    + " values (?, ?, ?, ?, ?, ?, ?)";
+            String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, pubKey, salt)"
+                    + " values (?, ?, ?, ?, ?, ?, ?, ?)";
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
@@ -114,6 +115,7 @@ public class SQL_Connection {
                 createUser.setString (5, email);
                 createUser.setString    (6, privKey);
                 createUser.setString    (7, pubKey);
+                createUser.setString    (8, salt);
                 createUser.executeUpdate();
                 System.out.println("created user");
 
@@ -141,6 +143,7 @@ public class SQL_Connection {
                 jsonUser.put("email", email);
                 jsonUser.put("privKey", privKey);
                 jsonUser.put("pubKey", pubKey);
+                return jsonUser;
 
             } catch (SQLException e ) {
                 e.printStackTrace();
@@ -152,6 +155,7 @@ public class SQL_Connection {
                         excep.printStackTrace();
                     }
                 }
+                return null;
             } finally {
                 if (createFolder != null) {
                     createFolder.close();
@@ -166,7 +170,6 @@ public class SQL_Connection {
                     addPermission.close();
                 }
                 connection.setAutoCommit(true);
-                return jsonUser;
             }
 
         } catch (SQLException e) {
@@ -174,12 +177,11 @@ public class SQL_Connection {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return jsonUser;
+        return null;
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * @Return fsoid of created fso **/
     public int createFso(JSONObject fso, String sk) {
-
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -304,7 +306,7 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @Return h(privKey) of the user if the authentication is valid. **/
-    public JSONObject authenticate(JSONObject allegedUser) {
+    public static JSONObject authenticate(JSONObject allegedUser) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -321,7 +323,6 @@ public class SQL_Connection {
 
             String username = allegedUser.getString("username");
             String encPwd = allegedUser.getString("pwd");
-            //TODO: salting?
 
             try {
                 verifyUser.setString(1, username);
@@ -343,6 +344,7 @@ public class SQL_Connection {
                     user.put("pubKey", pubKey);
                     return user;
                 } else {
+                    //TODO: log the number of failed authentications? send email directly?
                     return null;
                 }
             } catch (JSONException e) {
@@ -354,12 +356,176 @@ public class SQL_Connection {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
-        //TODO: log the number of failed authentications?
         System.out.println("Invalid user");
         return null;
+    }
+
+    //untested
+    public String getSalt(String username) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+
+        System.out.println("Connecting to database...");
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            System.out.println("Database connected!");
+            PreparedStatement getSalt = null;
+
+            String selectSalt = "SELECT U.salt FROM Users U WHERE U.username = ?";
+            getSalt = connection.prepareStatement(selectSalt);
+            String salt = null;
+
+            try {
+                getSalt.setString(1, username);
+                ResultSet rs = getSalt.executeQuery();
+                if (rs.next()) {
+                    salt = rs.getString(1);
+                }
+                return salt;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getSalt != null) {
+                    getSalt.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //how does an admin delete user? not functional, need to update db on delete cascade
+    public static int deleteUser(int uid, String username, String password) {
+        JSONObject allegedUser = new JSONObject();
+        allegedUser.put("username", "username");
+        allegedUser.put("pwd", password);
+        JSONObject user = authenticate(allegedUser);
+        if (user != null) {
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+
+            System.out.println("Connecting to database...");
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                PreparedStatement removeUser = null;
+                PreparedStatement createLog = null;
+
+                String deleteUser = "DELETE FROM Users WHERE username = ? AND pwd = ?";
+                String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?)";
+                createLog = connection.prepareStatement(insertLog);
+                removeUser = connection.prepareStatement(deleteUser);
+
+                try {
+                    connection.setAutoCommit(false);
+                    removeUser.setString(1, username);
+                    removeUser.setString(2, password);
+                    removeUser.executeUpdate();
+                    System.out.println("deleted user");
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setTimestamp(3, lastModified);
+                    createLog.setString(4, "DELETE");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
+                    return uid;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                    return -1;
+                } finally {
+                    if (removeUser != null) {
+                        removeUser.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
+    public static int changePassword(int uid, String username, String password, String newPwd) {
+        JSONObject allegedUser = new JSONObject();
+        allegedUser.put("username", "username");
+        allegedUser.put("pwd", password);
+        JSONObject user = authenticate(allegedUser);
+        if (user != null) {
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+
+            System.out.println("Connecting to database...");
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                PreparedStatement changePwd = null;
+                PreparedStatement createLog = null;
+
+                String updatePwd = "UPDATE Users SET pwd = ? WHERE username = ? AND pwd = ?";
+                String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
+                        + "values (?, ?, ?, ?)";
+                createLog = connection.prepareStatement(insertLog);
+                changePwd = connection.prepareStatement(updatePwd);
+
+                try {
+                    connection.setAutoCommit(false);
+                    changePwd.setString(1, newPwd);
+                    changePwd.setString(2, username);
+                    changePwd.setString(2, password);
+                    changePwd.executeUpdate();
+                    System.out.println("changed password");
+
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setTimestamp(3, lastModified);
+                    createLog.setString(4, "CHANGE_PWD");
+                    createLog.executeUpdate();
+                    System.out.println("created log");
+
+                    connection.commit();
+                    return uid;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                    return -1;
+                } finally {
+                    if (changePwd != null) {
+                        changePwd.close();
+                    }
+                    if (createLog != null) {
+                        createLog.close();
+                    }
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
     }
 
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
@@ -403,14 +569,15 @@ public class SQL_Connection {
                             fso.put("FSOType", "FOLDER");
                         }
                         files.add(fso);
+                        return files;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    return null;
                 } finally {
                     if (getFiles != null) {
                         getFiles.close();
                     }
-                    return files;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -467,6 +634,7 @@ public class SQL_Connection {
 
             } catch (JSONException e) {
                 e.printStackTrace();
+                return null;
             } finally {
                 if (verifyEditors != null) {
                     verifyEditors.close();
@@ -492,11 +660,13 @@ public class SQL_Connection {
                     int editorid = (int) editors.get(i);
                     if (editorid == uid) {
                         hasPermission = true;
+                        return hasPermission;
                     }
                 }
             } catch (JSONException e1) {
                 System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
+                return false;
             }
         }
         return hasPermission;
@@ -507,23 +677,26 @@ public class SQL_Connection {
         boolean hasPermission = false;
         if (permissions != null) {
             try {
+                JSONArray editors = permissions.getJSONArray("editors");
+                for (int i = 0; i < editors.length(); i++) {
+                    int editorid = (int) editors.get(i);
+                    if (editorid == uid) {
+                        hasPermission = true;
+                        return hasPermission;
+                    }
+                }
                 JSONArray viewers = permissions.getJSONArray("viewers");
                 for (int i = 0; i < viewers.length(); i++) {
                     int viewerid = (int) viewers.get(i);
                     if (viewerid == uid) {
                         hasPermission = true;
-                    }
-                }
-                JSONArray editors = permissions.getJSONArray("editors");
-                for (int i = 0; i < editors.length(); i++) {
-                    int editorid = (int) viewers.get(i);
-                    if (editorid == uid) {
-                        hasPermission = true;
+                        return hasPermission;
                     }
                 }
             } catch (JSONException e1) {
                 System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
+                return false;
             }
         }
         return hasPermission;
@@ -558,19 +731,71 @@ public class SQL_Connection {
                         log.put("actionType", rs.getString(3));
                         fileLogArray.put(log);
                     }
+                    return fileLogArray;
 
                 } catch (SQLException e) {
                     e.printStackTrace();
+                    return null;
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    return null;
                 } finally {
                     if (getFileLog != null) {
                         getFileLog.close();
                     }
-                    return fileLogArray;
                 }
         } catch (SQLException e) {
                 e.printStackTrace();
+                return null;
+            }
+        }
+        return null;
+    }
+
+    //TODO: userlog
+    public static JSONArray getUserLog(int fsoid, int uid) {
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
+        if (hasPermission) {
+            System.out.println("Can view file logs");
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement getFileLog = null;
+
+            System.out.println("Connecting to database...");
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+
+                String selectLog = "SELECT L.uid, L.lastModified, L.actionType FROM FileLog L WHERE L.fsoid = ?";
+                getFileLog = connection.prepareStatement(selectLog);
+                JSONArray fileLogArray = new JSONArray();
+
+                try {
+                    getFileLog.setInt(1, fsoid);
+                    ResultSet rs = getFileLog.executeQuery();
+
+                    while (rs.next()) {
+                        JSONObject log = new JSONObject();
+                        log.put("uid", rs.getInt(1));
+                        log.put("lastModified", rs.getTimestamp(2));
+                        log.put("actionType", rs.getString(3));
+                        fileLogArray.put(log);
+                    }
+                    return fileLogArray;
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    return null;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return null;
+                } finally {
+                    if (getFileLog != null) {
+                        getFileLog.close();
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
             }
         }
         return null;
@@ -610,6 +835,7 @@ public class SQL_Connection {
                     System.out.println("created log");
 
                     connection.commit();
+                    return fsoid;
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -621,6 +847,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
+                    return -1;
                 } finally {
                     if (renameFso != null) {
                         renameFso.close();
@@ -629,7 +856,6 @@ public class SQL_Connection {
                         createLog.close();
                     }
                     connection.setAutoCommit(true);
-                    return fsoid;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -672,6 +898,8 @@ public class SQL_Connection {
                     System.out.println("created log");
 
                     connection.commit();
+                    return newUid;
+
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -683,6 +911,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
+                    return -1;
                 } finally {
                     if (addEditor != null) {
                         addEditor.close();
@@ -691,7 +920,6 @@ public class SQL_Connection {
                         createLog.close();
                     }
                     connection.setAutoCommit(true);
-                    return newUid;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -734,6 +962,7 @@ public class SQL_Connection {
                     System.out.println("created log");
 
                     connection.commit();
+                    return newUid;
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -745,6 +974,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
+                    return -1;
                 } finally {
                     if (addViewer != null) {
                         addViewer.close();
@@ -753,7 +983,6 @@ public class SQL_Connection {
                         createLog.close();
                     }
                     connection.setAutoCommit(true);
-                    return newUid;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -796,6 +1025,7 @@ public class SQL_Connection {
                     System.out.println("created log");
 
                     connection.commit();
+                    return rmUid;
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -807,6 +1037,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
+                    return -1;
                 } finally {
                     if (rmViewer != null) {
                         rmViewer.close();
@@ -815,7 +1046,6 @@ public class SQL_Connection {
                         createLog.close();
                     }
                     connection.setAutoCommit(true);
-                    return rmUid;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -858,6 +1088,7 @@ public class SQL_Connection {
                     System.out.println("created log");
 
                     connection.commit();
+                    return rmUid;
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -869,6 +1100,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
+                    return -1;
                 } finally {
                     if (rmEditor != null) {
                         rmEditor.close();
@@ -877,7 +1109,6 @@ public class SQL_Connection {
                         createLog.close();
                     }
                     connection.setAutoCommit(true);
-                    return rmUid;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -889,7 +1120,7 @@ public class SQL_Connection {
 
     public static void main(String[] args) {
         //Connection connection = connectToDB();
-        System.out.print(renameFso(54, 22, "changedagain"));
+        System.out.print(deleteUser(26, "ruimin", "ruimin"));
     }
 
 }
