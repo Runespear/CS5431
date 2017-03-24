@@ -104,7 +104,7 @@ public class RegistrationController implements Initializable {
                         "long.");
             }
 
-            if (!Validator.validEmail(email))
+            if (!email.isEmpty() && !Validator.validEmail(email))
                 errMessages.add("The email entered is invalid.");
 
             if (!errMessages.isEmpty()) {
