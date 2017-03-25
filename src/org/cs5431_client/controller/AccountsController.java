@@ -42,6 +42,9 @@ public class AccountsController {
                 user.put("pwd", password);
                 user.put("email", email);
 
+                //TODO: priv key must be generated on client side and
+                // encrypted using pwd-based encryption
+
                 JSONObject newUser = sendUser(user);
                 int uid = newUser.getInt("uid");
                 int parentFolderid = newUser.getInt("parentFolderid");

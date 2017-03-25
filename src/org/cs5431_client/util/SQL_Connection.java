@@ -63,7 +63,7 @@ public class SQL_Connection {
         return false;
     }
 
-    public JSONObject createUser(JSONObject user, String privKey, String pubKey, String salt) {
+    public JSONObject createUser(JSONObject user, String privKey, String pubKey) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -89,6 +89,14 @@ public class SQL_Connection {
 
             String username = (String) user.get("username");
             String pwd = (String) user.get("pwd");
+
+            String hashAndSalt[] = generatePasswordHash(pwd);
+            String hash = hashAndSalt[0];   //TODO store hash instead of pwd
+            String salt = hashAndSalt[1];
+
+            //TODO zero out password
+
+            //TODO encrypt private key with password
 
             String email = null;
             if (user.has("email")) {
@@ -1129,6 +1137,33 @@ public class SQL_Connection {
         //Connection connection = connectToDB();
         System.out.print(deleteUser(26, "ruimin", "ruimin"));
     }
+    private String[] generatePasswordHash(String pwd) {
+        Random random = new SecureRandom();
+        //TODO: 32 is currently the salt length. Is this correct?
+        byte salt[] = new byte[32];
+        random.nextBytes(salt);
+        String hashedPW = hash(pwd, salt);
+        String returnedValues[] = new String[2];
+        returnedValues[0] = hashedPW;
+        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
+        return returnedValues;
+    }
+
+    private String hash(String pwd, byte[] salt) {
+        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
+        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
+                pwd.toCharArray()), salt, 10000);
+        //TODO: 256 is currently the key length. Is this correct?
+        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
+        return Base64.getEncoder().encodeToString(kp.getKey());
+    }
+
+    private boolean verifyPassword(String pwd, String actualHash, String
+            salt) {
+        String cmpHash = hash(pwd, Base64.getDecoder().decode(salt));
+        return (cmpHash.equals(actualHash));
+    }
+
 
 }
 
