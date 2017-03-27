@@ -27,6 +27,14 @@ public class SQL_Connection {
         this.port = port;
     }
 
+    public SQL_Connection(String ip, int dbPort, String username, String
+            password) {
+        this.ip = ip;
+        this.port = port;
+        this.DB_USER = username;
+        this.DB_PASSWORD = password;
+    }
+
     public boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 

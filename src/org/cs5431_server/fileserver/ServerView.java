@@ -1,9 +1,13 @@
 package org.cs5431_server.fileserver;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import org.cs5431_client.util.SQL_Connection;
+import org.json.JSONObject;
+
+import javax.crypto.SecretKey;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.security.PrivateKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,6 +16,7 @@ import java.util.Scanner;
 
 public class ServerView {
     public static void main(String[] args) {
+
         File serverConfigDir = new File("./server-config");
         if (!serverConfigDir.exists()){
             System.err.println("Config files not found. Please run " +
@@ -47,38 +52,118 @@ public class ServerView {
         String password = scanner.nextLine();
 
         String server;
-        String dbPort;
-        String outPort;
+        Integer dbPort;
+        Integer outPort;
+        PrivateKey serverPrivKey;
         try {
-            File configFile = new File("./user-config/" + serverName +
+            File configFile = new File("./server-config/" + serverName +
                     ".config");
             BufferedReader br = new BufferedReader(new FileReader(configFile));
             server = br.readLine();
-            dbPort = br.readLine();
-            outPort = br.readLine();
-        } catch(IOException e) {
+            dbPort = Integer.parseInt(br.readLine());
+            outPort = Integer.parseInt(br.readLine());
+            File privKeyFile = new File("./server-config/" + serverName +
+                    ".priv");
+            ObjectInputStream privateKeyIS = new ObjectInputStream(
+                    new FileInputStream(privKeyFile));
+            serverPrivKey = (PrivateKey) privateKeyIS.readObject();
+        } catch(IOException | NumberFormatException e) {
             System.err.println("Could not read config file");
+            return;
+        } catch(ClassNotFoundException e) {
+            System.err.println("Could not read private key file");
             return;
         }
 
+        SQL_Connection sqlConnection = new SQL_Connection(server, dbPort,
+                username, password);
         //TODO listen to incoming packets on some other thread here
-        waitForIncoming(server, dbPort, outPort, username, password);
+        waitForIncoming(server, outPort, sqlConnection, serverPrivKey);
         try {
             while (true) {
-                promptAdmin(server, dbPort, username, password);
+                promptAdmin(sqlConnection);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void waitForIncoming(String server, String dbPort, String
-            outPort, String username, String password) {
+    private static void waitForIncoming(String server, Integer outPort,
+                                        SQL_Connection sqlConnection,
+                                        PrivateKey serverPrivKey) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(outPort);
+            Socket client = serverSocket.accept(); //TODO threading???
+            BufferedReader br = new BufferedReader(new InputStreamReader(client
+                    .getInputStream()));
+            JSONObject jsonObject = new JSONObject(br.readLine());
+            String type = jsonObject.getString("messageType");
+            switch (type) {
+                case "request jkb":
+                    requestJKB(serverPrivKey);   //TODO pass socket?
+                    break;
+                case "registration":
+                    register(jsonObject, sqlConnection);
+                    break;
+                case "login":
+                    login(jsonObject, sqlConnection);   //TODO pass socket?
+                    break;
+                case "upload":
+                    //TODO
+                    break;
+                case "download":
+                    //TODO
+                    break;
+                case "rename":
+                    //TODO
+                    break;
+                case "add privilege":
+                    //TODO
+                    break;
+                case "remove privilege":
+                    //TODO
+                    break;
+                case "delete":
+                    //TODO
+                    break;
+                case "edit details":
+                    //TODO
+                    break;
+                case "file log":
+                    //TODO
+                    break;
+                case "get files":
+                    //TODO
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void requestJKB(PrivateKey serverPrivKey) {
+        //TODO brandon write here
+        //serverPrivKey is the signing key
 
     }
 
-    private static void promptAdmin(String server, String dbPort, String
-            username, String password) throws SQLException {
+    public static void register(JSONObject jsonObject, SQL_Connection sqlConnection) {
+        //TODO: make the privKey and pubKey in the jsonObject?
+        //sqlConnection.createUser(jsonObject);
+    }
+
+    public static void login(JSONObject jsonObject, SQL_Connection sqlConnection) {
+        //TODO: make sql_connection's authenticate not static?
+        //sqlConnection.authenticate(jsonObject);
+    }
+
+    public static void upload(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO: make it read from User or jsonObject?
+        //sqlConnection.createFso(jsonObject);
+    }
+
+    private static void promptAdmin(SQL_Connection sql_connection) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter 'u' to download user logs");
@@ -88,10 +173,10 @@ public class ServerView {
 
             switch (elements[0]) {
                 case "u":
-                    downloadUserLogs(server, dbPort, username, password);
+                    downloadUserLogs(sql_connection);
                     return;
                 case "d":
-                    deleteUser(server, dbPort, username, password);
+                    deleteUser(sql_connection);
                     return;
                 default:
                     System.out.println("Sorry, your command was not " +
@@ -100,13 +185,11 @@ public class ServerView {
         }
     }
 
-    private static void downloadUserLogs(String server, String dbPort, String
-            username, String password) {
-
+    private static void downloadUserLogs(SQL_Connection sql_connection) {
+        //TODO
     }
 
-    private static void deleteUser(String server, String dbPort, String
-            username, String password) throws SQLException {
+    private static void deleteUser(SQL_Connection sql_connection) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter the username of the user to delete:");
@@ -116,10 +199,7 @@ public class ServerView {
                     "delete by entering it again:");
             String confirm = scanner.nextLine();
             if (userToDelete.equals(confirm)) {
-                String url = "jdbc:mysql://" + server + ":" + dbPort + "/cs5431";
-                Connection connection = DriverManager.getConnection(url, username, password);
-                PreparedStatement deleteUser = null; //TODO
-                //TODO: maybe call SQL_Connection in util instead
+                //TODO
             }
         }
     }
