@@ -106,59 +106,46 @@ public class ServerSetup {
         }
 
         String url = "jdbc:mysql://" + ip + ":" + dbPort;
-        String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
-        String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT " +
-                "UNSIGNED AUTO_INCREMENT PRIMARY KEY, " +
-                "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) " +
-                "NOT NULL, size VARCHAR(20) NOT NULL, " +
-                "lastModified TIMESTAMP, isFile boolean NOT NULL, " +
-                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects" +
-                "(fsoid))";
-        String createUsers = "CREATE TABLE Users (uid INT UNSIGNED " +
-                "AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, " +
-                "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT " +
-                "NULL, email VARCHAR(50), " +
-                "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL," +
-                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects" +
-                "(fsoid) ON DELETE CASCADE)";
-        String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT " +
-                "NULL," +
-                "uid INT UNSIGNED NOT NULL," +
-                "FOREIGN KEY (uid) REFERENCES Users(uid)," +
-                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid))";
-        String createViewers = "CREATE TABLE Viewers (fsoid INT UNSIGNED NOT " +
-                "NULL," +
-                "uid INT UNSIGNED NOT NULL," +
-                "FOREIGN KEY (uid) REFERENCES Users(uid)," +
-                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid))";
-        String createFileLog = "CREATE TABLE FileLog (fileLogid INT UNSIGNED " +
-                "AUTO_INCREMENT PRIMARY KEY," +
-                "fsoid INT UNSIGNED NOT NULL," +
-                "uid INT UNSIGNED NOT NULL, " +
-                "lastModified TIMESTAMP, actionType CHAR(20)," +
-                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid)," +
-                "FOREIGN KEY (uid) REFERENCES Users(uid))";
-        String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED " +
-                "AUTO_INCREMENT PRIMARY KEY," +
-                "uid INT UNSIGNED NOT NULL," +
-                "lastModified TIMESTAMP, actionType CHAR(20)," +
-                "FOREIGN KEY (uid) REFERENCES Users(uid))";
-        String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED" +
-                " NOT NULL, uid INT UNSIGNED NOT NULL," +
-                "encKey CHAR(100) NOT NULL," +
-                "FOREIGN KEY (uid) REFERENCES Users(uid)," +
-                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid));";
-        String createFileContents = "CREATE TABLE FileContents (fsoid INT " +
-                "UNSIGNED NOT NULL, path VARCHAR(100)," +
-                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid))";
-        //String createSalts = "CREATE TABLE Salts ()";
+        String createDB = "CREATE DATABASE IF NOT EXISTS cs5430";
+        String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
+                "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
+                "lastModified TIMESTAMP, isFile boolean NOT NULL, \n" +
+                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid);)";
+        String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
+                "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
+                "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL, salt CHAR(32) NOT NULL, \n" +
+                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,\n" +
+                "uid INT UNSIGNED NOT NULL,\n" +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String createViewers = "CREATE TABLE Viewers (fsoid INT UNSIGNED NOT NULL,\n" +
+                "uid INT UNSIGNED NOT NULL,\n" +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String createFileLog = "CREATE TABLE FileLog (fileLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
+                "fsoid INT UNSIGNED NOT NULL,\n" +
+                "uid INT UNSIGNED NOT NULL, \n" +
+                "lastModified TIMESTAMP, actionType CHAR(20),\n" +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE);";
+        String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
+                "uid INT UNSIGNED NOT NULL, \n" +
+                "lastModified TIMESTAMP, actionType CHAR(20),\n" +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE);";
+        String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL, uid INT UNSIGNED NOT NULL,\n" +
+                "encKey CHAR(100) NOT NULL, \n" +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String createFileContents = "CREATE TABLE FileContents (fsoid INT UNSIGNED NOT NULL, path VARCHAR(100),\n" +
+                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
             PreparedStatement statement = connection.prepareStatement(createDB);
             statement.execute();
             connection.close();
-            connection = DriverManager.getConnection(url+"/cs5431",
+            connection = DriverManager.getConnection(url+"/cs5430",
                     username, password);
             statement = connection.prepareStatement(createFSO);
             statement.execute();
@@ -176,8 +163,7 @@ public class ServerSetup {
             statement.execute();
             statement = connection.prepareStatement(createFileContents);
             statement.execute();
-            //statement = connection.prepareStatement(createSalts);
-            //statement.execute();
+
             connection.close();
             System.out.println("Distribute the "+name+".config and the "+name+
                     ".pub file found in the /user-config folder to your users.");
