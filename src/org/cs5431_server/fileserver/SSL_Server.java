@@ -20,7 +20,8 @@ public class SSL_Server {
     public static void main(String[] args){
         try {
             //generate keystore
-            SSL_Server_Methods.generateKeyStore();
+            String filename = "test";
+            SSL_Server_Methods.generateKeyStore(filename);
 
             //export certificate and public key
             SSL_Server_Methods.exportCert();
