@@ -558,6 +558,7 @@ public class SQL_Connection {
         return -1;
     }
 
+    //TODO: test this please
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * @Return An array of JsonObjects of all childrens  **/
     public static ArrayList<JSONObject> getChildren(JSONObject json) {
@@ -576,6 +577,7 @@ public class SQL_Connection {
                 System.out.println("Database connected!");
                 PreparedStatement getFiles;
                 PreparedStatement getKey;
+                PreparedStatement getIv;
 
                 String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile " +
                         "FROM FileSystemObjects F " +
@@ -583,11 +585,13 @@ public class SQL_Connection {
                         "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
                         "(SELECT * FROM Viewers V WHERE V.uid=?);";
                 String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
+                String selectIv = "SELECT F.fileIV FROM FileContents WHERE F.fsoid = ? AND F.uid = ?";
                 getFiles = connection.prepareStatement(selectFiles);
                 getKey = connection.prepareStatement(selectKey);
-                //TODO: get enc key as well
+                getIv = connection.prepareStatement(selectIv);
 
                 try {
+                    connection.setAutoCommit(false);
                     getFiles.setInt(1, parentFolderid);
                     getFiles.setInt(2, uid);
                     getFiles.setInt(3, uid);
@@ -595,7 +599,8 @@ public class SQL_Connection {
 
                     while (rs.next()) {
                         JSONObject fso = new JSONObject();
-                        fso.put("id", rs.getInt(1));
+                        int fsoid = rs.getInt(1);
+                        fso.put("id", fsoid);
                         fso.put("name", rs.getString(2));
                         fso.put("size", rs.getString(3));
                         fso.put("lastModified", rs.getTimestamp(4));
@@ -605,22 +610,39 @@ public class SQL_Connection {
                         } else {
                             fso.put("FSOType", "FOLDER");
                         }
-                        getKey.setInt(1, rs.getInt(1));
+                        getKey.setInt(1, fsoid);
                         getKey.setInt(2, uid);
                         ResultSet encRS = getKey.executeQuery();
 
+                        getIv.setInt(1, fsoid);
+                        getIv.setInt(2, uid);
+                        ResultSet fileIV = getKey.executeQuery();
+
                         fso.put("encKey", encRS.getString(1));
+                        fso.put("fileIV", fileIV.getString(1));
 
                         files.add(fso);
                     }
                     return files;
-                } catch (Exception e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
                     return null;
                 } finally {
                     if (getFiles != null) {
                         getFiles.close();
                     }
+                    if (getKey != null) {
+                        getKey.close();
+                    }
+                    connection.setAutoCommit(true);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
