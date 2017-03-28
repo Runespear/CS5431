@@ -11,6 +11,7 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.net.Socket;
 import java.security.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -23,14 +24,12 @@ import static org.cs5431_client.model.FileActionType.OVERWRITE;
 //TODO: should a FileController control all files or just a single file?
 public class FileController {
     private User user;
-    private String serverIP;
-    private String serverPort;
+    private Socket sslSocket;
     private SQL_Connection sql_connection; //TODO: to pass or create new one each time
 
-    public FileController(User user, String serverIP, String serverPort) {
+    public FileController(User user, Socket sslSocket) {
         this.user = user;
-        this.serverIP = serverIP;
-        this.serverPort = serverPort;
+        this.sslSocket = sslSocket;
         this.sql_connection = new SQL_Connection("localhost", 3306);
     }
 

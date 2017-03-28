@@ -119,7 +119,7 @@ public class RegistrationController implements Initializable {
                 alert.showAndWait();
             } else {
                 User user = accountsController.createUser(username, password,
-                        email, server, port);
+                        email);
                 if (user == null) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Registration failed");

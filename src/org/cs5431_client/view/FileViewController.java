@@ -26,6 +26,7 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -75,8 +76,6 @@ public class FileViewController implements Initializable {
 
     private Stage stage;
     private User user;
-    private String ip;
-    private String sslPort;
     private UserController userController;
     private FileController fileController;
     private Folder currParent;
@@ -348,19 +347,15 @@ public class FileViewController implements Initializable {
      * When changing to file_view, it is necessary to pass along the User, ip
      * and port that is associated with the logged in user.
      * @param user User (containing username, pwd, etc) that is logged in
-     * @param ip Server IP that this user is connected to
-     * @param sslPort Server SSL port that this user is connected to
      */
-    void setUserDetails(User user, String ip, String sslPort) {
+    void setUserDetails(User user, Socket sslSocket) {
         this.user = user;
-        this.ip = ip;
-        this.sslPort = sslPort;
         txtUsername.setText(user.getUsername());
         currParent = user.getUserParentFolder();
         path = new ArrayList<>();
         path.add(currParent);
-        fileController = new FileController(user,ip,sslPort);
-        userController = new UserController(user,ip,sslPort);
+        //fileController = new FileController(user,sslSocket);
+        userController = new UserController(user,sslSocket);
         currParent = user.getUserParentFolder();
         initFakeFiles();
         populateListView();

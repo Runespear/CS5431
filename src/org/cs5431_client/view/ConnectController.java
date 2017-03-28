@@ -13,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.stage.Stage;
+import org.cs5431_client.util.SSL_Client_Methods;
 import org.cs5431_client.util.Validator;
 
 import java.io.*;
@@ -87,6 +88,7 @@ public class ConnectController implements Initializable {
                 if (!cert.exists()) {
                     throw new CertException("Could not create new certificate.");
                 }
+                SSL_Client_Methods.importCert();
             }
 
             goToLogin(e, server, outPort, sslPort);

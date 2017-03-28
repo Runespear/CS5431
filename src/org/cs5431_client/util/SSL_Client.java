@@ -32,6 +32,7 @@ public class SSL_Client {
             String filepath = System.getProperty("user.dir") + "/Testing SSL Stuff/Client/" + "data_generation_Fall16.xls";
             SSL_Client_Methods.sendFile(s, filepath, filename);
 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
