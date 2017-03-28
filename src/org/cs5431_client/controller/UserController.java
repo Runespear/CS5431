@@ -3,6 +3,7 @@ package org.cs5431_client.controller;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.User;
 
+import java.net.Socket;
 import java.util.List;
 
 /**
@@ -12,16 +13,16 @@ import java.util.List;
 public class UserController {
     private FileController fileController;
     private User user;
-    private String serverIP;
-    private String serverPort;
+    private Socket sslSocket;
 
     /**
      * Creates a new UserController
      * @param user The user to control
      */
-    public UserController(User user, String serverIP, String serverPort) {
+    public UserController(User user, Socket sslSocket) {
         this.user = user;
-        this.fileController = new FileController(user, serverIP, serverPort);
+        this.sslSocket = sslSocket;
+        this.fileController = new FileController(user, sslSocket);
     }
 
     /**

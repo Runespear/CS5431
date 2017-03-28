@@ -12,8 +12,10 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.AccountsController;
 import org.cs5431_client.model.User;
+import org.cs5431_client.util.SSL_Client_Methods;
 import org.cs5431_client.util.Validator;
 
+import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -35,8 +37,7 @@ public class LoginController implements Initializable {
 
     private AccountsController accountsController;
     private Stage stage;
-    private String server;
-    private String sslPort;
+    private Socket sslSocket;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -77,8 +78,7 @@ public class LoginController implements Initializable {
             alert.showAndWait();
         } else {
             try {
-                User user = accountsController.login(username, password,
-                        server, sslPort);
+                User user = accountsController.login(username, password);
                 if (user == null) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Login error");
@@ -96,7 +96,7 @@ public class LoginController implements Initializable {
                     Client.fileViewNode = root;
                     FileViewController fvc = fxmlLoader.getController();
                     //AccountsController accountsController = new AccountsController();
-                    fvc.setUserDetails(user, server, sslPort);
+                    fvc.setUserDetails(user, sslSocket);
                     fvc.setStage(stage);
                     scene.setRoot(root);
                 }
@@ -149,8 +149,10 @@ public class LoginController implements Initializable {
         stage.show();
     }
 
-    void setConnectionDetails(String server, String sslPort) {
-        this.server = server;
-        this.sslPort = sslPort;
+    void setConnectionDetails(String server, String sslPort) throws Exception {
+        Socket s = SSL_Client_Methods.connect_SSLServerSocket(server,
+                Integer.parseInt(sslPort));
+        accountsController.setSocket(s);
+        sslSocket = s;
     }
 }

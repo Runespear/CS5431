@@ -3,9 +3,6 @@ package org.cs5431_server.fileserver;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- * Created by Brandon on 28/3/2017.
- */
 public class Unsecured_Server {
 
     public static final int PORT = 44444;

@@ -17,6 +17,10 @@ import org.json.JSONObject;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -35,77 +39,96 @@ import java.util.Random;
 public class AccountsController {
 
     private SQL_Connection sql_connection;
+    private Socket sslSocket;
 
     public AccountsController(){
         Security.addProvider(new BouncyCastleProvider());
         this.sql_connection = new SQL_Connection("localhost", 3306);
+    }
+
+    public void setSocket(Socket s) {
+        this.sslSocket = s;
     }
     /**
     * Creates user with the username, password, and email provided.
     * @return user if successful
     * @throws RegistrationFailException if unsuccessful
     */
-    public User createUser(String username, String password, String email,
-                           String ip, String port)
+    public User createUser(String username, String password, String email)
             throws RegistrationFailException {
-        //TODO: send to server new account info and create user with the right info
+        Task<User> task = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                try {
+                    JSONObject user = new JSONObject();
+                    user.put("username", username);
+                    user.put("email", email);
 
-        try {
-            JSONObject user = new JSONObject();
-            user.put("username", username);
-            user.put("email", email);
+                    //hashing password
+                    user.put("hashedPwd", Base64.getEncoder().encodeToString(
+                            SHA256(password)));
 
-            //hashing password
-            user.put("hashedPwd", Base64.getEncoder().encodeToString(
-                    SHA256(password)));
+                    KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
 
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
-                    BouncyCastleProvider());
-            kpg.initialize(4096, new SecureRandom());
-            KeyPair keyPair = kpg.generateKeyPair();
-            user.put("pubKey", Base64.getEncoder().encodeToString(keyPair
-                    .getPublic().getEncoded()));
+                            BouncyCastleProvider());
+                    kpg.initialize(4096, new SecureRandom());
+                    KeyPair keyPair = kpg.generateKeyPair();
+                    user.put("pubKey", Base64.getEncoder().encodeToString
+                            (keyPair
+                            .getPublic().getEncoded()));
 
-            //encrypt secret key using password based key
-            //symmetric, uses AES
-            byte keyAndSalt[][] = pwdBasedKey(password);
-            byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
-            SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            //TODO should we create iv?
-            byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
+                    //encrypt secret key using password based key
+                    //symmetric, uses AES
+                    byte keyAndSalt[][] = pwdBasedKey(password);
+                    byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
+                    SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                    //TODO should we create iv?
+                    byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
 
-            user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
-            user.put("privKeySalt",Base64.getEncoder().encodeToString
-                    (keyAndSalt[1]));
+                    user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
+                    user.put("privKeySalt", Base64.getEncoder().encodeToString
+                            (keyAndSalt[1]));
 
-            JSONObject newUser = sendUser(user);    //TODO change to sendObject?
-            if (newUser.getString("messageType").equals("registrationAck")) {
-                int uid = newUser.getInt("uid");
-                int parentFolderid = newUser.getInt("parentFolderid");
+                    sendJson(user);
+                    JSONObject newUser = receiveJson();
+                    if (newUser.getString("messageType").equals("registrationAck")) {
+                        int uid = newUser.getInt("uid");
+                        int parentFolderid = newUser.getInt("parentFolderid");
 
-                PrivateKey privKey = getPrivKeyFromJSON(user, password);
-                PublicKey pubKey = getPubKeyFromJSON(user);
+                        PrivateKey privKey = getPrivKeyFromJSON(user, password);
+                        PublicKey pubKey = getPubKeyFromJSON(user);
 
-                Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-                Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
-                return new User(uid, username, email, parentFolder, privKey,
-                        pubKey);
-            } else if (newUser.getString("messageType").equals("error")) {
-                throw new RegistrationFailException(newUser.getString
-                        ("message"));
-            } else {
-                throw new RegistrationFailException("Received bad response " +
-                        "from server");
+                        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                        Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
+                        return new User(uid, username, email, parentFolder,
+                                privKey,
+                                pubKey);
+                    } else if (newUser.getString("messageType").equals("error" +
+                            "")) {
+                        throw new RegistrationFailException(newUser.getString
+                                ("message"));
+                    } else {
+                        throw new RegistrationFailException("Received bad response " +
+                                "from server");
+                    }
+                } catch (JSONException | NoSuchAlgorithmException |
+                        NoSuchPaddingException | InvalidKeyException |
+                        IllegalBlockSizeException | BadPaddingException |
+                        NoSuchProviderException | InvalidKeySpecException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
-        } catch (JSONException | NoSuchAlgorithmException |
-                NoSuchPaddingException | InvalidKeyException |
-                IllegalBlockSizeException | BadPaddingException |
-                NoSuchProviderException | InvalidKeySpecException e) {
-            e.printStackTrace();
-        }
-        return null;
+        };
+        final User[] ret = new User[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     private byte[] SHA256(String msg) {
@@ -172,13 +195,6 @@ public class AccountsController {
         return cipher.doFinal(Base64.getDecoder().decode(enc));
     }
 
-    private JSONObject sendUser(JSONObject user) {
-        //TODO: send to server
-        //TODO change following line
-        JSONObject newUser = sql_connection.createUser(user, "", "");
-        return newUser;
-    }
-
     /**
      * Deletes user with the userId and logs it.
      * @param userId User to be deleted
@@ -193,13 +209,10 @@ public class AccountsController {
      * Creates a connection with serverIP and logs in with the username and password.
      * @param username Username to be used for this server
      * @param password Password associated with username
-     * @param serverIP IP of server to be connected to
-     * @param serverPort Port of server to be connected to
      * @return userId if successful
      * @throws LoginFailException if unsuccessful
      */
-    public User login(String username, String password, String serverIP,
-                         String serverPort) throws LoginFailException {
+    public User login(String username, String password) throws LoginFailException {
         Task<User> task = new Task<User>() {
             @Override
             protected User call() throws Exception {
@@ -208,9 +221,8 @@ public class AccountsController {
                     allegedUser.put("username", username);
                     allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
-                    //TODO: send allegeduser to server and check
-                    JSONObject user = sendUser(allegedUser); //TODO change to
-                    // sendobject?
+                    sendJson(allegedUser);
+                    JSONObject user = receiveJson();
 
                     if (user.getString("messageType").equals("loginAck")) {
                         int uid = user.getInt("uid");
@@ -249,6 +261,16 @@ public class AccountsController {
         th.start();
 
         return ret[0];
+    }
+
+    private void sendJson(JSONObject json) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
+        oos.writeObject(json);
+    }
+
+    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(sslSocket.getInputStream());
+        return (JSONObject) ois.readObject();
     }
 
     public Folder getFolderFromId(int folderId, int uid) {
