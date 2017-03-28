@@ -160,6 +160,7 @@ public class SQL_Connection {
                 connection.commit();
 
                 jsonUser = new JSONObject();
+                jsonUser.put("msgType", "registrationAck");
                 jsonUser.put("username", username);
                 jsonUser.put("uid", uid);
                 jsonUser.put("parentFolderid", folderid);
@@ -346,12 +347,12 @@ public class SQL_Connection {
             System.out.println("Database connected!");
             PreparedStatement verifyUser = null;
 
-            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey" +
+            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
             verifyUser = connection.prepareStatement(checkPassword);
 
             String username = allegedUser.getString("username");
-            String encPwd = allegedUser.getString("pwd");
+            String encPwd = allegedUser.getString("hashedPwd");
 
             try {
                 verifyUser.setString(1, username);
@@ -366,11 +367,14 @@ public class SQL_Connection {
                     String email = rs.getString(3);
                     String privKey = rs.getString(4);
                     String pubKey = rs.getString(5);
+                    String privKeySalt = rs.getString(6);
+                    user.put("msgType", "loginAck");
                     user.put("uid", uid);
                     user.put("parentFolderid", parentFolderid);
                     user.put("email", email);
                     user.put("privKey", privKey);
                     user.put("pubKey", pubKey);
+                    user.put("privKeySalt", privKeySalt);
                     return user;
                 } else {
                     //TODO: log the number of failed authentications? send email directly?
@@ -559,7 +563,10 @@ public class SQL_Connection {
 
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * @Return An array of JsonObjects of all childrens  **/
-    public static ArrayList<JSONObject> getChildren(int parentFolderid, int uid) {
+    public static ArrayList<JSONObject> getChildren(JSONObject json) {
+
+        int uid = json.getInt("uid");
+        int parentFolderid = json.getInt("fsoid");
 
         boolean hasPermission = verifyEditPermission(parentFolderid, uid);
         if (hasPermission) {
@@ -570,14 +577,17 @@ public class SQL_Connection {
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
-                PreparedStatement getFiles = null;
+                PreparedStatement getFiles;
+                PreparedStatement getKey;
 
                 String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile " +
                         "FROM FileSystemObjects F " +
                         "WHERE F.parentFolderid = ? AND EXISTS" +
                         "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
                         "(SELECT * FROM Viewers V WHERE V.uid=?);";
+                String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
                 getFiles = connection.prepareStatement(selectFiles);
+                getKey = connection.prepareStatement(selectKey);
                 //TODO: get enc key as well
 
                 try {
@@ -585,6 +595,7 @@ public class SQL_Connection {
                     getFiles.setInt(2, uid);
                     getFiles.setInt(3, uid);
                     ResultSet rs = getFiles.executeQuery();
+
                     while (rs.next()) {
                         JSONObject fso = new JSONObject();
                         fso.put("id", rs.getInt(1));
@@ -597,9 +608,15 @@ public class SQL_Connection {
                         } else {
                             fso.put("FSOType", "FOLDER");
                         }
+                        getKey.setInt(1, rs.getInt(1));
+                        getKey.setInt(2, uid);
+                        ResultSet encRS = getKey.executeQuery();
+
+                        fso.put("encKey", encRS.getString(1));
+
                         files.add(fso);
-                        return files;
                     }
+                    return files;
                 } catch (Exception e) {
                     e.printStackTrace();
                     return null;
