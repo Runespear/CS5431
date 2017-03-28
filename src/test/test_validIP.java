@@ -30,7 +30,6 @@ class test_validIP {
         assertEquals(false, dot2);
         assertEquals(true, dot3);
         assertEquals(false, dot4);
-
     }
 
     @Test
@@ -52,5 +51,21 @@ class test_validIP {
         assertEquals(false,above255_2);
         assertEquals(false,above255_3);
         assertEquals(false,above255_4);
+    }
+
+    @Test
+
+    void validIP_legitIP(){
+        boolean broadcast = Validator.validIP("255.255.255.255");
+        boolean localhost = Validator.validIP("127.0.0.1");
+        boolean LinksysAdmin = Validator.validIP("192.168.1.1");
+        boolean GoogleDNS_P = Validator.validIP("8.8.8.8");
+        boolean GoogleDNS_S = Validator.validIP("8.8.8.4");
+
+        assertEquals(true, broadcast);
+        assertEquals(true, localhost);
+        assertEquals(true, LinksysAdmin);
+        assertEquals(true, GoogleDNS_P);
+        assertEquals(true, GoogleDNS_S);
     }
 }
