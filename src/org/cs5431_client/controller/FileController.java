@@ -71,7 +71,6 @@ public class FileController {
         fso.put("lastModified", lastModified);
         fso.put("isFile", true);
 
-        //generate file secret key here
         KeyGenerator kg = KeyGenerator.getInstance("AES");
         kg.init(128, new SecureRandom());
         SecretKey fileSK = kg.generateKey();

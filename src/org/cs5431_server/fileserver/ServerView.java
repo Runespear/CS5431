@@ -193,11 +193,9 @@ public class ServerView {
         if (!isUniqueUsername)
             return makeErrJson("Username has already been chosen");
 
-        //TODO write hashedPwd into registration
-        //TODO remove pwd from registration
         String hashedPwd = jsonObject.getString("hashedPwd");
         String hashAndSalt[] = generatePasswordHash(hashedPwd);
-        String hash = hashAndSalt[0];   //TODO store hash instead of pwd
+        String hash = hashAndSalt[0];
         String pwdSalt = hashAndSalt[1];
         JSONObject response = sqlConnection.createUser(jsonObject, hash, 
                 pwdSalt);
@@ -208,9 +206,11 @@ public class ServerView {
 
     private static JSONObject login(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        //TODO: make sql_connection's authenticate not static?
-        //sqlConnection.authenticate(jsonObject);
-        return null;
+        String pwdSalt = sqlConnection.getSalt(jsonObject.getString
+                ("username"));
+        String hashedPwd = jsonObject.getString("hashedPwd");
+        String encPwd  = hash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
+        return sqlConnection.authenticate(jsonObject, encPwd);
     }
 
     private static JSONObject upload(JSONObject jsonObject, SQL_Connection
@@ -289,20 +289,13 @@ public class ServerView {
         return returnedValues;
     }
 
-    private static String hash(String pwd, byte[] salt) {
+    public static String hash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 10000);
         //TODO: 256 is currently the key length. Is this correct?
         KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
         return Base64.getEncoder().encodeToString(kp.getKey());
-    }
-
-    //TODO use this method in login?
-    private boolean verifyPassword(String pwd, String actualHash, String
-            salt) {
-        String cmpHash = hash(pwd, Base64.getDecoder().decode(salt));
-        return (cmpHash.equals(actualHash));
     }
 
     private static void promptAdmin(SQL_Connection sql_connection) throws SQLException {

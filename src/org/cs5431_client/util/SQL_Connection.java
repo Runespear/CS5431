@@ -1,5 +1,6 @@
 package org.cs5431_client.util;
 
+import org.cs5431_server.fileserver.ServerView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Base64;
 
 public class SQL_Connection {
 
@@ -330,7 +332,7 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @Return h(privKey) of the user if the authentication is valid. **/
-    public JSONObject authenticate(JSONObject allegedUser) {
+    public JSONObject authenticate(JSONObject allegedUser, String encPwd) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -346,7 +348,6 @@ public class SQL_Connection {
             verifyUser = connection.prepareStatement(checkPassword);
 
             String username = allegedUser.getString("username");
-            String encPwd = allegedUser.getString("hashedPwd");
 
             try {
                 verifyUser.setString(1, username);
@@ -427,8 +428,10 @@ public class SQL_Connection {
     public int deleteUser(int uid, String username, String password) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", "username");
-        allegedUser.put("pwd", password);
-        JSONObject user = authenticate(allegedUser);
+        //allegedUser.put("pwd", password);
+        String salt = getSalt(username);
+        String encPwd = ServerView.hash(password, Base64.getDecoder().decode(salt));
+        JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -491,9 +494,11 @@ public class SQL_Connection {
 
     public int changePassword(int uid, String username, String password, String newPwd) {
         JSONObject allegedUser = new JSONObject();
-        allegedUser.put("username", "username");
-        allegedUser.put("pwd", password);
-        JSONObject user = authenticate(allegedUser);
+        allegedUser.put("username", username);
+        //allegedUser.put("pwd", password);
+        String salt = getSalt(username);
+        String encPwd = ServerView.hash(password, Base64.getDecoder().decode(salt));
+        JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
