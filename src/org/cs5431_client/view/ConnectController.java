@@ -79,10 +79,10 @@ public class ConnectController implements Initializable {
             //TODO actually connect to the server with these details
             //TODO create secure channel here
 
-            File cert = new File("./user-config/"+serverName+".cert");
+            File cert = new File("./user-config/"+serverName+".cer");
             if (!cert.exists()) {
                 Socket s = new Socket(server, Integer.parseInt(outPort));
-                String filepath = "./file-config/";
+                String filepath = "./user-config/";
                 verify_and_receive_Cert(serverPubKey, s, filepath);
                 if (!cert.exists()) {
                     throw new CertException("Could not create new certificate.");
