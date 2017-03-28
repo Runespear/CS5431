@@ -25,7 +25,7 @@ public class Validator {
     public static boolean validPort(String port) {
         try {
             Integer p = Integer.parseInt(port);
-            return (p > 1000 && p <= 65535);
+            return (p >= 1024 && p <= 65535);
         } catch (NumberFormatException e) {
             return false;
         }
