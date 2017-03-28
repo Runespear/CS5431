@@ -662,9 +662,64 @@ public class SQL_Connection {
         return null;
     }
 
-    public java.io.File getFile(int fsoid) {
-        //TODO: get file content
-        return new java.io.File("pathname");
+    public JSONObject getFilePath(JSONObject json) {
+        int uid = json.getInt("uid");
+        int fsoid = json.getInt("fsoid");
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+
+            System.out.println("Connecting to database...");
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                PreparedStatement getPath;
+
+                String selectPath = "SELECT F.path, F.fileIV FROM FileContents F WHERE F.fsoid = ?";
+                getPath = connection.prepareStatement(selectPath);
+
+                try {
+                    connection.setAutoCommit(false);
+                    getPath.setInt(1, fsoid);
+                    ResultSet rs = getPath.executeQuery();
+                    JSONObject fso = new JSONObject();
+
+                    if (rs.next()) {
+                        fso.put("path", rs.getInt(1));
+                        fso.put("id", fsoid);
+                        fso.put("fsoIV", rs.getString(2));
+
+                        if (rs.getBoolean(5)) {
+                            fso.put("FSOType", "FILE");
+                        } else {
+                            fso.put("FSOType", "FOLDER");
+                        }
+                    }
+                    return fso;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                    return null;
+                } finally {
+                    if (getPath != null) {
+                        getPath.close();
+                    }
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("User does not have permission to the file");
+        return null;
     }
 
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
