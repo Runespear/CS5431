@@ -60,6 +60,23 @@ public class SSL_Client_Methods {
             sun.security.tools.keytool.Main.main(options);
     }
 
+    public static void importCert(String name) throws Exception{
+
+        String command = " -import " +
+                " -alias mykey " +
+                //" -keyalg RSA " +
+                //" -sigalg SHA256withRSA "+
+                //" -dname CN=Java "+
+                //" -storetype JKS "+
+                " -file ./user-config/" + name + ".cer "+
+                " -keystore ./user-config/" + name + ".jks";
+
+
+        String[] options = command.trim().split("\\s+");
+        System.out.println(command);
+        sun.security.tools.keytool.Main.main(options);
+    }
+
     public static void sendFile(Socket s, String filepath, String filename) throws Exception{
 
         ObjectOutputStream out_to_Server = new ObjectOutputStream(s.getOutputStream());
