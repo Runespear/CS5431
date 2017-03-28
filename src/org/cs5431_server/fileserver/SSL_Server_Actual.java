@@ -27,8 +27,15 @@ public class SSL_Server_Actual extends Thread {
 
     public void run(){
         try {
+
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            JSONObject jsonObject = new JSONObject(br.readLine());
+            String strJson = "";
+            String inputLine;
+            while ((inputLine = br.readLine()) != null) {
+                strJson += inputLine;
+            }
+            JSONObject jsonObject = new JSONObject(strJson);
+
             String type = jsonObject.getString("messageType");
             JSONObject response;
             switch (type) {

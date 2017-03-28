@@ -3,12 +3,14 @@ package org.cs5431_client.controller;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import jdk.nashorn.internal.parser.JSONParser;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.model.*;
+import org.cs5431_client.model.File;
 import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,10 +19,9 @@ import org.json.JSONObject;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -159,7 +160,7 @@ public class AccountsController {
                 pwd.toCharArray()), salt, 3000);
         //TODO: 256 is currently the key length. Is this correct?
         KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
-                (256);
+                (128);
         return kp.getKey();
     }
 
@@ -264,13 +265,21 @@ public class AccountsController {
     }
 
     private void sendJson(JSONObject json) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
-        oos.writeObject(json);
+        OutputStreamWriter oos = new OutputStreamWriter(sslSocket.getOutputStream(), StandardCharsets.UTF_8);
+        oos.write(json.toString());
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(sslSocket.getInputStream());
-        return (JSONObject) ois.readObject();
+        InputStreamReader ois = new InputStreamReader(sslSocket.getInputStream());
+        BufferedReader in = new BufferedReader(ois);
+        String strJson = "";
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+            strJson += inputLine;
+        }
+
+        JSONObject json = new JSONObject(strJson);
+        return json;
     }
 
     public Folder getFolderFromId(int folderId, int uid) {
