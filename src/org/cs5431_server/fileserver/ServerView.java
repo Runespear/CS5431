@@ -80,8 +80,8 @@ public class ServerView {
                     serverName, sslPort);
             new Thread(wfis).start();
 
-            promptAdmin pa = new promptAdmin(sqlConnection);
-            new Thread(pa).start();
+            //promptAdmin pa = new promptAdmin(sqlConnection);
+            //new Thread(pa).start();
 
         } catch(Exception e) {
             System.err.println("We should change setup_SSLServerSocket to not" +
@@ -134,8 +134,8 @@ class waitForIncomingSSL implements Runnable {
             ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
                     (serverName, sslPort);
             Socket s = ss.accept();
+            System.out.println("ACCEPTED");
             new SSL_Server_Actual(s, sqlConnection).start();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
