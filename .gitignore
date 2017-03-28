@@ -109,3 +109,6 @@ user-config/*
 # Maven target
 #===============
 target/*
+
+certfilename.cer
+keystorefilename.jks

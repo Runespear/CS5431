@@ -183,9 +183,7 @@ public class FileViewController implements Initializable {
         if (fileToUpload != null) {
             try {
                 fileController.uploadFile(fileToUpload, currParent);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             //currParent.addChild(new org.cs5431_client.model.File
@@ -198,7 +196,7 @@ public class FileViewController implements Initializable {
      * Downloads the file that is currently highlighted from the server.
      */
     private void downloadFile() {
-        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+        /*FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
         org.cs5431_client.model.File file = fileController.download(fso.getId());
         //TODO use file somehow
 
@@ -220,7 +218,7 @@ public class FileViewController implements Initializable {
                 return null;
             }
         };
-        new Thread(task).start();
+        new Thread(task).start();*/
     }
 
     /**
