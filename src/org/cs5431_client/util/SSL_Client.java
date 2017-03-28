@@ -21,7 +21,7 @@ public class SSL_Client {
         try {
 
             SSL_Client_Methods.importCert();
-            Socket s = SSL_Client_Methods.connect_SSLServerSocket(HOST,PORT);
+            Socket s = SSL_Client_Methods.connect_SSLServerSocket(HOST,PORT, "truststorefilename.jks");
 
 
 
