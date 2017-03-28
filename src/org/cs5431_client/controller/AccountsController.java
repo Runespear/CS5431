@@ -1,16 +1,25 @@
 package org.cs5431_client.controller;
 
+import org.bouncycastle.crypto.PBEParametersGenerator;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.SecretKey;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.*;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 
 /**
  * A controller for all accounts.
@@ -33,44 +42,111 @@ public class AccountsController {
             throws RegistrationFailException {
         //TODO: send to server new account info and create user with the right info
 
-        boolean isUniqueUsername = sql_connection.isUniqueUsername(username);
+        try {
+            JSONObject user = new JSONObject();
+            user.put("username", username);
+            user.put("email", email);
 
-        if (isUniqueUsername) {
-            try {
-                JSONObject user = new JSONObject();
-                user.put("username", username);
-                user.put("pwd", password);
-                user.put("email", email);
+            //hashing password
+            SHA256Digest sha256 = new SHA256Digest();
+            byte pwdByte[] = password.getBytes();
+            sha256.update(pwdByte, 0, pwdByte.length);
+            byte[] hashedPwd = new byte[sha256.getDigestSize()];
+            sha256.doFinal(hashedPwd, 0);
+            user.put("hashedPwd", Base64.getEncoder().encodeToString(hashedPwd));
+            Arrays.fill( pwdByte, (byte)0 );    //an attempt to zero out pwd
 
-                //TODO: priv key must be generated on client side and
-                // encrypted using pwd-based encryption
+            //TODO: priv key must be generated on client side and
+            // encrypted using pwd-based encryption
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
+                    BouncyCastleProvider());
+            kpg.initialize(4096, new SecureRandom());
+            KeyPair keyPair = kpg.generateKeyPair();
+            user.put("pubKey", Base64.getEncoder().encodeToString(keyPair
+                    .getPublic().getEncoded()));
 
-                JSONObject newUser = sendUser(user);
+            byte keyAndSalt[][] = pwdBasedKey(password);
+            byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
+            SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+            Security.addProvider(new BouncyCastleProvider());
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            //TODO should we create iv?
+            byte encryptedKey[] = cipher.doFinal(key);
+
+            user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
+            user.put("privKeySalt",Base64.getEncoder().encodeToString
+                    (keyAndSalt[1]));
+
+            JSONObject newUser = sendUser(user);    //TODO change to sendObject?
+            if (newUser.getString("messageType").equals("registrationAck")) {
                 int uid = newUser.getInt("uid");
                 int parentFolderid = newUser.getInt("parentFolderid");
 
-                //TODO: uncomment when privKey and pubKeys are implemented
-            /*String encodedPrivKey = user.getString("privKey");
-            byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
-            SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+                String encodedPrivKey = user.getString("privKey");
+                String privKeySalt = user.getString("privKeySalt");
+                byte[] decodedPriv = decryptPwdBasedKey(encodedPrivKey,
+                        password, privKeySalt);
+                SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
 
-            String encodedPubKey = user.getString("privKey");
-            byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
-            SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
+                String encodedPubKey = user.getString("pubKey");
+                byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
+                SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");
 
                 Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                 Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
-                return new User(uid, username, email, parentFolder, null, null);
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return new User(uid, username, email, parentFolder, privKey,
+                        pubKey);
+            } else if (newUser.getString("messageType").equals("error")) {
+                throw new RegistrationFailException(newUser.getString
+                        ("message"));
+            } else {
+                throw new RegistrationFailException("Received bad response " +
+                        "from server");
             }
+        } catch (JSONException | NoSuchAlgorithmException |
+                NoSuchPaddingException | InvalidKeyException |
+                IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
+    private byte[][] pwdBasedKey(String pwd) {
+        Random random = new SecureRandom();
+        //TODO: 32 is currently the salt length. Is this correct?
+        byte salt[] = new byte[32];
+        random.nextBytes(salt);
+        byte[] hashedPW = hash(pwd, salt);
+        byte returnedValues[][] = new byte[2][128];
+        returnedValues[0] = hashedPW;
+        returnedValues[1] = salt;
+        return returnedValues;
+    }
+
+    private byte[] hash(String pwd, byte[] salt) {
+        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
+        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
+                pwd.toCharArray()), salt, 3000);
+        //TODO: 256 is currently the key length. Is this correct?
+        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
+                (256);
+        return kp.getKey();
+    }
+
+    private byte[] decryptPwdBasedKey(String enc, String pwd, String salt)
+    throws NoSuchAlgorithmException, NoSuchPaddingException,
+            IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+        byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
+        SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        return cipher.doFinal(Base64.getDecoder().decode(enc));
+    }
+
     private JSONObject sendUser(JSONObject user) {
         //TODO: send to server
-
+        //TODO change following line
         JSONObject newUser = sql_connection.createUser(user, "", "");
         return newUser;
     }
