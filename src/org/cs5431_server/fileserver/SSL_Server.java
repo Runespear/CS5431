@@ -1,17 +1,8 @@
 package org.cs5431_server.fileserver;
 
-import com.sun.corba.se.spi.activation.Server;
-
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- * Created by Brandon on 24/3/2017.
- */
 public class SSL_Server {
 
     public static final int PORT = 55555;

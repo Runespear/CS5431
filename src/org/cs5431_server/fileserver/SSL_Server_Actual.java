@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -33,37 +34,47 @@ public class SSL_Server_Actual extends Thread {
             switch (type) {
                 case "registration":
                     response = register(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "login":
                     response = login(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "upload":
                     response = upload(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "download":
                     response = download(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "rename":
                     response = rename(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "add privilege":
                     response = addPriv(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "remove privilege":
                     response = removePriv(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "delete":
                     response = delete(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "edit user details":
                     response = editDetails(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 case "getFileLogs":
                     JSONArray arr = getFileLog(jsonObject, sqlConnection);
-                    //TODO send arr instead of response
+                    sendJsonArray(arr);
                     break;
                 case "getChildren":
                     response = getChildren(jsonObject, sqlConnection);
+                    sendJson(response);
                     break;
                 default:
                     response = makeErrJson("Did not understand " +
@@ -76,15 +87,17 @@ public class SSL_Server_Actual extends Thread {
         }
     }
 
-    private static void sendJson(JSONObject json) {
-        //TODO: hi ruixin help me do this
+    private void sendJson (JSONObject json) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+        oos.writeObject(json);
     }
 
-    private static void sendJsonArray(JSONArray json) {
-        //TODO
+    private void sendJsonArray(JSONArray json) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+        oos.writeObject(json);
     }
 
-    private static JSONObject register(JSONObject jsonObject, SQL_Connection
+    private JSONObject register(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         boolean isUniqueUsername = sqlConnection.isUniqueUsername(jsonObject
                 .getString("username"));
@@ -102,7 +115,7 @@ public class SSL_Server_Actual extends Thread {
         return response;
     }
 
-    private static JSONObject login(JSONObject jsonObject, SQL_Connection
+    private JSONObject login(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         String pwdSalt = sqlConnection.getSalt(jsonObject.getString
                 ("username"));
@@ -111,7 +124,7 @@ public class SSL_Server_Actual extends Thread {
         return sqlConnection.authenticate(jsonObject, encPwd);
     }
 
-    private static JSONObject upload(JSONObject jsonObject, SQL_Connection
+    private JSONObject upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         int fsoid = sqlConnection.createFso(jsonObject);
         JSONObject response = new JSONObject();
@@ -120,7 +133,7 @@ public class SSL_Server_Actual extends Thread {
         return response;
     }
 
-    private static JSONObject download(JSONObject jsonObject, SQL_Connection
+    private JSONObject download(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
@@ -139,49 +152,49 @@ public class SSL_Server_Actual extends Thread {
         return downloadAck;
     }
 
-    private static JSONObject rename(JSONObject jsonObject, SQL_Connection
+    private JSONObject rename(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;
     }
 
-    private static JSONObject removePriv(JSONObject jsonObject, SQL_Connection
+    private JSONObject removePriv(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;
     }
 
-    private static JSONObject addPriv(JSONObject jsonObject, SQL_Connection
+    private JSONObject addPriv(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;
     }
 
-    private static JSONObject delete(JSONObject jsonObject, SQL_Connection
+    private JSONObject delete(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;
     }
 
-    private static JSONObject editDetails(JSONObject jsonObject, SQL_Connection
+    private JSONObject editDetails(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;
     }
 
-    private static JSONArray getFileLog(JSONObject jsonObject, SQL_Connection
+    private JSONArray getFileLog(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return sqlConnection.getFileLog(jsonObject);
     }
 
-    private static JSONObject getChildren(JSONObject jsonObject, SQL_Connection
+    private JSONObject getChildren(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO HALP sqlConnection.getChildren();
         return null;
     }
 
-    private static JSONObject makeErrJson(String message) {
+    private JSONObject makeErrJson(String message) {
         //TODO
         JSONObject response = new JSONObject();
         response.put("messageType","error");
@@ -189,7 +202,7 @@ public class SSL_Server_Actual extends Thread {
         return response;
     }
 
-    private static String[] generatePasswordHash(String pwd) {
+    private String[] generatePasswordHash(String pwd) {
         Random random = new SecureRandom();
         //TODO: 32 is currently the salt length. Is this correct?
         byte salt[] = new byte[32];
@@ -201,7 +214,7 @@ public class SSL_Server_Actual extends Thread {
         return returnedValues;
     }
 
-    public static String hash(String pwd, byte[] salt) {
+    private String hash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 10000);
