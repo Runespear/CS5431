@@ -54,6 +54,7 @@ public class ServerView {
         String server;
         Integer dbPort;
         Integer outPort;
+        Integer sslPort;
         PrivateKey serverPrivKey;
         try {
             File configFile = new File("./server-config/" + serverName +
@@ -62,6 +63,7 @@ public class ServerView {
             server = br.readLine();
             dbPort = Integer.parseInt(br.readLine());
             outPort = Integer.parseInt(br.readLine());
+            sslPort = Integer.parseInt(br.readLine());
             File privKeyFile = new File("./server-config/" + serverName +
                     ".priv");
             ObjectInputStream privateKeyIS = new ObjectInputStream(
@@ -78,7 +80,9 @@ public class ServerView {
         SQL_Connection sqlConnection = new SQL_Connection(server, dbPort,
                 username, password);
         //TODO listen to incoming packets on some other thread here
-        waitForIncoming(server, outPort, sqlConnection, serverPrivKey);
+        //TODO threading???
+        waitForIncomingCert(server, outPort, serverPrivKey);
+        waitForIncomingSSL(server, sslPort, sqlConnection);
         try {
             while (true) {
                 promptAdmin(sqlConnection);
@@ -88,12 +92,11 @@ public class ServerView {
         }
     }
 
-    private static void waitForIncoming(String server, Integer outPort,
-                                        SQL_Connection sqlConnection,
-                                        PrivateKey serverPrivKey) {
+    private static void waitForIncomingCert(String server, Integer sslPort,
+                                            PrivateKey serverPrivKey) {
         try {
-            ServerSocket serverSocket = new ServerSocket(outPort);
-            Socket client = serverSocket.accept(); //TODO threading???
+            ServerSocket serverSocket = new ServerSocket(sslPort);
+            Socket client = serverSocket.accept();
             BufferedReader br = new BufferedReader(new InputStreamReader(client
                     .getInputStream()));
             JSONObject jsonObject = new JSONObject(br.readLine());
@@ -102,38 +105,8 @@ public class ServerView {
                 case "request jkb":
                     requestJKB(serverPrivKey);   //TODO pass socket?
                     break;
-                case "registration":
-                    register(jsonObject, sqlConnection);
-                    break;
-                case "login":
-                    login(jsonObject, sqlConnection);   //TODO pass socket?
-                    break;
-                case "upload":
-                    //TODO
-                    break;
-                case "download":
-                    //TODO
-                    break;
-                case "rename":
-                    //TODO
-                    break;
-                case "add privilege":
-                    //TODO
-                    break;
-                case "remove privilege":
-                    //TODO
-                    break;
-                case "delete":
-                    //TODO
-                    break;
-                case "edit details":
-                    //TODO
-                    break;
-                case "file log":
-                    //TODO
-                    break;
-                case "get files":
-                    //TODO
+                default:
+                    sendErrJson();
                     break;
             }
         } catch (IOException e) {
@@ -141,27 +114,128 @@ public class ServerView {
         }
     }
 
-    public static void requestJKB(PrivateKey serverPrivKey) {
+    private static void waitForIncomingSSL(String server, Integer sslPort,
+                                        SQL_Connection sqlConnection) {
+        try {
+            //TODO change to ssl
+            ServerSocket serverSocket = new ServerSocket(sslPort);
+            Socket client = serverSocket.accept();
+            BufferedReader br = new BufferedReader(new InputStreamReader(client
+                    .getInputStream()));
+            JSONObject jsonObject = new JSONObject(br.readLine());
+            String type = jsonObject.getString("messageType");
+            switch (type) {
+                case "registration":
+                    register(jsonObject, sqlConnection);
+                    break;
+                case "login":
+                    login(jsonObject, sqlConnection);   //TODO pass socket?
+                    break;
+                case "upload":
+                    upload(jsonObject, sqlConnection);
+                    break;
+                case "download":
+                    download(jsonObject, sqlConnection);
+                    break;
+                case "rename":
+                    rename(jsonObject, sqlConnection);
+                    break;
+                case "add privilege":
+                    addPriv(jsonObject, sqlConnection);
+                    break;
+                case "remove privilege":
+                    removePriv(jsonObject, sqlConnection);
+                    break;
+                case "delete":
+                    delete(jsonObject, sqlConnection);
+                    break;
+                case "edit user details":
+                    editDetails(jsonObject, sqlConnection);
+                    break;
+                case "file log":
+                    getFileLog(jsonObject, sqlConnection);
+                    break;
+                case "get file list":
+                    getFileList(jsonObject, sqlConnection);
+                    break;
+                default:
+                    sendErrJson();
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void requestJKB(PrivateKey serverPrivKey) {
         //TODO brandon write here
         //serverPrivKey is the signing key
 
     }
 
-    public static void register(JSONObject jsonObject, SQL_Connection sqlConnection) {
+    private static void register(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
         //TODO: make the privKey and pubKey in the jsonObject?
         //sqlConnection.createUser(jsonObject);
     }
 
-    public static void login(JSONObject jsonObject, SQL_Connection sqlConnection) {
+    private static void login(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
         //TODO: make sql_connection's authenticate not static?
         //sqlConnection.authenticate(jsonObject);
     }
 
-    public static void upload(JSONObject jsonObject, SQL_Connection
+    private static void upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO: make it read from User or jsonObject?
         //sqlConnection.createFso(jsonObject);
     }
+
+    private static void download(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO figure out which method to call
+        //sqlConnection.getFile()?
+    }
+
+    private static void rename(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void removePriv(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void addPriv(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void delete(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void editDetails(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void getFileLog(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void getFileList(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+    }
+
+    private static void sendErrJson() {
+        //TODO
+    }
+
 
     private static void promptAdmin(SQL_Connection sql_connection) throws SQLException {
         Scanner scanner = new Scanner(System.in);

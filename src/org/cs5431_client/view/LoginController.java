@@ -36,7 +36,7 @@ public class LoginController implements Initializable {
     private AccountsController accountsController;
     private Stage stage;
     private String server;
-    private String port;
+    private String sslPort;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -77,7 +77,8 @@ public class LoginController implements Initializable {
             alert.showAndWait();
         } else {
             try {
-                User user = accountsController.login(username, password, server, port);
+                User user = accountsController.login(username, password,
+                        server, sslPort);
                 if (user == null) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Login error");
@@ -95,7 +96,7 @@ public class LoginController implements Initializable {
                     Client.fileViewNode = root;
                     FileViewController fvc = fxmlLoader.getController();
                     //AccountsController accountsController = new AccountsController();
-                    fvc.setUserDetails(user, server, port);
+                    fvc.setUserDetails(user, server, sslPort);
                     fvc.setStage(stage);
                     scene.setRoot(root);
                 }
@@ -148,8 +149,8 @@ public class LoginController implements Initializable {
         stage.show();
     }
 
-    void setConnectionDetails(String server, String port) {
+    void setConnectionDetails(String server, String sslPort) {
         this.server = server;
-        this.port = port;
+        this.sslPort = sslPort;
     }
 }

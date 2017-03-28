@@ -61,8 +61,10 @@ public class ConnectController implements Initializable {
                     ".config");
             BufferedReader br = new BufferedReader(new FileReader(configFile));
             String server = br.readLine();
-            String port = br.readLine();
-            if (!Validator.validIP(server)|| !Validator.validPort(port)){
+            String outPort = br.readLine();
+            String sslPort = br.readLine();
+            if (!Validator.validIP(server)|| !Validator.validPort(outPort) ||
+                    !Validator.validPort(sslPort)){
                 throw new IOException("Config file tampered with");
             }
 
@@ -74,7 +76,7 @@ public class ConnectController implements Initializable {
             //TODO actually connect to the server with these details
             //TODO create secure channel here
 
-            goToLogin(e, server, port);
+            goToLogin(e, server, outPort, sslPort);
         } catch (IOException | ClassNotFoundException ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("User config error");
@@ -89,8 +91,11 @@ public class ConnectController implements Initializable {
      * Tries to open the registration page to allow the user to create an
      * account with a server.
      */
-    private void goToLogin(Event e, String server, String port) {
+    private void goToLogin(Event e, String server, String outPort, String
+            sslPort) {
         try {
+            //TODO get cert and connect
+
             Node node = (Node) e.getSource();
             Stage stage = (Stage) node.getScene().getWindow();
             Scene scene = stage.getScene();
@@ -101,7 +106,7 @@ public class ConnectController implements Initializable {
             LoginController lc = fxmlLoader.getController();
             Client.loginNode = root;
             lc.setStage(stage);
-            lc.setConnectionDetails(server,port);
+            lc.setConnectionDetails(server,sslPort);
             scene.setRoot(root);
 
         } catch (Exception e1) {

@@ -42,9 +42,16 @@ public class ServerSetup {
             System.out.println("Please enter a valid IP address:");
         }
 
-        System.out.println("Enter the outward-facing port of the server:");
+        System.out.println("Enter the outward-facing non-SSL port of the " +
+                "server:");
         String outPort;
         while (!Validator.validPort(outPort = scanner.nextLine())) {
+            System.out.println("Please enter a valid port:");
+        }
+
+        System.out.println("Enter the outward-facing SSL port of the server:");
+        String sslPort;
+        while (!Validator.validPort(sslPort = scanner.nextLine())) {
             System.out.println("Please enter a valid port:");
         }
 
@@ -72,7 +79,7 @@ public class ServerSetup {
             File configFile = new File("./user-config/"+name+".config");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(configFile)));
-            writer.write(ip+"\n"+outPort+"\n");
+            writer.write(ip+"\n"+outPort+sslPort+"\n");
             writer.close();
             //writes the server public key into an easily distributable file
             File pubKeyFile = new File("./user-config/"+name+".pub");
@@ -92,7 +99,7 @@ public class ServerSetup {
                     ".config");
             writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(serverConfigFile)));
-            writer.write(ip+"\n"+dbPort+"\n"+outPort+"\n");
+            writer.write(ip+"\n"+dbPort+"\n"+outPort+sslPort+"\n");
             writer.close();
             //writes the server private key into a file
             File privKeyFile = new File("./server-config/"+name+".priv");

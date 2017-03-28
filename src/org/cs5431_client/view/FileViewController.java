@@ -77,7 +77,7 @@ public class FileViewController implements Initializable {
     private Stage stage;
     private User user;
     private String ip;
-    private String port;
+    private String sslPort;
     private UserController userController;
     private FileController fileController;
     private Folder currParent;
@@ -353,18 +353,18 @@ public class FileViewController implements Initializable {
      * and port that is associated with the logged in user.
      * @param user User (containing username, pwd, etc) that is logged in
      * @param ip Server IP that this user is connected to
-     * @param port Server port that this user is connected to
+     * @param sslPort Server SSL port that this user is connected to
      */
-    void setUserDetails(User user, String ip, String port) {
+    void setUserDetails(User user, String ip, String sslPort) {
         this.user = user;
         this.ip = ip;
-        this.port = port;
+        this.sslPort = sslPort;
         txtUsername.setText(user.getUsername());
         currParent = user.getUserParentFolder();
         path = new ArrayList<>();
         path.add(currParent);
-        fileController = new FileController(user,ip,port);
-        userController = new UserController(user,ip,port);
+        fileController = new FileController(user,ip,sslPort);
+        userController = new UserController(user,ip,sslPort);
         currParent = user.getUserParentFolder();
         initFakeFiles();
         populateListView();
