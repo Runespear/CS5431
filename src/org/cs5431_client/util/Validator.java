@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 
 public class Validator {
     public static boolean validUsername(String username) {
+        // Allows Upper and lower case alphabets
+        // Allows numerals 0 to 9
+        // Allows hyphens -
+        // Allows underscores
         return (username!=null &&
                 Pattern.matches("[A-Za-z0-9_-]{5,30}$", username));
     }
@@ -21,7 +25,7 @@ public class Validator {
     public static boolean validPort(String port) {
         try {
             Integer p = Integer.parseInt(port);
-            return (p >= 1 && p <= 65535);
+            return (p > 1000 && p <= 65535);
         } catch (NumberFormatException e) {
             return false;
         }
