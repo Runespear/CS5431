@@ -14,8 +14,6 @@ to preview the:
 ###Server (for sending to client_TCP)###
 Not working as of yet.
 
-Run org.cs5431_server.Main as the main class with program argument 8080 (which indicates the port #). Currently our code is hardcoded to use port 8080 but this will change in the future
-
 ###client_TCP (for testing receiving from Server)###
 Not working as of yet. 
 
