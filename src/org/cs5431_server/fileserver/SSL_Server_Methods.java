@@ -15,9 +15,9 @@ import java.util.Scanner;
 public class SSL_Server_Methods {
 
     // Command for keystore generation
-    public static void generateKeyStore(String filename) throws Exception{
+    public static void generateKeyStore() throws Exception{
         //If keystore has already been created, just skip the step
-        File f = new File("./server-config/"+ filename + ".jks");
+        File f = new File(System.getProperty("user.dir") + "/keystorefilename.jks");
         if(!f.exists()) {
             String command = " -genkeypair " +
                                 " -alias mykey " +
@@ -90,6 +90,7 @@ public class SSL_Server_Methods {
 
         FileOutputStream fos = new FileOutputStream(filepath + received.filename);
         fos.write(received.file);
+        System.out.println("Done");
         fos.close();
     }
 

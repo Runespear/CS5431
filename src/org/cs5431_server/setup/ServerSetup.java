@@ -197,7 +197,7 @@ public class ServerSetup {
 
             //SSL handling
             //generate keystore
-            SSL_Server_Methods.generateKeyStore(name);
+            SSL_Server_Methods.generateKeyStore();
             //export certificate and public key
             SSL_Server_Methods.exportCert();
             //Setup SSL server socket
