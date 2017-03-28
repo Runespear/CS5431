@@ -72,8 +72,7 @@ public class ConnectController implements Initializable {
                 throw new IOException("Config file tampered with");
             }
 
-            File pubKeyFile = new File("./user-config/" + serverDropdown.getValue
-                    () + ".pub");
+            File pubKeyFile = new File("./user-config/" + serverName + ".pub");
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream
                     (pubKeyFile));
             PublicKey serverPubKey = (PublicKey) ois.readObject();
@@ -88,10 +87,10 @@ public class ConnectController implements Initializable {
                 if (!cert.exists()) {
                     throw new CertException("Could not create new certificate.");
                 }
-                SSL_Client_Methods.importCert();
+                SSL_Client_Methods.importCert(serverName);
             }
 
-            goToLogin(e, server, outPort, sslPort);
+            goToLogin(e, server, sslPort);
         } catch (IOException | ClassNotFoundException ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("User config error");
@@ -115,11 +114,8 @@ public class ConnectController implements Initializable {
      * Tries to open the registration page to allow the user to create an
      * account with a server.
      */
-    private void goToLogin(Event e, String server, String outPort, String
-            sslPort) {
+    private void goToLogin(Event e, String server, String sslPort) {
         try {
-            //TODO get cert and connect
-
             Node node = (Node) e.getSource();
             Stage stage = (Stage) node.getScene().getWindow();
             Scene scene = stage.getScene();
