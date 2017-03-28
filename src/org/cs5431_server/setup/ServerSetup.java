@@ -2,8 +2,10 @@ package org.cs5431_server.setup;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.util.Validator;
+import org.cs5431_server.fileserver.SSL_Server_Methods;
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -187,6 +189,16 @@ public class ServerSetup {
             statement.execute();
 
             connection.close();
+
+            //SSL handling
+            //generate keystore
+            SSL_Server_Methods.generateKeyStore(name);
+            //export certificate and public key
+            SSL_Server_Methods.exportCert();
+            //Setup SSL server socket
+            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
+                    (Integer.parseInt(sslPort));
+
             System.out.println("Distribute the "+name+".config and the "+name+
                     ".pub file found in the /user-config folder to your users.");
         } catch (Exception e) {
