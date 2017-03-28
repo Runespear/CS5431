@@ -1,5 +1,7 @@
 package org.cs5431_client.util;
 
+import org.cs5431_server.fileserver.TransmittedFile;
+
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;

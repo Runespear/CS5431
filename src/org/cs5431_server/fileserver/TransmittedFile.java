@@ -8,8 +8,8 @@ import java.io.Serializable;
 public class TransmittedFile implements Serializable{
     private static final long serialVersionUID = 4229824720221248174L;
     protected byte[] encrypted_Stuff;
-    protected byte[] signature;
+    public byte[] signature;
     protected byte[] mac_Stuff;
-    protected byte[] file;
-    protected String filename;
+    public byte[] file;
+    public String filename;
 }

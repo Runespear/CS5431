@@ -1,3 +1,6 @@
+package org.cs5431_client.util;
+import org.cs5431_server.fileserver.TransmittedFile;
+
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;

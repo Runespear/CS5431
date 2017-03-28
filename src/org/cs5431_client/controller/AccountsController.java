@@ -238,6 +238,8 @@ public class AccountsController {
     public Folder getFolderFromId(int folderId, int uid) {
         //TODO: send to server and get the corresponding folder
         Folder parentFolder = new Folder(folderId, "", null,null);
+        JSONObject json = new JSONObject();
+        //json.put("fsoid")
         ArrayList<JSONObject> children = sql_connection.getChildren(folderId, uid);
         for (JSONObject c : children) {
             try {
