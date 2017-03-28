@@ -87,10 +87,11 @@ public class ConnectController implements Initializable {
                 if (!cert.exists()) {
                     throw new CertException("Could not create new certificate.");
                 }
+                System.out.println("!!!");
                 SSL_Client_Methods.importCert(serverName);
             }
 
-            goToLogin(e, server, sslPort);
+            goToLogin(e, server, serverName, sslPort);
         } catch (IOException | ClassNotFoundException ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("User config error");
@@ -114,7 +115,8 @@ public class ConnectController implements Initializable {
      * Tries to open the registration page to allow the user to create an
      * account with a server.
      */
-    private void goToLogin(Event e, String server, String sslPort) {
+    private void goToLogin(Event e, String server, String serverName, String
+            sslPort) {
         try {
             Node node = (Node) e.getSource();
             Stage stage = (Stage) node.getScene().getWindow();
@@ -126,7 +128,7 @@ public class ConnectController implements Initializable {
             LoginController lc = fxmlLoader.getController();
             Client.loginNode = root;
             lc.setStage(stage);
-            lc.setConnectionDetails(server,sslPort);
+            lc.setConnectionDetails(server,serverName,sslPort);
             scene.setRoot(root);
 
         } catch (Exception e1) {

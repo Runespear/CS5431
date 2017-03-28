@@ -14,9 +14,10 @@ import java.util.Scanner;
  */
 public class SSL_Client_Methods {
 
-    public static Socket connect_SSLServerSocket(String host, int Port_Number) throws Exception{
+    public static Socket connect_SSLServerSocket(String host, int
+            Port_Number, String storeName) throws Exception{
 
-        System.setProperty("javax.net.ssl.trustStore", "truststorefilename.jks");
+        System.setProperty("javax.net.ssl.trustStore", storeName);
 
         Scanner scanner = new Scanner (System.in);
         System.out.println("Type in your password to access the truststore: \n");
@@ -61,7 +62,7 @@ public class SSL_Client_Methods {
     }
 
     public static void importCert(String name) throws Exception{
-
+        System.out.println("importing cert");
         String command = " -import " +
                 " -alias mykey " +
                 //" -keyalg RSA " +

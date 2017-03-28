@@ -1,21 +1,12 @@
 package org.cs5431_server.fileserver;
 
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
 import org.cs5431_client.util.SQL_Connection;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import javax.crypto.SecretKey;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.sql.*;
-import java.util.Base64;
-import java.util.Random;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ServerView {
@@ -81,50 +72,95 @@ public class ServerView {
                 username, password);
 
         try {
-            waitForIncomingCert(serverName, outPort, serverPrivKey);
-            System.out.println("have cert");
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket(serverName, sslPort);
-            waitForIncomingSSL(ss, sqlConnection);
-            while (true) {
-                promptAdmin(sqlConnection);
-            }
-        } catch (SQLException e) {
-            System.out.println("Wrong password, please try again.");
-            e.printStackTrace();
+            waitForIncomingCert wfic = new waitForIncomingCert(serverName,
+                    outPort, serverPrivKey);
+            new Thread(wfic).start();
+
+            waitForIncomingSSL wfis = new waitForIncomingSSL(sqlConnection,
+                    serverName, sslPort);
+            new Thread(wfis).start();
+
+            promptAdmin pa = new promptAdmin(sqlConnection);
+            new Thread(pa).start();
+
         } catch(Exception e) {
             System.err.println("We should change setup_SSLServerSocket to not" +
                     " throw exception");
             e.printStackTrace();
         }
     }
+}
 
-    private static void waitForIncomingCert(String serverName, Integer outPort,
-                                            PrivateKey serverPrivKey) {
+class waitForIncomingCert implements Runnable {
+    String serverName;
+    Integer outPort;
+    PrivateKey serverPrivKey;
+
+    public waitForIncomingCert(String serverName, Integer outPort,
+                               PrivateKey serverPrivKey) {
+        this.serverName = serverName;
+        this.outPort = outPort;
+        this.serverPrivKey = serverPrivKey;
+    }
+
+    public void run() {
         try {
             ServerSocket ss = new ServerSocket(outPort);
-            while (true){
+            while (true) {
                 Socket s = ss.accept();
                 new Unsecured_Server_Handler(s, serverPrivKey, serverName).start();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("got icoming cert?");
+    }
+}
+
+class waitForIncomingSSL implements Runnable {
+    SQL_Connection sqlConnection;
+    String serverName;
+    Integer sslPort;
+
+    public waitForIncomingSSL(SQL_Connection sqlConnection, String
+            serverName, Integer sslPort) {
+        this.sqlConnection = sqlConnection;
+        this.serverName = serverName;
+        this.sslPort = sslPort;
     }
 
-    private static void waitForIncomingSSL(ServerSocket ss,
-                                        SQL_Connection sqlConnection) {
+    public void run() {
         try {
+            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
+                    (serverName, sslPort);
             Socket s = ss.accept();
             new SSL_Server_Actual(s, sqlConnection).start();
-        } catch (IOException e) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class promptAdmin implements Runnable {
+    SQL_Connection sqlConnection;
+
+    public promptAdmin(SQL_Connection sqlConnection) {
+        this.sqlConnection = sqlConnection;
+    }
+
+    public void run() {
+        try {
+            while (true) {
+                prompt(sqlConnection);
+            }
+        } catch (SQLException e) {
+            System.out.println("Wrong password, please try again.");
             e.printStackTrace();
         }
     }
 
-
-
-    private static void promptAdmin(SQL_Connection sql_connection) throws SQLException {
+    private void prompt(SQL_Connection sql_connection) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter 'u' to download user logs");
@@ -164,5 +200,4 @@ public class ServerView {
             }
         }
     }
-
 }

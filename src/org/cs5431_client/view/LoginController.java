@@ -149,9 +149,13 @@ public class LoginController implements Initializable {
         stage.show();
     }
 
-    void setConnectionDetails(String server, String sslPort) throws Exception {
+    void setConnectionDetails(String server, String serverName, String sslPort)
+            throws Exception {
+        System.out.println(server);
+        System.out.println(serverName);
+        System.out.println(sslPort);
         Socket s = SSL_Client_Methods.connect_SSLServerSocket(server,
-                Integer.parseInt(sslPort));
+                Integer.parseInt(sslPort), "./user-config/"+serverName+".jks");
         accountsController.setSocket(s);
         sslSocket = s;
     }
