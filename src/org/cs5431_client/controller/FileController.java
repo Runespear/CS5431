@@ -1,5 +1,6 @@
 package org.cs5431_client.controller;
 
+import javafx.concurrent.Task;
 import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
 import org.cs5431_client.util.Validator;
@@ -39,12 +40,24 @@ public class FileController {
      * @return true if the user has the permission; false otherwise
      */
     public boolean isAllowed(FileActionType action, FileSystemObject fso) {
-        //TODO: to be done on server side
-        List<Integer> usersWithPermission = fso.getEditors();
-        if (action == DOWNLOAD) {
-            usersWithPermission.addAll(fso.getViewers());
-        }
-        return (usersWithPermission.contains(user.getId()));
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+            //TODO: to be done on server side
+            List<Integer> usersWithPermission = fso.getEditors();
+            if (action == DOWNLOAD) {
+                usersWithPermission.addAll(fso.getViewers());
+            }
+            return (usersWithPermission.contains(user.getId()));
+            }
+        };
+        final Boolean[] ret = new Boolean[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -59,45 +72,59 @@ public class FileController {
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException {
-        String name = file.getName();
-        long size = file.length();
-        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        Task<File> task = new Task<File>() {
+        @Override
+        protected File call() throws Exception {
+            String name = file.getName();
+            long size = file.length();
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-        JSONObject fso = new JSONObject();
-        fso.put("uid", user.getId());
-        fso.put("parentFolderid", parentFolder.getId());
+            JSONObject fso = new JSONObject();
+            fso.put("uid", user.getId());
+            fso.put("parentFolderid", parentFolder.getId());
 
-        fso.put("size", String.valueOf(size));
-        fso.put("lastModified", lastModified);
-        fso.put("isFile", true);
+            fso.put("size", String.valueOf(size));
+            fso.put("lastModified", lastModified);
+            fso.put("isFile", true);
 
-        KeyGenerator kg = KeyGenerator.getInstance("AES");
-        kg.init(128, new SecureRandom());
-        SecretKey fileSK = kg.generateKey();
-        SecureRandom random = new SecureRandom();
-        byte iv[] = new byte[16];
-        random.nextBytes(iv);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
-        byte[] encFile = encryptFile(file, fileSK, ivSpec);
-        //TODO change to more appropriate format?
-        fso.put("file", Base64.getEncoder().encodeToString(encFile));
-        String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
-                fileSK, ivSpec));
-        fso.put("fsoName", encFileName);
-        String encFileKey = Base64.getEncoder().encodeToString
-                (encFileSecretKey(fileSK, user.getPubKey()));
-        fso.put("encSK", encFileKey);
+            KeyGenerator kg = KeyGenerator.getInstance("AES");
+            kg.init(128, new SecureRandom());
+            SecretKey fileSK = kg.generateKey();
+            SecureRandom random = new SecureRandom();
+            byte iv[] = new byte[16];
+            random.nextBytes(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
 
-        int fileSentid = sendFSO(fso, file);
-        if (fileSentid != -1) {
-            File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
-            parentFolder.addChild(fileSent);
-            fileSent.addPriv(PrivType.EDIT, user.getId());
-            System.out.print(parentFolder.getChildren());
-            return fileSent;
+            byte[] encFile = encryptFile(file, fileSK, ivSpec);
+            //TODO change to more appropriate format?
+            fso.put("file", Base64.getEncoder().encodeToString(encFile));
+            String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
+                    fileSK, ivSpec));
+            fso.put("fsoName", encFileName);
+            String encFileKey = Base64.getEncoder().encodeToString
+                    (encFileSecretKey(fileSK, user.getPubKey()));
+            fso.put("encSK", encFileKey);
+
+
+            int fileSentid = sendFSO(fso, file);
+            if (fileSentid != -1) {
+                File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
+                parentFolder.addChild(fileSent);
+                fileSent.addPriv(PrivType.EDIT, user.getId());
+                System.out.print(parentFolder.getChildren());
+                return fileSent;
+            }
+            return null;
         }
-        return null;
+        };
+        final File[] ret = new File[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     private byte[] encryptFile(java.io.File file, SecretKey secretKey,
@@ -176,7 +203,9 @@ public class FileController {
      * @return the folder that is created and uploaded to server successfully; null otherwise
      */
     public Folder createFolder(String folderName, Folder parentFolder) throws JSONException {
-
+        Task<Folder> task = new Task<Folder>() {
+            @Override
+            protected Folder call() throws Exception {
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         if (isAcceptableInput(folderName)) {
             JSONObject fso = new JSONObject();
@@ -198,6 +227,15 @@ public class FileController {
             }
         }
         return null;
+            }
+        };
+        final Folder[] ret = new Folder[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -208,16 +246,27 @@ public class FileController {
      * @return the file that is modified and uploaded to server successfully; null otherwise.
      */
     public File overwrite(File originalFile, java.io.File file) {
+        Task<File> task = new Task<File>() {
+            @Override
+            protected File call() throws Exception {
+            boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
+            if (canOverWrite) {
+                //originalFile.setFileContents(newFileContent);
+                FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
+                FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
+                fileSent.getFileLog().addLogEntry(logEntry);
+                return (File) fileSent;
+            }
+            return null; // to return null or throw exception?
+            }
+        };
+        final File[] ret = new File[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
 
-        boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
-        if (canOverWrite) {
-            //originalFile.setFileContents(newFileContent);
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
-            FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
-            fileSent.getFileLog().addLogEntry(logEntry);
-            return (File) fileSent;
-        }
-        return null; // to return null or throw exception?
+        return ret[0];
     }
 
     /**
@@ -229,14 +278,27 @@ public class FileController {
      * @return true if the name of the file/folder is successfully modified; false otherwise
      */
     public boolean rename(FileSystemObject systemObject, String newName) {
-        if (!Validator.validFileName(newName))
-            return false;
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                if (!Validator.validFileName(newName))
+                    return false;
 
-        int edited = sql_connection.renameFso(systemObject.getId(), user.getId(), newName);
-        if (edited != -1) {
-            return true;
-        }
-        return false;
+                int edited = sql_connection.renameFso(systemObject.getId(), user.getId(), newName);
+
+                if (edited != -1) {
+                    return true;
+                }
+                return false;
+            }
+        };
+        final Boolean[] ret = new Boolean[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -249,6 +311,9 @@ public class FileController {
         NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
         InvalidAlgorithmParameterException, IllegalBlockSizeException,
         BadPaddingException, FileControllerException {
+        Task<File> task = new Task<File>() {
+            @Override
+            protected File call() throws Exception {
         JSONObject fileReq = new JSONObject();
         fileReq.put("messageType", "download");
         fileReq.put("fsoid", fsoId);
@@ -284,6 +349,15 @@ public class FileController {
             throw new FileControllerException("Received bad response " +
                     "from server");
         }
+            }
+        };
+        final File[] ret = new File[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -292,34 +366,52 @@ public class FileController {
      * @return List of fso if download is successful; false null
      */
     public List<FileSystemObject> getChildren(Folder parentFolder) {
-        int parentFolderid = parentFolder.getId();
-        ArrayList<FileSystemObject> children = new ArrayList<>();
-        JSONObject json = new JSONObject();
-        json.put("msgType", "getChildren");
-        json.put("fsoid", parentFolderid);
-        json.put("uid", user.getId());
-        JSONArray jsonChildren = sql_connection.getChildren(json);
-        for (int i=0; i<jsonChildren.length(); i++) {
-            JSONObject c = jsonChildren.getJSONObject(i);
-            try {
-                int id = c.getInt("id");
-                String name = c.getString("name");
-                String size = c.getString("size");
-                Long longSize = Long.valueOf(size);
-                Timestamp lastModified = (Timestamp) c.get("lastModified");
-                String type = c.getString("FSOType");
-                FileSystemObject child;
-                if (type == "FOLDER") {
-                    child = new Folder(id, name, parentFolder, lastModified);
-                } else {
-                    child = new File(id, name, parentFolder, longSize, lastModified);
+        Task<List<FileSystemObject>> task = new Task<List<FileSystemObject>>() {
+            @Override
+            protected List<FileSystemObject> call() throws Exception {
+                int parentFolderid = parentFolder.getId();
+                ArrayList<FileSystemObject> children = new ArrayList<>();
+                JSONObject json = new JSONObject();
+                json.put("msgType", "getChildren");
+                json.put("fsoid", parentFolderid);
+                json.put("uid", user.getId());
+                JSONArray jsonChildren = sql_connection.getChildren(json);
+                for (int i = 0; i < jsonChildren.length(); i++) {
+                    JSONObject c = jsonChildren.getJSONObject(i);
+                    try {
+                        int id = c.getInt("id");
+                        String name = c.getString("name");
+                        String size = c.getString("size");
+                        Long longSize = Long.valueOf(size);
+                        Timestamp lastModified = (Timestamp) c.get("lastModified");
+
+                        String type = c.getString("FSOType");
+                        FileSystemObject child;
+                        if (type.equals("FOLDER")) {
+                            child = new Folder(id, name, parentFolder,
+                                    lastModified);
+                        } else {
+                            child = new File(id, name, parentFolder,
+                                    longSize, lastModified);
+                        }
+                        children.add(child);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-                children.add(child);
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return children;
             }
+        };
+        final Object[] ret = {null};
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+            Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        if (ret[0] instanceof List<?>) {
+            return (List<FileSystemObject>) ret[0];
         }
-        return children;
+        return null;
     }
 
     /**
@@ -329,9 +421,21 @@ public class FileController {
      * @return true if delete is successful; false otherwise
      */
     public boolean delete(FileSystemObject fso, Folder parentFolder) {
-        //TODO: remove from db
-        parentFolder.removeChild(fso);
-        return false;
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                //TODO: remove from db
+                parentFolder.removeChild(fso);
+                return false;
+            }
+        };
+        final Boolean[] ret = new Boolean[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -340,23 +444,35 @@ public class FileController {
      * @return true if privilege was added successfully; false otherwise.
      */
     public boolean addPriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        int newUser;
-        JSONObject json = new JSONObject();
-        json.put("msgType", "addPriv");
-        json.put("fsoid", systemObject.getId());
-        json.put("uid", user.getId());
-        json.put("newUid", userId);
-        if (priv == PrivType.EDIT) {
-            newUser = sql_connection.addEditPriv(json);
-        } else {
-            newUser = sql_connection.addViewPriv(json);
-        }
-        if (newUser != -1) {
-            systemObject.addPriv(priv, userId);
-            return true;
-        } else {
-            return false;
-        }
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                int newUser;
+                JSONObject json = new JSONObject();
+                json.put("msgType", "addPriv");
+                json.put("fsoid", systemObject.getId());
+                json.put("uid", user.getId());
+                json.put("newUid", userId);
+                if (priv == PrivType.EDIT) {
+                    newUser = sql_connection.addEditPriv(json);
+                } else {
+                    newUser = sql_connection.addViewPriv(json);
+                }
+                if (newUser != -1) {
+                    systemObject.addPriv(priv, userId);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            };
+        final Boolean[] ret = new Boolean[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+            Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -365,18 +481,30 @@ public class FileController {
      * @return true if privilege was added successfully; false otherwise.
      */
     public boolean removePriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        int rmUser;
-        if (priv == PrivType.EDIT) {
-            rmUser = sql_connection.removeEditPriv(systemObject.getId(), user.getId(), userId);
-        } else {
-            rmUser = sql_connection.removeViewPriv(systemObject.getId(), user.getId(), userId);
-        }
-        if (rmUser != -1) {
-            systemObject.removePriv(priv, userId);
-            return true;
-        } else {
-            return false;
-        }
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+            int rmUser;
+            if (priv == PrivType.EDIT) {
+                rmUser = sql_connection.removeEditPriv(systemObject.getId(), user.getId(), userId);
+            } else {
+                rmUser = sql_connection.removeViewPriv(systemObject.getId(), user.getId(), userId);
+            }
+            if (rmUser != -1) {
+                systemObject.removePriv(priv, userId);
+                return true;
+            } else {
+                return false;
+            }
+            }
+        };
+        final Boolean[] ret = new Boolean[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     public void rollback(int rollbackToThisfileId) {
@@ -390,9 +518,20 @@ public class FileController {
      * @return the id of the file/folder that is uploaded to server if successful; null otherwise
      */
     private int sendFSO(JSONObject fso, java.io.File file) {
-        int fsoid = sql_connection.createFso(fso);
-        return fsoid;
+        Task<Integer> task = new Task<Integer>() {
+            @Override
+            protected Integer call() throws Exception {
+                int fsoid = sql_connection.createFso(fso);
+                return fsoid;
+            }
+        };
+        final Integer[] ret = new Integer[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
 
+        return ret[0];
         //msgType = “upload”, uid, parentFolderid, size, lastModified, isFile, fileIV, fsoNameIV, file, fsoName, encSK
 
     }
@@ -406,9 +545,21 @@ public class FileController {
      * * @return the file/folder that is uploaded to server if successful; null otherwise
      */
     private FileSystemObject addFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
-        //TODO: remember to add new file to parent folder of userId
-        //TODO: remember to change priv to child too
-        return null;
+        Task<FileSystemObject> task = new Task<FileSystemObject>() {
+            @Override
+            protected File call() throws Exception {
+                //TODO: remember to add new file to parent folder of userId
+                //TODO: remember to change priv to child too
+                return null;
+            }
+        };
+        final FileSystemObject[] ret = new FileSystemObject[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -420,17 +571,53 @@ public class FileController {
      * * @return the file/folder that is uploaded to server if successful; null otherwise
      */
     private FileSystemObject removeFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
-        //TODO: remember to remove the file from parent folder of userId if view privileges are removed
-        //TODO: remember to change priv to child too
-        return null;
+        Task<FileSystemObject> task = new Task<FileSystemObject>() {
+            @Override
+            protected File call() throws Exception {
+            //TODO: remember to remove the file from parent folder of userId if view privileges are removed
+            //TODO: remember to change priv to child too
+            return null;
+            }
+        };
+        final FileSystemObject[] ret = new FileSystemObject[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     private FileSystemObject modifyFSOName(int fsoId, String newName, FileLogEntry logEntry) {
-        return null;
+        Task<FileSystemObject> task = new Task<FileSystemObject>() {
+            @Override
+            protected File call() throws Exception {
+                return null;
+            }
+        };
+        final FileSystemObject[] ret = new FileSystemObject[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     private FileSystemObject modifyFSOContents(int fsoId, java.io.File file, FileLogEntry logEntry) {
-        return null;
+        Task<FileSystemObject> task = new Task<FileSystemObject>() {
+            @Override
+            protected File call() throws Exception {
+                return null;
+            }
+        };
+        final FileSystemObject[] ret = new FileSystemObject[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     /**
@@ -439,7 +626,19 @@ public class FileController {
      * @return true if the input string is safe; false otherwise
      */
     private boolean isAcceptableInput(String input) {
-        return true;
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return true;
+            }
+        };
+        final Boolean[] ret = new Boolean[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     public class FileControllerException extends Exception {

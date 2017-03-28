@@ -7,10 +7,7 @@ import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -27,7 +24,6 @@ public class SSL_Server_Actual extends Thread {
 
     public void run(){
         try {
-
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             String strJson = "";
             String inputLine;
@@ -92,6 +88,11 @@ public class SSL_Server_Actual extends Thread {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+        return (JSONObject) ois.readObject();
     }
 
     private void sendJson (JSONObject json) throws IOException {
