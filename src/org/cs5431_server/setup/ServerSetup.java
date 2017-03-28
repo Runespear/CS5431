@@ -96,7 +96,7 @@ public class ServerSetup {
             File configFile = new File("./user-config/"+name+".config");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(configFile)));
-            writer.write(ip+"\n"+outPort+sslPort+"\n");
+            writer.write(ip+"\n"+outPort+"\n"+sslPort+"\n");
             writer.close();
             //writes the server public key into an easily distributable file
             File pubKeyFile = new File("./user-config/"+name+".pub");
@@ -194,10 +194,7 @@ public class ServerSetup {
             //generate keystore
             SSL_Server_Methods.generateKeyStore(name);
             //export certificate and public key
-            SSL_Server_Methods.exportCert();
-            //Setup SSL server socket
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
-                    (Integer.parseInt(sslPort));
+            SSL_Server_Methods.exportCert(name);
 
             System.out.println("Distribute the "+name+".config and the "+name+
                     ".pub file found in the /user-config folder to your users.");

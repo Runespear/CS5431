@@ -26,7 +26,7 @@ public class SSL_Server_Methods {
                                 //" -dname CN=Java "+
                                 //" -storetype JKS "+
                                 //" -keypass password "+
-                                " -keystore keystorefilename.jks";
+                                " -keystore ./server-config/" + filename + ".jks";
                                 //" -storepass password";
             String[] options = command.trim().split("\\s+");
             System.out.println(command);
@@ -35,9 +35,9 @@ public class SSL_Server_Methods {
     }
 
     // Command for exporting server's certificate and public key
-    public static void exportCert() throws Exception{
+    public static void exportCert(String filename) throws Exception{
         //If cert has already been created, just skip the step
-        File f = new File(System.getProperty("user.dir")+"/certfilename.jks");
+        File f = new File("./server-config/"+ filename + ".cer");
         if(!f.exists()) {
             String command = " -export " +
                     " -alias mykey " +
@@ -46,8 +46,8 @@ public class SSL_Server_Methods {
                     //" -dname CN=Java "+
                     //" -storetype JKS "+
                     //" -keypass password "+
-                    " -keystore keystorefilename.jks "+
-                    " -rfc -file certfilename.cer";
+                    " -keystore ./server-config/" + filename + ".jks" +
+                    " -rfc -file ./server-config/" + filename+ ".cer";
             //" -storepass password";
             String[] options = command.trim().split("\\s+");
             System.out.println(command);
@@ -56,9 +56,11 @@ public class SSL_Server_Methods {
     }
 
 
-    public static ServerSocket setup_SSLServerSocket(int Port_Number) throws Exception{
+    public static ServerSocket setup_SSLServerSocket(String serverName, int
+                                                     Port_Number) throws Exception{
 
-        System.setProperty("javax.net.ssl.keyStore", "keystorefilename.jks");
+        System.setProperty("javax.net.ssl.keyStore", "" +
+                "./server-config/" + serverName + ".jks");
 
         Scanner scanner = new Scanner (System.in);
         System.out.println("Type in your password to access the keystore: \n");

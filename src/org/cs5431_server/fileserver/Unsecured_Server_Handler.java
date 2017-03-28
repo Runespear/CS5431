@@ -1,36 +1,26 @@
 package org.cs5431_server.fileserver;
 
-import org.cs5431_server.fileserver.Unsecured_Server_Methods;
-
-import javax.crypto.SecretKey;
 import java.net.Socket;
 import java.security.PrivateKey;
 
-/**
- * Created by Brandon on 28/3/2017.
- */
 public class Unsecured_Server_Handler extends Thread{
 
     protected Socket s;
     protected PrivateKey key;
+    private String serverName;
 
-
-    public Unsecured_Server_Handler(Socket socket){
+    Unsecured_Server_Handler(Socket socket, PrivateKey key,
+                             String serverName){
         this.s = socket;
-        //TODO: INITIALIZE KEY
-
+        this.key = key;
+        this.serverName = serverName;
     }
 
     public void run(){
         try {
-
-            //SEND CERT HERE
-            String filename = "certfilename.cer";
-            String filepath = System.getProperty("user.dir") + "/Testing SSL Stuff/Server/certfilename.cer";
+            String filename = serverName + ".cer";
+            String filepath = "./server-config/" + serverName + ".cer";
             Unsecured_Server_Methods.sendCert(s, filepath, filename, key);
-
-
-
         }catch (Exception e){
             e.printStackTrace();
         }

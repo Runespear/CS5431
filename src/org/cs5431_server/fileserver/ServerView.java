@@ -83,233 +83,47 @@ public class ServerView {
 
         SQL_Connection sqlConnection = new SQL_Connection(server, dbPort,
                 username, password);
-        //TODO listen to incoming packets on some other thread here
-        //TODO threading???
-        waitForIncomingCert(server, outPort, serverPrivKey);
-        waitForIncomingSSL(server, sslPort, sqlConnection);
+
         try {
+            waitForIncomingCert(serverName, outPort, serverPrivKey);
+            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket(serverName, sslPort);
+            waitForIncomingSSL(ss, sqlConnection);
             while (true) {
                 promptAdmin(sqlConnection);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch(Exception e) {
+            System.err.println("We should change setup_SSLServerSocket to not" +
+                    " throw exception");
+            e.printStackTrace();
         }
     }
 
-    private static void waitForIncomingCert(String server, Integer sslPort,
+    private static void waitForIncomingCert(String serverName, Integer outPort,
                                             PrivateKey serverPrivKey) {
         try {
-            ServerSocket serverSocket = new ServerSocket(sslPort);
-            Socket client = serverSocket.accept();
-            BufferedReader br = new BufferedReader(new InputStreamReader(client
-                    .getInputStream()));
-            JSONObject jsonObject = new JSONObject(br.readLine());
-            String type = jsonObject.getString("messageType");
-            JSONObject response;
-            switch (type) {
-                case "request jkb":
-                    response = requestJKB(serverPrivKey);   //TODO 
-                    // pass socket?
-                    break;
-                default:
-                    response = makeErrJson("Did not understand " +
-                        "incoming request");
-                    break;
+            ServerSocket ss = new ServerSocket(outPort);
+            while (true){
+                Socket s = ss.accept();
+                new Unsecured_Server_Handler(s, serverPrivKey, serverName).start();
             }
-            //TODO send response
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void waitForIncomingSSL(String server, Integer sslPort,
+    private static void waitForIncomingSSL(ServerSocket ss,
                                         SQL_Connection sqlConnection) {
         try {
-            //TODO change to ssl
-            ServerSocket serverSocket = new ServerSocket(sslPort);
-            Socket client = serverSocket.accept();
-            BufferedReader br = new BufferedReader(new InputStreamReader(client
-                    .getInputStream()));
-            JSONObject jsonObject = new JSONObject(br.readLine());
-            String type = jsonObject.getString("messageType");
-            JSONObject response;
-            switch (type) {
-                case "registration":
-                    response = register(jsonObject, sqlConnection);
-                    break;
-                case "login":
-                    response = login(jsonObject, sqlConnection);
-                    break;
-                case "upload":
-                    response = upload(jsonObject, sqlConnection);
-                    break;
-                case "download":
-                    response = download(jsonObject, sqlConnection);
-                    break;
-                case "rename":
-                    response = rename(jsonObject, sqlConnection);
-                    break;
-                case "add privilege":
-                    response = addPriv(jsonObject, sqlConnection);
-                    break;
-                case "remove privilege":
-                    response = removePriv(jsonObject, sqlConnection);
-                    break;
-                case "delete":
-                    response = delete(jsonObject, sqlConnection);
-                    break;
-                case "edit user details":
-                    response = editDetails(jsonObject, sqlConnection);
-                    break;
-                case "getFileLogs":
-                    JSONArray arr = getFileLog(jsonObject, sqlConnection);
-                    //TODO send arr instead of response
-                    break;
-                case "getChildren":
-                    response = getChildren(jsonObject, sqlConnection);
-                    break;
-                default:
-                    response = makeErrJson("Did not understand " +
-                            "incoming request");
-                    break;
-            }
-            //TODO send response. BRANDON! SEND THE RESPONSE THROUGH SSL HERE
+            Socket s = ss.accept();
+            new SSL_Server_Actual(s, sqlConnection).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static JSONObject requestJKB(PrivateKey serverPrivKey) {
-        //TODO brandon write here
-        //serverPrivKey is the signing key
-        return null;
-    }
 
-    private static JSONObject register(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        boolean isUniqueUsername = sqlConnection.isUniqueUsername(jsonObject
-                .getString("username"));
-        if (!isUniqueUsername)
-            return makeErrJson("Username has already been chosen");
-
-        String hashedPwd = jsonObject.getString("hashedPwd");
-        String hashAndSalt[] = generatePasswordHash(hashedPwd);
-        String hash = hashAndSalt[0];
-        String pwdSalt = hashAndSalt[1];
-        JSONObject response = sqlConnection.createUser(jsonObject, hash, 
-                pwdSalt);
-        if (response == null)
-            return makeErrJson("Failed to register user");
-        return response;
-    }
-
-    private static JSONObject login(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        String pwdSalt = sqlConnection.getSalt(jsonObject.getString
-                ("username"));
-        String hashedPwd = jsonObject.getString("hashedPwd");
-        String encPwd  = hash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
-        return sqlConnection.authenticate(jsonObject, encPwd);
-    }
-
-    private static JSONObject upload(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        int fsoid = sqlConnection.createFso(jsonObject);
-        JSONObject response = new JSONObject();
-        response.put("messageType","uploadAck");
-        response.put("fsoid", fsoid);
-        return response;
-    }
-
-    private static JSONObject download(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        int fsoid = jsonObject.getInt("fsoid");
-        int uid = jsonObject.getInt("uid");
-        //TODO CHECK FOR PERMISSIONS
-
-        //TODO figure out which method to call
-        //sqlConnection.getFile()?
-        JSONObject downloadAck = new JSONObject();
-        downloadAck.put("fsoid", fsoid);
-        downloadAck.put("fileIV", "");
-        downloadAck.put("fsoName", "");
-        downloadAck.put("encFile","");
-        downloadAck.put("encFileSK","");
-        downloadAck.put("dateModified","");
-        downloadAck.put("size","");
-        return downloadAck;
-    }
-
-    private static JSONObject rename(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO
-        return null;
-    }
-
-    private static JSONObject removePriv(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO
-        return null;
-    }
-
-    private static JSONObject addPriv(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO
-        return null;
-    }
-
-    private static JSONObject delete(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO
-        return null;
-    }
-
-    private static JSONObject editDetails(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO
-        return null;
-    }
-
-    private static JSONArray getFileLog(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO
-        return sqlConnection.getFileLog(jsonObject);
-    }
-
-    private static JSONObject getChildren(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        //TODO HALP sqlConnection.getChildren();
-        return null;
-    }
-
-    private static JSONObject makeErrJson(String message) {
-        //TODO
-        JSONObject response = new JSONObject();
-        response.put("messageType","error");
-        response.put("message", message);
-        return response;
-    }
-
-    private static String[] generatePasswordHash(String pwd) {
-        Random random = new SecureRandom();
-        //TODO: 32 is currently the salt length. Is this correct?
-        byte salt[] = new byte[32];
-        random.nextBytes(salt);
-        String hashedPW = hash(pwd, salt);
-        String returnedValues[] = new String[2];
-        returnedValues[0] = hashedPW;
-        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
-        return returnedValues;
-    }
-
-    public static String hash(String pwd, byte[] salt) {
-        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
-        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
-                pwd.toCharArray()), salt, 10000);
-        //TODO: 256 is currently the key length. Is this correct?
-        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
-        return Base64.getEncoder().encodeToString(kp.getKey());
-    }
 
     private static void promptAdmin(SQL_Connection sql_connection) throws SQLException {
         Scanner scanner = new Scanner(System.in);

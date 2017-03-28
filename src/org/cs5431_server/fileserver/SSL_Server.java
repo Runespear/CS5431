@@ -24,11 +24,12 @@ public class SSL_Server {
             SSL_Server_Methods.generateKeyStore(filename);
 
             //export certificate and public key
-            SSL_Server_Methods.exportCert();
+            SSL_Server_Methods.exportCert(filename);
 
 
             //Setup SSL server socket
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket(PORT);
+            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
+                    (filename, PORT);
 
             while (true){
                 System.out.println("Waiting for client to connect.");
