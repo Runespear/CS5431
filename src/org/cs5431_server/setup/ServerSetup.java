@@ -114,6 +114,8 @@ public class ServerSetup {
 
         String url = "jdbc:mysql://" + ip + ":" + dbPort;
         String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
+        //String createUser = "CREATE USER '"+ username + "'@'" + ip + "' IDENTIFIED BY '" + password + "';\n" +
+                //"GRANT ALL ON cs5431.* TO '" + username + "'@'" + ip + "' IDENTIFIED BY '" + password + "';";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV VARCHAR(32) NOT NULL,\n" +
@@ -151,9 +153,12 @@ public class ServerSetup {
             Connection connection = DriverManager.getConnection(url, username, password);
             PreparedStatement statement = connection.prepareStatement(createDB);
             statement.execute();
+            //statement = connection.prepareStatement(createUser);
+            //statement.execute();
             connection.close();
             connection = DriverManager.getConnection(url+"/cs5431",
                     username, password);
+
             statement = connection.prepareStatement(createFSO);
             statement.execute();
             statement = connection.prepareStatement(createUsers);
