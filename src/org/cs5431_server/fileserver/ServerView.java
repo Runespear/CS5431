@@ -38,21 +38,17 @@ public class ServerView {
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the name of the server you wish to run:");
-        System.out.print("Options:");
-        int i = 1;
+        System.out.print("Current servers: ");
         for (File f : configFiles) {
             String fileName = f.getName();
             int pos = fileName.lastIndexOf(".");
             fileName = fileName.substring(0, pos);
-            System.out.println(" " + i+": " +fileName);
-            i++;
+            System.out.println(fileName);
         }
         String serverName = scanner.nextLine();
-        System.out.println("Enter the username you use to login to your MySQL" +
-                " server:");
+        System.out.println("Enter the username you use to login to the server:");
         String username = scanner.nextLine();
-        System.out.println("Enter the password you use to login to your MySQL" +
-                " server:");
+        System.out.println("Enter the password you use to login to the server:");
         String password = scanner.nextLine();
 
         String server;
@@ -86,12 +82,14 @@ public class ServerView {
 
         try {
             waitForIncomingCert(serverName, outPort, serverPrivKey);
+            System.out.println("have cert");
             ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket(serverName, sslPort);
             waitForIncomingSSL(ss, sqlConnection);
             while (true) {
                 promptAdmin(sqlConnection);
             }
         } catch (SQLException e) {
+            System.out.println("Wrong password, please try again.");
             e.printStackTrace();
         } catch(Exception e) {
             System.err.println("We should change setup_SSLServerSocket to not" +
@@ -111,6 +109,7 @@ public class ServerView {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("got icoming cert?");
     }
 
     private static void waitForIncomingSSL(ServerSocket ss,
