@@ -162,6 +162,7 @@ public class SQL_Connection {
                 jsonUser.put("parentFolderid", folderid);
                 jsonUser.put("email", email);
                 jsonUser.put("privKey", privKey);
+                jsonUser.put("privKeySalt", privKeySalt);
                 jsonUser.put("pubKey", pubKey);
                 return jsonUser;
 

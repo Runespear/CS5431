@@ -1,14 +1,16 @@
 package org.cs5431_client.model;
 
-import javax.crypto.SecretKey;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 public class User extends Account {
     private Folder userParentFolder;
     private String email;
-    private SecretKey privKey;
-    private SecretKey pubKey;
+    private PrivateKey privKey;
+    private PublicKey pubKey;
 
-    public User(int id, String username, String email, Folder userParentFolder, SecretKey privKey, SecretKey pubKey) {
+    public User(int id, String username, String email, Folder
+            userParentFolder, PrivateKey privKey, PublicKey pubKey) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -26,7 +28,11 @@ public class User extends Account {
         return email;
     }
 
-    public SecretKey getPrivKey() {
+    public PrivateKey getPrivKey() {
         return privKey;
+    }
+
+    public PublicKey getPubKey() {
+        return pubKey;
     }
 }

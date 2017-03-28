@@ -6,12 +6,18 @@ import org.cs5431_client.util.Validator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.security.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
-import static org.cs5431_client.model.FileActionType.*;
+import static org.cs5431_client.model.FileActionType.DOWNLOAD;
+import static org.cs5431_client.model.FileActionType.OVERWRITE;
 
 //TODO: should a FileController control all files or just a single file?
 public class FileController {
@@ -48,7 +54,11 @@ public class FileController {
      * @param parentFolder Folder where the file is to be uploaded
      * @return file created if the user file upload to server was successful; false otherwise
      */
-    public File uploadFile(java.io.File file, Folder parentFolder) throws IOException, JSONException {
+    public File uploadFile(java.io.File file, Folder parentFolder) throws
+            IOException, JSONException, NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
         String name = file.getName();
         long size = file.length();
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -56,10 +66,29 @@ public class FileController {
         JSONObject fso = new JSONObject();
         fso.put("uid", user.getId());
         fso.put("parentFolderid", parentFolder.getId());
-        fso.put("fsoName", name);
+
         fso.put("size", String.valueOf(size));
         fso.put("lastModified", lastModified);
         fso.put("isFile", true);
+
+        //generate file secret key here
+        KeyGenerator kg = KeyGenerator.getInstance("AES");
+        kg.init(128, new SecureRandom());
+        SecretKey fileSK = kg.generateKey();
+        SecureRandom random = new SecureRandom();
+        byte iv[] = new byte[16];
+        random.nextBytes(iv);
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
+        byte[] encFile = encryptFile(file, fileSK, ivSpec);
+        fso.put("file", encFile);   //TODO change to more appropriate format?
+        String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
+                fileSK, ivSpec));
+        fso.put("fsoName", encFileName);
+        String encFileKey = Base64.getEncoder().encodeToString
+                (encFileSecretKey(fileSK, user.getPubKey()));
+        fso.put("encSK", encFileKey);
+
         int fileSentid = sendFSO(fso, file);
         if (fileSentid != -1) {
             File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
@@ -69,6 +98,68 @@ public class FileController {
             return fileSent;
         }
         return null;
+    }
+
+    private byte[] encryptFile(java.io.File file, SecretKey secretKey,
+                               IvParameterSpec ivSpec) throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
+        //TODO encrypt the file using cipher
+        //maybe something like http://www.itcsolutions.eu/2011/08/24/how-to-encrypt-decrypt-files-in-java-with-aes-in-cbc-mode-using-bouncy-castle-api-and-netbeans-or-eclipse/
+        return null;
+    }
+
+    private byte[] encryptFileName(String fileName, SecretKey secretKey,
+                                   IvParameterSpec ivSpec) throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
+        return cipher.doFinal(fileName.getBytes());
+    }
+
+    private byte[] encFileSecretKey (SecretKey secretKey, PublicKey
+            userPubKey) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        Cipher cipher = Cipher.getInstance
+                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, userPubKey);
+        return cipher.doFinal(secretKey.getEncoded());
+    }
+
+    private File decryptFile(byte[] encFile, String fileName,
+                             SecretKey secretKey, IvParameterSpec ivSpec)
+            throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+        //TODO decrypt the file using cipher
+        return null;
+    }
+
+    private String decryptFileName(byte[] encFileName, SecretKey fileSK,
+                                   IvParameterSpec ivSpec) {
+        //TODO
+        return null;
+    }
+
+    private SecretKey decFileSecretKey(byte[] encSK, PrivateKey userPrivKey)
+            throws NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException{
+        Cipher cipher = Cipher.getInstance
+                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, userPrivKey);
+        byte SKbytes[] = cipher.doFinal(encSK);
+        return new SecretKeySpec(SKbytes, 0, SKbytes.length, "AES");
     }
 
     /**

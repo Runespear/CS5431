@@ -14,6 +14,9 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ public class AccountsController {
     private SQL_Connection sql_connection;
 
     public AccountsController(){
+        Security.addProvider(new BouncyCastleProvider());
         this.sql_connection = new SQL_Connection("localhost", 3306);
     }
     /**
@@ -68,11 +72,10 @@ public class AccountsController {
             byte keyAndSalt[][] = pwdBasedKey(password);
             byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
             SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-            Security.addProvider(new BouncyCastleProvider());
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             //TODO should we create iv?
-            byte encryptedKey[] = cipher.doFinal(key);
+            byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
 
             user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
             user.put("privKeySalt",Base64.getEncoder().encodeToString
@@ -87,11 +90,14 @@ public class AccountsController {
                 String privKeySalt = user.getString("privKeySalt");
                 byte[] decodedPriv = decryptPwdBasedKey(encodedPrivKey,
                         password, privKeySalt);
-                SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                PrivateKey privKey = kf.generatePrivate(new
+                        PKCS8EncodedKeySpec(decodedPriv));
 
                 String encodedPubKey = user.getString("pubKey");
                 byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
-                SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");
+                PublicKey pubKey = kf.generatePublic(new
+                        X509EncodedKeySpec(decodedPub));
 
                 Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                 Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
@@ -106,7 +112,8 @@ public class AccountsController {
             }
         } catch (JSONException | NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
-                IllegalBlockSizeException | BadPaddingException e) {
+                IllegalBlockSizeException | BadPaddingException |
+                NoSuchProviderException | InvalidKeySpecException e) {
             e.printStackTrace();
         }
         return null;
@@ -136,8 +143,9 @@ public class AccountsController {
 
     private byte[] decryptPwdBasedKey(String enc, String pwd, String salt)
     throws NoSuchAlgorithmException, NoSuchPaddingException,
-            IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            IllegalBlockSizeException, BadPaddingException,
+            InvalidKeyException, NoSuchProviderException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
         SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
         cipher.init(Cipher.DECRYPT_MODE, secretKey);

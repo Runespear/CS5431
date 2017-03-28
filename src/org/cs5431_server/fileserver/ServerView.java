@@ -166,8 +166,8 @@ public class ServerView {
                 case "file log":
                     response = getFileLog(jsonObject, sqlConnection);
                     break;
-                case "get file list":
-                    response = getFileList(jsonObject, sqlConnection);
+                case "getChildren":
+                    response = getChildren(jsonObject, sqlConnection);
                     break;
                 default:
                     response = makeErrJson("Did not understand " +
@@ -263,9 +263,9 @@ public class ServerView {
         return null;
     }
 
-    private static JSONObject getFileList(JSONObject jsonObject, SQL_Connection
+    private static JSONObject getChildren(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        //TODO
+        //TODO HALP sqlConnection.getChildren();
         return null;
     }
 
