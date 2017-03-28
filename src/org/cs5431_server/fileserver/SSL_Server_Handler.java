@@ -19,7 +19,8 @@ public class SSL_Server_Handler extends Thread{
 
             //SSL_Server_Methods.receive_Request(s); WORKS
 
-            String filepath = System.getProperty("user.dir") + "/Testing SSL Stuff/Server/";
+            String filepath = System.getProperty("user.dir")+"/" ;//+ "/Testing SSL Stuff/Server/";
+            System.out.println(filepath);
             SSL_Server_Methods.receiveFile(s, filepath);
         }catch (Exception e){
             e.printStackTrace();
