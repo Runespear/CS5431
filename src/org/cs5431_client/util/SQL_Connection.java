@@ -26,7 +26,7 @@ public class SQL_Connection {
     public SQL_Connection(String ip, int dbPort, String username, String
             password) {
         this.ip = ip;
-        this.port = port;
+        this.port = dbPort;
         this.DB_USER = username;
         this.DB_PASSWORD = password;
     }
@@ -38,7 +38,7 @@ public class SQL_Connection {
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             System.out.println("Database connected!");
-            PreparedStatement verifyUniqueness = null;
+            PreparedStatement verifyUniqueness;
 
             String checkUsername = "SELECT U.uid FROM Users U WHERE U.username = ?";
             verifyUniqueness = connection.prepareStatement(checkUsername);
@@ -72,8 +72,8 @@ public class SQL_Connection {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
-        int uid = 0;
-        JSONObject jsonUser = null;
+        int uid;
+        JSONObject jsonUser;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             System.out.println("Database connected!");
@@ -82,8 +82,8 @@ public class SQL_Connection {
             PreparedStatement createLog = null;
             PreparedStatement addPermission = null;
 
-            String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, pubKey, salt)"
-                    + " values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, " +
+                    "pubKey, pwdSalt, privKeySalt) values (?, ?, ?, ?, ?, ?, ?, ?)";
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
@@ -94,9 +94,7 @@ public class SQL_Connection {
             String username = user.getString("username");
             String pubKey = user.getString("pubKey");
             String privKey = user.getString("privKey");
-            //TODO ruixin store privKeySalt in sql
             String privKeySalt = user.getString("privKeySalt");
-            //TODO ruixin store pwdSalt in sql
 
             String email = null;
             if (user.has("email")) {
@@ -130,8 +128,8 @@ public class SQL_Connection {
                 createUser.setString (5, email);
                 createUser.setString    (6, privKey);
                 createUser.setString    (7, pubKey);
-                //TODO change to pwdSalt and privKeySalt
-                //createUser.setString    (8, salt);
+                createUser.setString    (8, pwdSalt);
+                createUser.setString    (9, privKeySalt);
                 createUser.executeUpdate();
                 System.out.println("created user");
 
@@ -198,13 +196,13 @@ public class SQL_Connection {
         return null;
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
-     * @Return fsoid of created fso **/
+     * @return fsoid of created fso **/
     public int createFso(JSONObject fso) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
-        int fsoid = 0;
+        int fsoid;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -216,9 +214,10 @@ public class SQL_Connection {
             Timestamp lastModified = (Timestamp) fso.get("lastModified");
             boolean isFile = fso.getBoolean("isFile");
             String sk = fso.getString("encSK");
+            String fileIV = fso.getString("fileIV");
+            String fsoNameIV = fso.getString("fsoNameIV");
 
             //TODO: what to do with all of this? ruixin? brandon?
-            String fileIV = fso.getString("fileIV");
             String file = fso.getString("file");
 
 
@@ -232,9 +231,9 @@ public class SQL_Connection {
                 PreparedStatement addFile = null;
 
                 String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
-                        "lastModified, isFile)"
+                        "lastModified, isFile, fsoNameIV)"
                         + " values (?, ?, ?, ?, ?, ?)";
-                String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+                String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey, fileIV) values (?, ?, ?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
                 String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
@@ -253,6 +252,7 @@ public class SQL_Connection {
                     createFso.setString(4, size);
                     createFso.setTimestamp(5, lastModified);
                     createFso.setBoolean(6, isFile);
+                    createFso.setString(7, fsoNameIV);
                     createFso.executeUpdate();
                     System.out.println("created folder");
 
@@ -263,6 +263,7 @@ public class SQL_Connection {
                     addKey.setInt(1, fsoid);
                     addKey.setInt(2, uid);
                     addKey.setString(3, sk);
+                    addFile.setString(4, fileIV);
                     addKey.executeUpdate();
                     System.out.println("added added sk");
 
@@ -337,7 +338,7 @@ public class SQL_Connection {
     }
 
     /** Compares username and encrypted password with row of User table.
-     * @Return h(privKey) of the user if the authentication is valid. **/
+     * @return h(privKey) of the user if the authentication is valid. **/
     public JSONObject authenticate(JSONObject allegedUser, String encPwd) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
@@ -347,7 +348,7 @@ public class SQL_Connection {
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             System.out.println("Database connected!");
-            PreparedStatement verifyUser = null;
+            PreparedStatement verifyUser;
 
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
@@ -395,7 +396,7 @@ public class SQL_Connection {
         return null;
     }
 
-    //untested
+    /** Gets pwdSalt of pwd associated with username **/
     public String getSalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -403,9 +404,9 @@ public class SQL_Connection {
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             System.out.println("Database connected!");
-            PreparedStatement getSalt = null;
+            PreparedStatement getSalt;
 
-            String selectSalt = "SELECT U.salt FROM Users U WHERE U.username = ?";
+            String selectSalt = "SELECT U.pwdSalt FROM Users U WHERE U.username = ?";
             getSalt = connection.prepareStatement(selectSalt);
             String salt = null;
 
@@ -445,8 +446,8 @@ public class SQL_Connection {
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
-                PreparedStatement removeUser = null;
-                PreparedStatement createLog = null;
+                PreparedStatement removeUser;
+                PreparedStatement createLog;
 
                 String deleteUser = "DELETE FROM Users WHERE username = ? AND pwd = ?";
                 String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
@@ -512,8 +513,8 @@ public class SQL_Connection {
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
-                PreparedStatement changePwd = null;
-                PreparedStatement createLog = null;
+                PreparedStatement changePwd;
+                PreparedStatement createLog;
 
                 String updatePwd = "UPDATE Users SET pwd = ? WHERE username = ? AND pwd = ?";
                 String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
@@ -568,7 +569,7 @@ public class SQL_Connection {
 
     //TODO: test this please
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
-     * @Return An array of JsonObjects of all childrens  **/
+     * @return An array of JsonObjects of all childrens  **/
     public JSONArray getChildren(JSONObject json) {
 
         int uid = json.getInt("uid");
@@ -587,7 +588,7 @@ public class SQL_Connection {
                 PreparedStatement getKey;
                 PreparedStatement getIv;
 
-                String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile " +
+                String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV " +
                         "FROM FileSystemObjects F " +
                         "WHERE F.parentFolderid = ? AND EXISTS" +
                         "(SELECT * FROM Editors E WHERE E.uid=?) OR EXISTS" +
@@ -612,6 +613,7 @@ public class SQL_Connection {
                         fso.put("name", rs.getString(2));
                         fso.put("size", rs.getString(3));
                         fso.put("lastModified", rs.getTimestamp(4));
+                        fso.put("fsoNameIV", rs.getString(6));
 
                         if (rs.getBoolean(5)) {
                             fso.put("FSOType", "FILE");
@@ -666,7 +668,7 @@ public class SQL_Connection {
     }
 
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
-     * @Return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
+     * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
     public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -725,15 +727,13 @@ public class SQL_Connection {
 
     public boolean verifyEditPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
-        boolean hasPermission = false;
         if (permissions != null) {
             try {
                 JSONArray editors = permissions.getJSONArray("editors");
                 for (int i = 0; i < editors.length(); i++) {
                     int editorid = (int) editors.get(i);
                     if (editorid == uid) {
-                        hasPermission = true;
-                        return hasPermission;
+                        return true;
                     }
                 }
             } catch (JSONException e1) {
@@ -742,28 +742,25 @@ public class SQL_Connection {
                 return false;
             }
         }
-        return hasPermission;
+        return false;
     }
 
     public boolean verifyBothPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
-        boolean hasPermission = false;
         if (permissions != null) {
             try {
                 JSONArray editors = permissions.getJSONArray("editors");
                 for (int i = 0; i < editors.length(); i++) {
                     int editorid = (int) editors.get(i);
                     if (editorid == uid) {
-                        hasPermission = true;
-                        return hasPermission;
+                        return true;
                     }
                 }
                 JSONArray viewers = permissions.getJSONArray("viewers");
                 for (int i = 0; i < viewers.length(); i++) {
                     int viewerid = (int) viewers.get(i);
                     if (viewerid == uid) {
-                        hasPermission = true;
-                        return hasPermission;
+                        return true;
                     }
                 }
             } catch (JSONException e1) {
@@ -772,7 +769,7 @@ public class SQL_Connection {
                 return false;
             }
         }
-        return hasPermission;
+        return false;
     }
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
@@ -784,7 +781,7 @@ public class SQL_Connection {
         if (hasPermission) {
             System.out.println("Can view file logs");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-            PreparedStatement getFileLog = null;
+            PreparedStatement getFileLog;
 
             System.out.println("Connecting to database...");
 
@@ -876,6 +873,7 @@ public class SQL_Connection {
         return null;
     }
 
+    //TODO: to send in new IV when renaming
     public int renameFso(int fsoid, int uid, String newName) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
@@ -1164,18 +1162,21 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement rmViewer;
             PreparedStatement createLog;
+            PreparedStatement removeKey;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
                 String deleteViewer = "DELETE FROM Viewers WHERE fsoid = ? AND uid = ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
+                String deleteKey = "DELETE FROM FsoEncryption WHERE fsoid = ? AND uid = ?";
+
                 createLog = connection.prepareStatement(insertLog);
                 rmViewer = connection.prepareStatement(deleteViewer);
+                removeKey = connection.prepareStatement(deleteKey);
 
                 try {
                     connection.setAutoCommit(false);
@@ -1191,6 +1192,11 @@ public class SQL_Connection {
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
                     System.out.println("created log");
+
+                    removeKey.setInt(1, fsoid);
+                    removeKey.setInt(2, uid);
+                    removeKey.executeUpdate();
+                    System.out.println("removed key");
 
                     connection.commit();
                     return rmUid;
@@ -1213,6 +1219,9 @@ public class SQL_Connection {
                     if (createLog != null) {
                         createLog.close();
                     }
+                    if (removeKey != null) {
+                        removeKey.close();
+                    }
                     connection.setAutoCommit(true);
                 }
             } catch (SQLException e) {
@@ -1230,16 +1239,20 @@ public class SQL_Connection {
         if (hasPermission) {
             System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-            PreparedStatement rmEditor = null;
-            PreparedStatement createLog = null;
+            PreparedStatement rmEditor ;
+            PreparedStatement createLog;
+            PreparedStatement removeKey;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
                 String deleteEditor = "DELETE FROM Editors WHERE fsoid = ? AND uid = ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
+                String deleteKey = "DELETE FROM FsoEncryption WHERE fsoid = ? AND uid = ?";
+
                 createLog = connection.prepareStatement(insertLog);
                 rmEditor = connection.prepareStatement(deleteEditor);
+                removeKey = connection.prepareStatement(deleteKey);
 
                 try {
                     connection.setAutoCommit(false);
@@ -1255,6 +1268,11 @@ public class SQL_Connection {
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
                     System.out.println("created log");
+
+                    removeKey.setInt(1, fsoid);
+                    removeKey.setInt(2, uid);
+                    removeKey.executeUpdate();
+                    System.out.println("removed key");
 
                     connection.commit();
                     return rmUid;
@@ -1276,6 +1294,9 @@ public class SQL_Connection {
                     }
                     if (createLog != null) {
                         createLog.close();
+                    }
+                    if (removeKey != null) {
+                        removeKey.close();
                     }
                     connection.setAutoCommit(true);
                 }

@@ -116,7 +116,7 @@ public class ServerSetup {
         String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
-                "lastModified TIMESTAMP, isFile boolean NOT NULL, \n" +
+                "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV VARCHAR(32) NOT NULL,\n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid);)";
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +

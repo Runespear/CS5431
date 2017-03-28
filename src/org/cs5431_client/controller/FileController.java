@@ -3,6 +3,7 @@ package org.cs5431_client.controller;
 import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
 import org.cs5431_client.util.Validator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -291,8 +292,13 @@ public class FileController {
     public List<FileSystemObject> getChildren(Folder parentFolder) {
         int parentFolderid = parentFolder.getId();
         ArrayList<FileSystemObject> children = new ArrayList<>();
-        ArrayList<JSONObject> jsonChildren = sql_connection.getChildren(parentFolderid, user.getId());
-        for (JSONObject c : jsonChildren) {
+        JSONObject json = new JSONObject();
+        json.put("msgType", "getChildren");
+        json.put("fsoid", parentFolderid);
+        json.put("uid", user.getId());
+        JSONArray jsonChildren = sql_connection.getChildren(json);
+        for (int i=0; i<jsonChildren.length(); i++) {
+            JSONObject c = jsonChildren.getJSONObject(i);
             try {
                 int id = c.getInt("id");
                 String name = c.getString("name");
