@@ -214,7 +214,7 @@ public class SSL_Server_Actual extends Thread {
         return returnedValues;
     }
 
-    private String hash(String pwd, byte[] salt) {
+    public static String hash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 10000);

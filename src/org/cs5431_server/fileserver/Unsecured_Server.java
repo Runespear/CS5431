@@ -19,7 +19,7 @@ public class Unsecured_Server {
             while (true){
                 System.out.println("Waiting for client to connect.");
                 Socket s = ss.accept();
-                new Unsecured_Server_Handler(s).start();
+                new Unsecured_Server_Handler(s, null, "").start();
             }
 
         } catch (Exception e) {
