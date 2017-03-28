@@ -216,6 +216,11 @@ public class SQL_Connection {
             Timestamp lastModified = (Timestamp) fso.get("lastModified");
             boolean isFile = fso.getBoolean("isFile");
 
+            //TODO: what to do with all of this? ruixin? brandon?
+            String fileIV = fso.getString("fileIV");
+            String file = fso.getString("file");
+            String encSK = fso.getString("encSK");
+
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
 
             if (hasPermission) {

@@ -13,10 +13,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
@@ -217,6 +214,7 @@ public class ServerView {
 
     private static JSONObject upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
+
         //TODO: make it read from User or jsonObject?
         //sqlConnection.createFso(jsonObject);
         return null;
@@ -224,8 +222,20 @@ public class ServerView {
 
     private static JSONObject download(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
+        //TODO CHECK FOR PERMISSIONS
+
         //TODO figure out which method to call
         //sqlConnection.getFile()?
+        JSONObject downloadAck = new JSONObject();
+        downloadAck.put("fsoid", fsoid);
+        downloadAck.put("fileIV", "");
+        downloadAck.put("fsoName", "");
+        downloadAck.put("encFile","");
+        downloadAck.put("encFileSK","");
+        downloadAck.put("dateModified","");
+        downloadAck.put("size","");
         return null;
     }
 

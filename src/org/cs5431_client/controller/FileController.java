@@ -80,7 +80,8 @@ public class FileController {
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
         fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
         byte[] encFile = encryptFile(file, fileSK, ivSpec);
-        fso.put("file", encFile);   //TODO change to more appropriate format?
+        //TODO change to more appropriate format?
+        fso.put("file", Base64.getEncoder().encodeToString(encFile));
         String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
                 fileSK, ivSpec));
         fso.put("fsoName", encFileName);
@@ -133,7 +134,8 @@ public class FileController {
     }
 
     private File decryptFile(byte[] encFile, String fileName,
-                             SecretKey secretKey, IvParameterSpec ivSpec)
+                             SecretKey secretKey, IvParameterSpec ivSpec,
+                             Timestamp dateModified, int size)
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException {
@@ -239,10 +241,46 @@ public class FileController {
      * @param fsoId is ID of the file to be downloaded
      * @return file if download is successful; false otherwise
      */
-    public File download(int fsoId) {
-        FileSystemObject file = getFSO(fsoId);
-        //TODO: decrypt the file
-        return (File) file;
+    public File download(int fsoId) throws
+        IOException, JSONException, NoSuchAlgorithmException,
+        NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+        InvalidAlgorithmParameterException, IllegalBlockSizeException,
+        BadPaddingException, FileControllerException {
+        JSONObject fileReq = new JSONObject();
+        fileReq.put("messageType", "download");
+        fileReq.put("fsoid", fsoId);
+        fileReq.put("uid", user.getId());
+
+        //TODO send fileReq here
+
+        //TODO change fileAck to get from socket
+        JSONObject fileAck = new JSONObject();
+        if (fileAck.getString("messageType").equals("downloadAck")) {
+            int fsoID = fileAck.getInt("fsoid");
+            String ivString = fileAck.getString("fileIV");
+            IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
+                    .decode(ivString));
+            byte encFileSKbytes[] = Base64.getDecoder()
+                    .decode(fileAck.getString("encFileSK"));
+            SecretKey fileSK = decFileSecretKey(encFileSKbytes, user.getPrivKey());
+            byte fsoNamebytes[] = Base64.getDecoder().decode(fileAck
+                    .getString("fsoName"));
+            String fsoName = decryptFileName(fsoNamebytes, fileSK, iv);
+            //TODO: ruixin, should the below be coerced from string
+            //or does it need to be decoded
+            Timestamp dateModified = (Timestamp) fileAck.get("dateModified");
+            int size = fileAck.getInt("size");
+            byte fsoBytes[] = Base64.getDecoder().decode(fileAck
+                    .getString("encFile"));
+            //TODO: what should we do with dateModified and size?
+            return decryptFile(fsoBytes, fsoName, fileSK, iv,
+                    dateModified, size);
+        } else if (fileAck.getString("messageType").equals("error")) {
+            throw new FileControllerException(fileAck.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     /**
@@ -380,20 +418,17 @@ public class FileController {
     }
 
     /**
-     * Retrieves file/folder associated with the fsoId
-     * @param fsoId ID that is used to query the database
-     * @return the corresponding file/folder that had been uploaded to server if successful; null otherwise
-     */
-    private FileSystemObject getFSO(int fsoId) {
-        return null;
-    }
-
-    /**
      * Sanitizes the input to ensure that it is not at risk of causing SQL injection
      * @param input raw data that is to be used in the sql query
      * @return true if the input string is safe; false otherwise
      */
     private boolean isAcceptableInput(String input) {
         return true;
+    }
+
+    public class FileControllerException extends Exception {
+        public FileControllerFailException (String message) {
+            super(message);
+        }
     }
 }
