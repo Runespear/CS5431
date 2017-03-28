@@ -1,26 +1,20 @@
 package org.cs5431_client.util;
 
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Random;
 
 public class SQL_Connection {
 
-    private static int port = 3306;
-    private static String ip = "localhost";
-    private static String DB_USER = "admin";
-    private static String DB_PASSWORD = "$walaotwod0tseven$";
+    private int port = 3306;
+    private String ip = "localhost";
+    private String DB_USER = "admin";
+    private String DB_PASSWORD = "$walaotwod0tseven$";
 
     public SQL_Connection(String ip, int port) {
         this.ip = ip;
@@ -292,6 +286,8 @@ public class SQL_Connection {
 
                     connection.commit();
 
+                    return fsoid;
+
                 } catch (SQLException e) {
                     e.printStackTrace();
                     if (connection != null) {
@@ -302,6 +298,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
+                    return -1;
                 } finally {
                     if (createFso != null) {
                         createFso.close();
@@ -319,7 +316,6 @@ public class SQL_Connection {
                         addFile.close();
                     }
                     connection.setAutoCommit(true);
-                    return fsoid;
                 }
             }
 
@@ -333,7 +329,7 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @Return h(privKey) of the user if the authentication is valid. **/
-    public static JSONObject authenticate(JSONObject allegedUser) {
+    public JSONObject authenticate(JSONObject allegedUser) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -427,7 +423,7 @@ public class SQL_Connection {
     }
 
     //how does an admin delete user? not functional, need to update db on delete cascade
-    public static int deleteUser(int uid, String username, String password) {
+    public int deleteUser(int uid, String username, String password) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", "username");
         allegedUser.put("pwd", password);
@@ -492,7 +488,7 @@ public class SQL_Connection {
         return -1;
     }
 
-    public static int changePassword(int uid, String username, String password, String newPwd) {
+    public int changePassword(int uid, String username, String password, String newPwd) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", "username");
         allegedUser.put("pwd", password);
@@ -561,7 +557,7 @@ public class SQL_Connection {
     //TODO: test this please
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * @Return An array of JsonObjects of all childrens  **/
-    public static ArrayList<JSONObject> getChildren(JSONObject json) {
+    public ArrayList<JSONObject> getChildren(JSONObject json) {
 
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
@@ -659,7 +655,7 @@ public class SQL_Connection {
 
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
      * @Return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
-    public static JSONObject getPermissions(int fsoid) {
+    public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
         System.out.println("Connecting to database...");
@@ -715,7 +711,7 @@ public class SQL_Connection {
         return null;
     }
 
-    public static boolean verifyEditPermission(int fsoid, int uid) {
+    public boolean verifyEditPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         boolean hasPermission = false;
         if (permissions != null) {
@@ -737,7 +733,7 @@ public class SQL_Connection {
         return hasPermission;
     }
 
-    public static boolean verifyBothPermission(int fsoid, int uid) {
+    public boolean verifyBothPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         boolean hasPermission = false;
         if (permissions != null) {
@@ -769,7 +765,7 @@ public class SQL_Connection {
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @Return A JsonArray of filelog entries; returns null otherwise  **/
-    public static JSONArray getFileLog(int fsoid, int uid) {
+    public JSONArray getFileLog(int fsoid, int uid) {
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
             System.out.println("Can view file logs");
@@ -818,7 +814,7 @@ public class SQL_Connection {
     }
 
     //TODO: userlog
-    public static JSONArray getUserLog(int fsoid, int uid) {
+    public JSONArray getUserLog(int fsoid, int uid) {
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
             System.out.println("Can view file logs");
@@ -866,14 +862,14 @@ public class SQL_Connection {
         return null;
     }
 
-    public static int renameFso(int fsoid, int uid, String newName) {
+    public int renameFso(int fsoid, int uid, String newName) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-            PreparedStatement renameFso = null;
-            PreparedStatement createLog = null;
+            PreparedStatement renameFso;
+            PreparedStatement createLog;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
@@ -930,7 +926,7 @@ public class SQL_Connection {
         return -1;
     }
 
-    public static JSONObject getKeys(int fsoid, int uid, int newUid) {
+    public JSONObject getKeys(int fsoid, int uid, int newUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
@@ -995,7 +991,7 @@ public class SQL_Connection {
         return null;
     }
 
-    public static int addEditPriv(JSONObject json) {
+    public int addEditPriv(JSONObject json) {
 
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
@@ -1072,7 +1068,7 @@ public class SQL_Connection {
         return -1;
     }
 
-    public static int addViewPriv(JSONObject json) {
+    public int addViewPriv(JSONObject json) {
 
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
@@ -1150,7 +1146,7 @@ public class SQL_Connection {
     }
 
     //TODO: update
-    public static int removeViewPriv(int fsoid, int uid, int rmUid) {
+    public int removeViewPriv(int fsoid, int uid, int rmUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
@@ -1214,7 +1210,7 @@ public class SQL_Connection {
     }
 
     //TODO: update
-    public static int removeEditPriv(int fsoid, int uid, int rmUid) {
+    public int removeEditPriv(int fsoid, int uid, int rmUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
@@ -1275,11 +1271,6 @@ public class SQL_Connection {
         }
         System.out.println("failed to remove editor");
         return -1;
-    }
-
-    public static void main(String[] args) {
-        //Connection connection = connectToDB();
-        System.out.print(deleteUser(26, "ruimin", "ruimin"));
     }
 }
 
