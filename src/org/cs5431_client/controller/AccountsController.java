@@ -71,7 +71,7 @@ public class AccountsController {
     private JSONObject sendUser(JSONObject user) {
         //TODO: send to server
 
-        JSONObject newUser = sql_connection.createUser(user, "", "", "");
+        JSONObject newUser = sql_connection.createUser(user, "", "");
         return newUser;
     }
 
