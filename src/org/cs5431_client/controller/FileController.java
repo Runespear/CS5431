@@ -144,9 +144,14 @@ public class FileController {
     }
 
     private String decryptFileName(byte[] encFileName, SecretKey fileSK,
-                                   IvParameterSpec ivSpec) {
-        //TODO
-        return null;
+                                   IvParameterSpec ivSpec) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, fileSK, ivSpec);
+        byte fileName[] = cipher.doFinal(encFileName);
+        return new String(fileName);
     }
 
     private SecretKey decFileSecretKey(byte[] encSK, PrivateKey userPrivKey)

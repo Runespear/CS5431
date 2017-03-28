@@ -4,6 +4,7 @@ import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.cs5431_client.util.SQL_Connection;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.crypto.SecretKey;
@@ -163,8 +164,9 @@ public class ServerView {
                 case "edit user details":
                     response = editDetails(jsonObject, sqlConnection);
                     break;
-                case "file log":
-                    response = getFileLog(jsonObject, sqlConnection);
+                case "getFileLogs":
+                    JSONArray arr = getFileLog(jsonObject, sqlConnection);
+                    //TODO send arr instead of response
                     break;
                 case "getChildren":
                     response = getChildren(jsonObject, sqlConnection);
@@ -257,10 +259,10 @@ public class ServerView {
         return null;
     }
 
-    private static JSONObject getFileLog(JSONObject jsonObject, SQL_Connection
+    private static JSONArray getFileLog(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
-        return null;
+        return sqlConnection.getFileLog(jsonObject);
     }
 
     private static JSONObject getChildren(JSONObject jsonObject, SQL_Connection

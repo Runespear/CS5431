@@ -771,7 +771,9 @@ public class SQL_Connection {
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @Return A JsonArray of filelog entries; returns null otherwise  **/
-    public JSONArray getFileLog(int fsoid, int uid) {
+    public JSONArray getFileLog(JSONObject jsonObject) {
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
             System.out.println("Can view file logs");
