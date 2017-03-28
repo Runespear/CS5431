@@ -7,6 +7,7 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -239,9 +240,12 @@ public class AccountsController {
         //TODO: send to server and get the corresponding folder
         Folder parentFolder = new Folder(folderId, "", null,null);
         JSONObject json = new JSONObject();
-        //json.put("fsoid")
-        ArrayList<JSONObject> children = sql_connection.getChildren(folderId, uid);
-        for (JSONObject c : children) {
+        json.put("fsoid", folderId);
+        json.put("uid", uid);
+        json.put("msgType", "getChildren");
+        JSONArray children = sql_connection.getChildren(json);
+        for (int i=0; i<children.length(); i++) {
+            JSONObject c = children.getJSONObject(i);
             try {
                 int id = c.getInt("id");
                 String name = c.getString("name");
