@@ -15,7 +15,7 @@ import java.util.Scanner;
 public class SSL_Server_Methods {
 
     // Command for keystore generation
-    public static void generateKeyStore() throws Exception{
+    public static void generateKeyStore(String filename) throws Exception{
         //If keystore has already been created, just skip the step
         File f = new File(System.getProperty("user.dir") + "/keystorefilename.jks");
         if(!f.exists()) {

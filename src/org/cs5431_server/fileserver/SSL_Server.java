@@ -12,7 +12,7 @@ public class SSL_Server {
         try {
             //generate keystore
             String filename = "test";
-            SSL_Server_Methods.generateKeyStore();
+            SSL_Server_Methods.generateKeyStore(filename);
 
             //export certificate and public key
             SSL_Server_Methods.exportCert(filename);
