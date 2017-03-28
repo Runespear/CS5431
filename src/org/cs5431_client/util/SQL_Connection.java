@@ -96,7 +96,7 @@ public class SQL_Connection {
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
 
             String username = user.getString("username");
-            String pubKey = user.getString("publicKey");
+            String pubKey = user.getString("pubKey");
             String privKey = user.getString("privKey");
             //TODO ruixin store privKeySalt in sql
             String privKeySalt = user.getString("privKeySalt");

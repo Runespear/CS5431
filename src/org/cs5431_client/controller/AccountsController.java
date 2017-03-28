@@ -79,21 +79,31 @@ public class AccountsController {
                     (keyAndSalt[1]));
 
             JSONObject newUser = sendUser(user);    //TODO change to sendObject?
-            int uid = newUser.getInt("uid");
-            int parentFolderid = newUser.getInt("parentFolderid");
+            if (newUser.getString("messageType").equals("registrationAck")) {
+                int uid = newUser.getInt("uid");
+                int parentFolderid = newUser.getInt("parentFolderid");
 
-            //TODO: uncomment when privKey and pubKeys are implemented
-        /*String encodedPrivKey = user.getString("privKey");
-        byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
-        SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+                String encodedPrivKey = user.getString("privKey");
+                String privKeySalt = user.getString("privKeySalt");
+                byte[] decodedPriv = decryptPwdBasedKey(encodedPrivKey,
+                        password, privKeySalt);
+                SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
 
-        String encodedPubKey = user.getString("privKey");
-        byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
-        SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
+                String encodedPubKey = user.getString("pubKey");
+                byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
+                SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");
 
-            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-            Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
-            return new User(uid, username, email, parentFolder, null, null);
+                Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
+                return new User(uid, username, email, parentFolder, privKey,
+                        pubKey);
+            } else if (newUser.getString("messageType").equals("error")) {
+                throw new RegistrationFailException(newUser.getString
+                        ("message"));
+            } else {
+                throw new RegistrationFailException("Received bad response " +
+                        "from server");
+            }
         } catch (JSONException | NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
                 IllegalBlockSizeException | BadPaddingException e) {
@@ -102,7 +112,7 @@ public class AccountsController {
         return null;
     }
 
-    private static byte[][] pwdBasedKey(String pwd) {
+    private byte[][] pwdBasedKey(String pwd) {
         Random random = new SecureRandom();
         //TODO: 32 is currently the salt length. Is this correct?
         byte salt[] = new byte[32];
@@ -114,14 +124,24 @@ public class AccountsController {
         return returnedValues;
     }
 
-    private static byte[] hash(String pwd, byte[] salt) {
+    private byte[] hash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 3000);
         //TODO: 256 is currently the key length. Is this correct?
         KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
-                (128);
+                (256);
         return kp.getKey();
+    }
+
+    private byte[] decryptPwdBasedKey(String enc, String pwd, String salt)
+    throws NoSuchAlgorithmException, NoSuchPaddingException,
+            IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+        byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
+        SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        return cipher.doFinal(Base64.getDecoder().decode(enc));
     }
 
     private JSONObject sendUser(JSONObject user) {
