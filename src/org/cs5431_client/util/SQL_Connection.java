@@ -569,14 +569,14 @@ public class SQL_Connection {
     //TODO: test this please
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * @Return An array of JsonObjects of all childrens  **/
-    public ArrayList<JSONObject> getChildren(JSONObject json) {
+    public JSONArray getChildren(JSONObject json) {
 
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
 
         boolean hasPermission = verifyEditPermission(parentFolderid, uid);
         if (hasPermission) {
-            ArrayList<JSONObject> files = new ArrayList<>();
+            JSONArray files = new JSONArray();
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
             System.out.println("Connecting to database...");
@@ -629,7 +629,7 @@ public class SQL_Connection {
                         fso.put("encKey", encRS.getString(1));
                         fso.put("fileIV", fileIV.getString(1));
 
-                        files.add(fso);
+                        files.put(fso);
                     }
                     return files;
                 } catch (SQLException e) {
