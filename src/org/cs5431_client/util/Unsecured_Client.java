@@ -17,7 +17,7 @@ public class Unsecured_Client {
     public static final String HOST = "127.0.0.1";
 
     //TODO: INITIALIZE VERIFICATION KEY
-    public static final PublicKey ver_key;
+    public static final PublicKey ver_key = null;
 
     public static void verify_and_receive_Cert(Socket s, String filepath) throws Exception{
         //Receiving object

@@ -1,4 +1,4 @@
-package org.cs5431_server.fileserver.Unsecured_Server_Handler;
+package org.cs5431_server.fileserver;
 
 import java.net.ServerSocket;
 import java.net.Socket;

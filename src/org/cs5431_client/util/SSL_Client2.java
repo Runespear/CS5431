@@ -1,3 +1,5 @@
+package org.cs5431_client.util;
+
 import java.net.Socket;
 
 /**

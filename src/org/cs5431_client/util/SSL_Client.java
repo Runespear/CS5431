@@ -1,10 +1,12 @@
-
+package org.cs5431_client.util;
 
 import java.io.*;
 import java.net.*;
 import java.security.*;
 import javax.net.SocketFactory;
 import javax.net.ssl.*;
+
+import org.cs5431_client.util.SSL_Client_Methods;
 import sun.security.tools.*;
 /**
  * Created by Brandon on 24/3/2017.

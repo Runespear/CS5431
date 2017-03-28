@@ -438,7 +438,7 @@ public class FileController {
     }
 
     public class FileControllerException extends Exception {
-        public FileControllerFailException (String message) {
+        public FileControllerException (String message) {
             super(message);
         }
     }
