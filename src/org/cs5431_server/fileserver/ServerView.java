@@ -1,5 +1,8 @@
 package org.cs5431_server.fileserver;
 
+import org.bouncycastle.crypto.PBEParametersGenerator;
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
+import org.bouncycastle.crypto.params.KeyParameter;
 import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONObject;
 
@@ -8,10 +11,13 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Base64;
+import java.util.Random;
 import java.util.Scanner;
 
 public class ServerView {
@@ -101,14 +107,18 @@ public class ServerView {
                     .getInputStream()));
             JSONObject jsonObject = new JSONObject(br.readLine());
             String type = jsonObject.getString("messageType");
+            JSONObject response;
             switch (type) {
                 case "request jkb":
-                    requestJKB(serverPrivKey);   //TODO pass socket?
+                    response = requestJKB(serverPrivKey);   //TODO 
+                    // pass socket?
                     break;
                 default:
-                    sendErrJson();
+                    response = makeErrJson("Did not understand " +
+                        "incoming request");
                     break;
             }
+            //TODO send response
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -124,118 +134,176 @@ public class ServerView {
                     .getInputStream()));
             JSONObject jsonObject = new JSONObject(br.readLine());
             String type = jsonObject.getString("messageType");
+            JSONObject response;
             switch (type) {
                 case "registration":
-                    register(jsonObject, sqlConnection);
+                    response = register(jsonObject, sqlConnection);
                     break;
                 case "login":
-                    login(jsonObject, sqlConnection);   //TODO pass socket?
+                    response = login(jsonObject, sqlConnection);
                     break;
                 case "upload":
-                    upload(jsonObject, sqlConnection);
+                    response = upload(jsonObject, sqlConnection);
                     break;
                 case "download":
-                    download(jsonObject, sqlConnection);
+                    response = download(jsonObject, sqlConnection);
                     break;
                 case "rename":
-                    rename(jsonObject, sqlConnection);
+                    response = rename(jsonObject, sqlConnection);
                     break;
                 case "add privilege":
-                    addPriv(jsonObject, sqlConnection);
+                    response = addPriv(jsonObject, sqlConnection);
                     break;
                 case "remove privilege":
-                    removePriv(jsonObject, sqlConnection);
+                    response = removePriv(jsonObject, sqlConnection);
                     break;
                 case "delete":
-                    delete(jsonObject, sqlConnection);
+                    response = delete(jsonObject, sqlConnection);
                     break;
                 case "edit user details":
-                    editDetails(jsonObject, sqlConnection);
+                    response = editDetails(jsonObject, sqlConnection);
                     break;
                 case "file log":
-                    getFileLog(jsonObject, sqlConnection);
+                    response = getFileLog(jsonObject, sqlConnection);
                     break;
                 case "get file list":
-                    getFileList(jsonObject, sqlConnection);
+                    response = getFileList(jsonObject, sqlConnection);
                     break;
                 default:
-                    sendErrJson();
+                    response = makeErrJson("Did not understand " +
+                            "incoming request");
                     break;
             }
+            //TODO send response. BRANDON! SEND THE RESPONSE THROUGH SSL HERE
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void requestJKB(PrivateKey serverPrivKey) {
+    private static JSONObject requestJKB(PrivateKey serverPrivKey) {
         //TODO brandon write here
         //serverPrivKey is the signing key
-
+        return null;
     }
 
-    private static void register(JSONObject jsonObject, SQL_Connection
+    private static JSONObject register(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        //TODO: make the privKey and pubKey in the jsonObject?
-        //sqlConnection.createUser(jsonObject);
+        boolean isUniqueUsername = sqlConnection.isUniqueUsername(jsonObject
+                .getString("username"));
+        if (!isUniqueUsername)
+            return makeErrJson("Username has already been chosen");
+
+        //TODO write hashedPwd into registration
+        //TODO remove pwd from registration
+        String hashedPwd = jsonObject.getString("hashedPwd");
+        String hashAndSalt[] = generatePasswordHash(hashedPwd);
+        String hash = hashAndSalt[0];   //TODO store hash instead of pwd
+        String pwdSalt = hashAndSalt[1];
+        JSONObject response = sqlConnection.createUser(jsonObject, hash, 
+                pwdSalt);
+        if (response == null)
+            return makeErrJson("Failed to register user");
+        return response;
     }
 
-    private static void login(JSONObject jsonObject, SQL_Connection
+    private static JSONObject login(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO: make sql_connection's authenticate not static?
         //sqlConnection.authenticate(jsonObject);
+        return null;
     }
 
-    private static void upload(JSONObject jsonObject, SQL_Connection
+    private static JSONObject upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO: make it read from User or jsonObject?
         //sqlConnection.createFso(jsonObject);
+        return null;
     }
 
-    private static void download(JSONObject jsonObject, SQL_Connection
+    private static JSONObject download(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO figure out which method to call
         //sqlConnection.getFile()?
+        return null;
     }
 
-    private static void rename(JSONObject jsonObject, SQL_Connection
+    private static JSONObject rename(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void removePriv(JSONObject jsonObject, SQL_Connection
+    private static JSONObject removePriv(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void addPriv(JSONObject jsonObject, SQL_Connection
+    private static JSONObject addPriv(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void delete(JSONObject jsonObject, SQL_Connection
+    private static JSONObject delete(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void editDetails(JSONObject jsonObject, SQL_Connection
+    private static JSONObject editDetails(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void getFileLog(JSONObject jsonObject, SQL_Connection
+    private static JSONObject getFileLog(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void getFileList(JSONObject jsonObject, SQL_Connection
+    private static JSONObject getFileList(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        return null;
     }
 
-    private static void sendErrJson() {
+    private static JSONObject makeErrJson(String message) {
         //TODO
+        JSONObject response = new JSONObject();
+        response.put("messageType","error");
+        response.put("message", message);
+        return response;
     }
 
+    private static String[] generatePasswordHash(String pwd) {
+        Random random = new SecureRandom();
+        //TODO: 32 is currently the salt length. Is this correct?
+        byte salt[] = new byte[32];
+        random.nextBytes(salt);
+        String hashedPW = hash(pwd, salt);
+        String returnedValues[] = new String[2];
+        returnedValues[0] = hashedPW;
+        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
+        return returnedValues;
+    }
+
+    private static String hash(String pwd, byte[] salt) {
+        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
+        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
+                pwd.toCharArray()), salt, 10000);
+        //TODO: 256 is currently the key length. Is this correct?
+        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
+        return Base64.getEncoder().encodeToString(kp.getKey());
+    }
+
+    //TODO use this method in login?
+    private boolean verifyPassword(String pwd, String actualHash, String
+            salt) {
+        String cmpHash = hash(pwd, Base64.getDecoder().decode(salt));
+        return (cmpHash.equals(actualHash));
+    }
 
     private static void promptAdmin(SQL_Connection sql_connection) throws SQLException {
         Scanner scanner = new Scanner(System.in);

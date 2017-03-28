@@ -1,5 +1,10 @@
 package org.cs5431_client.controller;
 
+import org.bouncycastle.crypto.PBEParametersGenerator;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.model.*;
 import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONException;
@@ -7,10 +12,16 @@ import org.json.JSONObject;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 
 /**
  * A controller for all accounts.
@@ -33,45 +44,82 @@ public class AccountsController {
             throws RegistrationFailException {
         //TODO: send to server new account info and create user with the right info
 
-        boolean isUniqueUsername = sql_connection.isUniqueUsername(username);
+        try {
+            JSONObject user = new JSONObject();
+            user.put("username", username);
+            user.put("email", email);
 
-        if (isUniqueUsername) {
-            try {
-                JSONObject user = new JSONObject();
-                user.put("username", username);
-                user.put("pwd", password);
-                user.put("email", email);
+            //hashing password
+            SHA256Digest sha256 = new SHA256Digest();
+            byte pwdByte[] = password.getBytes();
+            sha256.update(pwdByte, 0, pwdByte.length);
+            byte[] hashedPwd = new byte[sha256.getDigestSize()];
+            sha256.doFinal(hashedPwd, 0);
+            user.put("hashedPwd", Base64.getEncoder().encodeToString(hashedPwd));
+            Arrays.fill( pwdByte, (byte)0 );    //an attempt to zero out pwd
 
-                //TODO: priv key must be generated on client side and
-                // encrypted using pwd-based encryption
+            //TODO: priv key must be generated on client side and
+            // encrypted using pwd-based encryption
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
+                    BouncyCastleProvider());
+            kpg.initialize(4096, new SecureRandom());
+            KeyPair keyPair = kpg.generateKeyPair();
+            user.put("pubKey", Base64.getEncoder().encodeToString(keyPair
+                    .getPublic().getEncoded()));
 
-                JSONObject newUser = sendUser(user);
-                int uid = newUser.getInt("uid");
-                int parentFolderid = newUser.getInt("parentFolderid");
+            String keyAndSalt[] = pwdBasedKey(password);
 
-                //TODO: uncomment when privKey and pubKeys are implemented
-            /*String encodedPrivKey = user.getString("privKey");
-            byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
-            SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+            user.put("privKey", "");    //TODO change "" to encrypted key
+            user.put("privKeySalt",keyAndSalt[1]);
 
-            String encodedPubKey = user.getString("privKey");
-            byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
-            SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
+            JSONObject newUser = sendUser(user);
+            int uid = newUser.getInt("uid");
+            int parentFolderid = newUser.getInt("parentFolderid");
 
-                Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-                Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
-                return new User(uid, username, email, parentFolder, null, null);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            //TODO: uncomment when privKey and pubKeys are implemented
+        /*String encodedPrivKey = user.getString("privKey");
+        byte[] decodedPriv = Base64.getDecoder().decode(encodedPrivKey);
+        SecretKey privKey = new SecretKeySpec(decodedPriv, 0, decodedPriv.length, "RSA");
+
+        String encodedPubKey = user.getString("privKey");
+        byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
+        SecretKey pubKey = new SecretKeySpec(decodedPub, 0, decodedPub.length, "RSA");*/
+
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
+            return new User(uid, username, email, parentFolder, null, null);
+        } catch (JSONException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
+    private static String[] pwdBasedKey(String pwd) {
+        Random random = new SecureRandom();
+        //TODO: 32 is currently the salt length. Is this correct?
+        byte salt[] = new byte[128];
+        random.nextBytes(salt);
+        String hashedPW = hash(pwd, salt);
+        String returnedValues[] = new String[2];
+        returnedValues[0] = hashedPW;
+        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
+        return returnedValues;
+    }
+
+    private static String hash(String pwd, byte[] salt) {
+        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
+        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
+                pwd.toCharArray()), salt, 3000);
+        //TODO: 256 is currently the key length. Is this correct?
+        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
+                (1024);
+        return Base64.getEncoder().encodeToString(kp.getKey());
+    }
+
     private JSONObject sendUser(JSONObject user) {
         //TODO: send to server
-
-        JSONObject newUser = sql_connection.createUser(user, "", "", "");
+        //TODO change following line
+        JSONObject newUser = sql_connection.createUser(user, "", "");
         return newUser;
     }
 

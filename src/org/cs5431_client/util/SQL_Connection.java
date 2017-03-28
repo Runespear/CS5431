@@ -71,7 +71,7 @@ public class SQL_Connection {
         return false;
     }
 
-    public JSONObject createUser(JSONObject user, String privKey, String pubKey) {
+    public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -95,16 +95,12 @@ public class SQL_Connection {
                     + "values (?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
 
-            String username = (String) user.get("username");
-            String pwd = (String) user.get("pwd");
-
-            String hashAndSalt[] = generatePasswordHash(pwd);
-            String hash = hashAndSalt[0];   //TODO store hash instead of pwd
-            String salt = hashAndSalt[1];
-
-            //TODO zero out password
-
-            //TODO encrypt private key with password
+            String username = user.getString("username");
+            String pubKey = user.getString("publicKey");
+            String privKey = user.getString("privKey");
+            //TODO ruixin store privKeySalt in sql
+            String privKeySalt = user.getString("privKeySalt");
+            //TODO ruixin store pwdSalt in sql
 
             String email = null;
             if (user.has("email")) {
@@ -133,12 +129,13 @@ public class SQL_Connection {
                 int folderid = rs.getInt(1);
                 createUser.setInt (1, 0);
                 createUser.setString (2, username);
-                createUser.setString (3, pwd);
+                createUser.setString (3, hashedPwd);
                 createUser.setInt   (4, folderid);
                 createUser.setString (5, email);
                 createUser.setString    (6, privKey);
                 createUser.setString    (7, pubKey);
-                createUser.setString    (8, salt);
+                //TODO change to pwdSalt and privKeySalt
+                //createUser.setString    (8, salt);
                 createUser.executeUpdate();
                 System.out.println("created user");
 
@@ -1145,33 +1142,5 @@ public class SQL_Connection {
         //Connection connection = connectToDB();
         System.out.print(deleteUser(26, "ruimin", "ruimin"));
     }
-    private String[] generatePasswordHash(String pwd) {
-        Random random = new SecureRandom();
-        //TODO: 32 is currently the salt length. Is this correct?
-        byte salt[] = new byte[32];
-        random.nextBytes(salt);
-        String hashedPW = hash(pwd, salt);
-        String returnedValues[] = new String[2];
-        returnedValues[0] = hashedPW;
-        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
-        return returnedValues;
-    }
-
-    private String hash(String pwd, byte[] salt) {
-        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
-        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
-                pwd.toCharArray()), salt, 10000);
-        //TODO: 256 is currently the key length. Is this correct?
-        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
-        return Base64.getEncoder().encodeToString(kp.getKey());
-    }
-
-    private boolean verifyPassword(String pwd, String actualHash, String
-            salt) {
-        String cmpHash = hash(pwd, Base64.getDecoder().decode(salt));
-        return (cmpHash.equals(actualHash));
-    }
-
-
 }
 
