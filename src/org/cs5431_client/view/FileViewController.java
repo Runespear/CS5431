@@ -22,7 +22,6 @@ import org.cs5431_client.model.FileActionType;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
-import org.cs5431_client.util.client_tcp;
 import org.json.JSONException;
 
 import java.io.File;
@@ -200,8 +199,7 @@ public class FileViewController implements Initializable {
      */
     private void downloadFile() {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-        org.cs5431_client.model.File file = fileController.download(fso.getId
-                ());
+        org.cs5431_client.model.File file = fileController.download(fso.getId());
         //TODO use file somehow
 
         //TODO: remove after demo: simply to demo our tcp connection

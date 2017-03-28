@@ -187,6 +187,9 @@ public class FileController {
             fso.put("size", "0");
             fso.put("lastModified", lastModified);
             fso.put("isFile", false);
+
+            //TODO: create IV for name, file, enc file and name, generate sk
+
             int folderSentId = sendFSO(fso, null);
             if (folderSentId != -1) {
                 Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
@@ -388,8 +391,11 @@ public class FileController {
      * @return the id of the file/folder that is uploaded to server if successful; null otherwise
      */
     private int sendFSO(JSONObject fso, java.io.File file) {
-        int fsoid = sql_connection.createFso(fso, "");
+        int fsoid = sql_connection.createFso(fso);
         return fsoid;
+
+        //msgType = “upload”, uid, parentFolderid, size, lastModified, isFile, fileIV, fsoNameIV, file, fsoName, encSK
+
     }
 
     /**
@@ -438,7 +444,7 @@ public class FileController {
     }
 
     public class FileControllerException extends Exception {
-        public FileControllerException (String message) {
+        public FileControllerException(String message) {
             super(message);
         }
     }
