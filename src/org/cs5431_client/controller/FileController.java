@@ -339,10 +339,15 @@ public class FileController {
      */
     public boolean addPriv(FileSystemObject systemObject, int userId, PrivType priv) {
         int newUser;
+        JSONObject json = new JSONObject();
+        json.put("msgType", "addPriv");
+        json.put("fsoid", systemObject.getId());
+        json.put("uid", user.getId());
+        json.put("newUid", userId);
         if (priv == PrivType.EDIT) {
-            newUser = sql_connection.addEditPriv(systemObject.getId(), user.getId(), userId);
+            newUser = sql_connection.addEditPriv(json);
         } else {
-            newUser = sql_connection.addViewPriv(systemObject.getId(), user.getId(), userId);
+            newUser = sql_connection.addViewPriv(json);
         }
         if (newUser != -1) {
             systemObject.addPriv(priv, userId);
