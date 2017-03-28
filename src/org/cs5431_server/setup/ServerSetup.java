@@ -62,6 +62,21 @@ public class ServerSetup {
                 " server:");
         String password = scanner.nextLine();
 
+        System.out.println("Enter the username you want to use to login to " +
+                "your server");
+        String serverUser;
+        while (!Validator.validUsername(serverUser = scanner.nextLine())) {
+            System.out.println("Please enter a valid username");
+        }
+        System.out.println("Enter the password you want to use to login to " +
+                "your server");
+        String serverPwd;
+        while (!Validator.validPassword(serverPwd = scanner.nextLine())) {
+            System.out.println("Please enter a password that is at least 16 " +
+                    "characters long");
+        }
+
+
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
                     BouncyCastleProvider());
