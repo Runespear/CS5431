@@ -10,12 +10,10 @@ import org.cs5431_client.util.SQL_Connection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.SecretKey;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.*;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -67,12 +65,20 @@ public class AccountsController {
             user.put("pubKey", Base64.getEncoder().encodeToString(keyPair
                     .getPublic().getEncoded()));
 
-            String keyAndSalt[] = pwdBasedKey(password);
+            byte keyAndSalt[][] = pwdBasedKey(password);
+            byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
+            SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+            Security.addProvider(new BouncyCastleProvider());
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            //TODO should we create iv?
+            byte encryptedKey[] = cipher.doFinal(key);
 
-            user.put("privKey", "");    //TODO change "" to encrypted key
-            user.put("privKeySalt",keyAndSalt[1]);
+            user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
+            user.put("privKeySalt",Base64.getEncoder().encodeToString
+                    (keyAndSalt[1]));
 
-            JSONObject newUser = sendUser(user);
+            JSONObject newUser = sendUser(user);    //TODO change to sendObject?
             int uid = newUser.getInt("uid");
             int parentFolderid = newUser.getInt("parentFolderid");
 
@@ -88,32 +94,34 @@ public class AccountsController {
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
             Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
             return new User(uid, username, email, parentFolder, null, null);
-        } catch (JSONException | NoSuchAlgorithmException e) {
+        } catch (JSONException | NoSuchAlgorithmException |
+                NoSuchPaddingException | InvalidKeyException |
+                IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private static String[] pwdBasedKey(String pwd) {
+    private static byte[][] pwdBasedKey(String pwd) {
         Random random = new SecureRandom();
         //TODO: 32 is currently the salt length. Is this correct?
-        byte salt[] = new byte[128];
+        byte salt[] = new byte[32];
         random.nextBytes(salt);
-        String hashedPW = hash(pwd, salt);
-        String returnedValues[] = new String[2];
+        byte[] hashedPW = hash(pwd, salt);
+        byte returnedValues[][] = new byte[2][128];
         returnedValues[0] = hashedPW;
-        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
+        returnedValues[1] = salt;
         return returnedValues;
     }
 
-    private static String hash(String pwd, byte[] salt) {
+    private static byte[] hash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 3000);
         //TODO: 256 is currently the key length. Is this correct?
         KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
-                (1024);
-        return Base64.getEncoder().encodeToString(kp.getKey());
+                (128);
+        return kp.getKey();
     }
 
     private JSONObject sendUser(JSONObject user) {

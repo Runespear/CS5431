@@ -113,14 +113,14 @@ public class ServerSetup {
         }
 
         String url = "jdbc:mysql://" + ip + ":" + dbPort;
-        String createDB = "CREATE DATABASE IF NOT EXISTS cs5430";
+        String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, \n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid);)";
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
-                "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL, salt CHAR(32) NOT NULL, \n" +
+                "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL, pwdSalt CHAR(32) NOT NULL, privKeySalt CHAR(32) NOT NULL, \n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,\n" +
                 "uid INT UNSIGNED NOT NULL,\n" +
@@ -152,7 +152,7 @@ public class ServerSetup {
             PreparedStatement statement = connection.prepareStatement(createDB);
             statement.execute();
             connection.close();
-            connection = DriverManager.getConnection(url+"/cs5430",
+            connection = DriverManager.getConnection(url+"/cs5431",
                     username, password);
             statement = connection.prepareStatement(createFSO);
             statement.execute();

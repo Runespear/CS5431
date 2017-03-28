@@ -28,7 +28,6 @@ public abstract class FileSystemObject {
         this.lastModified = lastModified;
     }
 
-
     public List<Integer> getEditors() {return this.editorIds; }
 
     public List<Integer> getViewers() {return this.viewerIds; }

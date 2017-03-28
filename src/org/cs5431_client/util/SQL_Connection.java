@@ -311,6 +311,12 @@ public class SQL_Connection {
                     if (addPermission != null) {
                         addPermission.close();
                     }
+                    if (addKey != null) {
+                        addKey.close();
+                    }
+                    if (addFile != null) {
+                        addFile.close();
+                    }
                     connection.setAutoCommit(true);
                     return fsoid;
                 }
@@ -885,28 +891,99 @@ public class SQL_Connection {
         return -1;
     }
 
-    public static int addEditPriv(int fsoid, int uid, int newUid) {
+    public static JSONObject getKeys(int fsoid, int uid, int newUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-            PreparedStatement addEditor = null;
-            PreparedStatement createLog = null;
+            PreparedStatement getSecretKey;
+            PreparedStatement getPubKey;
+
+            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+                System.out.println("Database connected!");
+                String selectPubKey = "SELECT U.pubKey FROM Users U WHERE U.uid = ?";
+                String selectSecretKey = "SELECT F.encKey FROM Users FsoEncryption F WHERE F.uid = ? AND F.fsoid = ?";
+                getPubKey = connection.prepareStatement(selectPubKey);
+                getSecretKey = connection.prepareStatement(selectSecretKey);
+
+                JSONObject output = new JSONObject();
+
+                try {
+                    connection.setAutoCommit(false);
+                    getPubKey.setInt(1, newUid);
+                    ResultSet rs = getPubKey.executeQuery();
+
+                    if (rs.next()) {
+                        String pubKey = rs.getString(1);
+                        output.put("pubKey", pubKey);
+                    }
+
+                    getSecretKey.setInt(1, uid);
+                    getSecretKey.setInt(2, fsoid);
+                    rs = getSecretKey.executeQuery();
+
+                    if (rs.next()) {
+                        String secretKey = rs.getString(1);
+                        output.put("secretKey", secretKey);
+                    }
+                    connection.commit();
+                    return output;
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    if (connection != null) {
+                        try {
+                            System.err.println("Transaction is being rolled back");
+                            connection.rollback();
+                        } catch (SQLException excep) {
+                            excep.printStackTrace();
+                        }
+                    }
+                    return null;
+                } finally {
+                    if (getSecretKey != null) {
+                        getSecretKey.close();
+                    }
+                    if (getPubKey != null) {
+                        getPubKey.close();
+                    }
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public static int addEditPriv(JSONObject json) {
+
+        int uid = json.getInt("uid");
+        int fsoid = json.getInt("fsoid");
+        int newUid = json.getInt("newUid");
+        String encKey = json.getString("encSecretKey");
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        if (hasPermission) {
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            PreparedStatement addEditor;
+            PreparedStatement createLog;
+            PreparedStatement shareFsoKey;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
                 String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
+                String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
                 createLog = connection.prepareStatement(insertLog);
                 addEditor = connection.prepareStatement(insertEditor);
+                shareFsoKey = connection.prepareStatement(insertFsoKey);
 
                 try {
                     connection.setAutoCommit(false);
                     addEditor.setInt(1, fsoid);
                     addEditor.setInt(2, newUid);
-                    addEditor.executeUpdate();
 
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
@@ -917,9 +994,13 @@ public class SQL_Connection {
                     createLog.executeUpdate();
                     System.out.println("created log");
 
+                    shareFsoKey.setInt(1, fsoid);
+                    shareFsoKey.setInt(2, uid);
+                    shareFsoKey.setString(3, encKey);
+                    shareFsoKey.executeUpdate();
+
                     connection.commit();
                     return newUid;
-
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -939,6 +1020,9 @@ public class SQL_Connection {
                     if (createLog != null) {
                         createLog.close();
                     }
+                    if (shareFsoKey != null) {
+                        shareFsoKey.close();
+                    }
                     connection.setAutoCommit(true);
                 }
             } catch (SQLException e) {
@@ -949,28 +1033,34 @@ public class SQL_Connection {
         return -1;
     }
 
-    public static int addViewPriv(int fsoid, int uid, int newUid) {
+    public static int addViewPriv(JSONObject json) {
+
+        int uid = json.getInt("uid");
+        int fsoid = json.getInt("fsoid");
+        int newUid = json.getInt("newUid");
+        String encKey = json.getString("encSecretKey");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-            PreparedStatement addViewer = null;
-            PreparedStatement createLog = null;
+            PreparedStatement addViewer;
+            PreparedStatement createLog;
+            PreparedStatement shareFsoKey;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
                 String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
+                String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
                 createLog = connection.prepareStatement(insertLog);
                 addViewer = connection.prepareStatement(insertViewer);
+                shareFsoKey = connection.prepareStatement(insertFsoKey);
 
                 try {
                     connection.setAutoCommit(false);
                     addViewer.setInt(1, fsoid);
                     addViewer.setInt(2, newUid);
-                    addViewer.executeUpdate();
 
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
@@ -980,6 +1070,11 @@ public class SQL_Connection {
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
                     System.out.println("created log");
+
+                    shareFsoKey.setInt(1, fsoid);
+                    shareFsoKey.setInt(2, uid);
+                    shareFsoKey.setString(3, encKey);
+                    shareFsoKey.executeUpdate();
 
                     connection.commit();
                     return newUid;
@@ -1002,6 +1097,9 @@ public class SQL_Connection {
                     if (createLog != null) {
                         createLog.close();
                     }
+                    if (shareFsoKey != null) {
+                        shareFsoKey.close();
+                    }
                     connection.setAutoCommit(true);
                 }
             } catch (SQLException e) {
@@ -1012,14 +1110,15 @@ public class SQL_Connection {
         return -1;
     }
 
+    //TODO: update
     public static int removeViewPriv(int fsoid, int uid, int rmUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-            PreparedStatement rmViewer = null;
-            PreparedStatement createLog = null;
+            PreparedStatement rmViewer;
+            PreparedStatement createLog;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
@@ -1075,6 +1174,7 @@ public class SQL_Connection {
         return -1;
     }
 
+    //TODO: update
     public static int removeEditPriv(int fsoid, int uid, int rmUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
