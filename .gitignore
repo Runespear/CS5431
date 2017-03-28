@@ -105,10 +105,12 @@ receive
 server-config/*
 user-config/*
 
+certfilename.cer
+keystorefilename.jks
+truststorefilename.jks
+
 #===============
 # Maven target
 #===============
 target/*
-
-certfilename.cer
-keystorefilename.jks
+ 
