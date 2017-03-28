@@ -214,10 +214,11 @@ public class ServerView {
 
     private static JSONObject upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-
-        //TODO: make it read from User or jsonObject?
-        //sqlConnection.createFso(jsonObject);
-        return null;
+        int fsoid = sqlConnection.createFso(jsonObject);
+        JSONObject response = new JSONObject();
+        response.put("messageType","uploadAck");
+        response.put("fsoid", fsoid);
+        return response;
     }
 
     private static JSONObject download(JSONObject jsonObject, SQL_Connection
@@ -236,7 +237,7 @@ public class ServerView {
         downloadAck.put("encFileSK","");
         downloadAck.put("dateModified","");
         downloadAck.put("size","");
-        return null;
+        return downloadAck;
     }
 
     private static JSONObject rename(JSONObject jsonObject, SQL_Connection

@@ -199,7 +199,7 @@ public class SQL_Connection {
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * @Return fsoid of created fso **/
-    public int createFso(JSONObject fso, String sk) {
+    public int createFso(JSONObject fso) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -215,11 +215,12 @@ public class SQL_Connection {
             String size = fso.getString("size");
             Timestamp lastModified = (Timestamp) fso.get("lastModified");
             boolean isFile = fso.getBoolean("isFile");
+            String sk = fso.getString("encSK");
 
             //TODO: what to do with all of this? ruixin? brandon?
             String fileIV = fso.getString("fileIV");
             String file = fso.getString("file");
-            String encSK = fso.getString("encSK");
+
 
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
 
