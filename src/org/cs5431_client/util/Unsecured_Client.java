@@ -16,10 +16,8 @@ public class Unsecured_Client {
     public static final int unsecured_PORT = 44444;
     public static final String HOST = "127.0.0.1";
 
-    //TODO: INITIALIZE VERIFICATION KEY
-    public static final PublicKey ver_key = null;
-
-    public static void verify_and_receive_Cert(Socket s, String filepath) throws Exception{
+    public static void verify_and_receive_Cert(PublicKey ver_key, Socket s,
+                                               String filepath) throws Exception{
         //Receiving object
         ObjectInputStream object_in = new ObjectInputStream(s.getInputStream());
         TransmittedFile received = (TransmittedFile) object_in.readObject();
@@ -30,7 +28,7 @@ public class Unsecured_Client {
         boolean verifies = sig.verify(received.signature); //verifying with received signature
         System.out.println("Is Signature Verified: "+ verifies);
 
-        if (verifies == true) {
+        if (verifies) {
             FileOutputStream fos = new FileOutputStream(filepath + received.filename);
             fos.write(received.file);
             fos.close();
@@ -43,10 +41,9 @@ public class Unsecured_Client {
 
             Socket s = new Socket(HOST,unsecured_PORT);
 
-
             //TESTING METHODS FROM HERE ON
             String filepath = System.getProperty("user.dir") + "/Testing SSL Stuff/Client/";
-            verify_and_receive_Cert(s,filepath);
+            verify_and_receive_Cert(null,s,filepath);
 
 
         } catch (Exception e) {

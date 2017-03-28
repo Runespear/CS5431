@@ -1,5 +1,6 @@
 package org.cs5431_client.util;
 
+import org.cs5431_server.fileserver.SSL_Server_Actual;
 import org.cs5431_server.fileserver.ServerView;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -445,7 +446,7 @@ public class SQL_Connection {
         allegedUser.put("username", "username");
         //allegedUser.put("pwd", password);
         String salt = getSalt(username);
-        String encPwd = ServerView.hash(password, Base64.getDecoder().decode(salt));
+        String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
 
         if (user != null) {
@@ -513,7 +514,7 @@ public class SQL_Connection {
         allegedUser.put("username", username);
         //allegedUser.put("pwd", password);
         String salt = getSalt(username);
-        String encPwd = ServerView.hash(password, Base64.getDecoder().decode(salt));
+        String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";

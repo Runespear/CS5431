@@ -1,5 +1,8 @@
 package org.cs5431_client.controller;
 
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
@@ -197,43 +200,55 @@ public class AccountsController {
      */
     public User login(String username, String password, String serverIP,
                          String serverPort) throws LoginFailException {
-        JSONObject allegedUser = new JSONObject();
-        try {
-            allegedUser.put("username", username);
-            allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(
-                    SHA256(password)));
+        Task<User> task = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                JSONObject allegedUser = new JSONObject();
+                try {
+                    allegedUser.put("username", username);
+                    allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
-            //TODO: send allegeduser to server and check
-            JSONObject user = sendUser(allegedUser); //TODO change to sendobject?
+                    //TODO: send allegeduser to server and check
+                    JSONObject user = sendUser(allegedUser); //TODO change to
+                    // sendobject?
 
-            if (user.getString("messageType").equals("loginAck")) {
-                int uid = user.getInt("uid");
-                //TODO get username?
-                int parentFolderid = user.getInt("parentFolderid");
-                String email = user.getString("email");
+                    if (user.getString("messageType").equals("loginAck")) {
+                        int uid = user.getInt("uid");
+                        //TODO get username?
+                        int parentFolderid = user.getInt("parentFolderid");
+                        String email = user.getString("email");
 
-                PrivateKey privKey = getPrivKeyFromJSON(user, password);
-                PublicKey pubKey = getPubKeyFromJSON(user);
+                        PrivateKey privKey = getPrivKeyFromJSON(user, password);
+                        PublicKey pubKey = getPubKeyFromJSON(user);
 
-                Folder parentFolder = getFolderFromId(parentFolderid, uid);
-                User currUser = new User(uid, username, email, parentFolder,
-                        privKey, pubKey);
-                return currUser;
-            } else if (user.getString("messageType").equals("error")) {
-                throw new LoginFailException(user.getString
-                        ("message"));
-            } else {
-                throw new LoginFailException("Received bad response " +
-                        "from server");
+                        Folder parentFolder = getFolderFromId(parentFolderid, uid);
+                        User currUser = new User(uid, username, email, parentFolder,
+                                privKey, pubKey);
+                        return currUser;
+                    } else if (user.getString("messageType").equals("error")) {
+                        throw new LoginFailException(user.getString
+                                ("message"));
+                    } else {
+                        throw new LoginFailException("Received bad response " +
+                                "from server");
+                    }
+                    //TODO: create relevant controllers? and pass them? ???
+                } catch (JSONException | NoSuchAlgorithmException |
+                        NoSuchPaddingException | InvalidKeyException |
+                        IllegalBlockSizeException | BadPaddingException |
+                        NoSuchProviderException | InvalidKeySpecException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
-            //TODO: create relevant controllers? and pass them? ???
-        } catch (JSONException | NoSuchAlgorithmException |
-                NoSuchPaddingException | InvalidKeyException |
-                IllegalBlockSizeException | BadPaddingException |
-                NoSuchProviderException | InvalidKeySpecException e) {
-            e.printStackTrace();
-        }
-        return null;
+        };
+        final User[] ret = new User[1];
+        task.setOnSucceeded(t -> ret[0] = task.getValue());
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        return ret[0];
     }
 
     public Folder getFolderFromId(int folderId, int uid) {

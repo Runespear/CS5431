@@ -1,17 +1,8 @@
 package org.cs5431_server.fileserver;
 
-import com.sun.corba.se.spi.activation.Server;
-
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- * Created by Brandon on 24/3/2017.
- */
 public class SSL_Server {
 
     public static final int PORT = 55555;
@@ -24,11 +15,12 @@ public class SSL_Server {
             SSL_Server_Methods.generateKeyStore();
 
             //export certificate and public key
-            SSL_Server_Methods.exportCert();
+            SSL_Server_Methods.exportCert(filename);
 
 
             //Setup SSL server socket
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket(PORT);
+            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
+                    (filename, PORT);
 
             while (true){
                 System.out.println("Waiting for client to connect.");

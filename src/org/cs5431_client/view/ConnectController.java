@@ -16,9 +16,12 @@ import javafx.stage.Stage;
 import org.cs5431_client.util.Validator;
 
 import java.io.*;
+import java.net.Socket;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.ResourceBundle;
+
+import static org.cs5431_client.util.Unsecured_Client.verify_and_receive_Cert;
 
 public class ConnectController implements Initializable {
     @FXML
@@ -76,6 +79,16 @@ public class ConnectController implements Initializable {
             //TODO actually connect to the server with these details
             //TODO create secure channel here
 
+            File cert = new File("./user-config/"+serverName+".cer");
+            if (!cert.exists()) {
+                Socket s = new Socket(server, Integer.parseInt(outPort));
+                String filepath = "./user-config/";
+                verify_and_receive_Cert(serverPubKey, s, filepath);
+                if (!cert.exists()) {
+                    throw new CertException("Could not create new certificate.");
+                }
+            }
+
             goToLogin(e, server, outPort, sslPort);
         } catch (IOException | ClassNotFoundException ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -83,6 +96,15 @@ public class ConnectController implements Initializable {
             alert.setContentText("User config file could not be read. Please " +
                     "check with your server admin.");
             alert.showAndWait();
+            ex.printStackTrace();
+        } catch (CertException ex) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Certificate receive error");
+            alert.setContentText(ex.getMessage() + "\n Please check with your" +
+                    " server admin.");
+            alert.showAndWait();
+            ex.printStackTrace();
+        } catch(Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -121,4 +143,10 @@ public class ConnectController implements Initializable {
                 "server admin has given you into the folder /user-config/");
         alert.showAndWait();
     }
+    public class CertException extends Exception {
+        public CertException (String message) {
+            super(message);
+        }
+    }
+
 }

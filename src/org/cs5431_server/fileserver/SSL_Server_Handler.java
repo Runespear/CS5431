@@ -3,9 +3,6 @@ package org.cs5431_server.fileserver;
 
 import java.net.Socket;
 
-/**
- * Created by Brandon on 26/3/2017.
- */
 public class SSL_Server_Handler extends Thread{
     protected Socket s;
 

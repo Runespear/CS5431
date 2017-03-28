@@ -96,7 +96,7 @@ public class ServerSetup {
             File configFile = new File("./user-config/"+name+".config");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(configFile)));
-            writer.write(ip+"\n"+outPort+sslPort+"\n");
+            writer.write(ip+"\n"+outPort+"\n"+sslPort+"\n");
             writer.close();
             //writes the server public key into an easily distributable file
             File pubKeyFile = new File("./user-config/"+name+".pub");
@@ -116,7 +116,7 @@ public class ServerSetup {
                     ".config");
             writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(serverConfigFile)));
-            writer.write(ip+"\n"+dbPort+"\n"+outPort+sslPort+"\n");
+            writer.write(ip+"\n"+dbPort+"\n"+outPort+"\n"+sslPort+"\n");
             writer.close();
             //writes the server private key into a file
             File privKeyFile = new File("./server-config/"+name+".priv");
@@ -131,12 +131,12 @@ public class ServerSetup {
 
         String url = "jdbc:mysql://" + ip + ":" + dbPort;
         String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
-        //String createUser = "CREATE USER '"+ username + "'@'" + ip + "' IDENTIFIED BY '" + password + "';\n" +
-                //"GRANT ALL ON cs5431.* TO '" + username + "'@'" + ip + "' IDENTIFIED BY '" + password + "';";
+        String createUser = "CREATE USER ?@? IDENTIFIED BY ?;";
+        String grantPermissions = "GRANT ALL ON cs5431.* TO ?@? IDENTIFIED BY ?;";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV VARCHAR(32) NOT NULL,\n" +
-                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid);)";
+                "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid));";
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
                 "privKey CHAR(100) NOT NULL, pubKey CHAR(100) NOT NULL, pwdSalt CHAR(32) NOT NULL, privKeySalt CHAR(32) NOT NULL, \n" +
@@ -170,11 +170,20 @@ public class ServerSetup {
             Connection connection = DriverManager.getConnection(url, username, password);
             PreparedStatement statement = connection.prepareStatement(createDB);
             statement.execute();
-            //statement = connection.prepareStatement(createUser);
-            //statement.execute();
+            statement = connection.prepareStatement(createUser);
+            statement.setString(1, serverUser);
+            statement.setString(2, ip);
+            statement.setString(3, serverPwd);
+            statement.execute();
+
+            statement = connection.prepareStatement(grantPermissions);
+            statement.setString(1, serverUser);
+            statement.setString(2, ip);
+            statement.setString(3, serverPwd);
+            statement.execute();
             connection.close();
             connection = DriverManager.getConnection(url+"/cs5431",
-                    username, password);
+                    serverUser, serverPwd);
 
             statement = connection.prepareStatement(createFSO);
             statement.execute();
@@ -199,10 +208,7 @@ public class ServerSetup {
             //generate keystore
             SSL_Server_Methods.generateKeyStore();
             //export certificate and public key
-            SSL_Server_Methods.exportCert();
-            //Setup SSL server socket
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
-                    (Integer.parseInt(sslPort));
+            SSL_Server_Methods.exportCert(name);
 
             System.out.println("Distribute the "+name+".config and the "+name+
                     ".pub file found in the /user-config folder to your users.");
