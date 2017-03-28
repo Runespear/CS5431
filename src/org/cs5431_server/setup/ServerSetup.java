@@ -116,7 +116,7 @@ public class ServerSetup {
                     ".config");
             writer = new BufferedWriter(new OutputStreamWriter(new
                     FileOutputStream(serverConfigFile)));
-            writer.write(ip+"\n"+dbPort+"\n"+outPort+sslPort+"\n");
+            writer.write(ip+"\n"+dbPort+"\n"+outPort+"\n"+sslPort+"\n");
             writer.close();
             //writes the server private key into a file
             File privKeyFile = new File("./server-config/"+name+".priv");
