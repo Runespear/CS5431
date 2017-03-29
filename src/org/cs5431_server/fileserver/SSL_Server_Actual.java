@@ -140,8 +140,18 @@ public class SSL_Server_Actual extends Thread {
         String pwdSalt = sqlConnection.getSalt(jsonObject.getString
                 ("username"));
         String hashedPwd = jsonObject.getString("hashedPwd");
-        String encPwd  = hash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
-        return sqlConnection.authenticate(jsonObject, encPwd);
+        if (pwdSalt != null) {
+            String encPwd = hash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
+            JSONObject auth = sqlConnection.authenticate(jsonObject, encPwd);
+            if (auth != null) {
+                return auth;
+            }
+        }
+        System.out.println("Sending json error - username does not exist");
+        JSONObject jsonErr = new JSONObject();
+        jsonErr.put("msgType", "error");
+        jsonErr.put("message", "Login failed");
+        return jsonErr;
     }
 
     private JSONObject upload(JSONObject jsonObject, SQL_Connection
