@@ -95,7 +95,7 @@ public class AccountsController {
 
                     sendJson(user);
                     JSONObject newUser = receiveJson();
-                    if (newUser.getString("messageType").equals("registrationAck")) {
+                    if (newUser.getString("msgType").equals("registrationAck")) {
                         int uid = newUser.getInt("uid");
                         int parentFolderid = newUser.getInt("parentFolderid");
 
@@ -107,7 +107,7 @@ public class AccountsController {
                         return new User(uid, username, email, parentFolder,
                                 privKey,
                                 pubKey);
-                    } else if (newUser.getString("messageType").equals("error" +
+                    } else if (newUser.getString("msgType").equals("error" +
                             "")) {
                         throw new RegistrationFailException(newUser.getString
                                 ("message"));
