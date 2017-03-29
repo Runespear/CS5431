@@ -466,7 +466,10 @@ public class FileViewController implements Initializable {
         th.start();
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
-                //TODO alert?
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Upload error");
+                alert.setContentText("Upload unsuccessful. Please try again.");
+                alert.showAndWait();
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
             }

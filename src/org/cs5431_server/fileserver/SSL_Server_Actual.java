@@ -212,10 +212,17 @@ public class SSL_Server_Actual extends Thread {
     private JSONObject upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) throws Exception {
         int fsoid = sqlConnection.createFso(jsonObject);
-        JSONObject response = new JSONObject();
-        response.put("msgType","uploadAck");
-        response.put("fsoid", fsoid);
-        return response;
+        if (fsoid != -1) {
+            JSONObject response = new JSONObject();
+            response.put("msgType","uploadAck");
+            response.put("fsoid", fsoid);
+            return response;
+        }
+        System.out.println("Sending error -- unable to create new folder");
+        JSONObject jsonErr = new JSONObject();
+        jsonErr.put("msgType", "error");
+        jsonErr.put("message", "Unable to upload");
+        return jsonErr;
     }
 
     private JSONObject download(JSONObject jsonObject, SQL_Connection
