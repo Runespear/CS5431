@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 
 public class Validator {
     public static boolean validUsername(String username) {
+        // Allows Upper and lower case alphabets
+        // Allows numerals 0 to 9
+        // Allows hyphens -
+        // Allows underscores
         return (username!=null &&
                 Pattern.matches("[A-Za-z0-9_-]{5,30}$", username));
     }
@@ -21,7 +25,7 @@ public class Validator {
     public static boolean validPort(String port) {
         try {
             Integer p = Integer.parseInt(port);
-            return (p >= 1 && p <= 65535);
+            return (p >= 1024 && p <= 65535);
         } catch (NumberFormatException e) {
             return false;
         }
@@ -33,7 +37,8 @@ public class Validator {
     }
 
     public static boolean validFileName(String fileName) {
-        Pattern pattern = Pattern.compile("[^/./\\:*?\"<>|]");
+        // No dots allowed
+        Pattern pattern = Pattern.compile("^[a-zA-Z0-9\\s_-]{1,255}$");
         if (pattern.matcher(fileName).find()) {
             try {
                 File file = new File("./" + fileName);
