@@ -3,6 +3,9 @@ package org.cs5431_client.util;
 import org.cs5431_server.fileserver.TransmittedFile;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
@@ -19,9 +22,16 @@ public class SSL_Client_Methods {
 
         System.setProperty("javax.net.ssl.trustStore", storeName);
 
-        SocketFactory f = SSLSocketFactory.getDefault();
-        Socket s = f.createSocket(host, Port_Number);
-        return s;
+        //SocketFactory f = SSLSocketFactory.getDefault();
+        //Socket s = f.createSocket(host, Port_Number);
+        //return s;
+
+        final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        final SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(host, Port_Number);
+
+        String[] ciphersuite = {"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"};
+        sslSocket.setEnabledCipherSuites(ciphersuite);
+        return sslSocket;
     }
 
     public static void send_Request(Socket s) throws Exception {

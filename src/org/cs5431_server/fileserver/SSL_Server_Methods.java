@@ -1,7 +1,9 @@
 package org.cs5431_server.fileserver;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -63,10 +65,16 @@ public class SSL_Server_Methods {
 
         System.setProperty("javax.net.ssl.keyStorePassword", pass);
 
-        ServerSocketFactory f = SSLServerSocketFactory.getDefault();
-        ServerSocket ss = f.createServerSocket(Port_Number);
+        //ServerSocketFactory f = SSLServerSocketFactory.getDefault();
+        //ServerSocket ss = f.createServerSocket(Port_Number);
 
-        return ss;
+        final SSLServerSocketFactory sslSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        final SSLServerSocket sslServerSocket = (SSLServerSocket) sslSocketFactory.createServerSocket(Port_Number);
+
+        String[] ciphersuite = {"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"};
+        sslServerSocket.setEnabledCipherSuites(ciphersuite);
+        return sslServerSocket;
+        //return ss;
 
     }
 
