@@ -203,8 +203,14 @@ public class FileViewController implements Initializable {
                     ex.printStackTrace();
                 }
             });
+            task.setOnSucceeded(t -> {
+                populateListView();
+            });
+            task.setOnFailed(t -> {
+                populateListView();
+            });
         }
-        populateListView();
+
     }
 
     /**
