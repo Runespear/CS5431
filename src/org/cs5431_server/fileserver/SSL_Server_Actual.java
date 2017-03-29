@@ -89,12 +89,9 @@ public class SSL_Server_Actual extends Thread {
         BufferedReader r = new BufferedReader(
                 new InputStreamReader(s.getInputStream()));
         String str;
-        while ((str = r.readLine()) != null) {
-            System.out.println(str);
-            System.out.flush();
-            System.out.println("in while loop");
-        }
-        System.out.println("out of while loop");
+        str = r.readLine();
+        System.out.println(str);
+        System.out.flush();
         return new JSONObject(str);
     }
 

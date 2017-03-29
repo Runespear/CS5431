@@ -284,10 +284,9 @@ public class AccountsController {
         BufferedReader r = new BufferedReader(
                 new InputStreamReader(sslSocket.getInputStream()));
         String str;
-        while ((str = r.readLine()) != null) {
-            System.out.println(str);
-            System.out.flush();
-        }
+        str = r.readLine();
+        System.out.println(str);
+        System.out.flush();
 
         return new JSONObject(str);
         /*
