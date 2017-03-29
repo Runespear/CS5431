@@ -133,9 +133,10 @@ class waitForIncomingSSL implements Runnable {
         try {
             ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
                     (serverName, sslPort);
-            Socket s = ss.accept();
-            System.out.println("ACCEPTED");
-            new SSL_Server_Actual(s, sqlConnection).start();
+            while (true) {
+                Socket s = ss.accept();
+                new SSL_Server_Actual(s, sqlConnection).start();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

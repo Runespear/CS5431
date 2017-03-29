@@ -140,6 +140,8 @@ public class AccountsController {
         byte salt[] = new byte[32];
         random.nextBytes(salt);
         byte[] hashedPW = hash(pwd, salt);
+        System.out.println("On Client side: key generated from pwd and salt:");
+        System.out.println(Base64.getEncoder().encodeToString(hashedPW));
         byte returnedValues[][] = new byte[2][128];
         returnedValues[0] = hashedPW;
         returnedValues[1] = salt;
@@ -183,6 +185,8 @@ public class AccountsController {
             InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
+        System.out.println("From server: key generated from pwd and salt:");
+        System.out.println(Base64.getEncoder().encodeToString(key));
         SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
@@ -265,6 +269,7 @@ public class AccountsController {
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(sslSocket.getOutputStream()));
         String str = json.toString();
+        System.out.println(str);
         w.write(str + '\n');
         w.flush();
 
@@ -289,41 +294,53 @@ public class AccountsController {
         System.out.flush();
 
         return new JSONObject(str);
-        /*
-        ObjectInputStream ois = new ObjectInputStream(sslSocket.getInputStream());
-        String strJson = (String) ois.readObject();
-        JSONObject json = new JSONObject(strJson);*/
     }
 
+
+    private JSONArray receiveJsonArray() throws IOException,
+            ClassNotFoundException {
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(sslSocket.getInputStream()));
+        String str;
+        str = r.readLine();
+        System.out.println(str);
+        System.out.flush();
+
+        return new JSONArray(str);
+    }
     public Folder getFolderFromId(int folderId, int uid) {
+        try {
         //TODO: send to server and get the corresponding folder
         Folder parentFolder = new Folder(folderId, "", null,null);
         JSONObject json = new JSONObject();
         json.put("fsoid", folderId);
         json.put("uid", uid);
         json.put("msgType", "getChildren");
-        JSONArray children = sql_connection.getChildren(json);
+        sendJson(json);
+        JSONArray children = receiveJsonArray();
         for (int i=0; i<children.length(); i++) {
             JSONObject c = children.getJSONObject(i);
-            try {
-                int id = c.getInt("id");
-                String name = c.getString("name");
-                String size = c.getString("size");
-                long longSize = Long.valueOf(size);
-                Timestamp lastModified = (Timestamp) c.get("lastModified");
-                String type = c.getString("FSOType");
-                if (type == "FOLDER") {
-                    Folder childFolder = new Folder(id, name, parentFolder, lastModified);
-                    parentFolder.addChild(childFolder);
-                } else {
-                    File childFile = new File(id, name, parentFolder, longSize, lastModified);
-                    parentFolder.addChild(childFile);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            int id = c.getInt("id");
+            String name = c.getString("name");
+            String size = c.getString("size");
+            long longSize = Long.valueOf(size);
+            Timestamp lastModified = (Timestamp) c.get("lastModified");
+            String type = c.getString("FSOType");
+            if (type.equals("FOLDER")) {
+                Folder childFolder = new Folder(id, name, parentFolder, lastModified);
+
+                parentFolder.addChild(childFolder);
+            } else {
+                File childFile = new File(id, name, parentFolder, longSize,
+                        lastModified);
+                parentFolder.addChild(childFile);
             }
         }
-        return parentFolder;
+            return parentFolder;
+        }    catch (Exception e) {
+                e.printStackTrace();
+        }
+        return null;
     }
 
     public class RegistrationFailException extends Exception {

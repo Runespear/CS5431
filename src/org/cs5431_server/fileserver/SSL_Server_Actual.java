@@ -23,65 +23,67 @@ public class SSL_Server_Actual extends Thread {
     }
 
     public void run(){
-        try {
-            JSONObject jsonObject = receiveJson();
-            System.out.println("received json: " + jsonObject.toString());
-            String type = jsonObject.getString("msgType");
-            JSONObject response;
-            switch (type) {
-                case "registration":
-                    response = register(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "login":
-                    System.out.println("trying to login");
-                    response = login(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "upload":
-                    response = upload(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "download":
-                    response = download(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "rename":
-                    response = rename(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "add privilege":
-                    response = addPriv(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "remove privilege":
-                    response = removePriv(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "delete":
-                    response = delete(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "edit user details":
-                    response = editDetails(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                case "getFileLogs":
-                    JSONArray arr = getFileLog(jsonObject, sqlConnection);
-                    sendJsonArray(arr);
-                    break;
-                case "getChildren":
-                    response = getChildren(jsonObject, sqlConnection);
-                    sendJson(response);
-                    break;
-                default:
-                    response = makeErrJson("Did not understand " +
-                            "incoming request");
-                    sendJson(response);
-                    break;
+        while(true) {
+            try {
+                JSONObject jsonObject = receiveJson();
+                System.out.println("received json: " + jsonObject.toString());
+                String type = jsonObject.getString("msgType");
+                JSONObject response;
+                switch (type) {
+                    case "registration":
+                        response = register(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "login":
+                        System.out.println("trying to login");
+                        response = login(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "upload":
+                        response = upload(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "download":
+                        response = download(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "rename":
+                        response = rename(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "add privilege":
+                        response = addPriv(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "remove privilege":
+                        response = removePriv(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "delete":
+                        response = delete(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "edit user details":
+                        response = editDetails(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
+                    case "getFileLogs":
+                        JSONArray arr = getFileLog(jsonObject, sqlConnection);
+                        sendJsonArray(arr);
+                        break;
+                    case "getChildren":
+                        JSONArray arr2 = getChildren(jsonObject, sqlConnection);
+                        sendJsonArray(arr2);
+                        break;
+                    default:
+                        response = makeErrJson("Did not understand " +
+                                "incoming request");
+                        sendJson(response);
+                        break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }catch (Exception e){
-            e.printStackTrace();
         }
     }
 
@@ -100,18 +102,19 @@ public class SSL_Server_Actual extends Thread {
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(s.getOutputStream()));
         String str = json.toString();
+        System.out.println(str);
         w.write(str + '\n');
         w.flush();
-
-        /*ObjectOutputStream out_to_Client = new ObjectOutputStream(s.getOutputStream());
-        TransmittedFile file_to_send = new TransmittedFile();
-        file_to_send.jsonString = json.toString();
-        out_to_Client.writeObject(file_to_send);*/
     }
 
     private void sendJsonArray(JSONArray json) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-        oos.writeObject(json);
+        System.out.println("sending json");
+        BufferedWriter w = new BufferedWriter(
+                new OutputStreamWriter(s.getOutputStream()));
+        String str = json.toString();
+        System.out.println(str);
+        w.write(str + '\n');
+        w.flush();
     }
 
     private JSONObject register(JSONObject jsonObject, SQL_Connection
@@ -205,10 +208,9 @@ public class SSL_Server_Actual extends Thread {
         return sqlConnection.getFileLog(jsonObject);
     }
 
-    private JSONObject getChildren(JSONObject jsonObject, SQL_Connection
+    private JSONArray getChildren(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        //TODO HALP sqlConnection.getChildren();
-        return null;
+        return sqlConnection.getChildren(jsonObject);
     }
 
     private JSONObject makeErrJson(String message) {
