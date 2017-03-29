@@ -221,7 +221,7 @@ public class FileViewController implements Initializable {
         Task<Boolean> task = new Task<Boolean>() {
             @Override
             protected Boolean call() throws Exception {
-                return fileController.download(fso.getId());
+                return fileController.download(fso.getId(), fso.getFileName());
             }
         };
         Thread th = new Thread(task);
