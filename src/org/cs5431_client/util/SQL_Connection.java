@@ -205,7 +205,7 @@ public class SQL_Connection {
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * @return fsoid of created fso **/
-    public int createFso (JSONObject fso) throws FileNotFoundException, IOException {
+    public int createFso (JSONObject fso) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -222,7 +222,10 @@ public class SQL_Connection {
             Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
             boolean isFile = fso.getBoolean("isFile");
             String sk = fso.getString("encSK");
-            String fileIV = fso.getString("fileIV");
+            String fileIV = null;
+            if (isFile) {
+                fileIV = fso.getString("fileIV");
+            }
             String fsoNameIV = fso.getString("fsoNameIV");
 
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
@@ -279,11 +282,6 @@ public class SQL_Connection {
                         actionType = "CREATE_FOLDER";
                     }
 
-                    String file = fso.getString("file");
-                    FileOutputStream fos = new FileOutputStream("./files/" + uid + "/" + fsoid);
-                    fos.write(Base64.getDecoder().decode(file));
-                    fos.close();
-
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -298,6 +296,12 @@ public class SQL_Connection {
                     System.out.println("added owner as editor");
 
                     if (isFile) {
+                        String file = fso.getString("file");
+                        FileOutputStream fos = new FileOutputStream("./files/" + uid + "/" + fsoid);
+
+                        fos.write(Base64.getDecoder().decode(file));
+                        fos.close();
+
                         addFile = connection.prepareStatement(insertFilePath);
                         addFile.setInt(1, fsoid);
                         addFile.setString(2, "./files/" + uid + "/" + fsoid);

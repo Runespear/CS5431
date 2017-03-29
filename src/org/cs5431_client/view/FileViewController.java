@@ -160,13 +160,24 @@ public class FileViewController implements Initializable {
         dialog.setContentText("Folder name:");
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(folderName -> {
-                    try {
-                        fileController.createFolder(folderName, currParent);
-                        populateListView();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                });
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    fileController.createFolder(folderName, currParent);
+                    return null;
+                }
+            };
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+            task.setOnSucceeded(t -> populateListView());
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                if(newValue != null) {
+                    Exception ex = (Exception) newValue;
+                    ex.printStackTrace();
+                }
+            });
+        });
                 //currParent.addChild(new Folder(folderName, currParent, user.getId())));
     }
 

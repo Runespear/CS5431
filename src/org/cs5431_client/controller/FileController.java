@@ -205,21 +205,34 @@ public class FileController {
      * @param parentFolder Folder where the file is to be uploaded
      * @return the folder that is created and uploaded to server successfully; null otherwise
      */
-    public Folder createFolder(String folderName, Folder parentFolder) throws JSONException {
-        Task<Folder> task = new Task<Folder>() {
-            @Override
-            protected Folder call() throws Exception {
+    public Folder createFolder(String folderName, Folder parentFolder) throws
+            Exception {
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         if (isAcceptableInput(folderName)) {
             JSONObject fso = new JSONObject();
+            fso.put("msgType","upload");
             fso.put("uid", user.getId());
             fso.put("parentFolderid", parentFolder.getId());
-            fso.put("fsoName", folderName);
+
             fso.put("size", "0");
             fso.put("lastModified", lastModified);
             fso.put("isFile", false);
 
-            //TODO: create IV for name, file, enc file and name, generate sk
+            KeyGenerator kg = KeyGenerator.getInstance("AES");
+            kg.init(128, new SecureRandom());
+            SecretKey fileSK = kg.generateKey();
+            SecureRandom random = new SecureRandom();
+            byte iv[] = new byte[16];
+            random.nextBytes(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            fso.put("fsoNameIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
+            String encFileName = Base64.getEncoder().encodeToString
+                    (encryptFileName(folderName,fileSK, ivSpec));
+            fso.put("fsoName", encFileName);
+            String encFileKey = Base64.getEncoder().encodeToString
+                    (encFileSecretKey(fileSK, user.getPubKey()));
+            fso.put("encSK", encFileKey);
+
             sendJson(fso);
             JSONObject fsoAck = receiveJson();
             int folderSentId = fsoAck.getInt("fsoid");
@@ -232,15 +245,6 @@ public class FileController {
             }
         }
         return null;
-            }
-        };
-        final Folder[] ret = new Folder[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
     }
 
     /**
@@ -593,19 +597,8 @@ public class FileController {
      * @return true if the input string is safe; false otherwise
      */
     private boolean isAcceptableInput(String input) {
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-                return true;
-            }
-        };
-        final Boolean[] ret = new Boolean[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        //TODO move this into Validator and do an actual check
+        return true;
     }
 
     private void sendJson(JSONObject json) throws IOException {
