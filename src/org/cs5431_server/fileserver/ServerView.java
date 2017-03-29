@@ -6,6 +6,9 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -84,8 +87,21 @@ public class ServerView {
             return;
         }
 
-        SQL_Connection sqlConnection = new SQL_Connection(server, dbPort,
-                username, password);
+        SQL_Connection sqlConnection = null;
+        boolean authenticated = false;
+        while (!authenticated) {
+            try {
+                String url = "jdbc:mysql://" + server + ":" + Integer.toString(dbPort) + "/cs5431?autoReconnect=true&useSSL=false";
+                Connection connection = DriverManager.getConnection(url, username, password);
+                authenticated = true;
+            } catch (Exception e) {
+                System.out.println("Unable to connect to the database. Please try again.");
+                System.out.println("Enter the username you use to login to the server:");
+                username = scanner.nextLine();
+                System.out.println("Enter the password you use to login to the server:");
+                password = scanner.nextLine();
+            }
+        }
 
         try {
             waitForIncomingCert wfic = new waitForIncomingCert(serverName,

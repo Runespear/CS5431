@@ -187,7 +187,7 @@ public class ServerSetup {
             statement.setString(3, serverPwd);
             statement.execute();
             connection.close();
-            connection = DriverManager.getConnection(url+"/cs5431",
+            connection = DriverManager.getConnection(url+"/cs5431?autoReconnect=true&useSSL=false",
                     serverUser, serverPwd);
 
             statement = connection.prepareStatement(createFSO);

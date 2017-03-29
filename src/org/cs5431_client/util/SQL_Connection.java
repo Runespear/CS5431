@@ -17,10 +17,10 @@ import static org.cs5431_client.util.Constants.DEBUG_MODE;
 
 public class SQL_Connection {
 
-    private int port = 3306;
-    private String ip = "localhost";
-    private String DB_USER = "admin";
-    private String DB_PASSWORD = "$walaotwod0tseven$";
+    private int port;
+    private String ip;
+    private String DB_USER;
+    private String DB_PASSWORD;
 
     public SQL_Connection(String ip, int port) {
         this.ip = ip;
@@ -36,7 +36,7 @@ public class SQL_Connection {
     }
 
     public boolean isUniqueUsername(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -80,7 +80,7 @@ public class SQL_Connection {
 
     public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs543?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -226,7 +226,7 @@ public class SQL_Connection {
      * @return fsoid of created fso **/
     public int createFso (JSONObject fso) throws IOException {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -391,7 +391,7 @@ public class SQL_Connection {
      * @return h(privKey) of the user if the authentication is valid. **/
     public JSONObject authenticate(JSONObject allegedUser, String encPwd) {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -454,7 +454,7 @@ public class SQL_Connection {
     }
 
     public String getPrivKeySalt(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
 
         System.out.println("Connecting to database...");
 
@@ -489,7 +489,7 @@ public class SQL_Connection {
 
     /** Gets pwdSalt of pwd associated with username **/
     public String getSalt(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -535,7 +535,7 @@ public class SQL_Connection {
         JSONObject user = authenticate(allegedUser, encPwd);
 
         if (user != null) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
@@ -608,7 +608,7 @@ public class SQL_Connection {
         String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
@@ -690,7 +690,7 @@ public class SQL_Connection {
         boolean hasPermission = verifyEditPermission(parentFolderid, uid);
         if (hasPermission) {
             JSONArray files = new JSONArray();
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
@@ -793,7 +793,7 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
@@ -877,7 +877,7 @@ public class SQL_Connection {
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
      * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
     public JSONObject getPermissions(int fsoid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -993,7 +993,7 @@ public class SQL_Connection {
             if (DEBUG_MODE) {
                 System.out.println("Can view file logs");
             }
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement getFileLog = null;
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
@@ -1048,7 +1048,7 @@ public class SQL_Connection {
             if (DEBUG_MODE) {
                 System.out.println("Can view file logs");
             }
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement getFileLog = null;
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
@@ -1103,7 +1103,7 @@ public class SQL_Connection {
             if (DEBUG_MODE) {
                 System.out.println("Can rename fso");
             }
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement renameFso = null;
             PreparedStatement createLog = null;
 
@@ -1173,7 +1173,7 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement getSecretKey = null;
             PreparedStatement getPubKey = null;
 
@@ -1246,7 +1246,7 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement addEditor = null;
             PreparedStatement createLog = null;
             PreparedStatement shareFsoKey = null;
@@ -1330,7 +1330,7 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement addViewer = null;
             PreparedStatement createLog = null;
             PreparedStatement shareFsoKey = null;
@@ -1406,7 +1406,7 @@ System.out.println("failed to add priv");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement rmViewer = null;
             PreparedStatement createLog = null;
             PreparedStatement removeKey = null;
@@ -1487,7 +1487,7 @@ System.out.println("failed to remove viewer");
         if (hasPermission) {
             if (DEBUG_MODE)
 System.out.println("Can rename fso");
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement rmEditor = null;
             PreparedStatement createLog = null;
             PreparedStatement removeKey = null;
