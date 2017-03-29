@@ -446,6 +446,13 @@ public class FileViewController implements Initializable {
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                //TODO alert?
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
     }
     
     private void showAppropriateImages(boolean fileSelected, boolean

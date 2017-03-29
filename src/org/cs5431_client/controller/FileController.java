@@ -401,7 +401,7 @@ public class FileController {
                 String encName = c.getString("name");
                 String size = c.getString("size");
                 Long longSize = Long.valueOf(size);
-                Timestamp lastModified = (Timestamp) c.get("lastModified");
+                Timestamp lastModified = Timestamp.valueOf(c.getString("lastModified"));
                 String ivNameString = c.getString("fsoNameIV");
                 String encKeyString = c.getString("encKey");
                 SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
