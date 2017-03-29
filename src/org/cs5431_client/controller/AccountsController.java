@@ -70,25 +70,21 @@ public class AccountsController {
                     //hashing password
                     user.put("hashedPwd", Base64.getEncoder().encodeToString(
                             SHA256(password)));
-
                     KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
                             BouncyCastleProvider());
                     kpg.initialize(4096, new SecureRandom());
                     KeyPair keyPair = kpg.generateKeyPair();
                     user.put("pubKey", Base64.getEncoder().encodeToString
                             (keyPair.getPublic().getEncoded()));
-
                     //encrypt secret key using password based key
                     //symmetric, uses AES
                     byte keyAndSalt[][] = pwdBasedKey(password);
                     byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
                     SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
                     Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-                    IvParameterSpec iv = new IvParameterSpec(new byte[32]);
+                    IvParameterSpec iv = new IvParameterSpec(new byte[16]);
                     cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-                    //TODO should we create iv?
                     byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
-
                     user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
                     user.put("privKeySalt", Base64.getEncoder().encodeToString
                             (keyAndSalt[1]));
@@ -105,20 +101,15 @@ public class AccountsController {
                         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                         Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
                         return new User(uid, username, email, parentFolder,
-                                privKey,
-                                pubKey);
-                    } else if (newUser.getString("msgType").equals("error" +
-                            "")) {
+                                privKey, pubKey);
+                    } else if (newUser.getString("msgType").equals("error")) {
                         throw new RegistrationFailException(newUser.getString
                                 ("message"));
                     } else {
                         throw new RegistrationFailException("Received bad response " +
                                 "from server");
                     }
-                } catch (JSONException | NoSuchAlgorithmException |
-                        NoSuchPaddingException | InvalidKeyException |
-                        IllegalBlockSizeException | BadPaddingException |
-                        NoSuchProviderException | InvalidKeySpecException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
@@ -129,8 +120,14 @@ public class AccountsController {
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();
-
-        return ret[0];
+        try {
+            th.join();
+            return ret[0];
+        } catch (InterruptedException e) {
+            System.err.println("interrupted accounts thread");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private byte[] SHA256(String msg) {
@@ -193,7 +190,7 @@ public class AccountsController {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
         SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-        IvParameterSpec iv = new IvParameterSpec(new byte[32]);
+        IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         return cipher.doFinal(Base64.getDecoder().decode(enc));
     }

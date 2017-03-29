@@ -1,4 +1,4 @@
-package test;
+package test.Validator;
 
 import org.cs5431_client.util.Validator;
 import org.junit.jupiter.api.BeforeEach;
