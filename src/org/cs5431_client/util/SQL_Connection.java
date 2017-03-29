@@ -453,6 +453,40 @@ public class SQL_Connection {
         return null;
     }
 
+    public String getPrivKeySalt(String username) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
+
+        System.out.println("Connecting to database...");
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            System.out.println("Database connected!");
+            PreparedStatement getSalt = null;
+
+            String selectSalt = "SELECT U.privKeySalt FROM Users U WHERE U.username = ?";
+            String salt = null;
+
+            try {
+                getSalt = connection.prepareStatement(selectSalt);
+                getSalt.setString(1, username);
+                ResultSet rs = getSalt.executeQuery();
+                if (rs.next()) {
+                    salt = rs.getString(1);
+                }
+                return salt;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getSalt != null) {
+                    getSalt.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /** Gets pwdSalt of pwd associated with username **/
     public String getSalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
@@ -569,6 +603,7 @@ public class SQL_Connection {
         int uid = allegedUser.getInt("uid");
         String username = allegedUser.getString("username");
         String password = allegedUser.getString("hashedPwd");
+        String newPrivKey = allegedUser.getString("newPrivKey");
         String salt = getSalt(username);
         String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
@@ -586,7 +621,7 @@ public class SQL_Connection {
                 PreparedStatement createLog = null;
                 JSONObject response = new JSONObject();
 
-                String updatePwd = "UPDATE Users SET pwd = ? WHERE uid = ? AND username = ?";
+                String updatePwd = "UPDATE Users SET pwd = ?, privKey = ? WHERE uid = ? AND username = ?";
                 String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?)";
 
@@ -595,8 +630,9 @@ public class SQL_Connection {
                     changePwd = connection.prepareStatement(updatePwd);
                     connection.setAutoCommit(false);
                     changePwd.setString(1, newEncPwd);
-                    changePwd.setInt(2, uid);
-                    changePwd.setString(3, username);
+                    changePwd.setString(2, newPrivKey);
+                    changePwd.setInt(3, uid);
+                    changePwd.setString(4, username);
                     changePwd.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("changed password");
