@@ -435,6 +435,23 @@ public class SQL_Connection {
                     return user;
                 } else {
                     //TODO: log the number of failed authentications? send email directly?
+                    String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
+                            + "values (?, ?, ?, ?)";
+                    String selectUsername = "SELECT U.uid FROM Users U WHERE U.username = ?";
+                    PreparedStatement getUid = connection.prepareStatement(selectUsername);
+                    PreparedStatement logFailed = connection.prepareStatement(insertLog);
+
+                    getUid.setString(1, username);
+                    rs = getUid.executeQuery();
+
+                    if (rs.next()) {
+                        int uid = rs.getInt(1);
+                        logFailed.setInt(1, 0);
+                        logFailed.setInt(2, uid);
+                        logFailed.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+                        logFailed.setString(4, "FAILED_LOGIN");
+                        logFailed.execute();
+                    }
                     return null;
                 }
             } catch (JSONException e) {
