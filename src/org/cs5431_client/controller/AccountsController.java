@@ -54,74 +54,57 @@ public class AccountsController {
     /**
     * Creates user with the username, password, and email provided.
     * @return user if successful
-    * @throws RegistrationFailException if unsuccessful
     */
     public User createUser(String username, String password, String email)
-            throws RegistrationFailException {
-        Task<User> task = new Task<User>() {
-            @Override
-            protected User call() throws Exception {
-                try {
-                    JSONObject user = new JSONObject();
-                    user.put("msgType", "registration");
-                    user.put("username", username);
-                    user.put("email", email);
+        throws Exception {
 
-                    //hashing password
-                    user.put("hashedPwd", Base64.getEncoder().encodeToString(
-                            SHA256(password)));
-                    KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
-                            BouncyCastleProvider());
-                    kpg.initialize(4096, new SecureRandom());
-                    KeyPair keyPair = kpg.generateKeyPair();
-                    user.put("pubKey", Base64.getEncoder().encodeToString
-                            (keyPair.getPublic().getEncoded()));
-                    //encrypt secret key using password based key
-                    //symmetric, uses AES
-                    byte keyAndSalt[][] = pwdBasedKey(password);
-                    byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
-                    SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-                    IvParameterSpec iv = new IvParameterSpec(new byte[16]);
-                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-                    byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
-                    user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
-                    user.put("privKeySalt", Base64.getEncoder().encodeToString
-                            (keyAndSalt[1]));
+        JSONObject user = new JSONObject();
+        user.put("msgType", "registration");
+        user.put("username", username);
+        user.put("email", email);
 
-                    sendJson(user);
-                    JSONObject newUser = receiveJson();
-                    if (newUser.getString("msgType").equals("registrationAck")) {
-                        int uid = newUser.getInt("uid");
-                        int parentFolderid = newUser.getInt("parentFolderid");
+        //hashing password
+        user.put("hashedPwd", Base64.getEncoder().encodeToString(
+                SHA256(password)));
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
+                BouncyCastleProvider());
+        kpg.initialize(4096, new SecureRandom());
+        KeyPair keyPair = kpg.generateKeyPair();
+        user.put("pubKey", Base64.getEncoder().encodeToString
+                (keyPair.getPublic().getEncoded()));
+        //encrypt secret key using password based key
+        //symmetric, uses AES
+        byte keyAndSalt[][] = pwdBasedKey(password);
+        byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
+        SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        IvParameterSpec iv = new IvParameterSpec(new byte[16]);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+        byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
+        user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
+        user.put("privKeySalt", Base64.getEncoder().encodeToString
+                (keyAndSalt[1]));
 
-                        PrivateKey privKey = getPrivKeyFromJSON(user, password);
-                        PublicKey pubKey = getPubKeyFromJSON(user);
+        sendJson(user);
+        JSONObject newUser = receiveJson();
+        if (newUser.getString("msgType").equals("registrationAck")) {
+            int uid = newUser.getInt("uid");
+            int parentFolderid = newUser.getInt("parentFolderid");
 
-                        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-                        Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
-                        return new User(uid, username, email, parentFolder,
-                                privKey, pubKey);
-                    } else if (newUser.getString("msgType").equals("error")) {
-                        throw new RegistrationFailException(newUser.getString
-                                ("message"));
-                    } else {
-                        throw new RegistrationFailException("Received bad response " +
-                                "from server");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
-        final User[] ret = new User[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+            PrivateKey privKey = getPrivKeyFromJSON(user, password);
+            PublicKey pubKey = getPubKeyFromJSON(user);
 
-        return ret[0];
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
+            return new User(uid, username, email, parentFolder,
+                    privKey, pubKey);
+        } else if (newUser.getString("msgType").equals("error")) {
+            throw new RegistrationFailException(newUser.getString
+                    ("message"));
+        } else {
+            throw new RegistrationFailException("Received bad response " +
+                    "from server");
+        }
     }
 
     private byte[] SHA256(String msg) {
@@ -208,59 +191,46 @@ public class AccountsController {
      * @param username Username to be used for this server
      * @param password Password associated with username
      * @return userId if successful
-     * @throws LoginFailException if unsuccessful
      */
-    public User login(String username, String password) throws LoginFailException {
-        Task<User> task = new Task<User>() {
-            @Override
-            protected User call() throws Exception {
-                JSONObject allegedUser = new JSONObject();
-                try {
-                    allegedUser.put("msgType", "login");
-                    allegedUser.put("username", username);
-                    allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
+    public User login(String username, String password) throws Exception {
+        JSONObject allegedUser = new JSONObject();
+        try {
+            allegedUser.put("msgType", "login");
+            allegedUser.put("username", username);
+            allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
-                    sendJson(allegedUser);
-                    System.out.println("waiting to receive json...");
-                    JSONObject user = receiveJson();
+            sendJson(allegedUser);
+            System.out.println("waiting to receive json...");
+            JSONObject user = receiveJson();
 
-                    if (user.getString("msgType").equals("loginAck")) {
-                        int uid = user.getInt("uid");
-                        //TODO get username?
-                        int parentFolderid = user.getInt("parentFolderid");
-                        String email = user.getString("email");
+            if (user.getString("msgType").equals("loginAck")) {
+                int uid = user.getInt("uid");
+                //TODO get username?
+                int parentFolderid = user.getInt("parentFolderid");
+                String email = user.getString("email");
 
-                        PrivateKey privKey = getPrivKeyFromJSON(user, password);
-                        PublicKey pubKey = getPubKeyFromJSON(user);
+                PrivateKey privKey = getPrivKeyFromJSON(user, password);
+                PublicKey pubKey = getPubKeyFromJSON(user);
 
-                        Folder parentFolder = getFolderFromId(parentFolderid, uid);
-                        User currUser = new User(uid, username, email, parentFolder,
-                                privKey, pubKey);
-                        return currUser;
-                    } else if (user.getString("msgType").equals("error")) {
-                        throw new LoginFailException(user.getString
-                                ("message"));
-                    } else {
-                        throw new LoginFailException("Received bad response " +
-                                "from server");
-                    }
-                    //TODO: create relevant controllers? and pass them? ???
-                } catch (JSONException | NoSuchAlgorithmException |
-                        NoSuchPaddingException | InvalidKeyException |
-                        IllegalBlockSizeException | BadPaddingException |
-                        NoSuchProviderException | InvalidKeySpecException e) {
-                    e.printStackTrace();
-                }
-                return null;
+                Folder parentFolder = getFolderFromId(parentFolderid, uid);
+                User currUser = new User(uid, username, email, parentFolder,
+                        privKey, pubKey);
+                return currUser;
+            } else if (user.getString("msgType").equals("error")) {
+                throw new LoginFailException(user.getString
+                        ("message"));
+            } else {
+                throw new LoginFailException("Received bad response " +
+                        "from server");
             }
-        };
-        final User[] ret = new User[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+            //TODO: create relevant controllers? and pass them? ???
+        } catch (JSONException | NoSuchAlgorithmException |
+                NoSuchPaddingException | InvalidKeyException |
+                IllegalBlockSizeException | BadPaddingException |
+                NoSuchProviderException | InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void sendJson(JSONObject json) throws IOException {

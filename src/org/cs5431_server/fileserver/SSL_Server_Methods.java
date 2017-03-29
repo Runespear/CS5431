@@ -63,7 +63,7 @@ public class SSL_Server_Methods {
                 "./server-config/" + serverName + ".jks");
 
         Scanner scanner = new Scanner (System.in);
-        System.out.println("Type in your password to access the keystore: \n");
+        System.out.println("Type in your password to access the keystore: ");
         String pass = scanner.nextLine(); //Obtain user's command
 
         System.setProperty("javax.net.ssl.keyStorePassword", pass);
