@@ -1,5 +1,6 @@
 package org.cs5431_client.view;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -81,65 +82,77 @@ public class RegistrationController implements Initializable {
      * Otherwise displays an error message and remains on this page.
      */
     private void tryRegister() {
-        try {
-            String username = txtUsername.getCharacters().toString();
-            String password = txtPassword.getCharacters().toString();
-            String confirmPwd = txtConfirmPassword.getCharacters().toString();
-            String email = txtEmail.getCharacters().toString();
-            //Client side validation
+        String username = txtUsername.getCharacters().toString();
+        String password = txtPassword.getCharacters().toString();
+        String confirmPwd = txtConfirmPassword.getCharacters().toString();
+        String email = txtEmail.getCharacters().toString();
+        //Client side validation
 
-            List<String> errMessages = new ArrayList<>();
-            if (username.isEmpty())
-                errMessages.add("The username field is required.");
-            else if (!Validator.validUsername(username)) {
-                errMessages.add("Username should consist of 5-30 characters " +
-                        "that are alphanumeric, _ or -");
+        List<String> errMessages = new ArrayList<>();
+        if (username.isEmpty())
+            errMessages.add("The username field is required.");
+        else if (!Validator.validUsername(username)) {
+            errMessages.add("Username should consist of 5-30 characters " +
+                    "that are alphanumeric, _ or -");
+        }
+        if (password.isEmpty() || confirmPwd.isEmpty()) {
+            errMessages.add("The passwords field is required.");
+        } else if (!password.equals(confirmPwd)) {
+            errMessages.add("The passwords entered do not match.");
+        } else if (!Validator.validPassword(password)) {
+            errMessages.add("Passwords should be at least 16 characters " +
+                    "long.");
+        }
+
+        if (!email.isEmpty() && !Validator.validEmail(email))
+            errMessages.add("The email entered is invalid.");
+
+        if (!errMessages.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Registration failed");
+            StringBuilder content = new StringBuilder();
+            for (String message : errMessages) {
+                content.append(message);
+                content.append('\n');
             }
-            if (password.isEmpty() || confirmPwd.isEmpty()) {
-                errMessages.add("The passwords field is required.");
-            } else if (!password.equals(confirmPwd)) {
-                errMessages.add("The passwords entered do not match.");
-            } else if (!Validator.validPassword(password)) {
-                errMessages.add("Passwords should be at least 16 characters " +
-                        "long.");
-            }
-
-            if (!email.isEmpty() && !Validator.validEmail(email))
-                errMessages.add("The email entered is invalid.");
-
-            if (!errMessages.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Registration failed");
-                StringBuilder content = new StringBuilder();
-                for (String message : errMessages) {
-                    content.append(message);
-                    content.append('\n');
+            alert.setContentText(content.toString());
+            alert.showAndWait();
+        } else {
+            Task<User> task = new Task<User>() {
+                @Override
+                protected User call() throws Exception {
+                    try {
+                        return accountsController.createUser(username,
+                                password, email);
+                    } catch(Exception e) {
+                            e.printStackTrace();
+                    }
+                    return null;
                 }
-                alert.setContentText(content.toString());
-                alert.showAndWait();
-            } else {
-                User user = accountsController.createUser(username, password,
-                        email);
-                if (user == null) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Registration failed");
-                    alert.setContentText("Could not create new user. Please " +
-                            "try again.");
-                    alert.showAndWait();
-                    return;
-                }
+            };
+            task.setOnSucceeded(t -> {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Registration successful");
                 alert.setContentText("Registration successful! Bringing you " +
                         "back to the login page...");
                 alert.showAndWait();
                 exit();
-
-            }
-        } catch (AccountsController.RegistrationFailException rfe) {
-            //TODO change this to alert box
-            System.err.println(rfe.getMessage());
-            rfe.printStackTrace();
+            });
+            task.setOnFailed(t -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Registration failed");
+                alert.setContentText("Could not create new user. Please " +
+                        "try again.");
+            });
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                if(newValue != null) {
+                    Exception ex = (Exception) newValue;
+                    ex.printStackTrace();
+                }
+            });
         }
     }
 

@@ -1,5 +1,6 @@
 package org.cs5431_client.view;
 
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,6 +16,7 @@ import org.cs5431_client.model.User;
 import org.cs5431_client.util.SSL_Client_Methods;
 import org.cs5431_client.util.Validator;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -76,37 +78,49 @@ public class LoginController implements Initializable {
             alert.setTitle("Login error");
             alert.setContentText("Username or password not valid.");
             alert.showAndWait();
-        } else {
-            try {
-                User user = accountsController.login(username, password);
-                if (user == null) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Login error");
-                    alert.setContentText("Could not login to server. Please " +
-                            "try again or register an account.");
-                    alert.showAndWait();
-                } else {
-                    Node node = (Node) e.getSource();
-                    Stage stage = (Stage) node.getScene().getWindow();
-                    Scene scene = stage.getScene();
-
-                    final URL r = getClass().getResource("file_view.fxml");
-                    FXMLLoader fxmlLoader = new FXMLLoader(r);
-                    Parent root = fxmlLoader.load();
-                    Client.fileViewNode = root;
-                    FileViewController fvc = fxmlLoader.getController();
-                    //AccountsController accountsController = new AccountsController();
-                    fvc.setUserDetails(user, sslSocket);
-                    fvc.setStage(stage);
-                    scene.setRoot(root);
-                }
-
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
+            return;
         }
+        Task<User> task = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                return accountsController.login(username, password);
+            }
+        };
+        task.setOnFailed(t -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Login error");
+            alert.setContentText("Could not login to server. Please " +
+                    "try again or register an account.");
+            alert.showAndWait();
+        });
+        task.setOnSucceeded(t -> {
+            try {
+                Node node = (Node) e.getSource();
+                Stage stage = (Stage) node.getScene().getWindow();
+                Scene scene = stage.getScene();
 
+                final URL r = getClass().getResource("file_view.fxml");
+                FXMLLoader fxmlLoader = new FXMLLoader(r);
+                Parent root = fxmlLoader.load();
+                Client.fileViewNode = root;
+                FileViewController fvc = fxmlLoader.getController();
 
+                fvc.setUserDetails(task.getValue(), sslSocket);
+                fvc.setStage(stage);
+                scene.setRoot(root);
+            } catch (IOException ex) {
+                System.err.println("Failed to change to file view!");
+            }
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
     }
 
     /**
