@@ -634,12 +634,14 @@ public class SQL_Connection {
                         getKey.setInt(2, uid);
                         ResultSet encRS = getKey.executeQuery();
 
+                        if (encRS.next()) {
+                            fso.put("encKey", encRS.getString(1));
+                        }
                         getIv.setInt(1, fsoid);
                         getIv.setInt(2, uid);
                         ResultSet fileIV = getKey.executeQuery();
 
-                        if (encRS.next() && fileIV.next()) {
-                            fso.put("encKey", encRS.getString(1));
+                        if (fileIV.next()) {
                             fso.put("fileIV", fileIV.getString(1));
                         }
 

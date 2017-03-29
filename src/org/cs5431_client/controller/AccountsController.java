@@ -283,7 +283,7 @@ public class AccountsController {
             String name = c.getString("name");
             String size = c.getString("size");
             long longSize = Long.valueOf(size);
-            Timestamp lastModified = (Timestamp) c.get("lastModified");
+            Timestamp lastModified = Timestamp.valueOf(c.getString("lastModified"));
             String type = c.getString("FSOType");
             if (type.equals("FOLDER")) {
                 Folder childFolder = new Folder(id, name, parentFolder, lastModified);
