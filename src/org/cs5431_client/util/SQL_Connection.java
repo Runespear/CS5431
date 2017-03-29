@@ -242,7 +242,7 @@ public class SQL_Connection {
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
                 String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
-                String insertFilePath = "INSERT INTO FileContents (fsoid, path) values (?,?)";
+                String insertFilePath = "INSERT INTO FileContents (fsoid, path, fileIV) values (?, ?, ?)";
 
                 try {
                     connection.setAutoCommit(false);
@@ -300,6 +300,7 @@ public class SQL_Connection {
 
                     addPath.setInt(1, fsoid);
                     addPath.setString(2, "./files/" + uid + "/" + fsoid); //TODO: correct?
+                    addPath.setString(3, fileIV);
 
                     if (isFile) {
                         addFile = connection.prepareStatement(insertFilePath);
@@ -725,6 +726,7 @@ public class SQL_Connection {
 
                     if (rs.next()) {
                         fso.put("msgType","downloadAck");
+                        System.out.println("path" + rs.getString(1));
                         File reqFile = new File(rs.getString(1));
                         FileInputStream inputStream = new FileInputStream
                                 (reqFile);
@@ -735,6 +737,7 @@ public class SQL_Connection {
                                 (filebytes));
 
                         fso.put("fsoid", fsoid);
+                        System.out.println("fileic" + rs.getString(2));
                         fso.put("fileIV", rs.getString(2));
                     }
                     return fso;
