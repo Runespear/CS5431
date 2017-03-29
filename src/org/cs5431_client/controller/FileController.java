@@ -160,8 +160,7 @@ public class FileController {
     }
 
     private boolean decryptFile(byte[] encFile, String fileName,
-                             SecretKey secretKey, IvParameterSpec ivSpec,
-                             Timestamp dateModified, int size)
+                             SecretKey secretKey, IvParameterSpec ivSpec)
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException, IOException {
@@ -310,7 +309,7 @@ public class FileController {
      * @param fsoId is ID of the file to be downloaded
      * @return true if successful
      */
-    public boolean download(int fsoId) throws
+    public boolean download(int fsoId, String fsoName) throws
         IOException, JSONException, NoSuchAlgorithmException,
         NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
         InvalidAlgorithmParameterException, IllegalBlockSizeException,
@@ -329,24 +328,13 @@ public class FileController {
             byte encFileSKbytes[] = Base64.getDecoder()
                     .decode(fileAck.getString("encFileSK"));
             SecretKey fileSK = decFileSecretKey(encFileSKbytes, user.getPrivKey());
-            byte fsoNamebytes[] = Base64.getDecoder().decode(fileAck
-                    .getString("fsoName"));
-            String ivNameString = fileAck.getString("fsoNameIV");
-            IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
-                    .decode(ivNameString));
-            String fsoName = decryptFileName(fsoNamebytes, fileSK, iv);
-            //TODO: ruixin, should the below be coerced from string
-            //or does it need to be decoded
-            Timestamp dateModified = (Timestamp) fileAck.get("dateModified");
-            int size = fileAck.getInt("size");
             byte fsoBytes[] = Base64.getDecoder().decode(fileAck
                     .getString("encFile"));
             //TODO: what should we do with dateModified and size?
             String ivString = fileAck.getString("fileIV");
-            iv = new IvParameterSpec(Base64.getDecoder()
+            IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
                     .decode(ivString));
-            return decryptFile(fsoBytes, fsoName, fileSK, iv,
-                    dateModified, size);
+            return decryptFile(fsoBytes, fsoName, fileSK, iv);
         } else if (fileAck.getString("msgType").equals("error")) {
             throw new FileControllerException(fileAck.getString("message"));
         } else {
