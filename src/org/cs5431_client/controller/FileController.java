@@ -41,24 +41,12 @@ public class FileController {
      * @return true if the user has the permission; false otherwise
      */
     public boolean isAllowed(FileActionType action, FileSystemObject fso) {
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-            //TODO: to be done on server side
-            List<Integer> usersWithPermission = fso.getEditors();
-            if (action == DOWNLOAD) {
-                usersWithPermission.addAll(fso.getViewers());
-            }
-            return (usersWithPermission.contains(user.getId()));
-            }
-        };
-        final Boolean[] ret = new Boolean[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        //TODO: to be done on server side
+        List<Integer> usersWithPermission = fso.getEditors();
+        if (action == DOWNLOAD) {
+            usersWithPermission.addAll(fso.getViewers());
+        }
+        return (usersWithPermission.contains(user.getId()));
     }
 
     /**
