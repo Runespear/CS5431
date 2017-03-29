@@ -1,7 +1,5 @@
 package org.cs5431_server.fileserver;
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
@@ -9,9 +7,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-/**
- * Created by Brandon on 25/3/2017.
- */
 public class SSL_Server_Methods {
 
     // Command for keystore generation

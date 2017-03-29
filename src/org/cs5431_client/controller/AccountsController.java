@@ -255,7 +255,6 @@ public class AccountsController {
         return new JSONObject(str);
     }
 
-
     private JSONArray receiveJsonArray() throws IOException,
             ClassNotFoundException {
         BufferedReader r = new BufferedReader(
@@ -267,6 +266,7 @@ public class AccountsController {
 
         return new JSONArray(str);
     }
+
     public Folder getFolderFromId(int folderId, int uid) {
         try {
         //TODO: send to server and get the corresponding folder

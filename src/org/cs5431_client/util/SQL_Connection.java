@@ -212,7 +212,7 @@ public class SQL_Connection {
             int parentFolderid = fso.getInt("parentFolderid");
             String fsoName = fso.getString("fsoName");
             String size = fso.getString("size");
-            Timestamp lastModified = (Timestamp) fso.get("lastModified");
+            Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
             boolean isFile = fso.getBoolean("isFile");
             String sk = fso.getString("encSK");
             String fileIV = fso.getString("fileIV");

@@ -179,7 +179,14 @@ public class FileViewController implements Initializable {
         fileChooser.setTitle("Choose file to upload");
         File fileToUpload = fileChooser.showOpenDialog(stage);
 
+        if (currParent == null) {
+            System.out.println("currparent is null");
+        } else {
+            System.out.println("currparent is not null");
+        }
+
         if (fileToUpload != null) {
+            System.out.println(fileToUpload.getName());
             Task<org.cs5431_client.model.File> task = new Task<org.cs5431_client.model.File>() {
                 @Override
                 protected org.cs5431_client.model.File call() throws Exception {
@@ -358,7 +365,7 @@ public class FileViewController implements Initializable {
         currParent = user.getUserParentFolder();
         path = new ArrayList<>();
         path.add(currParent);
-        //fileController = new FileController(user,sslSocket);
+        fileController = new FileController(user,sslSocket);
         userController = new UserController(user,sslSocket);
         currParent = user.getUserParentFolder();
         initFakeFiles();

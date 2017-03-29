@@ -73,12 +73,12 @@ public class FileController {
         NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
         InvalidAlgorithmParameterException, IllegalBlockSizeException,
         BadPaddingException, ClassNotFoundException {
-
         String name = file.getName();
         long size = file.length();
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         JSONObject fso = new JSONObject();
+        fso.put("msgType","upload");
         fso.put("uid", user.getId());
         fso.put("parentFolderid", parentFolder.getId());
 
@@ -98,23 +98,30 @@ public class FileController {
         byte[] encFile = encryptFile(file, fileSK, ivSpec);
         //TODO change to more appropriate format?
         fso.put("file", Base64.getEncoder().encodeToString(encFile));
+
+        random.nextBytes(iv);
+        ivSpec = new IvParameterSpec(iv);
+        fso.put("fsoNameIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
         String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
                 fileSK, ivSpec));
         fso.put("fsoName", encFileName);
         String encFileKey = Base64.getEncoder().encodeToString
                 (encFileSecretKey(fileSK, user.getPubKey()));
         fso.put("encSK", encFileKey);
-
+        System.out.println("Done encrypting and stuff");
         sendJson(fso);
         JSONObject fsoAck = receiveJson();
-        int fileSentid = fsoAck.getInt("fsoid");
+        if (fsoAck.get("msgType").equals("uploadAck")) {
+            int fileSentid = fsoAck.getInt("fsoid");
+            System.out.println(fileSentid);
+            if (fileSentid != -1) {
+                File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
 
-        if (fileSentid != -1) {
-            File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
-            parentFolder.addChild(fileSent);
-            fileSent.addPriv(PrivType.EDIT, user.getId());
-            System.out.print(parentFolder.getChildren());
-            return fileSent;
+                parentFolder.addChild(fileSent);
+                fileSent.addPriv(PrivType.EDIT, user.getId());
+                System.out.print(parentFolder.getChildren());
+                return fileSent;
+            }
         }
         return null;
     }
@@ -314,23 +321,23 @@ public class FileController {
         BadPaddingException, FileControllerException, ClassNotFoundException {
 
         JSONObject fileReq = new JSONObject();
-        fileReq.put("messageType", "download");
+        fileReq.put("msgType", "download");
         fileReq.put("fsoid", fsoId);
         fileReq.put("uid", user.getId());
 
         sendJson(fileReq);
         JSONObject fileAck = receiveJson();
 
-        if (fileAck.getString("messageType").equals("downloadAck")) {
+        if (fileAck.getString("msgType").equals("downloadAck")) {
             int fsoID = fileAck.getInt("fsoid");
-            String ivString = fileAck.getString("fileIV");
-            IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
-                    .decode(ivString));
             byte encFileSKbytes[] = Base64.getDecoder()
                     .decode(fileAck.getString("encFileSK"));
             SecretKey fileSK = decFileSecretKey(encFileSKbytes, user.getPrivKey());
             byte fsoNamebytes[] = Base64.getDecoder().decode(fileAck
                     .getString("fsoName"));
+            String ivNameString = fileAck.getString("fsoNameIV");
+            IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
+                    .decode(ivNameString));
             String fsoName = decryptFileName(fsoNamebytes, fileSK, iv);
             //TODO: ruixin, should the below be coerced from string
             //or does it need to be decoded
@@ -339,9 +346,12 @@ public class FileController {
             byte fsoBytes[] = Base64.getDecoder().decode(fileAck
                     .getString("encFile"));
             //TODO: what should we do with dateModified and size?
+            String ivString = fileAck.getString("fileIV");
+            iv = new IvParameterSpec(Base64.getDecoder()
+                    .decode(ivString));
             return decryptFile(fsoBytes, fsoName, fileSK, iv,
                     dateModified, size);
-        } else if (fileAck.getString("messageType").equals("error")) {
+        } else if (fileAck.getString("msgType").equals("error")) {
             throw new FileControllerException(fileAck.getString("message"));
         } else {
             throw new FileControllerException("Received bad response " +
@@ -349,19 +359,33 @@ public class FileController {
         }
     }
 
+    private JSONArray receiveJsonArray() throws IOException,
+            ClassNotFoundException {
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(sslSocket.getInputStream()));
+        String str;
+        str = r.readLine();
+        System.out.println(str);
+        System.out.flush();
+
+        return new JSONArray(str);
+    }
+
     /**
      * Gets all children of the folderId
      * @param parentFolder gets the children of parentFolder
      * @return List of fso if download is successful; false null
      */
-    public List<FileSystemObject> getChildren(Folder parentFolder) {
+    public List<FileSystemObject> getChildren(Folder parentFolder) throws
+            IOException, ClassNotFoundException {
         int parentFolderid = parentFolder.getId();
         ArrayList<FileSystemObject> children = new ArrayList<>();
         JSONObject json = new JSONObject();
         json.put("msgType", "getChildren");
         json.put("fsoid", parentFolderid);
         json.put("uid", user.getId());
-        JSONArray jsonChildren = sql_connection.getChildren(json);
+        sendJson(json);
+        JSONArray jsonChildren = receiveJsonArray();
         for (int i = 0; i < jsonChildren.length(); i++) {
             JSONObject c = jsonChildren.getJSONObject(i);
             try {
