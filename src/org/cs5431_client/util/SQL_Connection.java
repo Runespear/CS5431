@@ -305,7 +305,7 @@ public class SQL_Connection {
                     if (isFile) {
                         addFile = connection.prepareStatement(insertFilePath);
                         addFile.setInt(1, fsoid);
-                        addFile.setString(2, "path");
+                        addFile.setString(2, "./files/" + uid + "/" + fsoid);
                         addFile.executeUpdate();
                         System.out.println("added file path");
                     }
@@ -726,7 +726,7 @@ public class SQL_Connection {
 
                     if (rs.next()) {
                         fso.put("msgType","downloadAck");
-                        System.out.println("path" + rs.getString(1));
+                        System.out.println("THE PATH IS: " + rs.getString(1));
                         File reqFile = new File(rs.getString(1));
                         FileInputStream inputStream = new FileInputStream
                                 (reqFile);
