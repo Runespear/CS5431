@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
@@ -23,8 +24,8 @@ public class SSL_Server_Actual extends Thread {
     }
 
     public void run(){
+        try {
         while(true) {
-            try {
                 JSONObject jsonObject = receiveJson();
                 System.out.println("received json: " + jsonObject.toString());
                 String type = jsonObject.getString("msgType");
@@ -81,9 +82,13 @@ public class SSL_Server_Actual extends Thread {
                         sendJson(response);
                         break;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (NullPointerException | SocketException e) {
+            System.err.println("Probably the client disconnecting, if so this" +
+                    " can be safely ignored:");
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
