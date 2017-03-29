@@ -159,7 +159,7 @@ public class ServerSetup {
                 "lastModified TIMESTAMP, actionType CHAR(20),\n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE);";
         String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL, uid INT UNSIGNED NOT NULL,\n" +
-                "encKey BLOB NOT NULL, \n" +
+                "encKey BLOB NOT NULL, fileIV CHAR(255) NOT NULL, \n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createFileContents = "CREATE TABLE FileContents (fsoid INT UNSIGNED NOT NULL, path VARCHAR(100),\n" +
