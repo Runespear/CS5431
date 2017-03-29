@@ -20,13 +20,24 @@ class test_validFileName {
 
     @Test
     void test_validFileName_invalidCharacters(){
+        boolean dot = Validator.validFileName(".");
         boolean doubledots = Validator.validFileName("..");
         boolean slashes = Validator.validFileName("/");
         boolean upOne = Validator.validFileName("../");
 
+        assertEquals(false, dot);
         assertEquals(false,doubledots);
         assertEquals(false, slashes);
         assertEquals(false, upOne);
+    }
 
+    @Test
+    void test_validFileName_tooLong(){
+
+        boolean ThirtyChar = Validator.validFileName("qwertyuiopasdfghjklzxcvbnmqwer");
+        boolean ThirtyOneChar = Validator.validFileName("qwertyuiopasdfghjklzxcvbnmqwert");
+
+        assertEquals(true, ThirtyChar);
+        assertEquals(false, ThirtyOneChar);
     }
 }
