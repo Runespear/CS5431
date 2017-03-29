@@ -155,7 +155,7 @@ public class SSL_Server_Actual extends Thread {
     }
 
     private JSONObject upload(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+            sqlConnection) throws Exception {
         int fsoid = sqlConnection.createFso(jsonObject);
         JSONObject response = new JSONObject();
         response.put("msgType","uploadAck");
@@ -164,21 +164,11 @@ public class SSL_Server_Actual extends Thread {
     }
 
     private JSONObject download(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+            sqlConnection) throws Exception {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
-        //TODO CHECK FOR PERMISSIONS
 
-        //TODO figure out which method to call
-        //sqlConnection.getFile()?
-        JSONObject downloadAck = new JSONObject();
-        downloadAck.put("fsoid", fsoid);
-        downloadAck.put("fileIV", "");
-        downloadAck.put("fsoName", "");
-        downloadAck.put("encFile","");
-        downloadAck.put("encFileSK","");
-        downloadAck.put("dateModified","");
-        downloadAck.put("size","");
+        JSONObject downloadAck = sqlConnection.getFilePath(jsonObject);
         return downloadAck;
     }
 
