@@ -84,15 +84,18 @@ public class SSL_Server_Actual extends Thread {
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-        String strJson = (String) ois.readObject();
-        System.out.println("received json");
-        return new JSONObject(strJson);
+        ObjectInputStream object_in = new ObjectInputStream(s.getInputStream());
+        TransmittedFile received = (TransmittedFile) object_in.readObject();
+        String json = received.jsonString;
+        System.out.println("received " + json);
+        return new JSONObject(json);
     }
 
     private void sendJson (JSONObject json) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-        oos.writeObject(json.toString());
+        ObjectOutputStream out_to_Client = new ObjectOutputStream(s.getOutputStream());
+        TransmittedFile file_to_send = new TransmittedFile();
+        file_to_send.jsonString = json.toString();
+        out_to_Client.writeObject(file_to_send);
     }
 
     private void sendJsonArray(JSONArray json) throws IOException {

@@ -12,6 +12,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431_client.model.*;
 import org.cs5431_client.model.File;
 import org.cs5431_client.util.SQL_Connection;
+import org.cs5431_server.fileserver.TransmittedFile;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -267,17 +268,28 @@ public class AccountsController {
     }
 
     private void sendJson(JSONObject json) throws IOException {
+        System.out.println("sending json");
+        ObjectOutputStream out_to_Client = new ObjectOutputStream(sslSocket.getOutputStream());
+        TransmittedFile file_to_send = new TransmittedFile();
+        file_to_send.jsonString = json.toString();
+        out_to_Client.writeObject(file_to_send);
+
+/*
         ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
         oos.writeObject(json.toString());
-        System.out.println("sent json");
+        System.out.println("sent json");*/
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
+        ObjectInputStream object_in = new ObjectInputStream(sslSocket.getInputStream());
+        TransmittedFile received = (TransmittedFile) object_in.readObject();
+        String jsonStr = received.jsonString;
+        System.out.println("received json " + jsonStr);
+        /*
         ObjectInputStream ois = new ObjectInputStream(sslSocket.getInputStream());
         String strJson = (String) ois.readObject();
-
-        JSONObject json = new JSONObject(strJson);
-        return json;
+        JSONObject json = new JSONObject(strJson);*/
+        return new JSONObject(jsonStr);
     }
 
     public Folder getFolderFromId(int folderId, int uid) {

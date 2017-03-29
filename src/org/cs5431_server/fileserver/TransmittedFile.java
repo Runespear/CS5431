@@ -1,5 +1,7 @@
 package org.cs5431_server.fileserver;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
 
 /**
@@ -12,4 +14,5 @@ public class TransmittedFile implements Serializable{
     protected byte[] mac_Stuff;
     public byte[] file;
     public String filename;
+    public String jsonString;
 }

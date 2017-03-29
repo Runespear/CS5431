@@ -1,3 +1,7 @@
+package org.cs5431_client.util;
+
+import org.json.JSONObject;
+
 import java.io.Serializable;
 
 /**
@@ -10,4 +14,5 @@ public class TransmittedFile implements Serializable{
     protected byte[] mac_Stuff;
     protected byte[] file;
     protected String filename;
+    protected String jsonString;
 }
