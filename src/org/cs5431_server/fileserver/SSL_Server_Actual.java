@@ -168,7 +168,7 @@ public class SSL_Server_Actual extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
 
-        JSONObject downloadAck = sqlConnection.getFilePath(jsonObject);
+        JSONObject downloadAck = sqlConnection.getFile(jsonObject);
         return downloadAck;
     }
 

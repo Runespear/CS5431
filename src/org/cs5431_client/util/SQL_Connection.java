@@ -682,7 +682,7 @@ public class SQL_Connection {
         return null;
     }
 
-    public JSONObject getFilePath(JSONObject json) throws Exception {
+    public JSONObject getFile(JSONObject json) throws Exception {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
 
@@ -695,20 +695,30 @@ public class SQL_Connection {
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 System.out.println("Database connected!");
                 PreparedStatement getPath = null;
+                PreparedStatement getKey = null;
 
                 String selectPath = "SELECT F.path, F.fileIV FROM FileContents F WHERE F.fsoid = ?";
+                String selectSk = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
 
                 try {
                     getPath = connection.prepareStatement(selectPath);
+                    getKey = connection.prepareStatement(selectSk);
                     connection.setAutoCommit(false);
                     getPath.setInt(1, fsoid);
                     ResultSet rs = getPath.executeQuery();
                     JSONObject fso = new JSONObject();
 
+                    getKey.setInt(1, fsoid);
+                    getKey.setInt(2, uid);
+                    ResultSet sk = getKey.executeQuery();
+
+                    if (sk.next()) {
+                        fso.put("encFileSK", sk.getString(1));
+                    }
+
                     if (rs.next()) {
                         fso.put("msgType","downloadAck");
-                        //GIVE ME THE PATH HERE: change "hi"
-                        File reqFile = new File("hi");
+                        File reqFile = new File(rs.getString(1));
                         FileInputStream inputStream = new FileInputStream
                                 (reqFile);
                         byte[] filebytes = new byte[inputStream.available()];
@@ -717,15 +727,8 @@ public class SQL_Connection {
                         fso.put("encFile", Base64.getEncoder().encodeToString
                                 (filebytes));
 
-                        fso.put("path", rs.getInt(1));
                         fso.put("fsoid", fsoid);
                         fso.put("fileIV", rs.getString(2));
-
-                        if (rs.getBoolean(5)) {
-                            fso.put("FSOType", "FILE");
-                        } else {
-                            fso.put("FSOType", "FOLDER");
-                        }
                     }
                     return fso;
                 } catch (SQLException e) {
@@ -742,6 +745,9 @@ public class SQL_Connection {
                 } finally {
                     if (getPath != null) {
                         getPath.close();
+                    }
+                    if (getKey != null) {
+                        getKey.close();
                     }
                     connection.setAutoCommit(true);
                 }
