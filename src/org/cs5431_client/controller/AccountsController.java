@@ -83,7 +83,8 @@ public class AccountsController {
                     byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
                     SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
                     Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                    IvParameterSpec iv = new IvParameterSpec(new byte[32]);
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
                     //TODO should we create iv?
                     byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
 
@@ -175,7 +176,7 @@ public class AccountsController {
     throws NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException,
             InvalidKeySpecException, InvalidKeyException,
-            NoSuchProviderException {
+            NoSuchProviderException, InvalidAlgorithmParameterException {
         String encodedPrivKey = json.getString("privKey");
         String privKeySalt = json.getString("privKeySalt");
         byte[] decodedPriv = decryptPwdBasedKey(encodedPrivKey,
@@ -187,11 +188,12 @@ public class AccountsController {
     private byte[] decryptPwdBasedKey(String enc, String pwd, String salt)
     throws NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException,
-            InvalidKeyException, NoSuchProviderException {
+            InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
         SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        IvParameterSpec iv = new IvParameterSpec(new byte[32]);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         return cipher.doFinal(Base64.getDecoder().decode(enc));
     }
 
