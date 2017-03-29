@@ -1,10 +1,15 @@
 package org.cs5431_client.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileLog {
     private int fileId;
     private List<FileLogEntry> logEntries;
+
+    public FileLog() {
+        logEntries = new ArrayList<>();
+    }
 
     public void addLogEntry(FileLogEntry logEntry){this.logEntries.add(logEntry); }
 
