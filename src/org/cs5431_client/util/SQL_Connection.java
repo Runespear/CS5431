@@ -111,7 +111,7 @@ public class SQL_Connection {
 
                 Timestamp currDate = new Timestamp(System.currentTimeMillis());
                 createFolder.setInt (1, 0);
-                createFolder.setInt (2, 1); //TODO: what to set as parent folder id?
+                createFolder.setInt (2, 0); //TODO: what to set as parent folder id?
                 createFolder.setString (3, username);
                 createFolder.setString   (4, Integer.toString(0));
                 createFolder.setTimestamp (5, currDate);
