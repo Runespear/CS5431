@@ -374,7 +374,7 @@ public class FileViewController implements Initializable {
         fileController = new FileController(user,sslSocket);
         userController = new UserController(user,sslSocket);
         currParent = user.getUserParentFolder();
-        initFakeFiles();
+        //initFakeFiles();
         populateListView();
     }
 
