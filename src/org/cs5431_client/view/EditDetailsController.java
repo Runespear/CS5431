@@ -1,7 +1,11 @@
 package org.cs5431_client.view;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -10,8 +14,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.UserController;
+import org.cs5431_client.model.User;
 import org.cs5431_client.util.Validator;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,8 +124,27 @@ public class EditDetailsController implements Initializable {
                 messages.add("Passwords should be at least 16 characters " +
                         "long.");
             } else {
-                userController.changePassword(oldPassword, newPassword);
-                messages.add("Password successfully changed.");
+                Task<Integer> task = new Task<Integer>() {
+                    @Override
+                    protected Integer call() throws Exception {
+                        return userController.changePassword(oldPassword, newPassword);
+                    }
+                };
+                task.setOnFailed(t -> {
+                    messages.add("Wrong password.");
+                });
+                task.setOnSucceeded(t -> {
+                    messages.add("Password successfully changed.");
+                });
+                Thread th = new Thread(task);
+                th.setDaemon(true);
+                th.start();
+                task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                    if(newValue != null) {
+                        Exception ex = (Exception) newValue;
+                        ex.printStackTrace();
+                    }
+                });
             }
         }
 

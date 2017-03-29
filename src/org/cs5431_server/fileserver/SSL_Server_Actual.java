@@ -40,6 +40,10 @@ public class SSL_Server_Actual extends Thread {
                         response = login(jsonObject, sqlConnection);
                         sendJson(response);
                         break;
+                    case "changePwd":
+                        response = changePwd(jsonObject, sqlConnection);
+                        sendJson(response);
+                        break;
                     case "upload":
                         response = upload(jsonObject, sqlConnection);
                         sendJson(response);
@@ -156,6 +160,27 @@ public class SSL_Server_Actual extends Thread {
         JSONObject jsonErr = new JSONObject();
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Login failed");
+        return jsonErr;
+    }
+
+    private JSONObject changePwd(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        String newHashedPwd = jsonObject.getString("newHashedPwd");
+        String pwdSalt = sqlConnection.getSalt(jsonObject.getString
+                ("username"));
+        if (pwdSalt != null) {
+            String newEncPwd = hash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
+            JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd);
+            if (verification != null) {
+                System.out.println("chaning pwd: " + verification);
+                return verification;
+            }
+        }
+
+        System.out.println("Sending error -- unable to authenticate");
+        JSONObject jsonErr = new JSONObject();
+        jsonErr.put("msgType", "error");
+        jsonErr.put("message", "Change password failed");
         return jsonErr;
     }
 
