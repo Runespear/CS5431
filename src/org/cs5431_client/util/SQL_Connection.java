@@ -872,6 +872,7 @@ public class SQL_Connection {
 
                     while (rs.next()) {
                         JSONObject log = new JSONObject();
+                        log.put("msgType", "getFileLogAck");
                         log.put("uid", rs.getInt(1));
                         log.put("lastModified", rs.getTimestamp(2));
                         log.put("actionType", rs.getString(3));

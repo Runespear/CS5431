@@ -432,7 +432,6 @@ public class FileViewController implements Initializable {
             System.out.println("Succeeded with " + task.getValue().size() +
                     " children");
             List<FileSystemObject> children = task.getValue();
-            System.out.print("look here" + children);
             ObservableList<FileSystemObject> observableList =
                     FXCollections.observableArrayList();
             observableList.setAll(children);
