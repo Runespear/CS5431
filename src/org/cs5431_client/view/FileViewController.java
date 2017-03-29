@@ -180,13 +180,22 @@ public class FileViewController implements Initializable {
         File fileToUpload = fileChooser.showOpenDialog(stage);
 
         if (fileToUpload != null) {
-            try {
-                fileController.uploadFile(fileToUpload, currParent);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //currParent.addChild(new org.cs5431_client.model.File
-                    //(fileToUpload.getName(), currParent, user.getId(), fileToUpload.length(), ""));
+            Task<org.cs5431_client.model.File> task = new Task<org.cs5431_client.model.File>() {
+                @Override
+                protected org.cs5431_client.model.File call() throws Exception {
+                    return fileController.uploadFile(fileToUpload, currParent);
+                }
+            };
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                if(newValue != null) {
+                    Exception ex = (Exception) newValue;
+                    ex.printStackTrace();
+                }
+            });
         }
         populateListView();
     }
@@ -195,29 +204,24 @@ public class FileViewController implements Initializable {
      * Downloads the file that is currently highlighted from the server.
      */
     private void downloadFile() {
-        /*FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-        org.cs5431_client.model.File file = fileController.download(fso.getId());
-        //TODO use file somehow
-
-        //TODO: remove after demo: simply to demo our tcp connection
-        Task task = new Task<Void>() {
+        FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
+        Task<org.cs5431_client.model.File> task = new Task<org.cs5431_client.model.File>() {
             @Override
-            public Void call() {
-                //SIMULATE A FILE DOWNLOAD
-                client_tcp clientTcp = new client_tcp();
-                clientTcp.start();
-                try {
-                    clientTcp.connectToServer();
-                    clientTcp.requestHardCodedFile();
-                } catch(IOException e) {
-                    System.err.println("Encountered IOException when trying to " +
-                            "connect to server");
-                    e.printStackTrace();
-                }
-                return null;
+            protected org.cs5431_client.model.File call() throws Exception {
+                return fileController.download(fso.getId());
             }
         };
-        new Thread(task).start();*/
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                //TODO alert?
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
     }
 
     /**
@@ -405,17 +409,27 @@ public class FileViewController implements Initializable {
     }
 
     private void populateListView() {
-        List<FileSystemObject> children = fileController.getChildren(currParent);
+        Task<List<FileSystemObject>> task = new Task<List<FileSystemObject>>() {
+            @Override
+            protected List<FileSystemObject> call() throws Exception {
+                return fileController.getChildren(currParent);
+            }
+        };
+        task.setOnSucceeded(t -> {
+            List<FileSystemObject> children = task.getValue();
+            ObservableList<FileSystemObject> observableList =
+                    FXCollections.observableArrayList();
+            observableList.setAll(children);
 
-        ObservableList<FileSystemObject> observableList =
-                FXCollections.observableArrayList();
-        observableList.setAll(children);
+            fileList.setItems(observableList);
+            fileList.setCellFactory(listView -> new FileViewCell(fileController));
 
-        fileList.setItems(observableList);
-        fileList.setCellFactory(listView -> new FileViewCell(fileController));
-
-        fileList.setVisible(!children.isEmpty());
-        fileList.setDisable(children.isEmpty());
+            fileList.setVisible(!children.isEmpty());
+            fileList.setDisable(children.isEmpty());
+            });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
     }
     
     private void showAppropriateImages(boolean fileSelected, boolean

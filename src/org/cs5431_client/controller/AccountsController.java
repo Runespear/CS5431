@@ -242,17 +242,6 @@ public class AccountsController {
         System.out.println(str);
         w.write(str + '\n');
         w.flush();
-
-        /*ObjectOutputStream out_to_Client = new ObjectOutputStream(sslSocket.getOutputStream());
-        TransmittedFile file_to_send = new TransmittedFile();
-        file_to_send.jsonString = json.toString();
-        out_to_Client.writeObject(file_to_send);
-        System.out.println("sent json");
-
-
-        ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
-        oos.writeObject(json.toString());
-        System.out.println("sent json");*/
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
