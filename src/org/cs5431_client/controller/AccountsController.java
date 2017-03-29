@@ -120,14 +120,8 @@ public class AccountsController {
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();
-        try {
-            th.join();
-            return ret[0];
-        } catch (InterruptedException e) {
-            System.err.println("interrupted accounts thread");
-            e.printStackTrace();
-        }
-        return null;
+
+        return ret[0];
     }
 
     private byte[] SHA256(String msg) {
@@ -223,6 +217,7 @@ public class AccountsController {
                     allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
                     sendJson(allegedUser);
+                    System.out.println("waiting to receive json...");
                     JSONObject user = receiveJson();
 
                     if (user.getString("msgType").equals("loginAck")) {
@@ -277,6 +272,7 @@ public class AccountsController {
         TransmittedFile file_to_send = new TransmittedFile();
         file_to_send.jsonString = json.toString();
         out_to_Client.writeObject(file_to_send);
+        System.out.println("sent json");
 
 
         ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
