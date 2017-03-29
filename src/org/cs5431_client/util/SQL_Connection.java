@@ -638,8 +638,10 @@ public class SQL_Connection {
                         getIv.setInt(2, uid);
                         ResultSet fileIV = getKey.executeQuery();
 
-                        fso.put("encKey", encRS.getString(1));
-                        fso.put("fileIV", fileIV.getString(1));
+                        if (encRS.next() && fileIV.next()) {
+                            fso.put("encKey", encRS.getString(1));
+                            fso.put("fileIV", fileIV.getString(1));
+                        }
 
                         files.put(fso);
                     }
