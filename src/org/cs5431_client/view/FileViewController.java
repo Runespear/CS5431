@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.cs5431_client.controller.FileController;
@@ -218,23 +219,30 @@ public class FileViewController implements Initializable {
      */
     private void downloadFile() {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-                return fileController.download(fso.getId(), fso.getFileName());
-            }
-        };
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Choose folder to download to");
+        File dir = directoryChooser.showDialog(stage);
 
-        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
-            if(newValue != null) {
-                //TODO alert?
-                Exception ex = (Exception) newValue;
-                ex.printStackTrace();
-            }
-        });
+        if (dir != null) {
+            Task<Boolean> task = new Task<Boolean>() {
+                @Override
+                protected Boolean call() throws Exception {
+                    return fileController.download(fso.getId(), fso
+                            .getFileName(), dir);
+                }
+            };
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                if(newValue != null) {
+                    //TODO alert?
+                    Exception ex = (Exception) newValue;
+                    ex.printStackTrace();
+                }
+            });
+        }
     }
 
     /**

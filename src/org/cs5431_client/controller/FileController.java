@@ -160,14 +160,16 @@ public class FileController {
     }
 
     private boolean decryptFile(byte[] encFile, String fileName,
-                             SecretKey secretKey, IvParameterSpec ivSpec)
+                             SecretKey secretKey, IvParameterSpec ivSpec,
+                                java.io.File directory)
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException, IOException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
         byte[] fileDec = cipher.doFinal(encFile);
-        FileOutputStream fos = new FileOutputStream(fileName);
+        java.io.File fileToWrite = new java.io.File(directory, fileName);
+        FileOutputStream fos = new FileOutputStream(fileToWrite);
         fos.write(fileDec);
         fos.close();
         return true;
@@ -309,7 +311,7 @@ public class FileController {
      * @param fsoId is ID of the file to be downloaded
      * @return true if successful
      */
-    public boolean download(int fsoId, String fsoName) throws
+    public boolean download(int fsoId, String fsoName, java.io.File dir) throws
         IOException, JSONException, NoSuchAlgorithmException,
         NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
         InvalidAlgorithmParameterException, IllegalBlockSizeException,
@@ -334,7 +336,7 @@ public class FileController {
             String ivString = fileAck.getString("fileIV");
             IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
                     .decode(ivString));
-            return decryptFile(fsoBytes, fsoName, fileSK, iv);
+            return decryptFile(fsoBytes, fsoName, fileSK, iv, dir);
         } else if (fileAck.getString("msgType").equals("error")) {
             throw new FileControllerException(fileAck.getString("message"));
         } else {
