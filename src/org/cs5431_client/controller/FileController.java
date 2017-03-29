@@ -2,6 +2,7 @@ package org.cs5431_client.controller;
 
 import javafx.concurrent.Task;
 import org.cs5431_client.model.*;
+import org.cs5431_client.model.File;
 import org.cs5431_client.util.SQL_Connection;
 import org.cs5431_client.util.Validator;
 import org.json.JSONArray;
@@ -11,7 +12,7 @@ import org.json.JSONObject;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.security.*;
 import java.sql.Timestamp;
@@ -68,63 +69,54 @@ public class FileController {
      * @return file created if the user file upload to server was successful; false otherwise
      */
     public File uploadFile(java.io.File file, Folder parentFolder) throws
-            IOException, JSONException, NoSuchAlgorithmException,
-            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException {
-        Task<File> task = new Task<File>() {
-        @Override
-        protected File call() throws Exception {
-            String name = file.getName();
-            long size = file.length();
-            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        IOException, JSONException, NoSuchAlgorithmException,
+        NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+        InvalidAlgorithmParameterException, IllegalBlockSizeException,
+        BadPaddingException, ClassNotFoundException {
 
-            JSONObject fso = new JSONObject();
-            fso.put("uid", user.getId());
-            fso.put("parentFolderid", parentFolder.getId());
+        String name = file.getName();
+        long size = file.length();
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            fso.put("size", String.valueOf(size));
-            fso.put("lastModified", lastModified);
-            fso.put("isFile", true);
+        JSONObject fso = new JSONObject();
+        fso.put("uid", user.getId());
+        fso.put("parentFolderid", parentFolder.getId());
 
-            KeyGenerator kg = KeyGenerator.getInstance("AES");
-            kg.init(128, new SecureRandom());
-            SecretKey fileSK = kg.generateKey();
-            SecureRandom random = new SecureRandom();
-            byte iv[] = new byte[16];
-            random.nextBytes(iv);
-            IvParameterSpec ivSpec = new IvParameterSpec(iv);
-            fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
+        fso.put("size", String.valueOf(size));
+        fso.put("lastModified", lastModified);
+        fso.put("isFile", true);
 
-            byte[] encFile = encryptFile(file, fileSK, ivSpec);
-            //TODO change to more appropriate format?
-            fso.put("file", Base64.getEncoder().encodeToString(encFile));
-            String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
-                    fileSK, ivSpec));
-            fso.put("fsoName", encFileName);
-            String encFileKey = Base64.getEncoder().encodeToString
-                    (encFileSecretKey(fileSK, user.getPubKey()));
-            fso.put("encSK", encFileKey);
+        KeyGenerator kg = KeyGenerator.getInstance("AES");
+        kg.init(128, new SecureRandom());
+        SecretKey fileSK = kg.generateKey();
+        SecureRandom random = new SecureRandom();
+        byte iv[] = new byte[16];
+        random.nextBytes(iv);
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
 
+        byte[] encFile = encryptFile(file, fileSK, ivSpec);
+        //TODO change to more appropriate format?
+        fso.put("file", Base64.getEncoder().encodeToString(encFile));
+        String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
+                fileSK, ivSpec));
+        fso.put("fsoName", encFileName);
+        String encFileKey = Base64.getEncoder().encodeToString
+                (encFileSecretKey(fileSK, user.getPubKey()));
+        fso.put("encSK", encFileKey);
 
-            int fileSentid = sendFSO(fso, file);
-            if (fileSentid != -1) {
-                File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
-                parentFolder.addChild(fileSent);
-                fileSent.addPriv(PrivType.EDIT, user.getId());
-                System.out.print(parentFolder.getChildren());
-                return fileSent;
-            }
-            return null;
+        sendJson(fso);
+        JSONObject fsoAck = receiveJson();
+        int fileSentid = fsoAck.getInt("fsoid");
+
+        if (fileSentid != -1) {
+            File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
+            parentFolder.addChild(fileSent);
+            fileSent.addPriv(PrivType.EDIT, user.getId());
+            System.out.print(parentFolder.getChildren());
+            return fileSent;
         }
-        };
-        final File[] ret = new File[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        return null;
     }
 
     private byte[] encryptFile(java.io.File file, SecretKey secretKey,
@@ -217,8 +209,10 @@ public class FileController {
             fso.put("isFile", false);
 
             //TODO: create IV for name, file, enc file and name, generate sk
+            sendJson(fso);
+            JSONObject fsoAck = receiveJson();
+            int folderSentId = fsoAck.getInt("fsoid");
 
-            int folderSentId = sendFSO(fso, null);
             if (folderSentId != -1) {
                 Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
                 folderSent.addPriv(PrivType.EDIT, user.getId()); //TODO: do we even need this
@@ -319,10 +313,9 @@ public class FileController {
         fileReq.put("fsoid", fsoId);
         fileReq.put("uid", user.getId());
 
-        //TODO send fileReq here
+        sendJson(fileReq);
+        JSONObject fileAck = receiveJson();
 
-        //TODO change fileAck to get from socket
-        JSONObject fileAck = new JSONObject();
         if (fileAck.getString("messageType").equals("downloadAck")) {
             int fsoID = fileAck.getInt("fsoid");
             String ivString = fileAck.getString("fileIV");
@@ -366,52 +359,37 @@ public class FileController {
      * @return List of fso if download is successful; false null
      */
     public List<FileSystemObject> getChildren(Folder parentFolder) {
-        Task<List<FileSystemObject>> task = new Task<List<FileSystemObject>>() {
-            @Override
-            protected List<FileSystemObject> call() throws Exception {
-                int parentFolderid = parentFolder.getId();
-                ArrayList<FileSystemObject> children = new ArrayList<>();
-                JSONObject json = new JSONObject();
-                json.put("msgType", "getChildren");
-                json.put("fsoid", parentFolderid);
-                json.put("uid", user.getId());
-                JSONArray jsonChildren = sql_connection.getChildren(json);
-                for (int i = 0; i < jsonChildren.length(); i++) {
-                    JSONObject c = jsonChildren.getJSONObject(i);
-                    try {
-                        int id = c.getInt("id");
-                        String name = c.getString("name");
-                        String size = c.getString("size");
-                        Long longSize = Long.valueOf(size);
-                        Timestamp lastModified = (Timestamp) c.get("lastModified");
+        int parentFolderid = parentFolder.getId();
+        ArrayList<FileSystemObject> children = new ArrayList<>();
+        JSONObject json = new JSONObject();
+        json.put("msgType", "getChildren");
+        json.put("fsoid", parentFolderid);
+        json.put("uid", user.getId());
+        JSONArray jsonChildren = sql_connection.getChildren(json);
+        for (int i = 0; i < jsonChildren.length(); i++) {
+            JSONObject c = jsonChildren.getJSONObject(i);
+            try {
+                int id = c.getInt("id");
+                String name = c.getString("name");
+                String size = c.getString("size");
+                Long longSize = Long.valueOf(size);
+                Timestamp lastModified = (Timestamp) c.get("lastModified");
 
-                        String type = c.getString("FSOType");
-                        FileSystemObject child;
-                        if (type.equals("FOLDER")) {
-                            child = new Folder(id, name, parentFolder,
-                                    lastModified);
-                        } else {
-                            child = new File(id, name, parentFolder,
-                                    longSize, lastModified);
-                        }
-                        children.add(child);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                String type = c.getString("FSOType");
+                FileSystemObject child;
+                if (type.equals("FOLDER")) {
+                    child = new Folder(id, name, parentFolder,
+                            lastModified);
+                } else {
+                    child = new File(id, name, parentFolder,
+                            longSize, lastModified);
                 }
-                return children;
+                children.add(child);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        };
-        final Object[] ret = {null};
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-            Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        if (ret[0] instanceof List<?>) {
-            return (List<FileSystemObject>) ret[0];
         }
-        return null;
+        return children;
     }
 
     /**
@@ -509,31 +487,6 @@ public class FileController {
 
     public void rollback(int rollbackToThisfileId) {
         //TODO: how???
-    }
-
-    /**
-     * Sends the file/folder to the server with the serverIP attribute of the fileController.
-     * @param file File to be sent to the server
-     * @param fso Refers to the json of the file/folder to be sent to the db
-     * @return the id of the file/folder that is uploaded to server if successful; null otherwise
-     */
-    private int sendFSO(JSONObject fso, java.io.File file) {
-        Task<Integer> task = new Task<Integer>() {
-            @Override
-            protected Integer call() throws Exception {
-                int fsoid = sql_connection.createFso(fso);
-                return fsoid;
-            }
-        };
-        final Integer[] ret = new Integer[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
-        //msgType = “upload”, uid, parentFolderid, size, lastModified, isFile, fileIV, fsoNameIV, file, fsoName, encSK
-
     }
 
     /**
@@ -639,6 +592,28 @@ public class FileController {
         th.start();
 
         return ret[0];
+    }
+
+    private void sendJson(JSONObject json) throws IOException {
+        System.out.println("sending json");
+
+        BufferedWriter w = new BufferedWriter(
+                new OutputStreamWriter(sslSocket.getOutputStream()));
+        String str = json.toString();
+        System.out.println(str);
+        w.write(str + '\n');
+        w.flush();
+    }
+
+    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(sslSocket.getInputStream()));
+        String str;
+        str = r.readLine();
+        System.out.println(str);
+        System.out.flush();
+
+        return new JSONObject(str);
     }
 
     public class FileControllerException extends Exception {
