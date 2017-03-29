@@ -41,8 +41,7 @@ public abstract class FileSystemObject {
 
     public Timestamp getLastModified() {
         if (lastModified == null)
-            return null;
-        return new Timestamp(lastModified.getTime()); }
+            return null;        return new Timestamp(lastModified.getTime()); }
 
     public int getId() {return id;}
 

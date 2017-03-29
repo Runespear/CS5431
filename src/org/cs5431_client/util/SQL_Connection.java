@@ -13,6 +13,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 
+import static org.cs5431_client.util.Constants.DEBUG_MODE;
+
 public class SQL_Connection {
 
     private int port = 3306;
@@ -35,11 +37,14 @@ public class SQL_Connection {
 
     public boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-        System.out.println("Connecting to database...");
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            System.out.println("Database connected!");
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
             PreparedStatement verifyUniqueness;
 
             String checkUsername = "SELECT U.uid FROM Users U WHERE U.username = ?";
@@ -49,10 +54,14 @@ public class SQL_Connection {
                 verifyUniqueness.setString(1, username);
                 ResultSet rs = verifyUniqueness.executeQuery();
                 if (rs.next()) {
-                    System.out.println("The username is not unique");
+                    if (DEBUG_MODE) {
+                        System.out.println("The username is not unique");
+                    }
                     return false;
                 } else {
-                    System.out.println("The username is unique");
+                    if (DEBUG_MODE) {
+                        System.out.println("The username is unique");
+                    }
                     return true;
                 }
             } catch (SQLException e) {
@@ -72,13 +81,16 @@ public class SQL_Connection {
     public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-        System.out.println("Connecting to database...");
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
         int uid;
         JSONObject jsonUser;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            System.out.println("Database connected!");
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
             PreparedStatement createUser = null;
             PreparedStatement createFolder = null;
             PreparedStatement createLog = null;
@@ -118,7 +130,9 @@ public class SQL_Connection {
                 createFolder.setTimestamp (5, currDate);
                 createFolder.setBoolean    (6, false);
                 createFolder.executeUpdate();
-                System.out.println("created folder");
+                if (DEBUG_MODE) {
+                    System.out.println("created folder");
+                }
 
                 ResultSet rs = createFolder.getGeneratedKeys();
                 rs.next();
@@ -133,8 +147,9 @@ public class SQL_Connection {
                 createUser.setString    (8, pwdSalt);
                 createUser.setString    (9, privKeySalt);
                 createUser.executeUpdate();
-                System.out.println("created user");
-
+                if (DEBUG_MODE) {
+                    System.out.println("created user");
+                }
                 rs = createUser.getGeneratedKeys();
                 rs.next();
                 uid = rs.getInt(1);
@@ -143,12 +158,16 @@ public class SQL_Connection {
                 createLog.setTimestamp(3, currDate);
                 createLog.setString(4, "CREATE_USER");
                 createLog.executeUpdate();
-                System.out.println("created log");
+                if (DEBUG_MODE) {
+                    System.out.println("created log");
+                }
 
                 addPermission.setInt(1, folderid);
                 addPermission.setInt(2, uid);
                 addPermission.executeUpdate();
-                System.out.println("added owner as editor");
+                if (DEBUG_MODE) {
+                    System.out.println("added owner as editor");
+                }
 
                 connection.commit();
 
@@ -208,13 +227,15 @@ public class SQL_Connection {
     public int createFso (JSONObject fso) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-        System.out.println("Connecting to database...");
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
         int fsoid;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-
-            System.out.println("Database connected!");
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
             int uid = fso.getInt("uid");
             int parentFolderid = fso.getInt("parentFolderid");
             String fsoName = fso.getString("fsoName");
@@ -262,7 +283,9 @@ public class SQL_Connection {
                     createFso.setBoolean(6, isFile);
                     createFso.setString(7, fsoNameIV);
                     createFso.executeUpdate();
-                    System.out.println("created folder");
+                    if (DEBUG_MODE) {
+                        System.out.println("created folder");
+                    }
 
                     ResultSet rs = createFso.getGeneratedKeys();
                     rs.next();
@@ -273,7 +296,9 @@ public class SQL_Connection {
                     addKey.setString(3, sk);
                     addKey.setString(4, fileIV);
                     addKey.executeUpdate();
-                    System.out.println("added added sk");
+                    if (DEBUG_MODE) {
+                        System.out.println("added added sk");
+                    }
 
                     String actionType;
                     if (isFile) {
@@ -288,12 +313,16 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, actionType);
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
 
                     addPermission.setInt(1, fsoid);
                     addPermission.setInt(2, uid);
                     addPermission.executeUpdate();
-                    System.out.println("added owner as editor");
+                    if (DEBUG_MODE) {
+                        System.out.println("added owner as editor");
+                    }
 
                     if (isFile) {
                         String file = fso.getString("file");
@@ -307,7 +336,9 @@ public class SQL_Connection {
                         addFile.setString(2, "./files/" + uid + "/" + fsoid);
                         addFile.setString(3, fileIV);
                         addFile.executeUpdate();
-                        System.out.println("added file path");
+                        if (DEBUG_MODE) {
+                            System.out.println("added file path");
+                        }
                     }
 
                     connection.commit();
@@ -361,12 +392,15 @@ public class SQL_Connection {
     public JSONObject authenticate(JSONObject allegedUser, String encPwd) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-        System.out.println("Connecting to database...");
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
         JSONObject user = new JSONObject();
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            System.out.println("Database connected!");
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
             PreparedStatement verifyUser = null;
 
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
@@ -382,7 +416,9 @@ public class SQL_Connection {
 
                 if (rs.next()) {
                     //user valid
-                    System.out.println("Valid user");
+                    if (DEBUG_MODE) {
+                        System.out.println("Valid user");
+                    }
                     int uid = rs.getInt(1);
                     int parentFolderid = rs.getInt(2);
                     String email = rs.getString(3);
@@ -411,18 +447,23 @@ public class SQL_Connection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println("Invalid user");
+        if (DEBUG_MODE) {
+            System.out.println("Invalid user");
+        }
         return null;
     }
 
     /** Gets pwdSalt of pwd associated with username **/
     public String getSalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-        System.out.println("Connecting to database...");
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            System.out.println("Database connected!");
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
             PreparedStatement getSalt = null;
 
             String selectSalt = "SELECT U.pwdSalt FROM Users U WHERE U.username = ?";
@@ -461,11 +502,13 @@ public class SQL_Connection {
 
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-            System.out.println("Connecting to database...");
-
+            if (DEBUG_MODE) {
+                System.out.println("Connecting to database...");
+            }
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
                 PreparedStatement removeUser = null;
                 PreparedStatement createLog = null;
 
@@ -480,15 +523,18 @@ public class SQL_Connection {
                     removeUser.setString(1, username);
                     removeUser.setString(2, password);
                     removeUser.executeUpdate();
-                    System.out.println("deleted user");
-
+                    if (DEBUG_MODE) {
+                        System.out.println("deleted user");
+                    }
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setTimestamp(3, lastModified);
                     createLog.setString(4, "DELETE");
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
 
                     connection.commit();
                     return uid;
@@ -528,11 +574,14 @@ public class SQL_Connection {
         JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-            System.out.println("Connecting to database...");
+            if (DEBUG_MODE) {
+                System.out.println("Connecting to database...");
+            }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
                 PreparedStatement changePwd = null;
                 PreparedStatement createLog = null;
                 JSONObject response = new JSONObject();
@@ -549,7 +598,9 @@ public class SQL_Connection {
                     changePwd.setInt(2, uid);
                     changePwd.setString(3, username);
                     changePwd.executeUpdate();
-                    System.out.println("changed password");
+                    if (DEBUG_MODE) {
+                        System.out.println("changed password");
+                    }
 
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
@@ -557,7 +608,9 @@ public class SQL_Connection {
                     createLog.setTimestamp(3, lastModified);
                     createLog.setString(4, "CHANGE_PWD");
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
 
                     connection.commit();
                     response.put("msgType", "changePwdAck");
@@ -602,11 +655,14 @@ public class SQL_Connection {
         if (hasPermission) {
             JSONArray files = new JSONArray();
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-            System.out.println("Connecting to database...");
+            if (DEBUG_MODE) {
+                System.out.println("Connecting to database...");
+            }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
                 PreparedStatement getFiles = null;
                 PreparedStatement getKey = null;
                 PreparedStatement getIv = null;
@@ -689,7 +745,9 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("User does not have permission to edit");
+        if (DEBUG_MODE) {
+            System.out.println("User does not have permission to edit");
+        }
         return null;
     }
 
@@ -700,11 +758,13 @@ public class SQL_Connection {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-            System.out.println("Connecting to database...");
-
+            if (DEBUG_MODE) {
+                System.out.println("Connecting to database...");
+            }
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
                 PreparedStatement getPath = null;
                 PreparedStatement getKey = null;
 
@@ -729,7 +789,9 @@ public class SQL_Connection {
 
                     if (rs.next()) {
                         fso.put("msgType","downloadAck");
-                        System.out.println("THE PATH IS: " + rs.getString(1));
+                        if (DEBUG_MODE) {
+                            System.out.println("THE PATH IS: " + rs.getString(1));
+                        }
                         File reqFile = new File(rs.getString(1));
                         FileInputStream inputStream = new FileInputStream
                                 (reqFile);
@@ -740,7 +802,9 @@ public class SQL_Connection {
                                 (filebytes));
 
                         fso.put("fsoid", fsoid);
-                        System.out.println("fileic" + rs.getString(2));
+                        if (DEBUG_MODE) {
+                            System.out.println("fileic" + rs.getString(2));
+                        }
                         fso.put("fileIV", rs.getString(2));
                     }
                     return fso;
@@ -768,7 +832,9 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("User does not have permission to the file");
+        if (DEBUG_MODE) {
+            System.out.println("User does not have permission to the file");
+        }
         return null;
     }
 
@@ -776,11 +842,14 @@ public class SQL_Connection {
      * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
     public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
-
-        System.out.println("Connecting to database...");
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            System.out.println("Database connected!");
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
             PreparedStatement verifyEditors = null;
             PreparedStatement verifyViewers = null;
 
@@ -885,14 +954,19 @@ public class SQL_Connection {
         int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can view file logs");
+            if (DEBUG_MODE) {
+                System.out.println("Can view file logs");
+            }
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement getFileLog = null;
-
-            System.out.println("Connecting to database...");
+            if (DEBUG_MODE) {
+                System.out.println("Connecting to database...");
+            }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
 
                 String selectLog = "SELECT L.uid, L.lastModified, L.actionType FROM FileLog L WHERE L.fsoid = ?";
                 JSONArray fileLogArray = new JSONArray();
@@ -935,14 +1009,19 @@ public class SQL_Connection {
     public JSONArray getUserLog(int fsoid, int uid) {
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can view file logs");
+            if (DEBUG_MODE) {
+                System.out.println("Can view file logs");
+            }
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement getFileLog = null;
-
-            System.out.println("Connecting to database...");
+            if (DEBUG_MODE) {
+                System.out.println("Connecting to database...");
+            }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
 
                 String selectLog = "SELECT L.uid, L.lastModified, L.actionType FROM FileLog L WHERE L.fsoid = ?";
                 getFileLog = connection.prepareStatement(selectLog);
@@ -985,13 +1064,17 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can rename fso");
+            if (DEBUG_MODE) {
+                System.out.println("Can rename fso");
+            }
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement renameFso = null;
             PreparedStatement createLog = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
                 String updateName = "UPDATE FileSystemObjects SET fsoName = ? WHERE fsoid =  ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
@@ -1003,7 +1086,9 @@ public class SQL_Connection {
                     renameFso.setString(1, newName);
                     renameFso.setInt(2, fsoid);
                     renameFso.executeUpdate();
-                    System.out.println("renamed fso");
+                    if (DEBUG_MODE) {
+                        System.out.println("renamed fso");
+                    }
 
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
@@ -1012,8 +1097,9 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "RENAME");
                     createLog.executeUpdate();
-                    System.out.println("created log");
-
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
                     connection.commit();
                     return fsoid;
 
@@ -1041,7 +1127,9 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("failed to rename");
+        if (DEBUG_MODE) {
+            System.out.println("failed to rename");
+        }
         return -1;
     }
 
@@ -1054,8 +1142,11 @@ public class SQL_Connection {
             PreparedStatement getPubKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
-                String selectPubKey = "SELECT U.pubKey FROM Users U WHERE U.uid = ?";
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
+                String selectPubKey = "SELECT U.pubKey FROM Users U WHERE U" +
+                        ".uid = ?";
                 String selectSecretKey = "SELECT F.encKey FROM Users FsoEncryption F WHERE F.uid = ? AND F.fsoid = ?";
 
                 JSONObject output = new JSONObject();
@@ -1125,8 +1216,11 @@ public class SQL_Connection {
             PreparedStatement shareFsoKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
-                String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
+                if (DEBUG_MODE) {
+                    System.out.println("Database connected!");
+                }
+                String insertEditor = "INSERT INTO Editors (fsoid, uid) " +
+                        "values (?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
                 String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
@@ -1146,7 +1240,9 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
 
                     shareFsoKey.setInt(1, fsoid);
                     shareFsoKey.setInt(2, uid);
@@ -1183,7 +1279,9 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("failed to add priv");
+        if (DEBUG_MODE) {
+            System.out.println("failed to add priv");
+        }
         return -1;
     }
 
@@ -1202,7 +1300,8 @@ public class SQL_Connection {
             PreparedStatement shareFsoKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE)
+System.out.println("Database connected!");
                 String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
@@ -1223,7 +1322,8 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE)
+System.out.println("created log");
 
                     shareFsoKey.setInt(1, fsoid);
                     shareFsoKey.setInt(2, uid);
@@ -1260,7 +1360,8 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("failed to add priv");
+        if (DEBUG_MODE)
+System.out.println("failed to add priv");
         return -1;
     }
 
@@ -1275,7 +1376,8 @@ public class SQL_Connection {
             PreparedStatement removeKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE)
+System.out.println("Database connected!");
                 String deleteViewer = "DELETE FROM Viewers WHERE fsoid = ? AND uid = ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
@@ -1298,12 +1400,14 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE)
+System.out.println("created log");
 
                     removeKey.setInt(1, fsoid);
                     removeKey.setInt(2, uid);
                     removeKey.executeUpdate();
-                    System.out.println("removed key");
+                    if (DEBUG_MODE)
+System.out.println("removed key");
 
                     connection.commit();
                     return rmUid;
@@ -1335,7 +1439,8 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("failed to remove viewer");
+        if (DEBUG_MODE)
+System.out.println("failed to remove viewer");
         return -1;
     }
 
@@ -1344,14 +1449,16 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            System.out.println("Can rename fso");
+            if (DEBUG_MODE)
+System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
             PreparedStatement rmEditor = null;
             PreparedStatement createLog = null;
             PreparedStatement removeKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                System.out.println("Database connected!");
+                if (DEBUG_MODE)
+System.out.println("Database connected!");
                 String deleteEditor = "DELETE FROM Editors WHERE fsoid = ? AND uid = ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
@@ -1374,12 +1481,14 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    System.out.println("created log");
+                    if (DEBUG_MODE)
+System.out.println("created log");
 
                     removeKey.setInt(1, fsoid);
                     removeKey.setInt(2, uid);
                     removeKey.executeUpdate();
-                    System.out.println("removed key");
+                    if (DEBUG_MODE)
+System.out.println("removed key");
 
                     connection.commit();
                     return rmUid;
@@ -1411,7 +1520,8 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        System.out.println("failed to remove editor");
+        if (DEBUG_MODE)
+System.out.println("failed to remove editor");
         return -1;
     }
 }
