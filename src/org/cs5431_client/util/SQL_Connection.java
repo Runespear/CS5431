@@ -266,7 +266,7 @@ public class SQL_Connection {
                     addKey.setInt(1, fsoid);
                     addKey.setInt(2, uid);
                     addKey.setString(3, sk);
-                    addFile.setString(4, fileIV);
+                    addKey.setString(4, fileIV);
                     addKey.executeUpdate();
                     System.out.println("added added sk");
 
