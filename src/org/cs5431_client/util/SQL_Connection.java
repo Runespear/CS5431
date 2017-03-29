@@ -152,6 +152,12 @@ public class SQL_Connection {
 
                 connection.commit();
 
+                File userDir = new File("./files/"+uid+"/");
+                if (!userDir.exists()) {
+                    if (!userDir.mkdir())
+                        return null;
+                }
+
                 jsonUser = new JSONObject();
                 jsonUser.put("msgType", "registrationAck");
                 jsonUser.put("username", username);

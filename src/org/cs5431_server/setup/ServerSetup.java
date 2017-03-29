@@ -125,6 +125,12 @@ public class ServerSetup {
             privateKeyOS.writeObject(keyPair.getPrivate());
             privateKeyOS.close();
 
+            File fileDir = new File("./files/");
+            if (!fileDir.exists()) {
+                if (!fileDir.mkdir())
+                    throw new IOException("Could not create ./files/ folder");
+            }
+
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         }
