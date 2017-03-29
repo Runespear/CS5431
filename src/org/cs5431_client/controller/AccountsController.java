@@ -282,7 +282,7 @@ public class AccountsController {
             int id = c.getInt("id");
             String name = c.getString("name");
             String size = c.getString("size");
-            long longSize = Long.valueOf(size);
+            long longSize = Long.parseLong(size);
             Timestamp lastModified = Timestamp.valueOf(c.getString("lastModified"));
             String type = c.getString("FSOType");
             if (type.equals("FOLDER")) {
