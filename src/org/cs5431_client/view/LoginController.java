@@ -151,9 +151,6 @@ public class LoginController implements Initializable {
 
     void setConnectionDetails(String server, String serverName, String sslPort)
             throws Exception {
-        System.out.println(server);
-        System.out.println(serverName);
-        System.out.println(sslPort);
         Socket s = SSL_Client_Methods.connect_SSLServerSocket(server,
                 Integer.parseInt(sslPort), "./user-config/"+serverName+".jks");
         accountsController.setSocket(s);

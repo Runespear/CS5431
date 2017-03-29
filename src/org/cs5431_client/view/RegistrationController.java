@@ -126,6 +126,7 @@ public class RegistrationController implements Initializable {
                     alert.setContentText("Could not create new user. Please " +
                             "try again.");
                     alert.showAndWait();
+                    return;
                 }
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Registration successful");

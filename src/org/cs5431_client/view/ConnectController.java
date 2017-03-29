@@ -87,7 +87,6 @@ public class ConnectController implements Initializable {
                 if (!cert.exists()) {
                     throw new CertException("Could not create new certificate.");
                 }
-                System.out.println("!!!");
                 SSL_Client_Methods.importCert(serverName);
             }
 
