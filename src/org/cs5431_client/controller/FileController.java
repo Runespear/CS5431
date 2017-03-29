@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.cs5431_client.model.FileActionType.DOWNLOAD;
 import static org.cs5431_client.model.FileActionType.OVERWRITE;
+import static org.cs5431_client.util.Constants.DEBUG_MODE;
 
 //TODO: should a FileController control all files or just a single file?
 public class FileController {
@@ -96,18 +97,21 @@ public class FileController {
         String encFileKey = Base64.getEncoder().encodeToString
                 (encFileSecretKey(fileSK, user.getPubKey()));
         fso.put("encSK", encFileKey);
-        System.out.println("Done encrypting and stuff");
         sendJson(fso);
         JSONObject fsoAck = receiveJson();
         if (fsoAck.get("msgType").equals("uploadAck")) {
             int fileSentid = fsoAck.getInt("fsoid");
-            System.out.println(fileSentid);
+            if (DEBUG_MODE) {
+                System.out.println(fileSentid);
+            }
             if (fileSentid != -1) {
                 File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
 
                 parentFolder.addChild(fileSent);
                 fileSent.addPriv(PrivType.EDIT, user.getId());
-                System.out.print(parentFolder.getChildren());
+                if (DEBUG_MODE) {
+                    System.out.print(parentFolder.getChildren());
+                }
                 return fileSent;
             } else {
                 throw new UploadFailException("Failed to add file");
@@ -355,8 +359,10 @@ public class FileController {
                 new InputStreamReader(sslSocket.getInputStream()));
         String str;
         str = r.readLine();
-        System.out.println(str);
-        System.out.flush();
+        if (DEBUG_MODE) {
+            System.out.println(str);
+            System.out.flush();
+        }
 
         return new JSONArray(str);
     }
@@ -602,12 +608,15 @@ public class FileController {
     }
 
     private void sendJson(JSONObject json) throws IOException {
-        System.out.println("sending json");
-
+        if (DEBUG_MODE) {
+            System.out.println("sending json");
+        }
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(sslSocket.getOutputStream()));
         String str = json.toString();
-        System.out.println(str);
+        if (DEBUG_MODE) {
+            System.out.println(str);
+        }
         w.write(str + '\n');
         w.flush();
     }
@@ -617,8 +626,10 @@ public class FileController {
                 new InputStreamReader(sslSocket.getInputStream()));
         String str;
         str = r.readLine();
-        System.out.println(str);
-        System.out.flush();
+        if (DEBUG_MODE) {
+            System.out.println(str);
+            System.out.flush();
+        }
 
         return new JSONObject(str);
     }

@@ -14,6 +14,8 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
 
+import static org.cs5431_client.util.Constants.DEBUG_MODE;
+
 public class SSL_Server_Actual extends Thread {
     protected Socket s;
     private SQL_Connection sqlConnection;
@@ -27,7 +29,9 @@ public class SSL_Server_Actual extends Thread {
         try {
         while(true) {
                 JSONObject jsonObject = receiveJson();
-                System.out.println("received json: " + jsonObject.toString());
+                if (DEBUG_MODE) {
+                    System.out.println("received json: " + jsonObject.toString());
+                }
                 String type = jsonObject.getString("msgType");
                 JSONObject response;
                 switch (type) {
@@ -36,7 +40,9 @@ public class SSL_Server_Actual extends Thread {
                         sendJson(response);
                         break;
                     case "login":
-                        System.out.println("trying to login");
+                        if (DEBUG_MODE) {
+                            System.out.println("trying to login");
+                        }
                         response = login(jsonObject, sqlConnection);
                         sendJson(response);
                         break;
@@ -92,9 +98,11 @@ public class SSL_Server_Actual extends Thread {
                 }
             }
         } catch (NullPointerException | SocketException e) {
-            System.err.println("Probably the client disconnecting, if so this" +
-                    " can be safely ignored:");
-            e.printStackTrace();
+            if (DEBUG_MODE) {
+                System.err.println("Probably the client disconnecting, if so this" +
+                        " can be safely ignored:");
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -105,27 +113,37 @@ public class SSL_Server_Actual extends Thread {
                 new InputStreamReader(s.getInputStream()));
         String str;
         str = r.readLine();
-        System.out.println(str);
-        System.out.flush();
+        if (DEBUG_MODE) {
+            System.out.println(str);
+            System.out.flush();
+        }
         return new JSONObject(str);
     }
 
     private void sendJson (JSONObject json) throws IOException {
-        System.out.println("sending json");
+        if (DEBUG_MODE) {
+            System.out.println("sending json");
+        }
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(s.getOutputStream()));
         String str = json.toString();
-        System.out.println(str);
+        if (DEBUG_MODE) {
+            System.out.println(str);
+        }
         w.write(str + '\n');
         w.flush();
     }
 
     private void sendJsonArray(JSONArray json) throws IOException {
-        System.out.println("sending json");
+        if (DEBUG_MODE) {
+            System.out.println("sending json");
+        }
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(s.getOutputStream()));
         String str = json.toString();
-        System.out.println(str);
+        if (DEBUG_MODE) {
+            System.out.println(str);
+        }
         w.write(str + '\n');
         w.flush();
     }
@@ -160,7 +178,9 @@ public class SSL_Server_Actual extends Thread {
                 return auth;
             }
         }
-        System.out.println("Sending json error - username does not exist");
+        if (DEBUG_MODE) {
+            System.out.println("Sending json error - username does not exist");
+        }
         JSONObject jsonErr = new JSONObject();
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Login failed");
@@ -197,12 +217,15 @@ public class SSL_Server_Actual extends Thread {
             String newEncPwd = hash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd);
             if (verification != null) {
-                System.out.println("chaning pwd: " + verification);
+                if (DEBUG_MODE) {
+                    System.out.println("chaning pwd: " + verification);
+                }
                 return verification;
             }
         }
-
-        System.out.println("Sending error -- unable to authenticate");
+        if (DEBUG_MODE) {
+            System.out.println("Sending error -- unable to authenticate");
+        }
         JSONObject jsonErr = new JSONObject();
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Change password failed");

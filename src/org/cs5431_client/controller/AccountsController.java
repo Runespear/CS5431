@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 
+import static org.cs5431_client.util.Constants.DEBUG_MODE;
+
 /**
  * A controller for all accounts.
  * The controller for an individual account is called UserController.
@@ -123,8 +125,10 @@ public class AccountsController {
         byte salt[] = new byte[32];
         random.nextBytes(salt);
         byte[] hashedPW = hash(pwd, salt);
-        System.out.println("On Client side: key generated from pwd and salt:");
-        System.out.println(Base64.getEncoder().encodeToString(hashedPW));
+        if (DEBUG_MODE) {
+            System.out.println("On Client side: key generated from pwd and salt:");
+            System.out.println(Base64.getEncoder().encodeToString(hashedPW));
+        }
         byte returnedValues[][] = new byte[2][128];
         returnedValues[0] = hashedPW;
         returnedValues[1] = salt;
@@ -168,8 +172,10 @@ public class AccountsController {
             InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
-        System.out.println("From server: key generated from pwd and salt:");
-        System.out.println(Base64.getEncoder().encodeToString(key));
+        if (DEBUG_MODE) {
+            System.out.println("From server: key generated from pwd and salt:");
+            System.out.println(Base64.getEncoder().encodeToString(key));
+        }
         SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
@@ -200,7 +206,9 @@ public class AccountsController {
             allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
             sendJson(allegedUser);
-            System.out.println("waiting to receive json...");
+            if (DEBUG_MODE) {
+                System.out.println("waiting to receive json...");
+            }
             JSONObject user = receiveJson();
 
             if (user.getString("msgType").equals("loginAck")) {
@@ -234,12 +242,16 @@ public class AccountsController {
     }
 
     private void sendJson(JSONObject json) throws IOException {
-        System.out.println("sending json");
+        if (DEBUG_MODE) {
+            System.out.println("sending json");
+        }
 
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(sslSocket.getOutputStream()));
         String str = json.toString();
-        System.out.println(str);
+        if (DEBUG_MODE) {
+            System.out.println(str);
+        }
         w.write(str + '\n');
         w.flush();
     }
@@ -249,9 +261,10 @@ public class AccountsController {
                 new InputStreamReader(sslSocket.getInputStream()));
         String str;
         str = r.readLine();
-        System.out.println(str);
-        System.out.flush();
-
+        if (DEBUG_MODE) {
+            System.out.println(str);
+            System.out.flush();
+        }
         return new JSONObject(str);
     }
 
@@ -261,8 +274,10 @@ public class AccountsController {
                 new InputStreamReader(sslSocket.getInputStream()));
         String str;
         str = r.readLine();
-        System.out.println(str);
-        System.out.flush();
+        if (DEBUG_MODE) {
+            System.out.println(str);
+            System.out.flush();
+        }
 
         return new JSONArray(str);
     }
