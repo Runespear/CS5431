@@ -71,13 +71,11 @@ public class AccountsController {
                             SHA256(password)));
 
                     KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
-
                             BouncyCastleProvider());
                     kpg.initialize(4096, new SecureRandom());
                     KeyPair keyPair = kpg.generateKeyPair();
                     user.put("pubKey", Base64.getEncoder().encodeToString
-                            (keyPair
-                            .getPublic().getEncoded()));
+                            (keyPair.getPublic().getEncoded()));
 
                     //encrypt secret key using password based key
                     //symmetric, uses AES

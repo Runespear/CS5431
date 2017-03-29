@@ -19,11 +19,6 @@ public class SSL_Client_Methods {
 
         System.setProperty("javax.net.ssl.trustStore", storeName);
 
-        Scanner scanner = new Scanner (System.in);
-        System.out.println("Type in your password to access the truststore: \n");
-        String pass = scanner.nextLine(); //Obtain user's command
-        System.setProperty("javax.net.ssl.trustStorePassword", pass);
-
         SocketFactory f = SSLSocketFactory.getDefault();
         Socket s = f.createSocket(host, Port_Number);
         return s;
@@ -76,6 +71,11 @@ public class SSL_Client_Methods {
         String[] options = command.trim().split("\\s+");
         System.out.println(command);
         sun.security.tools.keytool.Main.main(options);
+
+        Scanner scanner = new Scanner (System.in);
+        System.out.println("Type in your password to access the truststore:");
+        String pass = scanner.nextLine(); //Obtain user's command
+        System.setProperty("javax.net.ssl.trustStorePassword", pass);
     }
 
     public static void sendFile(Socket s, String filepath, String filename) throws Exception{
