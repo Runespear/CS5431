@@ -82,36 +82,15 @@ public class ConnectController implements Initializable {
 
             File cert = new File("./user-config/"+serverName+".cer");
             if (!cert.exists()) {
-                Task<Void> task = new Task<Void>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        Socket s = new Socket(server, Integer.parseInt(outPort));
+                Socket s = new Socket(server, Integer.parseInt(outPort));
 
-
-                        String filepath = "./user-config/";
-                        verify_and_receive_Cert(serverPubKey, s, filepath);
-                        if (!cert.exists()) {
-                            throw new CertException("Could not create new " +
-                                    "certificate.");
-                        }
-                        SSL_Client_Methods.importCert(serverName);
-                        return null;
-                    }
-                };
-                Thread th = new Thread(task);
-                th.setDaemon(true);
-                th.start();
-                task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
-                    if(newValue != null) {
-                        Exception ex = (Exception) newValue;
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Certificate receive error");
-                        alert.setContentText(ex.getMessage() + "\n Please check with your" +
-                                " server admin.");
-                        alert.showAndWait();
-                        ex.printStackTrace();
-                    }
-                });
+                String filepath = "./user-config/";
+                verify_and_receive_Cert(serverPubKey, s, filepath);
+                if (!cert.exists()) {
+                    throw new CertException("Could not create new " +
+                            "certificate.");
+                }
+                SSL_Client_Methods.importCert(serverName);
             }
 
             goToLogin(e, server, serverName, sslPort);
