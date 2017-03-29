@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
@@ -198,7 +199,7 @@ public class SQL_Connection {
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * @return fsoid of created fso **/
-    public int createFso(JSONObject fso) {
+    public int createFso (JSONObject fso) throws FileNotFoundException, IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431";
 
@@ -218,9 +219,10 @@ public class SQL_Connection {
             String fileIV = fso.getString("fileIV");
             String fsoNameIV = fso.getString("fsoNameIV");
 
-            //TODO: what to do with all of this? ruixin? brandon?
             String file = fso.getString("file");
-
+            FileOutputStream fos = new FileOutputStream("./files/" + fsoName);
+            fos.write(file.getBytes());
+            fos.close();
 
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
 
@@ -680,7 +682,7 @@ public class SQL_Connection {
         return null;
     }
 
-    public JSONObject getFilePath(JSONObject json) {
+    public JSONObject getFilePath(JSONObject json) throws Exception {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
 
@@ -704,9 +706,20 @@ public class SQL_Connection {
                     JSONObject fso = new JSONObject();
 
                     if (rs.next()) {
+                        fso.put("msgType","downloadAck");
+                        //GIVE ME THE PATH HERE: change "hi"
+                        File reqFile = new File("hi");
+                        FileInputStream inputStream = new FileInputStream
+                                (reqFile);
+                        byte[] filebytes = new byte[inputStream.available()];
+                        inputStream.read(filebytes);
+                        inputStream.close();
+                        fso.put("encFile", Base64.getEncoder().encodeToString
+                                (filebytes));
+
                         fso.put("path", rs.getInt(1));
-                        fso.put("id", fsoid);
-                        fso.put("fsoIV", rs.getString(2));
+                        fso.put("fsoid", fsoid);
+                        fso.put("fileIV", rs.getString(2));
 
                         if (rs.getBoolean(5)) {
                             fso.put("FSOType", "FILE");
