@@ -619,6 +619,7 @@ public class SQL_Connection {
                     while (rs.next()) {
                         JSONObject fso = new JSONObject();
                         int fsoid = rs.getInt(1);
+                        fso.put("msgType", "getChildrenAck");
                         fso.put("id", fsoid);
                         fso.put("name", rs.getString(2));
                         fso.put("size", rs.getString(3));
