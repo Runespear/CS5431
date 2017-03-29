@@ -1,16 +1,19 @@
 package org.cs5431_client.controller;
 
 import javafx.concurrent.Task;
+import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
+import org.bouncycastle.crypto.params.KeyParameter;
 import org.cs5431_client.model.FileSystemObject;
 import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.Socket;
 import java.security.*;
@@ -18,6 +21,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A controller for an individual account, including both admins and users.
@@ -45,31 +49,58 @@ public class UserController {
      */
     public int changePassword(String oldPassword, String newPassword) throws ChangePwdFailException {
         try {
-            JSONObject allegedUser = new JSONObject();
-            String username = user.getUsername();
-            allegedUser.put("msgType", "changePwd");
-            allegedUser.put("uid", user.getId());
-            allegedUser.put("username", username);
-            allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(oldPassword)));
-            allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
+            JSONObject getSalt = new JSONObject();
+            getSalt.put("msgType", "getPrivKeySalt");
+            getSalt.put("username", user.getUsername());
+            sendJson(getSalt);
+            JSONObject saltResponse = receiveJson();
 
-            sendJson(allegedUser);
-            System.out.println("waiting to receive json...");
-            JSONObject user = receiveJson();
-            System.out.println("change pwd json recived: " + user);
+            if (saltResponse.getString("msgType").equals("getPrivKeySaltAck")) {
+                String strSalt = saltResponse.getString("privKeySalt");
+                byte[] privKeySalt = Base64.getDecoder().decode(strSalt);
+                JSONObject allegedUser = new JSONObject();
 
-            if (user.getString("msgType").equals("changePwdAck")) {
-                int uid = user.getInt("uid");
-                return uid;
-            } else if (user.getString("msgType").equals("error")) {
-                throw new ChangePwdFailException(user.getString
+                byte keyAndSalt[][] = pwdBasedKey(newPassword, privKeySalt);
+                byte key[] = keyAndSalt[0];
+                SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+                IvParameterSpec iv = new IvParameterSpec(new byte[16]);
+                cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+                byte encryptedKey[] = cipher.doFinal(user.getPrivKey().getEncoded());
+                allegedUser.put("newPrivKey", Base64.getEncoder().encodeToString(encryptedKey));
+
+                String username = user.getUsername();
+                allegedUser.put("msgType", "changePwd");
+                allegedUser.put("uid", user.getId());
+                allegedUser.put("username", username);
+                allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(oldPassword)));
+                allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
+
+                sendJson(allegedUser);
+                System.out.println("waiting to receive json...");
+                JSONObject user = receiveJson();
+                System.out.println("change pwd json recived: " + user);
+
+                if (user.getString("msgType").equals("changePwdAck")) {
+                    int uid = user.getInt("uid");
+                    return uid;
+                } else if (user.getString("msgType").equals("error")) {
+                    throw new ChangePwdFailException(user.getString
+                            ("message"));
+                } else {
+                    throw new ChangePwdFailException("Received bad response " +
+                            "from server");
+                }
+            } else if (saltResponse.getString("msgType").equals("error")) {
+                throw new ChangePwdFailException(saltResponse.getString
                         ("message"));
             } else {
                 throw new ChangePwdFailException("Received bad response " +
                         "from server");
             }
-            //TODO: create relevant controllers? and pass them? ???
-        } catch (JSONException | IOException | ClassNotFoundException e) {
+        } catch (JSONException | IOException | ClassNotFoundException | NoSuchAlgorithmException
+                | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException
+                | BadPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
         return -1;
@@ -126,6 +157,26 @@ public class UserController {
         byte[] hashedPwd = new byte[sha256.getDigestSize()];
         sha256.doFinal(hashedPwd, 0);
         return hashedPwd;
+    }
+
+    private byte[][] pwdBasedKey(String pwd, byte[] salt) {
+        byte[] hashedPW = hash(pwd, salt);
+        System.out.println("On Client side: key generated from pwd and salt:");
+        System.out.println(Base64.getEncoder().encodeToString(hashedPW));
+        byte returnedValues[][] = new byte[2][128];
+        returnedValues[0] = hashedPW;
+        returnedValues[1] = salt;
+        return returnedValues;
+    }
+
+    private byte[] hash(String pwd, byte[] salt) {
+        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
+        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
+                pwd.toCharArray()), salt, 3000);
+        //TODO: 256 is currently the key length. Is this correct?
+        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
+                (128);
+        return kp.getKey();
     }
 
     private void sendJson(JSONObject json) throws IOException {
