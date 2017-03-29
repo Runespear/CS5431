@@ -429,6 +429,8 @@ public class FileViewController implements Initializable {
             }
         };
         task.setOnSucceeded(t -> {
+            System.out.println("Succeeded with " + task.getValue().size() +
+                    " children");
             List<FileSystemObject> children = task.getValue();
             System.out.print("look here" + children);
             ObservableList<FileSystemObject> observableList =

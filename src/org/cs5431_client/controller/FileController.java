@@ -385,7 +385,7 @@ public class FileController {
      * @return List of fso if download is successful; false null
      */
     public List<FileSystemObject> getChildren(Folder parentFolder) throws
-            IOException, ClassNotFoundException {
+            Exception {
         int parentFolderid = parentFolder.getId();
         ArrayList<FileSystemObject> children = new ArrayList<>();
         JSONObject json = new JSONObject();
@@ -398,10 +398,18 @@ public class FileController {
             JSONObject c = jsonChildren.getJSONObject(i);
             try {
                 int id = c.getInt("id");
-                String name = c.getString("name");
+                String encName = c.getString("name");
                 String size = c.getString("size");
                 Long longSize = Long.valueOf(size);
                 Timestamp lastModified = (Timestamp) c.get("lastModified");
+                String ivNameString = c.getString("fsoNameIV");
+                String encKeyString = c.getString("encKey");
+                SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
+                                (encKeyString), user.getPrivKey());
+                IvParameterSpec ivSpec = new IvParameterSpec(Base64.getDecoder()
+                        .decode(ivNameString));
+                String name = decryptFileName(Base64.getDecoder().decode
+                                (encName), fileSK, ivSpec);
 
                 String type = c.getString("FSOType");
                 FileSystemObject child;
