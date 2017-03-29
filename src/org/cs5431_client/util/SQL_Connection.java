@@ -519,10 +519,10 @@ public class SQL_Connection {
         return -1;
     }
 
-    public int changePassword(int uid, String username, String password, String newPwd) {
-        JSONObject allegedUser = new JSONObject();
-        allegedUser.put("username", username);
-        //allegedUser.put("pwd", password);
+    public JSONObject changePassword(JSONObject allegedUser, String newEncPwd) {
+        int uid = allegedUser.getInt("uid");
+        String username = allegedUser.getString("username");
+        String password = allegedUser.getString("hashedPwd");
         String salt = getSalt(username);
         String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
@@ -535,8 +535,9 @@ public class SQL_Connection {
                 System.out.println("Database connected!");
                 PreparedStatement changePwd = null;
                 PreparedStatement createLog = null;
+                JSONObject response = new JSONObject();
 
-                String updatePwd = "UPDATE Users SET pwd = ? WHERE username = ? AND pwd = ?";
+                String updatePwd = "UPDATE Users SET pwd = ? WHERE uid = ? AND username = ?";
                 String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?)";
 
@@ -544,9 +545,9 @@ public class SQL_Connection {
                     createLog = connection.prepareStatement(insertLog);
                     changePwd = connection.prepareStatement(updatePwd);
                     connection.setAutoCommit(false);
-                    changePwd.setString(1, newPwd);
-                    changePwd.setString(2, username);
-                    changePwd.setString(2, password);
+                    changePwd.setString(1, newEncPwd);
+                    changePwd.setInt(2, uid);
+                    changePwd.setString(3, username);
                     changePwd.executeUpdate();
                     System.out.println("changed password");
 
@@ -559,7 +560,9 @@ public class SQL_Connection {
                     System.out.println("created log");
 
                     connection.commit();
-                    return uid;
+                    response.put("msgType", "changePwdAck");
+                    response.put("uid", uid);
+                    return response;
                 } catch (SQLException e) {
                     e.printStackTrace();
                     if (connection != null) {
@@ -570,7 +573,7 @@ public class SQL_Connection {
                             excep.printStackTrace();
                         }
                     }
-                    return -1;
+                    return null;
                 } finally {
                     if (changePwd != null) {
                         changePwd.close();
@@ -584,7 +587,7 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        return -1;
+        return null;
     }
 
     //TODO: test this please

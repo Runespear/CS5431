@@ -1,10 +1,22 @@
 package org.cs5431_client.controller;
 
 import javafx.concurrent.Task;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.cs5431_client.model.FileSystemObject;
+import org.cs5431_client.model.Folder;
 import org.cs5431_client.model.User;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.io.*;
 import java.net.Socket;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -31,19 +43,36 @@ public class UserController {
      * @param oldPassword Old password to be changed from
      * @param newPassword Password to be changed to.
      */
-    public void changePassword(String oldPassword, String newPassword) {
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                //TODO: connect to server
-                //TODO: decide what it should return
-                //TODO: server side old password check
-                return null;
+    public int changePassword(String oldPassword, String newPassword) throws ChangePwdFailException {
+        try {
+            JSONObject allegedUser = new JSONObject();
+            String username = user.getUsername();
+            allegedUser.put("msgType", "changePwd");
+            allegedUser.put("uid", user.getId());
+            allegedUser.put("username", username);
+            allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(oldPassword)));
+            allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
+
+            sendJson(allegedUser);
+            System.out.println("waiting to receive json...");
+            JSONObject user = receiveJson();
+            System.out.println("change pwd json recived: " + user);
+
+            if (user.getString("msgType").equals("changePwdAck")) {
+                int uid = user.getInt("uid");
+                return uid;
+            } else if (user.getString("msgType").equals("error")) {
+                throw new ChangePwdFailException(user.getString
+                        ("message"));
+            } else {
+                throw new ChangePwdFailException("Received bad response " +
+                        "from server");
             }
-        };
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+            //TODO: create relevant controllers? and pass them? ???
+        } catch (JSONException | IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     /**
@@ -87,5 +116,44 @@ public class UserController {
             return (List<FileSystemObject>) ret[0];
         }
         return null;
+    }
+
+    private byte[] SHA256(String msg) {
+        SHA256Digest sha256 = new SHA256Digest();
+        byte msgByte[] = msg.getBytes();
+        sha256.update(msgByte, 0, msgByte.length);
+        Arrays.fill(msgByte, (byte)0 );    //an attempt to zero out pwd
+        byte[] hashedPwd = new byte[sha256.getDigestSize()];
+        sha256.doFinal(hashedPwd, 0);
+        return hashedPwd;
+    }
+
+    private void sendJson(JSONObject json) throws IOException {
+        System.out.println("sending json");
+
+        BufferedWriter w = new BufferedWriter(
+                new OutputStreamWriter(sslSocket.getOutputStream()));
+        String str = json.toString();
+        System.out.println(str);
+        w.write(str + '\n');
+        w.flush();
+    }
+
+    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
+        System.out.println("received json to change password");
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(sslSocket.getInputStream()));
+        String str;
+        str = r.readLine();
+        System.out.println(str);
+        System.out.flush();
+
+        return new JSONObject(str);
+    }
+
+    public class ChangePwdFailException extends Exception {
+        public ChangePwdFailException (String message) {
+            super(message);
+        }
     }
  }
