@@ -15,6 +15,7 @@ import org.cs5431_client.model.User;
 import org.cs5431_client.util.SSL_Client_Methods;
 import org.cs5431_client.util.Validator;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -79,34 +80,28 @@ public class LoginController implements Initializable {
         } else {
             try {
                 User user = accountsController.login(username, password);
-                if (user == null) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Login error");
-                    alert.setContentText("Could not login to server. Please " +
-                            "try again or register an account.");
-                    alert.showAndWait();
-                } else {
-                    Node node = (Node) e.getSource();
-                    Stage stage = (Stage) node.getScene().getWindow();
-                    Scene scene = stage.getScene();
+                Node node = (Node) e.getSource();
+                Stage stage = (Stage) node.getScene().getWindow();
+                Scene scene = stage.getScene();
 
-                    final URL r = getClass().getResource("file_view.fxml");
-                    FXMLLoader fxmlLoader = new FXMLLoader(r);
-                    Parent root = fxmlLoader.load();
-                    Client.fileViewNode = root;
-                    FileViewController fvc = fxmlLoader.getController();
-                    //AccountsController accountsController = new AccountsController();
-                    fvc.setUserDetails(user, sslSocket);
-                    fvc.setStage(stage);
-                    scene.setRoot(root);
-                }
-
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                final URL r = getClass().getResource("file_view.fxml");
+                FXMLLoader fxmlLoader = new FXMLLoader(r);
+                Parent root = fxmlLoader.load();
+                Client.fileViewNode = root;
+                FileViewController fvc = fxmlLoader.getController();
+                fvc.setUserDetails(user, sslSocket);
+                fvc.setStage(stage);
+                scene.setRoot(root);
+            } catch (AccountsController.LoginFailException e1) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Login error");
+                alert.setContentText("Could not login to server. Please " +
+                        "try again or register an account.");
+                alert.showAndWait();
+            } catch (IOException e2) {
+                e2.printStackTrace();
             }
         }
-
-
     }
 
     /**
