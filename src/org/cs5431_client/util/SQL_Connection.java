@@ -281,7 +281,7 @@ public class SQL_Connection {
 
                     String file = fso.getString("file");
                     FileOutputStream fos = new FileOutputStream("./files/" + uid + "/" + fsoid);
-                    fos.write(file.getBytes());
+                    fos.write(Base64.getDecoder().decode(file));
                     fos.close();
 
                     createLog.setInt(1, 0);
