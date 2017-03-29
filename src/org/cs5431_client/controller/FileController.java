@@ -69,10 +69,10 @@ public class FileController {
      * @return file created if the user file upload to server was successful; false otherwise
      */
     public File uploadFile(java.io.File file, Folder parentFolder) throws
-        IOException, JSONException, NoSuchAlgorithmException,
-        NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
-        InvalidAlgorithmParameterException, IllegalBlockSizeException,
-        BadPaddingException, ClassNotFoundException {
+            IOException, JSONException, NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, ClassNotFoundException, UploadFailException {
         String name = file.getName();
         long size = file.length();
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -121,9 +121,17 @@ public class FileController {
                 fileSent.addPriv(PrivType.EDIT, user.getId());
                 System.out.print(parentFolder.getChildren());
                 return fileSent;
+            } else {
+                throw new UploadFailException("Failed to add file");
             }
         }
         return null;
+    }
+
+    public class UploadFailException extends Exception {
+        public UploadFailException (String message) {
+            super(message);
+        }
     }
 
     private byte[] encryptFile(java.io.File file, SecretKey secretKey,
