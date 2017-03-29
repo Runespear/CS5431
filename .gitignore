@@ -109,7 +109,7 @@ certfilename.cer
 keystorefilename.jks
 truststorefilename.jks
 
-./files/*
+files/*
 
 #===============
 # Maven target
