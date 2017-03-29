@@ -266,27 +266,38 @@ public class AccountsController {
 
     private void sendJson(JSONObject json) throws IOException {
         System.out.println("sending json");
-        ObjectOutputStream out_to_Client = new ObjectOutputStream(sslSocket.getOutputStream());
+
+        BufferedWriter w = new BufferedWriter(
+                new OutputStreamWriter(sslSocket.getOutputStream()));
+        String str = json.toString();
+        w.write(str + '\n');
+        w.flush();
+
+        /*ObjectOutputStream out_to_Client = new ObjectOutputStream(sslSocket.getOutputStream());
         TransmittedFile file_to_send = new TransmittedFile();
         file_to_send.jsonString = json.toString();
         out_to_Client.writeObject(file_to_send);
 
-/*
+
         ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
         oos.writeObject(json.toString());
         System.out.println("sent json");*/
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        ObjectInputStream object_in = new ObjectInputStream(sslSocket.getInputStream());
-        TransmittedFile received = (TransmittedFile) object_in.readObject();
-        String jsonStr = received.jsonString;
-        System.out.println("received json " + jsonStr);
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(sslSocket.getInputStream()));
+        String str;
+        while ((str = r.readLine()) != null) {
+            System.out.println(str);
+            System.out.flush();
+        }
+
+        return new JSONObject(str);
         /*
         ObjectInputStream ois = new ObjectInputStream(sslSocket.getInputStream());
         String strJson = (String) ois.readObject();
         JSONObject json = new JSONObject(strJson);*/
-        return new JSONObject(jsonStr);
     }
 
     public Folder getFolderFromId(int folderId, int uid) {

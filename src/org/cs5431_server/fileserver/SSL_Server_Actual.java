@@ -25,6 +25,7 @@ public class SSL_Server_Actual extends Thread {
     public void run(){
         try {
             JSONObject jsonObject = receiveJson();
+            System.out.println("received json: " + jsonObject.toString());
             String type = jsonObject.getString("msgType");
             JSONObject response;
             switch (type) {
@@ -33,6 +34,7 @@ public class SSL_Server_Actual extends Thread {
                     sendJson(response);
                     break;
                 case "login":
+                    System.out.println("trying to login");
                     response = login(jsonObject, sqlConnection);
                     sendJson(response);
                     break;
@@ -84,18 +86,30 @@ public class SSL_Server_Actual extends Thread {
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        ObjectInputStream object_in = new ObjectInputStream(s.getInputStream());
-        TransmittedFile received = (TransmittedFile) object_in.readObject();
-        String json = received.jsonString;
-        System.out.println("received " + json);
-        return new JSONObject(json);
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(s.getInputStream()));
+        String str;
+        while ((str = r.readLine()) != null) {
+            System.out.println(str);
+            System.out.flush();
+            System.out.println("in while loop");
+        }
+        System.out.println("out of while loop");
+        return new JSONObject(str);
     }
 
     private void sendJson (JSONObject json) throws IOException {
-        ObjectOutputStream out_to_Client = new ObjectOutputStream(s.getOutputStream());
+        System.out.println("sending json");
+        BufferedWriter w = new BufferedWriter(
+                new OutputStreamWriter(s.getOutputStream()));
+        String str = json.toString();
+        w.write(str + '\n');
+        w.flush();
+
+        /*ObjectOutputStream out_to_Client = new ObjectOutputStream(s.getOutputStream());
         TransmittedFile file_to_send = new TransmittedFile();
         file_to_send.jsonString = json.toString();
-        out_to_Client.writeObject(file_to_send);
+        out_to_Client.writeObject(file_to_send);*/
     }
 
     private void sendJsonArray(JSONArray json) throws IOException {
