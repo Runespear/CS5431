@@ -25,7 +25,10 @@ public abstract class FileSystemObject {
         this.fileLog = new FileLog();
         //TODO: date modified set by DB timestamp
         //TODO: remove following line that's currently used for display purposes
-        this.lastModified = new Timestamp(lastModified.getTime());
+        if (lastModified != null)
+            this.lastModified = new Timestamp(lastModified.getTime());
+        else
+            this.lastModified = null;
     }
 
     public List<Integer> getEditors() {return this.editorIds; }
@@ -36,8 +39,10 @@ public abstract class FileSystemObject {
 
     public long getFileSize() {return size; }
 
-    public Timestamp getLastModified() {return new Timestamp(lastModified
-            .getTime()); }
+    public Timestamp getLastModified() {
+        if (lastModified == null)
+            return null;
+        return new Timestamp(lastModified.getTime()); }
 
     public int getId() {return id;}
 
