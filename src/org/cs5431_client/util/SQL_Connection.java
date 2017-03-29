@@ -219,11 +219,6 @@ public class SQL_Connection {
             String fileIV = fso.getString("fileIV");
             String fsoNameIV = fso.getString("fsoNameIV");
 
-            String file = fso.getString("file");
-            FileOutputStream fos = new FileOutputStream("./files/" + fsoName);
-            fos.write(file.getBytes());
-            fos.close();
-
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
 
             if (hasPermission) {
@@ -278,6 +273,12 @@ public class SQL_Connection {
                     } else {
                         actionType = "CREATE_FOLDER";
                     }
+
+                    String file = fso.getString("file");
+                    FileOutputStream fos = new FileOutputStream("./files/" + uid + "/" + fsoid);
+                    fos.write(file.getBytes());
+                    fos.close();
+
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -292,7 +293,7 @@ public class SQL_Connection {
                     System.out.println("added owner as editor");
 
                     addPath.setInt(1, fsoid);
-                    addPath.setString(2, "/" + uid + "/" + fsoid); //TODO: correct?
+                    addPath.setString(2, "./files/" + uid + "/" + fsoid); //TODO: correct?
 
                     if (isFile) {
                         addFile = connection.prepareStatement(insertFilePath);
