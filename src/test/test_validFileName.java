@@ -34,10 +34,30 @@ class test_validFileName {
     @Test
     void test_validFileName_tooLong(){
 
-        boolean ThirtyChar = Validator.validFileName("qwertyuiopasdfghjklzxcvbnmqwer");
-        boolean ThirtyOneChar = Validator.validFileName("qwertyuiopasdfghjklzxcvbnmqwert");
+        String base = "";
+        int j = 0;
+        for (int i = 0; i<255;i++){
+            j = 97+i%26;
+            base+= Character.toString( (char) j );
+        }
+        //System.out.println(base);
+        //System.out.println(base.length());
 
-        assertEquals(true, ThirtyChar);
-        assertEquals(false, ThirtyOneChar);
+        boolean Char255 = Validator.validFileName(base);
+        boolean Char256 = Validator.validFileName(base+"1");
+
+        assertEquals(true, Char255);
+        assertEquals(false, Char256);
+    }
+
+    @Test
+    void test_validFileName_tooShort(){
+        boolean onechar = Validator.validFileName("a");
+        boolean empty = Validator.validFileName("");
+        //boolean now = Validator.validFileName(null);
+
+        assertEquals(true, onechar);
+        assertEquals(false, empty);
+        //assertEquals(false , now);
     }
 }
