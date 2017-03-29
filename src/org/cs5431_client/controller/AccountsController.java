@@ -62,6 +62,7 @@ public class AccountsController {
             protected User call() throws Exception {
                 try {
                     JSONObject user = new JSONObject();
+                    user.put("msgType", "registration");
                     user.put("username", username);
                     user.put("email", email);
 
@@ -219,13 +220,14 @@ public class AccountsController {
             protected User call() throws Exception {
                 JSONObject allegedUser = new JSONObject();
                 try {
+                    allegedUser.put("msgType", "login");
                     allegedUser.put("username", username);
                     allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
                     sendJson(allegedUser);
                     JSONObject user = receiveJson();
 
-                    if (user.getString("messageType").equals("loginAck")) {
+                    if (user.getString("msgType").equals("loginAck")) {
                         int uid = user.getInt("uid");
                         //TODO get username?
                         int parentFolderid = user.getInt("parentFolderid");
@@ -238,7 +240,7 @@ public class AccountsController {
                         User currUser = new User(uid, username, email, parentFolder,
                                 privKey, pubKey);
                         return currUser;
-                    } else if (user.getString("messageType").equals("error")) {
+                    } else if (user.getString("msgType").equals("error")) {
                         throw new LoginFailException(user.getString
                                 ("message"));
                     } else {
@@ -265,18 +267,14 @@ public class AccountsController {
     }
 
     private void sendJson(JSONObject json) throws IOException {
-        OutputStreamWriter oos = new OutputStreamWriter(sslSocket.getOutputStream(), StandardCharsets.UTF_8);
-        oos.write(json.toString());
+        ObjectOutputStream oos = new ObjectOutputStream(sslSocket.getOutputStream());
+        oos.writeObject(json.toString());
+        System.out.println("sent json");
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        InputStreamReader ois = new InputStreamReader(sslSocket.getInputStream());
-        BufferedReader in = new BufferedReader(ois);
-        String strJson = "";
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            strJson += inputLine;
-        }
+        ObjectInputStream ois = new ObjectInputStream(sslSocket.getInputStream());
+        String strJson = (String) ois.readObject();
 
         JSONObject json = new JSONObject(strJson);
         return json;

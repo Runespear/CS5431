@@ -24,15 +24,8 @@ public class SSL_Server_Actual extends Thread {
 
     public void run(){
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            String strJson = "";
-            String inputLine;
-            while ((inputLine = br.readLine()) != null) {
-                strJson += inputLine;
-            }
-            JSONObject jsonObject = new JSONObject(strJson);
-
-            String type = jsonObject.getString("messageType");
+            JSONObject jsonObject = receiveJson();
+            String type = jsonObject.getString("msgType");
             JSONObject response;
             switch (type) {
                 case "registration":
@@ -92,12 +85,14 @@ public class SSL_Server_Actual extends Thread {
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-        return (JSONObject) ois.readObject();
+        String strJson = (String) ois.readObject();
+        System.out.println("received json");
+        return new JSONObject(strJson);
     }
 
     private void sendJson (JSONObject json) throws IOException {
         ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-        oos.writeObject(json);
+        oos.writeObject(json.toString());
     }
 
     private void sendJsonArray(JSONArray json) throws IOException {
@@ -136,7 +131,7 @@ public class SSL_Server_Actual extends Thread {
             sqlConnection) {
         int fsoid = sqlConnection.createFso(jsonObject);
         JSONObject response = new JSONObject();
-        response.put("messageType","uploadAck");
+        response.put("msgType","uploadAck");
         response.put("fsoid", fsoid);
         return response;
     }
@@ -205,7 +200,7 @@ public class SSL_Server_Actual extends Thread {
     private JSONObject makeErrJson(String message) {
         //TODO
         JSONObject response = new JSONObject();
-        response.put("messageType","error");
+        response.put("msgType","error");
         response.put("message", message);
         return response;
     }
