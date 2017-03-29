@@ -23,6 +23,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
+import static org.cs5431_client.util.Constants.DEBUG_MODE;
+
 /**
  * A controller for an individual account, including both admins and users.
  * The controller for all accounts is called AccountController.
@@ -77,9 +79,13 @@ public class UserController {
                 allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
 
                 sendJson(allegedUser);
-                System.out.println("waiting to receive json...");
+                if (DEBUG_MODE) {
+                    System.out.println("waiting to receive json...");
+                }
                 JSONObject user = receiveJson();
-                System.out.println("change pwd json recived: " + user);
+                if (DEBUG_MODE) {
+                    System.out.println("change pwd json recived: " + user);
+                }
 
                 if (user.getString("msgType").equals("changePwdAck")) {
                     int uid = user.getInt("uid");
@@ -161,8 +167,10 @@ public class UserController {
 
     private byte[][] pwdBasedKey(String pwd, byte[] salt) {
         byte[] hashedPW = hash(pwd, salt);
-        System.out.println("On Client side: key generated from pwd and salt:");
-        System.out.println(Base64.getEncoder().encodeToString(hashedPW));
+        if (DEBUG_MODE) {
+            System.out.println("On Client side: key generated from pwd and salt:");
+            System.out.println(Base64.getEncoder().encodeToString(hashedPW));
+        }
         byte returnedValues[][] = new byte[2][128];
         returnedValues[0] = hashedPW;
         returnedValues[1] = salt;
@@ -180,24 +188,31 @@ public class UserController {
     }
 
     private void sendJson(JSONObject json) throws IOException {
-        System.out.println("sending json");
-
+        if (DEBUG_MODE) {
+            System.out.println("sending json");
+        }
         BufferedWriter w = new BufferedWriter(
                 new OutputStreamWriter(sslSocket.getOutputStream()));
         String str = json.toString();
-        System.out.println(str);
+        if (DEBUG_MODE) {
+            System.out.println(str);
+        }
         w.write(str + '\n');
         w.flush();
     }
 
     private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        System.out.println("received json to change password");
+        if (DEBUG_MODE) {
+            System.out.println("received json to change password");
+        }
         BufferedReader r = new BufferedReader(
                 new InputStreamReader(sslSocket.getInputStream()));
         String str;
         str = r.readLine();
-        System.out.println(str);
-        System.out.flush();
+        if (DEBUG_MODE) {
+            System.out.println(str);
+            System.out.flush();
+        }
 
         return new JSONObject(str);
     }
