@@ -37,6 +37,22 @@ public class ServerView {
             System.out.println(fileName);
         }
         String serverName = scanner.nextLine();
+        boolean acceptName = false;
+
+        while (!acceptName) {
+            for (File f : configFiles) {
+                String fileName = f.getName();
+                int pos = fileName.lastIndexOf(".");
+                fileName = fileName.substring(0, pos);
+                if (serverName.equals(fileName)) {
+                    acceptName = true;
+                    break;
+                } else {
+                    System.out.println("Please enter a valid server name:");
+                    serverName = scanner.nextLine();
+                }
+            }
+        }
         System.out.println("Enter the username you use to login to the server:");
         String username = scanner.nextLine();
         System.out.println("Enter the password you use to login to the server:");

@@ -139,6 +139,7 @@ public class RegistrationController implements Initializable {
                 alert.setTitle("Registration failed");
                 alert.setContentText("Could not create new user. Please " +
                         "try again.");
+                alert.showAndWait();
             });
             Thread th = new Thread(task);
             th.setDaemon(true);
