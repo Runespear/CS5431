@@ -250,7 +250,6 @@ public class SQL_Connection {
                     createLog = connection.prepareStatement(insertLog);
                     addPermission = connection.prepareStatement(insertEditor);
                     addKey = connection.prepareStatement(insertKey);
-                    addPath = connection.prepareStatement(insertFilePath);
 
                     createFso.setInt(1, 0);
                     createFso.setInt(2, parentFolderid);
@@ -298,14 +297,11 @@ public class SQL_Connection {
                     addPermission.executeUpdate();
                     System.out.println("added owner as editor");
 
-                    addPath.setInt(1, fsoid);
-                    addPath.setString(2, "./files/" + uid + "/" + fsoid); //TODO: correct?
-                    addPath.setString(3, fileIV);
-
                     if (isFile) {
                         addFile = connection.prepareStatement(insertFilePath);
                         addFile.setInt(1, fsoid);
                         addFile.setString(2, "./files/" + uid + "/" + fsoid);
+                        addFile.setString(3, fileIV);
                         addFile.executeUpdate();
                         System.out.println("added file path");
                     }
