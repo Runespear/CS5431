@@ -205,9 +205,9 @@ public class FileViewController implements Initializable {
      */
     private void downloadFile() {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
-        Task<org.cs5431_client.model.File> task = new Task<org.cs5431_client.model.File>() {
+        Task<Boolean> task = new Task<Boolean>() {
             @Override
-            protected org.cs5431_client.model.File call() throws Exception {
+            protected Boolean call() throws Exception {
                 return fileController.download(fso.getId());
             }
         };

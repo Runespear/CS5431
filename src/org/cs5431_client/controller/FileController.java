@@ -122,12 +122,16 @@ public class FileController {
     private byte[] encryptFile(java.io.File file, SecretKey secretKey,
                                IvParameterSpec ivSpec) throws
             NoSuchAlgorithmException, NoSuchProviderException,
-            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, FileNotFoundException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-        //TODO encrypt the file using cipher
-        //maybe something like http://www.itcsolutions.eu/2011/08/24/how-to-encrypt-decrypt-files-in-java-with-aes-in-cbc-mode-using-bouncy-castle-api-and-netbeans-or-eclipse/
-        return null;
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] filebytes = new byte[inputStream.available()];
+        inputStream.read(filebytes);
+        inputStream.close();
+        return cipher.doFinal(filebytes);
     }
 
     private byte[] encryptFileName(String fileName, SecretKey secretKey,
@@ -152,16 +156,19 @@ public class FileController {
         return cipher.doFinal(secretKey.getEncoded());
     }
 
-    private File decryptFile(byte[] encFile, String fileName,
+    private boolean decryptFile(byte[] encFile, String fileName,
                              SecretKey secretKey, IvParameterSpec ivSpec,
                              Timestamp dateModified, int size)
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException {
+            IllegalBlockSizeException, BadPaddingException, IOException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-        //TODO decrypt the file using cipher
-        return null;
+        byte[] fileDec = cipher.doFinal(encFile);
+        FileOutputStream fos = new FileOutputStream(fileName);
+        fos.write(fileDec);
+        fos.close();
+        return true;
     }
 
     private String decryptFileName(byte[] encFileName, SecretKey fileSK,
@@ -298,16 +305,14 @@ public class FileController {
     /**
      * Gets the file/folder contents from server and decrpyts it.
      * @param fsoId is ID of the file to be downloaded
-     * @return file if download is successful; false otherwise
+     * @return true if successful
      */
-    public File download(int fsoId) throws
+    public boolean download(int fsoId) throws
         IOException, JSONException, NoSuchAlgorithmException,
         NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
         InvalidAlgorithmParameterException, IllegalBlockSizeException,
-        BadPaddingException, FileControllerException {
-        Task<File> task = new Task<File>() {
-            @Override
-            protected File call() throws Exception {
+        BadPaddingException, FileControllerException, ClassNotFoundException {
+
         JSONObject fileReq = new JSONObject();
         fileReq.put("messageType", "download");
         fileReq.put("fsoid", fsoId);
@@ -342,15 +347,6 @@ public class FileController {
             throw new FileControllerException("Received bad response " +
                     "from server");
         }
-            }
-        };
-        final File[] ret = new File[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
     }
 
     /**
