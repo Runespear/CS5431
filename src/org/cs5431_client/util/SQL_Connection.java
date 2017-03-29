@@ -84,7 +84,7 @@ public class SQL_Connection {
             PreparedStatement addPermission = null;
 
             String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, " +
-                    "pubKey, pwdSalt, privKeySalt) values (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "pubKey, pwdSalt, privKeySalt) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
