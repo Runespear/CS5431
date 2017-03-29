@@ -234,7 +234,7 @@ public class SQL_Connection {
 
                 String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                         "lastModified, isFile, fsoNameIV)"
-                        + " values (?, ?, ?, ?, ?, ?)";
+                        + " values (?, ?, ?, ?, ?, ?, ?)";
                 String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey, fileIV) values (?, ?, ?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                         + "values (?, ?, ?, ?, ?)";
