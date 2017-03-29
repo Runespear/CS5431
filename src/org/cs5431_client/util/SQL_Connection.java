@@ -697,6 +697,7 @@ public class SQL_Connection {
                 PreparedStatement getPath = null;
 
                 String selectPath = "SELECT F.path, F.fileIV FROM FileContents F WHERE F.fsoid = ?";
+                String selectSk = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
 
                 try {
                     getPath = connection.prepareStatement(selectPath);
