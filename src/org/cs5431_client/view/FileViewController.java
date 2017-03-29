@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static org.cs5431_client.util.Constants.DEBUG_MODE;
+
 public class FileViewController implements Initializable {
     @FXML
     public ImageView imgBack;
@@ -448,8 +450,10 @@ public class FileViewController implements Initializable {
             }
         };
         task.setOnSucceeded(t -> {
-            System.out.println("Succeeded with " + task.getValue().size() +
-                    " children");
+            if (DEBUG_MODE) {
+                System.out.println("Succeeded with " + task.getValue().size() +
+                        " children");
+            }
             List<FileSystemObject> children = task.getValue();
             ObservableList<FileSystemObject> observableList =
                     FXCollections.observableArrayList();

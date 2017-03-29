@@ -112,6 +112,7 @@ public class EditDetailsController implements Initializable {
         
         List<String> messages = new ArrayList<>();
 
+        boolean msgShownLater = false;
         //Tries to change the password if the password fields are not blank.
         if (!oldPassword.isEmpty() || !newPassword.isEmpty() ||
             !confirmNewPassword.isEmpty()) {
@@ -124,6 +125,7 @@ public class EditDetailsController implements Initializable {
                 messages.add("Passwords should be at least 16 characters " +
                         "long.");
             } else {
+                msgShownLater = true;
                 Task<Integer> task = new Task<Integer>() {
                     @Override
                     protected Integer call() throws Exception {
@@ -132,9 +134,11 @@ public class EditDetailsController implements Initializable {
                 };
                 task.setOnFailed(t -> {
                     messages.add("Wrong password.");
+                    showMessages(messages);
                 });
                 task.setOnSucceeded(t -> {
                     messages.add("Password successfully changed.");
+                    showMessages(messages);
                 });
                 Thread th = new Thread(task);
                 th.setDaemon(true);
@@ -165,14 +169,19 @@ public class EditDetailsController implements Initializable {
             }
         }
 
-        //prints all success+failure messages.
+        //prints all success+failure messages if not shown in a task
+        if (!msgShownLater) {
+            showMessages(messages);
+        }
+    }
+
+    private void showMessages(List<String> messages) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         StringBuilder content = new StringBuilder();
         for (String message : messages) {
             content.append(message);
             content.append("\n");
         }
-        System.out.println(content.toString());
         alert.setContentText(content.toString());
         alert.showAndWait();
     }
