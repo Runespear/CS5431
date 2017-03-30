@@ -1,5 +1,17 @@
 # CS5431
 
+*Assume that you have maven and mysql database running, make sure all dependencies in pom.xml are imported
+1. run server setup
+2. follow the instructions to create db and certificate
+3. run serverview to run as admin
+4. run client
+5. client to set up truststore password
+6. client to accept cert and store it
+7. client to disconnect
+8. rerun client
+9. connect client to the server that has been set up (and should still be running at this point)
+
+
 ##How to run this system##
 
 We are currently working on IntelliJ, and have not determined a proper build
