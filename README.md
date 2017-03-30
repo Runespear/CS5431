@@ -17,3 +17,5 @@ Maven
     8) rerun client
     9) connect client to the server that has been set up (and should still be running at this point)
 
+We plan to host the server on a web service in the future, but as of now, we are testing the role of server and client
+on multiple laptops as of now.
