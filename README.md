@@ -13,10 +13,10 @@ Maven
   ```sh
   sudo apt-get install mysql
   ```
-  *Remember what your root password is!
+  *{Remember what your root password is!
   Also, make sure to import all the dependencies based off the pom.xml (We are using maven)
   A quick and dirty way to do this is to cut away a line from the pom.xml and paste it back. 
-  The IDE will automatically adjust it for you
+  The IDE will automatically adjust it for you}
 
 1. run ServerSetup (under src/org/cs5431_server/setup/)
   * i.e. invoke 
