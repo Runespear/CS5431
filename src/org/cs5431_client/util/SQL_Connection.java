@@ -80,7 +80,7 @@ public class SQL_Connection {
 
     public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs543?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
