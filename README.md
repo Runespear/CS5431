@@ -13,18 +13,27 @@ Maven
   ```sh
   sudo apt-get install mysql
   ```
-  *{Remember what your root password is!
+  *Remember what your root password is!
   Also, make sure to import all the dependencies based off the pom.xml (We are using maven)
   A quick and dirty way to do this is to cut away a line from the pom.xml and paste it back. 
-  The IDE will automatically adjust it for you}
+  The IDE will automatically download the dependencies for yous
 
+# Server Side
 1. run ServerSetup (under src/org/cs5431_server/setup/)
-  * i.e. invoke 
+  * i.e. invoke in the correct directory using the IDE run button
   ```sh
-  java ServerSetup
+  java WORKINGDIRECTORY/src/org/cs5431_server/setup/ServerSetup
   ```
+
   * There ought to be a main function under ServerSetup.java 
+  * The whole thing is a main function actually 
+  
 2. Follow the prompts to create your database and certificate
+  * For IP address type "127.0.0.1" instead of "localhost"
+  * When prompted for your MySQL username and password, just use your root account's for now
+  * The default port for MySQL is 3306
+  * Use any other port number above 1024 for the other 2 ports
+
 3. Run ServerView to run as admin
 4. Run Client
 5. client to set up truststore password
