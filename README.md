@@ -6,8 +6,9 @@ Maven
 
 (Move the pom.xml outside of the src folder)
 
-##How to run this system on localhost for now, please use an IDE like IntelliJ or something for now to run this###
+## How to run this system on localhost for now, please use an IDE like IntelliJ or something for now to run this ###
 (From Terminal)
+
 0. Make sure MySQL is setup and running
   ```sh
   sudo apt-get install mysql
