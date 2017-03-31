@@ -53,18 +53,31 @@ Maven
   * Also, under ./user-config/ we now have a .config and a .pub file (Public Key for the keytransport)
   * As per instructed, we are to distribute this to our users
 3. Typically we will email them or something, but in this case, since we are running in localhost for now
-   just copy and paste both files to 
+   we don't have to do anything
 
 
 3. Run ServerView to run as admin
+  * Follow exactly what the prompts tell you to do
+  * After entering your keystore password, there are no more prompts for now, since the server is setup
+  * Now we run the client side
 
 # Client Side
 
 4. Run Client
+  * This is located under ./src/org/cs5431_client/view/Client.java
+  * Notice a fancy GUI popup
+  * In the dropdown, select the entry, which should be the name of the server
+  * Now go back to the command line
+  * Follow the prompt to enter the password for the keystore
+  * If you were obedient it would be "qweqweqwewqeqweqwe"
 5. client to set up truststore password
+  * Choose something simple
+  * Like "qwewqeqweqweqweqwe"
 6. client to accept cert and store it
+  * Type yes (Typing no results in catastrophic failure, which we have not addressed yet for now)
 7. client to disconnect
-8. rerun client
+  * i.e. Stop running the thing
+8. rerun Client
 9. connect client to the server that has been set up (and should still be running at this point)
 
 We plan to host the server on a web service in the future, but as of now, we are testing the role of server and client
