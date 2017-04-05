@@ -15,6 +15,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Encryption.hash;
 
 public class SSL_Server_Actual extends Thread {
     protected Socket s;
@@ -317,14 +318,4 @@ public class SSL_Server_Actual extends Thread {
         returnedValues[1] = Base64.getEncoder().encodeToString(salt);
         return returnedValues;
     }
-
-    public static String hash(String pwd, byte[] salt) {
-        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
-        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
-                pwd.toCharArray()), salt, 10000);
-        //TODO: 256 is currently the key length. Is this correct?
-        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
-        return Base64.getEncoder().encodeToString(kp.getKey());
-    }
-
 }

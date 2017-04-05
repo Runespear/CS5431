@@ -1,6 +1,5 @@
 package org.cs5431;
 
-import org.cs5431.SSL_Server_Actual;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,6 +10,9 @@ import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
+
+import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Encryption.hash;
 
 public class SQL_Connection {
 
@@ -34,12 +36,12 @@ public class SQL_Connection {
 
     public boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
             PreparedStatement verifyUniqueness;
@@ -51,12 +53,12 @@ public class SQL_Connection {
                 verifyUniqueness.setString(1, username);
                 ResultSet rs = verifyUniqueness.executeQuery();
                 if (rs.next()) {
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("The username is not unique");
                     }
                     return false;
                 } else {
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("The username is unique");
                     }
                     return true;
@@ -76,16 +78,15 @@ public class SQL_Connection {
     }
 
     public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
-
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs543?autoReconnect=true&useSSL=false";
-        if (Constants.DEBUG_MODE) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
         int uid;
         JSONObject jsonUser;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
             PreparedStatement createUser = null;
@@ -127,7 +128,7 @@ public class SQL_Connection {
                 createFolder.setTimestamp (5, currDate);
                 createFolder.setBoolean    (6, false);
                 createFolder.executeUpdate();
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("created folder");
                 }
 
@@ -144,7 +145,7 @@ public class SQL_Connection {
                 createUser.setString    (8, pwdSalt);
                 createUser.setString    (9, privKeySalt);
                 createUser.executeUpdate();
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("created user");
                 }
                 rs = createUser.getGeneratedKeys();
@@ -155,14 +156,14 @@ public class SQL_Connection {
                 createLog.setTimestamp(3, currDate);
                 createLog.setString(4, "CREATE_USER");
                 createLog.executeUpdate();
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("created log");
                 }
 
                 addPermission.setInt(1, folderid);
                 addPermission.setInt(2, uid);
                 addPermission.executeUpdate();
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("added owner as editor");
                 }
 
@@ -224,13 +225,13 @@ public class SQL_Connection {
     public int createFso (JSONObject fso) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
         int fsoid;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
             int uid = fso.getInt("uid");
@@ -280,7 +281,7 @@ public class SQL_Connection {
                     createFso.setBoolean(6, isFile);
                     createFso.setString(7, fsoNameIV);
                     createFso.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("created folder");
                     }
 
@@ -293,7 +294,7 @@ public class SQL_Connection {
                     addKey.setString(3, sk);
                     addKey.setString(4, fileIV);
                     addKey.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("added added sk");
                     }
 
@@ -310,14 +311,14 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, actionType);
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("created log");
                     }
 
                     addPermission.setInt(1, fsoid);
                     addPermission.setInt(2, uid);
                     addPermission.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("added owner as editor");
                     }
 
@@ -333,7 +334,7 @@ public class SQL_Connection {
                         addFile.setString(2, "./files/" + uid + "/" + fsoid);
                         addFile.setString(3, fileIV);
                         addFile.executeUpdate();
-                        if (Constants.DEBUG_MODE) {
+                        if (DEBUG_MODE) {
                             System.out.println("added file path");
                         }
                     }
@@ -389,13 +390,13 @@ public class SQL_Connection {
     public JSONObject authenticate(JSONObject allegedUser, String encPwd) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
         JSONObject user = new JSONObject();
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
             PreparedStatement verifyUser = null;
@@ -413,7 +414,7 @@ public class SQL_Connection {
 
                 if (rs.next()) {
                     //user valid
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("Valid user");
                     }
                     int uid = rs.getInt(1);
@@ -461,7 +462,7 @@ public class SQL_Connection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("Invalid user");
         }
         return null;
@@ -504,12 +505,12 @@ public class SQL_Connection {
     /** Gets pwdSalt of pwd associated with username **/
     public String getSalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
             PreparedStatement getSalt = null;
@@ -545,16 +546,16 @@ public class SQL_Connection {
         allegedUser.put("username", "username");
         //allegedUser.put("pwd", password);
         String salt = getSalt(username);
-        String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
+        String encPwd = hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
 
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 PreparedStatement removeUser = null;
@@ -571,7 +572,7 @@ public class SQL_Connection {
                     removeUser.setString(1, username);
                     removeUser.setString(2, password);
                     removeUser.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("deleted user");
                     }
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -580,7 +581,7 @@ public class SQL_Connection {
                     createLog.setTimestamp(3, lastModified);
                     createLog.setString(4, "DELETE");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("created log");
                     }
 
@@ -619,16 +620,16 @@ public class SQL_Connection {
         String password = allegedUser.getString("hashedPwd");
         String newPrivKey = allegedUser.getString("newPrivKey");
         String salt = getSalt(username);
-        String encPwd = SSL_Server_Actual.hash(password, Base64.getDecoder().decode(salt));
+        String encPwd = hash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 PreparedStatement changePwd = null;
@@ -648,7 +649,7 @@ public class SQL_Connection {
                     changePwd.setInt(3, uid);
                     changePwd.setString(4, username);
                     changePwd.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("changed password");
                     }
 
@@ -658,7 +659,7 @@ public class SQL_Connection {
                     createLog.setTimestamp(3, lastModified);
                     createLog.setString(4, "CHANGE_PWD");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("created log");
                     }
 
@@ -705,12 +706,12 @@ public class SQL_Connection {
         if (hasPermission) {
             JSONArray files = new JSONArray();
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 PreparedStatement getFiles = null;
@@ -795,7 +796,7 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("User does not have permission to edit");
         }
         return null;
@@ -808,11 +809,11 @@ public class SQL_Connection {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 PreparedStatement getPath = null;
@@ -839,7 +840,7 @@ public class SQL_Connection {
 
                     if (rs.next()) {
                         fso.put("msgType","downloadAck");
-                        if (Constants.DEBUG_MODE) {
+                        if (DEBUG_MODE) {
                             System.out.println("THE PATH IS: " + rs.getString(1));
                         }
                         File reqFile = new File(rs.getString(1));
@@ -852,7 +853,7 @@ public class SQL_Connection {
                                 (filebytes));
 
                         fso.put("fsoid", fsoid);
-                        if (Constants.DEBUG_MODE) {
+                        if (DEBUG_MODE) {
                             System.out.println("fileic" + rs.getString(2));
                         }
                         fso.put("fileIV", rs.getString(2));
@@ -882,7 +883,7 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("User does not have permission to the file");
         }
         return null;
@@ -892,12 +893,12 @@ public class SQL_Connection {
      * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
     public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
             PreparedStatement verifyEditors = null;
@@ -1004,17 +1005,17 @@ public class SQL_Connection {
         int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Can view file logs");
             }
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement getFileLog = null;
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
 
@@ -1059,17 +1060,17 @@ public class SQL_Connection {
     public JSONArray getUserLog(int fsoid, int uid) {
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (hasPermission) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Can view file logs");
             }
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement getFileLog = null;
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
 
@@ -1114,7 +1115,7 @@ public class SQL_Connection {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            if (Constants.DEBUG_MODE) {
+            if (DEBUG_MODE) {
                 System.out.println("Can rename fso");
             }
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
@@ -1122,7 +1123,7 @@ public class SQL_Connection {
             PreparedStatement createLog = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 String updateName = "UPDATE FileSystemObjects SET fsoName = ? WHERE fsoid =  ?";
@@ -1136,7 +1137,7 @@ public class SQL_Connection {
                     renameFso.setString(1, newName);
                     renameFso.setInt(2, fsoid);
                     renameFso.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("renamed fso");
                     }
 
@@ -1147,7 +1148,7 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "RENAME");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("created log");
                     }
                     connection.commit();
@@ -1177,7 +1178,7 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("failed to rename");
         }
         return -1;
@@ -1192,7 +1193,7 @@ public class SQL_Connection {
             PreparedStatement getPubKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 String selectPubKey = "SELECT U.pubKey FROM Users U WHERE U" +
@@ -1266,7 +1267,7 @@ public class SQL_Connection {
             PreparedStatement shareFsoKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE) {
+                if (DEBUG_MODE) {
                     System.out.println("Database connected!");
                 }
                 String insertEditor = "INSERT INTO Editors (fsoid, uid) " +
@@ -1290,7 +1291,7 @@ public class SQL_Connection {
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE) {
+                    if (DEBUG_MODE) {
                         System.out.println("created log");
                     }
 
@@ -1329,7 +1330,7 @@ public class SQL_Connection {
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE) {
+        if (DEBUG_MODE) {
             System.out.println("failed to add priv");
         }
         return -1;
@@ -1350,7 +1351,7 @@ public class SQL_Connection {
             PreparedStatement shareFsoKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE)
+                if (DEBUG_MODE)
 System.out.println("Database connected!");
                 String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
@@ -1372,7 +1373,7 @@ System.out.println("Database connected!");
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE)
+                    if (DEBUG_MODE)
 System.out.println("created log");
 
                     shareFsoKey.setInt(1, fsoid);
@@ -1410,7 +1411,7 @@ System.out.println("created log");
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE)
+        if (DEBUG_MODE)
 System.out.println("failed to add priv");
         return -1;
     }
@@ -1426,7 +1427,7 @@ System.out.println("failed to add priv");
             PreparedStatement removeKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE)
+                if (DEBUG_MODE)
 System.out.println("Database connected!");
                 String deleteViewer = "DELETE FROM Viewers WHERE fsoid = ? AND uid = ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
@@ -1450,13 +1451,13 @@ System.out.println("Database connected!");
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE)
+                    if (DEBUG_MODE)
 System.out.println("created log");
 
                     removeKey.setInt(1, fsoid);
                     removeKey.setInt(2, uid);
                     removeKey.executeUpdate();
-                    if (Constants.DEBUG_MODE)
+                    if (DEBUG_MODE)
 System.out.println("removed key");
 
                     connection.commit();
@@ -1489,7 +1490,7 @@ System.out.println("removed key");
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE)
+        if (DEBUG_MODE)
 System.out.println("failed to remove viewer");
         return -1;
     }
@@ -1499,7 +1500,7 @@ System.out.println("failed to remove viewer");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
-            if (Constants.DEBUG_MODE)
+            if (DEBUG_MODE)
 System.out.println("Can rename fso");
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
             PreparedStatement rmEditor = null;
@@ -1507,7 +1508,7 @@ System.out.println("Can rename fso");
             PreparedStatement removeKey = null;
 
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (Constants.DEBUG_MODE)
+                if (DEBUG_MODE)
 System.out.println("Database connected!");
                 String deleteEditor = "DELETE FROM Editors WHERE fsoid = ? AND uid = ?";
                 String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
@@ -1531,13 +1532,13 @@ System.out.println("Database connected!");
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADD_PRIV");
                     createLog.executeUpdate();
-                    if (Constants.DEBUG_MODE)
+                    if (DEBUG_MODE)
 System.out.println("created log");
 
                     removeKey.setInt(1, fsoid);
                     removeKey.setInt(2, uid);
                     removeKey.executeUpdate();
-                    if (Constants.DEBUG_MODE)
+                    if (DEBUG_MODE)
 System.out.println("removed key");
 
                     connection.commit();
@@ -1570,7 +1571,7 @@ System.out.println("removed key");
                 e.printStackTrace();
             }
         }
-        if (Constants.DEBUG_MODE)
+        if (DEBUG_MODE)
 System.out.println("failed to remove editor");
         return -1;
     }

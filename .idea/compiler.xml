@@ -7,7 +7,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="cs5431-client" />
-        <module name="cs5431-parent" />
         <module name="cs5431-server" />
         <module name="cs5431-server-setup" />
         <module name="cs5431-util" />

@@ -9,8 +9,10 @@
     <parent>
         <groupId>org.cs5431</groupId>
         <artifactId>cs5431-parent</artifactId>
+        <version>0.3-MILESTONE-BETA</version>
     </parent>
     <artifactId>cs5431-client</artifactId>
+    <name>CS5431 Pretty Secure File Sharing Client</name>
     <packaging>jar</packaging>
 
     <properties>

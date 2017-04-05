@@ -1,66 +1,81 @@
 # CS5431
 
-##How to run this system##
+Maven
 
-We are currently working on IntelliJ, and have not determined a proper build
-as a whole yet. Open up the following files below and right click to run
-to preview the:
+### Assume that you have maven and mysql database running, make sure all dependencies in pom.xml are imported
 
-* 1) File-Transfer capabilities between TCP_Client and TCP_Server
-    In this case, it is client uploading to server
-* 2) GUI which is almost done, but not yet hooked up to a working server backend.
+(Move the pom.xml outside of the src folder)
 
+## How to run this system on localhost for now, please use an IDE like IntelliJ or something for now to run this ###
+(From Terminal)
 
-###Server (for sending to client_TCP)###
-Not working as of yet.
+0. Make sure MySQL is setup and running
+  ```sh
+  sudo apt-get install mysql
+  ```
+  *To run mysql, just:
+  ```sh
+  mysql -u root -p
+  ```
+  *You will be prompted for your root password. TYPE IT IN.
+  *Remember what your root password is!
+  Also, make sure to import all the dependencies based off the pom.xml (We are using maven)
+  A quick and dirty way to do this is to cut away a line from the pom.xml and paste it back. 
+  The IDE will automatically download the dependencies for yous
 
-###client_TCP (for testing receiving from Server)###
-Not working as of yet. 
+# Server Side
+1. Run ServerSetup (under src/org/cs5431_server/setup/)
+  * i.e. invoke in the correct directory using the IDE run button
+  * There ought to be a main function under ServerSetup.java 
+  * The whole thing is a main function actually 
 
-Run Server first. (Otherwise there is nothing to communicate with)
-Run org.cs5431_client.util.client_tcp as the main class.
+2. Follow the prompts to create your database and certificate
+  * For IP address type "127.0.0.1" instead of "localhost"
+  * When prompted for your MySQL username and password, just use your root account's for now
+  * i.e. username for root is "root"
+  * password for MySQL is your root password
+  * The default port for MySQL is 3306
+  * Use any other port number above 1024 for the other 2 ports
+  * When prompted to generate your keystore password, use something simple for now like "qweqweqweqweqweqwe"
+  * Cycle through the details. When prompted:
+  ```sh
+  Is CN=whatever, OU=whatever, O=whatever, L=whatever, ST=whatever, C=whatever correct?
+  ```
+  * Just type in "yes"
+  * Next, when prompted as such:
+  ```sh
+  Enter key password for <mykey>
+    (RETURN if same as keystore password):  
+  ```
+  * Just hit enter.
+  * You will be asked to re-enter your keystore password 
+  * Now Under ./server-config/, notice that you now have .cer, .jks, .priv, .config files
+  * Also, under ./user-config/ we now have a .config and a .pub file (Public Key for the keytransport)
+  * As per instructed, we are to distribute this to our users
+3. Typically we will email them or something, but in this case, since we are running in localhost for now
+   we don't have to do anything
 
-###Client (GUI)###
-Run org.cs5431_client.view.Client as the main class.
-If testing the download button, run Server first.
+4. Run ServerView to run as admin
+  * Follow exactly what the prompts tell you to do
+  * After entering your keystore password, there are no more prompts for now, since the server is setup
+  * Now we run the client side
 
-Currently Server client above not working as intended.
+# Client Side
 
-###TCP_Server (Working Test Version so use this first)
-Run TCP_Server. This server waits for a client to upload a file.
-It will automatically generate a folder called "receive" in the 
-current working directory and download the file from client.
+5. Run Client
+  * This is located under ./src/org/cs5431_client/view/Client.java
+  * Notice a fancy GUI popup
+  * In the dropdown, select the entry, which should be the name of the server
+  * Now go back to the command line
+  * Follow the prompt to enter the password for the keystore
+  * If you were obedient it would be "qweqweqwewqeqweqwe"
+6. Client to set up truststore password
+  * Choose something simple
+  * Like "qwewqeqweqweqweqwe"
+7. Client to accept cert and store it
+  * Type yes (Typing no will result in a permanent loss of trust for that server's certificate, which is not recommended)
+8. Connect client to the server that has been set up (and should still be running at this point)
 
-Port is currently hardcoded as 8080 for you.
+We plan to host the server on a web service in the future, but as of now, we are testing the role of server and client
+on multiple laptops as of now.
 
-Note that receive is gitignored, but the code will generate the folder
-for you automatically
-
-###TCP_Client (Working Test version so use this first)
-Run TCP_Client. This client connects to TCP_Server, and automatically
-uploads a file. It tells the server how big the file size is as well.
-
-The directory that it sends from is called "send" in your working directory.
-
-"cats.txt" is a test text file that is automatically generated for you 
-and it contains 4 lines, where the 4th line is a time stamp (USE time).
-
-Port is currently hardcoded as 8080 for you. 
-
-Under main:
-
-```Java
-public static void main(String[] args) {
-        String[] fileNames = new String[2];
-        fileNames = new String[] {"cats.txt", "Opt2.pdf"};
-        TCP_Client fc = new TCP_Client("localhost", 8080, fileNames);
-
-}
-```
-
-The 1st filename in the array will be transferred (multiple file transfer
-functionality not yet done) They will already be in "send".
-
-
-You should expect to see the correct file in "receive" (On the server side,
-or in the same place if running on localhost)

@@ -9,7 +9,7 @@
     <artifactId>cs5431</artifactId>
     <version>0.3-MILESTONE-BETA</version>
     <packaging>pom</packaging>
-    <name>Multi Chapter Parent Project</name>
+    <name>CS5431 Pretty Secure File Sharing</name>
     <modules>
         <module>cs5431-parent</module>
     </modules>

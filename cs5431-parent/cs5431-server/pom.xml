@@ -9,9 +9,11 @@
     <parent>
         <groupId>org.cs5431</groupId>
         <artifactId>cs5431-parent</artifactId>
+        <version>0.3-MILESTONE-BETA</version>
     </parent>
     <artifactId>cs5431-server</artifactId>
     <packaging>jar</packaging>
+    <name>CS5431 Pretty Secure File Server</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
