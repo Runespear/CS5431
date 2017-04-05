@@ -13,7 +13,7 @@
     </parent>
     <artifactId>cs5431-server</artifactId>
     <packaging>jar</packaging>
-    <name>CS5431 Pretty Secure File Server</name>
+    <name>CS5431 Pretty Secure File Sharing Server</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

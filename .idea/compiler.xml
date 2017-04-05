@@ -13,6 +13,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
+      <module name="cs5431" target="1.8" />
       <module name="CS5431" target="1.8" />
       <module name="cs5431-client" target="1.8" />
       <module name="cs5431-parent" target="1.8" />

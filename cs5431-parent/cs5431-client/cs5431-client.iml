@@ -27,5 +27,14 @@
     <orderEntry type="library" name="Maven: commons-digester:commons-digester:1.8.1" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.2" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: sun.jdk:rt.jar:1.8">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/software/jdk1.8.0_60/jre/lib/rt.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

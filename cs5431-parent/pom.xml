@@ -27,6 +27,16 @@
         <module>cs5431-util</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>rt.jar</artifactId>
+            <version>1.8</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/lib/rt.jar</systemPath>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -36,6 +46,8 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <fork>true</fork>
+                    <compilerArgument>-XDignore.symbol.file</compilerArgument>
                 </configuration>
             </plugin>
         </plugins>
