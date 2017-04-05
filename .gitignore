@@ -114,7 +114,10 @@ files/*
 #===============
 # Maven target
 #===============
-target/*
+cs5431-parent/cs5431-server/target/*
+cs5431-parent/cs5431-server-setup/target/*
+cs5431-parent/cs5431-client/target/*
+cs5431-parent/cs5431-util/target/*
 
 
 #==============================

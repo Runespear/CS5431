@@ -1,6 +1,0 @@
-Validator_Tests\test_validUsername.class
-Validator_Tests\test_validFileName.class
-Validator_Tests\test_validPort.class
-Validator_Tests\test_validIP.class
-Validator_Tests\test_validPassword.class
-Validator_Tests\test_validEmail.class
