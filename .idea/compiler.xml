@@ -6,11 +6,20 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="CS5431" />
+        <module name="cs5431-client" />
+        <module name="cs5431-parent" />
+        <module name="cs5431-server" />
+        <module name="cs5431-server-setup" />
+        <module name="cs5431-util" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
       <module name="CS5431" target="1.8" />
+      <module name="cs5431-client" target="1.8" />
+      <module name="cs5431-parent" target="1.8" />
+      <module name="cs5431-server" target="1.8" />
+      <module name="cs5431-server-setup" target="1.8" />
+      <module name="cs5431-util" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
