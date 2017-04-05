@@ -1,7 +1,7 @@
-package org.cs5431;
+package SSL_CmdLine_Test;
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
+import org.cs5431.TransmittedFile;
+
 import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
 

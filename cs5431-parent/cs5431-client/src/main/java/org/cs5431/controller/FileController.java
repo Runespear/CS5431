@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static org.cs5431.JSON.receiveJson;
+import static org.cs5431.JSON.receiveJsonArray;
+import static org.cs5431.JSON.sendJson;
 import static org.cs5431.model.FileActionType.DOWNLOAD;
 import static org.cs5431.model.FileActionType.OVERWRITE;
 import static org.cs5431.Constants.DEBUG_MODE;
 
-//TODO: should a FileController control all files or just a single file?
 public class FileController {
     private org.cs5431.model.User user;
     private Socket sslSocket;
-    private SQL_Connection sql_connection; //TODO: to pass or create new one each time
 
     public FileController(User user, Socket sslSocket) {
         this.user = user;
         this.sslSocket = sslSocket;
-        this.sql_connection = new SQL_Connection("localhost", 3306);
     }
 
     /**
@@ -97,8 +97,8 @@ public class FileController {
         String encFileKey = Base64.getEncoder().encodeToString
                 (encFileSecretKey(fileSK, user.getPubKey()));
         fso.put("encSK", encFileKey);
-        sendJson(fso);
-        JSONObject fsoAck = receiveJson();
+        sendJson(fso, sslSocket);
+        JSONObject fsoAck = receiveJson(sslSocket);
         if (fsoAck.get("msgType").equals("uploadAck")) {
             int fileSentid = fsoAck.getInt("fsoid");
             if (DEBUG_MODE) {
@@ -121,7 +121,7 @@ public class FileController {
     }
 
     public class UploadFailException extends Exception {
-        public UploadFailException (String message) {
+        UploadFailException(String message) {
             super(message);
         }
     }
@@ -130,7 +130,7 @@ public class FileController {
                                IvParameterSpec ivSpec) throws
             NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, FileNotFoundException,
+            InvalidAlgorithmParameterException,
             IOException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
@@ -237,8 +237,8 @@ public class FileController {
                     (encFileSecretKey(fileSK, user.getPubKey()));
             fso.put("encSK", encFileKey);
 
-            sendJson(fso);
-            JSONObject fsoAck = receiveJson();
+            sendJson(fso, sslSocket);
+            JSONObject fsoAck = receiveJson(sslSocket);
             int folderSentId = fsoAck.getInt("fsoid");
 
             if (folderSentId != -1) {
@@ -290,28 +290,19 @@ public class FileController {
      * @param newName New name of the file/folder
      * @return true if the name of the file/folder is successfully modified; false otherwise
      */
-    public boolean rename(FileSystemObject systemObject, String newName) {
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-                if (!Validator.validFileName(newName))
-                    return false;
-
-                int edited = sql_connection.renameFso(systemObject.getId(), user.getId(), newName);
-
-                if (edited != -1) {
-                    return true;
-                }
-                return false;
-            }
-        };
-        final Boolean[] ret = new Boolean[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+    public boolean rename(FileSystemObject systemObject, String newName)
+            throws IOException, ClassNotFoundException{
+        JSONObject json = new JSONObject();
+        json.put("msgType", "rename");
+        json.put("fsoid", systemObject.getId());
+        json.put("uid", user.getId());
+        json.put("newName", newName);   //TODO encryption
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("renameAck"))
+            return true;
+        else    //TODO error handling? e.g. not enough permissions?
+            return false;
     }
 
     /**
@@ -330,8 +321,8 @@ public class FileController {
         fileReq.put("fsoid", fsoId);
         fileReq.put("uid", user.getId());
 
-        sendJson(fileReq);
-        JSONObject fileAck = receiveJson();
+        sendJson(fileReq, sslSocket);
+        JSONObject fileAck = receiveJson(sslSocket);
 
         if (fileAck.getString("msgType").equals("downloadAck")) {
             int fsoID = fileAck.getInt("fsoid");
@@ -353,20 +344,6 @@ public class FileController {
         }
     }
 
-    private JSONArray receiveJsonArray() throws IOException,
-            ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-            System.out.flush();
-        }
-
-        return new JSONArray(str);
-    }
-
     /**
      * Gets all children of the folderId
      * @param parentFolder gets the children of parentFolder
@@ -380,8 +357,8 @@ public class FileController {
         json.put("msgType", "getChildren");
         json.put("fsoid", parentFolderid);
         json.put("uid", user.getId());
-        sendJson(json);
-        JSONArray jsonChildren = receiveJsonArray();
+        sendJson(json, sslSocket);
+        JSONArray jsonChildren = receiveJsonArray(sslSocket);
         for (int i = 0; i < jsonChildren.length(); i++) {
             JSONObject c = jsonChildren.getJSONObject(i);
             try {
@@ -445,36 +422,28 @@ public class FileController {
      * @param systemObject Privileges are added to this file/folder.
      * @return true if privilege was added successfully; false otherwise.
      */
-    public boolean addPriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-                int newUser;
-                JSONObject json = new JSONObject();
-                json.put("msgType", "addPriv");
-                json.put("fsoid", systemObject.getId());
-                json.put("uid", user.getId());
-                json.put("newUid", userId);
-                if (priv == PrivType.EDIT) {
-                    newUser = sql_connection.addEditPriv(json);
-                } else {
-                    newUser = sql_connection.addViewPriv(json);
-                }
-                if (newUser != -1) {
-                    systemObject.addPriv(priv, userId);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-            };
-        final Boolean[] ret = new Boolean[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-            Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+    public boolean addPriv(FileSystemObject systemObject, int userId,
+                           PrivType priv) throws IOException, ClassNotFoundException {
+        int newUser = -1;
+        JSONObject json = new JSONObject();
+        json.put("msgType", "addPriv");
+        json.put("addPrivType", priv);
+        json.put("fsoid", systemObject.getId());
+        json.put("uid", user.getId());
+        json.put("newUid", userId);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
 
-        return ret[0];
+        if (response.getString("msgType").equals("addPrivKeys")) {
+            //TODO
+            return true;
+        } else {
+            //throw error?
+            return false;
+        }
+
+        //TODO add this eventually?
+        //systemObject.addPriv(priv, userId);
     }
 
     /**
@@ -483,30 +452,10 @@ public class FileController {
      * @return true if privilege was added successfully; false otherwise.
      */
     public boolean removePriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-            int rmUser;
-            if (priv == PrivType.EDIT) {
-                rmUser = sql_connection.removeEditPriv(systemObject.getId(), user.getId(), userId);
-            } else {
-                rmUser = sql_connection.removeViewPriv(systemObject.getId(), user.getId(), userId);
-            }
-            if (rmUser != -1) {
-                systemObject.removePriv(priv, userId);
-                return true;
-            } else {
-                return false;
-            }
-            }
-        };
-        final Boolean[] ret = new Boolean[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        return false;
 
-        return ret[0];
+        //todo add this enventually?
+        //systemObject.removePriv(priv, userId);
     }
 
     public void rollback(int rollbackToThisfileId) {
@@ -522,21 +471,9 @@ public class FileController {
      * * @return the file/folder that is uploaded to server if successful; null otherwise
      */
     private FileSystemObject addFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
-        Task<FileSystemObject> task = new Task<FileSystemObject>() {
-            @Override
-            protected File call() throws Exception {
-                //TODO: remember to add new file to parent folder of userId
-                //TODO: remember to change priv to child too
-                return null;
-            }
-        };
-        final FileSystemObject[] ret = new FileSystemObject[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        //TODO: remember to add new file to parent folder of userId
+        //TODO: remember to change priv to child too
+        return null;
     }
 
     /**
@@ -548,53 +485,17 @@ public class FileController {
      * * @return the file/folder that is uploaded to server if successful; null otherwise
      */
     private FileSystemObject removeFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
-        Task<FileSystemObject> task = new Task<FileSystemObject>() {
-            @Override
-            protected File call() throws Exception {
-            //TODO: remember to remove the file from parent folder of userId if view privileges are removed
-            //TODO: remember to change priv to child too
-            return null;
-            }
-        };
-        final FileSystemObject[] ret = new FileSystemObject[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        //TODO: remember to remove the file from parent folder of userId if view privileges are removed
+        //TODO: remember to change priv to child too
+        return null;
     }
 
     private FileSystemObject modifyFSOName(int fsoId, String newName, FileLogEntry logEntry) {
-        Task<FileSystemObject> task = new Task<FileSystemObject>() {
-            @Override
-            protected File call() throws Exception {
-                return null;
-            }
-        };
-        final FileSystemObject[] ret = new FileSystemObject[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        return null;
     }
 
     private FileSystemObject modifyFSOContents(int fsoId, java.io.File file, FileLogEntry logEntry) {
-        Task<FileSystemObject> task = new Task<FileSystemObject>() {
-            @Override
-            protected File call() throws Exception {
-                return null;
-            }
-        };
-        final FileSystemObject[] ret = new FileSystemObject[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        return null;
     }
 
     /**
@@ -605,33 +506,6 @@ public class FileController {
     private boolean isAcceptableInput(String input) {
         //TODO move this into Validator and do an actual check
         return true;
-    }
-
-    private void sendJson(JSONObject json) throws IOException {
-        if (DEBUG_MODE) {
-            System.out.println("sending json");
-        }
-        BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(sslSocket.getOutputStream()));
-        String str = json.toString();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-        }
-        w.write(str + '\n');
-        w.flush();
-    }
-
-    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-            System.out.flush();
-        }
-
-        return new JSONObject(str);
     }
 
     public class FileControllerException extends Exception {

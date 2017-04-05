@@ -1,13 +1,8 @@
 package org.cs5431;
 
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.cs5431.SQL_Connection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.security.SecureRandom;
@@ -15,13 +10,16 @@ import java.util.Base64;
 import java.util.Random;
 
 import static org.cs5431.Constants.DEBUG_MODE;
-import static org.cs5431.Encryption.hash;
+import static org.cs5431.Encryption.secondPwdHash;
+import static org.cs5431.JSON.receiveJson;
+import static org.cs5431.JSON.sendJson;
+import static org.cs5431.JSON.sendJsonArray;
 
-public class SSL_Server_Actual extends Thread {
+public class SSLServer extends Thread {
     protected Socket s;
     private SQL_Connection sqlConnection;
 
-    public SSL_Server_Actual(Socket socket, SQL_Connection sqlConnection){
+    public SSLServer(Socket socket, SQL_Connection sqlConnection){
         this.s = socket;
         this.sqlConnection = sqlConnection;
     }
@@ -29,7 +27,7 @@ public class SSL_Server_Actual extends Thread {
     public void run(){
         try {
         while(true) {
-                JSONObject jsonObject = receiveJson();
+                JSONObject jsonObject = receiveJson(s);
                 if (DEBUG_MODE) {
                     System.out.println("received json: " + jsonObject.toString());
                 }
@@ -38,63 +36,63 @@ public class SSL_Server_Actual extends Thread {
                 switch (type) {
                     case "registration":
                         response = register(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "login":
                         if (DEBUG_MODE) {
                             System.out.println("trying to login");
                         }
                         response = login(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "getPrivKeySalt":
                         response = getPrivKeySalt(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "changePwd":
                         response = changePwd(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "upload":
                         response = upload(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "download":
                         response = download(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "rename":
                         response = rename(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "add privilege":
                         response = addPriv(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "remove privilege":
                         response = removePriv(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "delete":
                         response = delete(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "edit user details":
                         response = editDetails(jsonObject, sqlConnection);
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                     case "getFileLogs":
                         JSONArray arr = getFileLog(jsonObject, sqlConnection);
-                        sendJsonArray(arr);
+                        sendJsonArray(arr, s);
                         break;
                     case "getChildren":
                         JSONArray arr2 = getChildren(jsonObject, sqlConnection);
-                        sendJsonArray(arr2);
+                        sendJsonArray(arr2, s);
                         break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
-                        sendJson(response);
+                        sendJson(response, s);
                         break;
                 }
             }
@@ -107,46 +105,6 @@ public class SSL_Server_Actual extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(s.getInputStream()));
-        String str;
-        str = r.readLine();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-            System.out.flush();
-        }
-        return new JSONObject(str);
-    }
-
-    private void sendJson (JSONObject json) throws IOException {
-        if (DEBUG_MODE) {
-            System.out.println("sending json");
-        }
-        BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(s.getOutputStream()));
-        String str = json.toString();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-        }
-        w.write(str + '\n');
-        w.flush();
-    }
-
-    private void sendJsonArray(JSONArray json) throws IOException {
-        if (DEBUG_MODE) {
-            System.out.println("sending json");
-        }
-        BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(s.getOutputStream()));
-        String str = json.toString();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-        }
-        w.write(str + '\n');
-        w.flush();
     }
 
     private JSONObject register(JSONObject jsonObject, SQL_Connection
@@ -173,7 +131,7 @@ public class SSL_Server_Actual extends Thread {
                 ("username"));
         String hashedPwd = jsonObject.getString("hashedPwd");
         if (pwdSalt != null) {
-            String encPwd = hash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
+            String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject auth = sqlConnection.authenticate(jsonObject, encPwd);
             if (auth != null) {
                 return auth;
@@ -215,7 +173,7 @@ public class SSL_Server_Actual extends Thread {
         String pwdSalt = sqlConnection.getSalt(jsonObject.getString
                 ("username"));
         if (pwdSalt != null) {
-            String newEncPwd = hash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
+            String newEncPwd = secondPwdHash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd);
             if (verification != null) {
                 if (DEBUG_MODE) {
@@ -267,12 +225,25 @@ public class SSL_Server_Actual extends Thread {
     private JSONObject removePriv(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+
+        //copied from FileController
+        /*if (priv == PrivType.EDIT) {
+            rmUser = sql_connection.removeEditPriv(systemObject.getId(), user.getId(), userId);
+        } else {
+            rmUser = sql_connection.removeViewPriv(systemObject.getId(), user.getId(), userId);
+        }*/
         return null;
     }
 
     private JSONObject addPriv(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
+        //copied from FileController:
+        /*if (priv == PrivType.EDIT) {
+            newUser = sql_connection.addEditPriv(json);
+        } else {
+            newUser = sql_connection.addViewPriv(json);
+        }*/
         return null;
     }
 
@@ -312,7 +283,7 @@ public class SSL_Server_Actual extends Thread {
         //TODO: 32 is currently the salt length. Is this correct?
         byte salt[] = new byte[32];
         random.nextBytes(salt);
-        String hashedPW = hash(pwd, salt);
+        String hashedPW = secondPwdHash(pwd, salt);
         String returnedValues[] = new String[2];
         returnedValues[0] = hashedPW;
         returnedValues[1] = Base64.getEncoder().encodeToString(salt);

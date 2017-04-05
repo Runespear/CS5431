@@ -27,19 +27,20 @@ import java.util.Base64;
 import java.util.Random;
 
 import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Encryption.SHA256;
+import static org.cs5431.JSON.receiveJson;
+import static org.cs5431.JSON.receiveJsonArray;
+import static org.cs5431.JSON.sendJson;
 
 /**
  * A controller for all accounts.
  * The controller for an individual account is called UserController.
  */
 public class AccountsController {
-
-    private SQL_Connection sql_connection;
     private Socket sslSocket;
 
     public AccountsController(){
         Security.addProvider(new BouncyCastleProvider());
-        this.sql_connection = new SQL_Connection("localhost", 3306);
     }
 
     public void setSocket(Socket s) {
@@ -79,8 +80,8 @@ public class AccountsController {
         user.put("privKeySalt", Base64.getEncoder().encodeToString
                 (keyAndSalt[1]));
 
-        sendJson(user);
-        JSONObject newUser = receiveJson();
+        sendJson(user,sslSocket);
+        JSONObject newUser = receiveJson(sslSocket);
         if (newUser.getString("msgType").equals("registrationAck")) {
             int uid = newUser.getInt("uid");
             int parentFolderid = newUser.getInt("parentFolderid");
@@ -99,16 +100,6 @@ public class AccountsController {
             throw new RegistrationFailException("Received bad response " +
                     "from server");
         }
-    }
-
-    private byte[] SHA256(String msg) {
-        SHA256Digest sha256 = new SHA256Digest();
-        byte msgByte[] = msg.getBytes();
-        sha256.update(msgByte, 0, msgByte.length);
-        Arrays.fill(msgByte, (byte)0 );    //an attempt to zero out pwd
-        byte[] hashedPwd = new byte[sha256.getDigestSize()];
-        sha256.doFinal(hashedPwd, 0);
-        return hashedPwd;
     }
 
     private byte[][] pwdBasedKey(String pwd) {
@@ -197,11 +188,11 @@ public class AccountsController {
             allegedUser.put("username", username);
             allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
 
-            sendJson(allegedUser);
+            sendJson(allegedUser, sslSocket);
             if (DEBUG_MODE) {
                 System.out.println("waiting to receive json...");
             }
-            JSONObject user = receiveJson();
+            JSONObject user = receiveJson(sslSocket);
 
             if (user.getString("msgType").equals("loginAck")) {
                 int uid = user.getInt("uid");
@@ -233,47 +224,6 @@ public class AccountsController {
         return null;
     }
 
-    private void sendJson(JSONObject json) throws IOException {
-        if (DEBUG_MODE) {
-            System.out.println("sending json");
-        }
-
-        BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(sslSocket.getOutputStream()));
-        String str = json.toString();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-        }
-        w.write(str + '\n');
-        w.flush();
-    }
-
-    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-            System.out.flush();
-        }
-        return new JSONObject(str);
-    }
-
-    private JSONArray receiveJsonArray() throws IOException,
-            ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-            System.out.flush();
-        }
-
-        return new JSONArray(str);
-    }
-
     public Folder getFolderFromId(int folderId, int uid) {
         try {
         //TODO: send to server and get the corresponding folder
@@ -282,8 +232,8 @@ public class AccountsController {
         json.put("fsoid", folderId);
         json.put("uid", uid);
         json.put("msgType", "getChildren");
-        sendJson(json);
-        JSONArray children = receiveJsonArray();
+        sendJson(json, sslSocket);
+        JSONArray children = receiveJsonArray(sslSocket);
         for (int i=0; i<children.length(); i++) {
             JSONObject c = children.getJSONObject(i);
             int id = c.getInt("id");

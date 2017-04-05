@@ -13,7 +13,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.stage.Stage;
-import org.cs5431.SSL_Client_Methods;
 import org.cs5431.Validator;
 
 import java.io.*;
@@ -22,7 +21,8 @@ import java.net.URL;
 import java.security.PublicKey;
 import java.util.ResourceBundle;
 
-import static org.cs5431.Unsecured_Client.verify_and_receive_Cert;
+import static org.cs5431.controller.SSLController.importCert;
+import static org.cs5431.controller.SSLController.verify_and_receive_Cert;
 
 public class ConnectController implements Initializable {
     @FXML
@@ -89,7 +89,7 @@ public class ConnectController implements Initializable {
                     throw new CertException("Could not create new " +
                             "certificate.");
                 }
-                SSL_Client_Methods.importCert(serverName);
+                importCert(serverName);
             }
 
             goToLogin(e, server, serverName, sslPort);

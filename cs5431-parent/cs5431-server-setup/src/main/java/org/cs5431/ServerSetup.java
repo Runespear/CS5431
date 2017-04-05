@@ -1,8 +1,6 @@
 package org.cs5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cs5431.Validator;
-import org.cs5431.SSL_Server_Methods;
 
 import java.io.*;
 import java.security.KeyPair;
@@ -210,9 +208,9 @@ public class ServerSetup {
 
             //SSL handling
             //generate keystore
-            SSL_Server_Methods.generateKeyStore(name);
+            generateKeyStore(name);
             //export certificate and public key
-            SSL_Server_Methods.exportCert(name);
+            exportCert(name);
 
             System.out.println("Distribute the "+name+".config and the "+name+
                     ".pub file found in the /user-config folder to your users.");
@@ -222,6 +220,47 @@ public class ServerSetup {
                     "Please delete the "+name+".config and the "+name+
                     ".pub file found in the /user-config and /server-config " +
                     "folders and try again.");
+        }
+    }
+
+    // Command for keystore generation
+    public static void generateKeyStore(String filename) throws Exception{
+        //If keystore has already been created, just skip the step
+        File f = new File(System.getProperty("user.dir") + "/keystorefilename.jks");
+        if(!f.exists()) {
+            String command = " -genkeypair " +
+                    " -alias mykey " +
+                    " -keyalg RSA " +
+                    //" -sigalg SHA256withRSA "+
+                    //" -dname CN=Java "+
+                    //" -storetype JKS "+
+                    //" -keypass password "+
+                    " -keystore ./server-config/" + filename + ".jks";
+            //" -storepass password";
+            String[] options = command.trim().split("\\s+");
+            System.out.println(command);
+            sun.security.tools.keytool.Main.main(options);
+        }
+    }
+
+    // Command for exporting server's certificate and public key
+    public static void exportCert(String filename) throws Exception{
+        //If cert has already been created, just skip the step
+        File f = new File("./server-config/"+ filename + ".cer");
+        if(!f.exists()) {
+            String command = " -export " +
+                    " -alias mykey " +
+                    //" -keyalg RSA " +
+                    //" -sigalg SHA256withRSA "+
+                    //" -dname CN=Java "+
+                    //" -storetype JKS "+
+                    //" -keypass password "+
+                    " -keystore ./server-config/" + filename + ".jks" +
+                    " -rfc -file ./server-config/" + filename+ ".cer";
+            //" -storepass password";
+            String[] options = command.trim().split("\\s+");
+            System.out.println(command);
+            sun.security.tools.keytool.Main.main(options);
         }
     }
 }

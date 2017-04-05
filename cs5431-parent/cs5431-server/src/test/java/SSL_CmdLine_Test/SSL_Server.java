@@ -1,7 +1,9 @@
-package org.cs5431;
+package SSL_CmdLine_Test;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import static org.cs5431.SSLSocketThread.setup_SSLServerSocket;
 
 public class SSL_Server {
 
@@ -11,16 +13,18 @@ public class SSL_Server {
     public static void main(String[] args){
         try {
             //generate keystore
+            //TODO: test generation of keystore and exporting in server-setup
+            /*
             String filename = "";
-            SSL_Server_Methods.generateKeyStore(filename);
+            generateKeyStore(filename);
 
             //export certificate and public key
-            SSL_Server_Methods.exportCert(filename);
+            exportCert(filename);
+            */
 
-
+            String filename = "";
             //Setup SSL server socket
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
-                    (filename, PORT);
+            ServerSocket ss = setup_SSLServerSocket(filename, PORT);
 
             while (true){
                 System.out.println("Waiting for client to connect.");

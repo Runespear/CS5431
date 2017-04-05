@@ -1,4 +1,4 @@
-package org.cs5431;
+package SSL_CmdLine_Test;
 
 import org.json.JSONObject;
 
@@ -10,9 +10,9 @@ import java.io.Serializable;
 public class TransmittedFile implements Serializable{
     private static final long serialVersionUID = 4229824720221248174L;
     protected byte[] encrypted_Stuff;
-    public byte[] signature;
+    protected byte[] signature;
     protected byte[] mac_Stuff;
-    public byte[] file;
-    public String filename;
-    public String jsonString;
+    protected byte[] file;
+    protected String filename;
+    protected String jsonString;
 }

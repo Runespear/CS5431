@@ -13,13 +13,14 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.model.User;
-import org.cs5431.SSL_Client_Methods;
 import org.cs5431.Validator;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import static org.cs5431.controller.SSLController.connect_SSLServerSocket;
 
 public class LoginController implements Initializable {
     @FXML
@@ -165,8 +166,7 @@ public class LoginController implements Initializable {
 
     void setConnectionDetails(String server, String serverName, String sslPort)
             throws Exception {
-        Socket s = SSL_Client_Methods.connect_SSLServerSocket(server,
-                Integer.parseInt(sslPort), "./user-config/"+serverName+".jks");
+        Socket s = connect_SSLServerSocket(server,Integer.parseInt(sslPort), "./user-config/"+serverName+".jks");
         accountsController.setSocket(s);
         sslSocket = s;
     }

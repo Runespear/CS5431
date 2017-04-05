@@ -1,7 +1,5 @@
 package org.cs5431;
 
-import org.cs5431.SQL_Connection;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -88,133 +86,21 @@ public class ServerView {
                 username, password);
 
         try {
-            waitForIncomingCert wfic = new waitForIncomingCert(serverName,
+            CertSocketThread cst = new CertSocketThread(serverName,
                     outPort, serverPrivKey);
-            new Thread(wfic).start();
+            new Thread(cst).start();
 
-            waitForIncomingSSL wfis = new waitForIncomingSSL(sqlConnection,
+            SSLSocketThread sst = new SSLSocketThread(sqlConnection,
                     serverName, sslPort);
-            new Thread(wfis).start();
+            new Thread(sst).start();
 
-            //promptAdmin pa = new promptAdmin(sqlConnection);
-            //new Thread(pa).start();
+            PromptAdminThread pat = new PromptAdminThread(sqlConnection);
+            new Thread(pat).start();
 
         } catch(Exception e) {
             System.err.println("We should change setup_SSLServerSocket to not" +
                     " throw exception");
             e.printStackTrace();
-        }
-    }
-}
-
-class waitForIncomingCert implements Runnable {
-    String serverName;
-    Integer outPort;
-    PrivateKey serverPrivKey;
-
-    public waitForIncomingCert(String serverName, Integer outPort,
-                               PrivateKey serverPrivKey) {
-        this.serverName = serverName;
-        this.outPort = outPort;
-        this.serverPrivKey = serverPrivKey;
-    }
-
-    public void run() {
-        try {
-            ServerSocket ss = new ServerSocket(outPort);
-            while (true) {
-                Socket s = ss.accept();
-                new Unsecured_Server_Handler(s, serverPrivKey, serverName).start();
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-class waitForIncomingSSL implements Runnable {
-    SQL_Connection sqlConnection;
-    String serverName;
-    Integer sslPort;
-
-    public waitForIncomingSSL(SQL_Connection sqlConnection, String
-            serverName, Integer sslPort) {
-        this.sqlConnection = sqlConnection;
-        this.serverName = serverName;
-        this.sslPort = sslPort;
-    }
-
-    public void run() {
-        try {
-            ServerSocket ss = SSL_Server_Methods.setup_SSLServerSocket
-                    (serverName, sslPort);
-            while (true) {
-                Socket s = ss.accept();
-                new SSL_Server_Actual(s, sqlConnection).start();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-class promptAdmin implements Runnable {
-    SQL_Connection sqlConnection;
-
-    public promptAdmin(SQL_Connection sqlConnection) {
-        this.sqlConnection = sqlConnection;
-    }
-
-    public void run() {
-        try {
-            while (true) {
-                prompt(sqlConnection);
-            }
-        } catch (SQLException e) {
-            System.out.println("Wrong password, please try again.");
-            e.printStackTrace();
-        }
-    }
-
-    private void prompt(SQL_Connection sql_connection) throws SQLException {
-        Scanner scanner = new Scanner(System.in);
-        while(true) {
-            System.out.println("Enter 'u' to download user logs");
-            System.out.println("Enter 'd' to delete a user");
-            String command = scanner.nextLine();
-            String[] elements = command.trim().split("\\s+");
-
-            switch (elements[0]) {
-                case "u":
-                    downloadUserLogs(sql_connection);
-                    return;
-                case "d":
-                    deleteUser(sql_connection);
-                    return;
-                default:
-                    System.out.println("Sorry, your command was not " +
-                            "understood.");
-            }
-        }
-    }
-
-    private static void downloadUserLogs(SQL_Connection sql_connection) {
-        //TODO
-    }
-
-    private static void deleteUser(SQL_Connection sql_connection) throws SQLException {
-        Scanner scanner = new Scanner(System.in);
-        while(true) {
-            System.out.println("Enter the username of the user to delete:");
-            String userToDelete = scanner.nextLine();
-
-            System.out.println("Please confirm the username of the user to " +
-                    "delete by entering it again:");
-            String confirm = scanner.nextLine();
-            if (userToDelete.equals(confirm)) {
-                //TODO
-            }
         }
     }
 }

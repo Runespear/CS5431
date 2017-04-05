@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 import static org.cs5431.Constants.DEBUG_MODE;
-import static org.cs5431.Encryption.hash;
+import static org.cs5431.Encryption.secondPwdHash;
 
 public class SQL_Connection {
 
@@ -546,7 +546,7 @@ public class SQL_Connection {
         allegedUser.put("username", "username");
         //allegedUser.put("pwd", password);
         String salt = getSalt(username);
-        String encPwd = hash(password, Base64.getDecoder().decode(salt));
+        String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
 
         if (user != null) {
@@ -620,7 +620,7 @@ public class SQL_Connection {
         String password = allegedUser.getString("hashedPwd");
         String newPrivKey = allegedUser.getString("newPrivKey");
         String salt = getSalt(username);
-        String encPwd = hash(password, Base64.getDecoder().decode(salt));
+        String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd);
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";

@@ -21,6 +21,10 @@ import java.util.Base64;
 import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Encryption.SHA256;
+import static org.cs5431.Encryption.pwdBasedKey;
+import static org.cs5431.JSON.receiveJson;
+import static org.cs5431.JSON.sendJson;
 
 /**
  * A controller for an individual account, including both admins and users.
@@ -51,8 +55,8 @@ public class UserController {
             JSONObject getSalt = new JSONObject();
             getSalt.put("msgType", "getPrivKeySalt");
             getSalt.put("username", user.getUsername());
-            sendJson(getSalt);
-            JSONObject saltResponse = receiveJson();
+            sendJson(getSalt, sslSocket);
+            JSONObject saltResponse = receiveJson(sslSocket);
 
             if (saltResponse.getString("msgType").equals("getPrivKeySaltAck")) {
                 String strSalt = saltResponse.getString("privKeySalt");
@@ -75,11 +79,11 @@ public class UserController {
                 allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(oldPassword)));
                 allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
 
-                sendJson(allegedUser);
+                sendJson(allegedUser, sslSocket);
                 if (DEBUG_MODE) {
                     System.out.println("waiting to receive json...");
                 }
-                JSONObject user = receiveJson();
+                JSONObject user = receiveJson(sslSocket);
                 if (DEBUG_MODE) {
                     System.out.println("change pwd json recived: " + user);
                 }
@@ -150,68 +154,6 @@ public class UserController {
             return (List<FileSystemObject>) ret[0];
         }
         return null;
-    }
-
-    private byte[] SHA256(String msg) {
-        SHA256Digest sha256 = new SHA256Digest();
-        byte msgByte[] = msg.getBytes();
-        sha256.update(msgByte, 0, msgByte.length);
-        Arrays.fill(msgByte, (byte)0 );    //an attempt to zero out pwd
-        byte[] hashedPwd = new byte[sha256.getDigestSize()];
-        sha256.doFinal(hashedPwd, 0);
-        return hashedPwd;
-    }
-
-    private byte[][] pwdBasedKey(String pwd, byte[] salt) {
-        byte[] hashedPW = hash(pwd, salt);
-        if (DEBUG_MODE) {
-            System.out.println("On Client side: key generated from pwd and salt:");
-            System.out.println(Base64.getEncoder().encodeToString(hashedPW));
-        }
-        byte returnedValues[][] = new byte[2][128];
-        returnedValues[0] = hashedPW;
-        returnedValues[1] = salt;
-        return returnedValues;
-    }
-
-    private byte[] hash(String pwd, byte[] salt) {
-        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
-        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
-                pwd.toCharArray()), salt, 3000);
-        //TODO: 256 is currently the key length. Is this correct?
-        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
-                (128);
-        return kp.getKey();
-    }
-
-    private void sendJson(JSONObject json) throws IOException {
-        if (DEBUG_MODE) {
-            System.out.println("sending json");
-        }
-        BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(sslSocket.getOutputStream()));
-        String str = json.toString();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-        }
-        w.write(str + '\n');
-        w.flush();
-    }
-
-    private JSONObject receiveJson() throws IOException, ClassNotFoundException {
-        if (DEBUG_MODE) {
-            System.out.println("received json to change password");
-        }
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
-        if (DEBUG_MODE) {
-            System.out.println(str);
-            System.out.flush();
-        }
-
-        return new JSONObject(str);
     }
 
     public class ChangePwdFailException extends Exception {

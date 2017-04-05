@@ -42,34 +42,46 @@ public class PrivViewCellController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         canEdit.selectedProperty().addListener(
             (arg0, oldPropertyValue, newPropertyValue) -> {
-                boolean success;
-                if (newPropertyValue) {
-                    success = fileController.addPriv(fso, -1, PrivType.EDIT);
-                } else {
-                    success = fileController.removePriv(fso, -1, PrivType.EDIT);
-                }
-                //TODO: handle failure of changing of privilege
+                try {
+                    boolean success;
+                    if (newPropertyValue) {
+                        success = fileController.addPriv(fso, -1, PrivType.EDIT);
+
+                    } else {
+                        success = fileController.removePriv(fso, -1, PrivType.EDIT);
+                    }
+                    //TODO: handle failure of changing of privilege
                 /*if (!success) {
                     //TODO change to alert box?
                     System.out.println("FAILED");
                     canEdit.setSelected(oldPropertyValue);
                 }*/
+                } catch (IOException | ClassNotFoundException e) {
+                    //TODO catch error?
+                    e.printStackTrace();
+                }
             });
 
         canView.selectedProperty().addListener(
             (arg0, oldPropertyValue, newPropertyValue) -> {
-                boolean success;
-                if (newPropertyValue) {
-                    success = fileController.addPriv(fso, -1, PrivType.VIEW);
-                } else {
-                    success = fileController.removePriv(fso, -1, PrivType.VIEW);
-                }
-                //TODO: handle failure of changing of privilege
+                try {
+                    boolean success;
+                    if (newPropertyValue) {
+                        success = fileController.addPriv(fso, -1, PrivType.VIEW);
+
+                    } else {
+                        success = fileController.removePriv(fso, -1, PrivType.VIEW);
+                    }
+                    //TODO: handle failure of changing of privilege
                 /*if (!success) {
                     //TODO change to alert box?
                     System.out.println("FAILED");
                     canView.setSelected(oldPropertyValue);
                 }*/
+                } catch (IOException | ClassNotFoundException e) {
+                    //TODO catch error?
+                    e.printStackTrace();
+                }
             });
     }
 

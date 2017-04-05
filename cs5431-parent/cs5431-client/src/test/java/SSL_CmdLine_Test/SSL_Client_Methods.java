@@ -1,38 +1,14 @@
-package org.cs5431;
+package SSL_CmdLine_Test;
 
 import org.cs5431.TransmittedFile;
 
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-/**
- * Created by Brandon on 25/3/2017.
- */
 public class SSL_Client_Methods {
-
-    public static Socket connect_SSLServerSocket(String host, int
-            Port_Number, String storeName) throws Exception{
-
-        System.setProperty("javax.net.ssl.trustStore", storeName);
-
-        //SocketFactory f = SSLSocketFactory.getDefault();
-        //Socket s = f.createSocket(host, Port_Number);
-        //return s;
-
-        final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        final SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(host, Port_Number);
-
-        String[] ciphersuite = {"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"};
-        sslSocket.setEnabledCipherSuites(ciphersuite);
-        return sslSocket;
-    }
 
     public static void send_Request(Socket s) throws Exception {
         BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
@@ -66,27 +42,7 @@ public class SSL_Client_Methods {
             sun.security.tools.keytool.Main.main(options);
     }
 
-    public static void importCert(String name) throws Exception{
-        System.out.println("importing cert");
-        String command = " -import " +
-                " -alias mykey " +
-                //" -keyalg RSA " +
-                //" -sigalg SHA256withRSA "+
-                //" -dname CN=Java "+
-                //" -storetype JKS "+
-                " -file ./user-config/" + name + ".cer "+
-                " -keystore ./user-config/" + name + ".jks";
 
-
-        String[] options = command.trim().split("\\s+");
-        System.out.println(command);
-        sun.security.tools.keytool.Main.main(options);
-
-        Scanner scanner = new Scanner (System.in);
-        System.out.println("Type in your password to access the truststore:");
-        String pass = scanner.nextLine(); //Obtain user's command
-        System.setProperty("javax.net.ssl.trustStorePassword", pass);
-    }
 
     public static void sendFile(Socket s, String filepath, String filename) throws Exception{
 
