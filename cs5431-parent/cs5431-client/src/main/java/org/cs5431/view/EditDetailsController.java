@@ -105,22 +105,24 @@ public class EditDetailsController implements Initializable {
         String confirmNewEmail = txtConfirmNewEmail.getCharacters()
                 .toString();
         
-        List<String> messages = new ArrayList<>();
+        List<String> pwdMessages = new ArrayList<>();
+        List<String> emailMessages = new ArrayList<>();
 
-        boolean msgShownLater = false;
+        boolean pwdTaskRunning = false;
+        boolean emailTaskRunning = false;
         //Tries to change the password if the password fields are not blank.
         if (!oldPassword.isEmpty() || !newPassword.isEmpty() ||
             !confirmNewPassword.isEmpty()) {
             if (oldPassword.isEmpty() || newPassword.isEmpty() ||
                 confirmNewPassword.isEmpty()) {
-                messages.add("At least one password field is empty.");
+                pwdMessages.add("At least one password field is empty.");
             } else if (!newPassword.equals(confirmNewPassword)){
-                messages.add("New passwords don't match.");
+                pwdMessages.add("New passwords don't match.");
             } else if (!Validator.validPassword(newPassword)) {
-                messages.add("Passwords should be at least 16 characters " +
+                pwdMessages.add("Passwords should be at least 16 characters " +
                         "long.");
             } else {
-                msgShownLater = true;
+                pwdTaskRunning = true;
                 Task<Integer> task = new Task<Integer>() {
                     @Override
                     protected Integer call() throws Exception {
@@ -128,12 +130,12 @@ public class EditDetailsController implements Initializable {
                     }
                 };
                 task.setOnFailed(t -> {
-                    messages.add("Wrong password.");
-                    showMessages(messages);
+                    pwdMessages.add("Wrong password.");
+                    showMessages(pwdMessages);
                 });
                 task.setOnSucceeded(t -> {
-                    messages.add("Password successfully changed.");
-                    showMessages(messages);
+                    pwdMessages.add("Password successfully changed.");
+                    showMessages(pwdMessages);
                 });
                 Thread th = new Thread(task);
                 th.setDaemon(true);
@@ -152,21 +154,44 @@ public class EditDetailsController implements Initializable {
                 !confirmNewEmail.isEmpty()) {
             if (oldEmail.isEmpty() || newEmail.isEmpty() ||
                     confirmNewEmail.isEmpty()) {
-                messages.add("At least one email field is empty.");
+                emailMessages.add("At least one email field is empty.");
             } else if (!newEmail.equals(confirmNewEmail)){
-                messages.add("New emails don't match.");
+                emailMessages.add("New emails don't match.");
             } else if (!Validator.validEmail(newEmail)) {
-                messages.add("The email entered is invalid.");
+                emailMessages.add("The email entered is invalid.");
             } else {
-                userController.changeEmail(oldEmail, newEmail);
-                //TODO check here
-                messages.add("Email successfully changed.");
+                emailTaskRunning = true;
+                Task<Boolean> task = new Task<Boolean>() {
+                    @Override
+                    protected Boolean call() throws Exception {
+                        return userController.changeEmail(oldEmail, newEmail);
+                    }
+                };
+                task.setOnFailed(t -> {
+                    emailMessages.add("Email change failed.");
+                    showMessages(emailMessages);
+                });
+                task.setOnSucceeded(t -> {
+                    emailMessages.add("Email successfully changed.");
+                    showMessages(emailMessages);
+                });
+                Thread th = new Thread(task);
+                th.setDaemon(true);
+                th.start();
+                task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                    if(newValue != null) {
+                        Exception ex = (Exception) newValue;
+                        ex.printStackTrace();
+                    }
+                });
             }
         }
 
         //prints all success+failure messages if not shown in a task
-        if (!msgShownLater) {
-            showMessages(messages);
+        if (!pwdTaskRunning)
+            showMessages(pwdMessages);
+        if (!emailTaskRunning) {
+            showMessages(emailMessages);
         }
     }
 

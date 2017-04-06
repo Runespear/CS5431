@@ -224,19 +224,14 @@ public class ServerSetup {
     }
 
     // Command for keystore generation
-    public static void generateKeyStore(String filename) throws Exception{
+    private static void generateKeyStore(String filename) throws Exception{
         //If keystore has already been created, just skip the step
         File f = new File(System.getProperty("user.dir") + "/keystorefilename.jks");
         if(!f.exists()) {
             String command = " -genkeypair " +
                     " -alias mykey " +
                     " -keyalg RSA " +
-                    //" -sigalg SHA256withRSA "+
-                    //" -dname CN=Java "+
-                    //" -storetype JKS "+
-                    //" -keypass password "+
                     " -keystore ./server-config/" + filename + ".jks";
-            //" -storepass password";
             String[] options = command.trim().split("\\s+");
             System.out.println(command);
             sun.security.tools.keytool.Main.main(options);
@@ -244,20 +239,14 @@ public class ServerSetup {
     }
 
     // Command for exporting server's certificate and public key
-    public static void exportCert(String filename) throws Exception{
+    private static void exportCert(String filename) throws Exception{
         //If cert has already been created, just skip the step
         File f = new File("./server-config/"+ filename + ".cer");
         if(!f.exists()) {
             String command = " -export " +
                     " -alias mykey " +
-                    //" -keyalg RSA " +
-                    //" -sigalg SHA256withRSA "+
-                    //" -dname CN=Java "+
-                    //" -storetype JKS "+
-                    //" -keypass password "+
                     " -keystore ./server-config/" + filename + ".jks" +
                     " -rfc -file ./server-config/" + filename+ ".cer";
-            //" -storepass password";
             String[] options = command.trim().split("\\s+");
             System.out.println(command);
             sun.security.tools.keytool.Main.main(options);

@@ -1,36 +1,25 @@
 package org.cs5431.controller;
 
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cs5431.model.*;
 import org.cs5431.model.File;
-import org.cs5431.SQL_Connection;
+import org.cs5431.model.Folder;
+import org.cs5431.model.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
 
 import static org.cs5431.Constants.DEBUG_MODE;
-import static org.cs5431.Encryption.SHA256;
-import static org.cs5431.JSON.receiveJson;
-import static org.cs5431.JSON.receiveJsonArray;
-import static org.cs5431.JSON.sendJson;
+import static org.cs5431.Encryption.*;
+import static org.cs5431.JSON.*;
 
 /**
  * A controller for all accounts.
@@ -59,26 +48,11 @@ public class AccountsController {
         user.put("email", email);
 
         //hashing password
-        user.put("hashedPwd", Base64.getEncoder().encodeToString(
-                SHA256(password)));
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
-                BouncyCastleProvider());
-        kpg.initialize(4096, new SecureRandom());
-        KeyPair keyPair = kpg.generateKeyPair();
-        user.put("pubKey", Base64.getEncoder().encodeToString
-                (keyPair.getPublic().getEncoded()));
-        //encrypt secret key using password based key
-        //symmetric, uses AES
-        byte keyAndSalt[][] = pwdBasedKey(password);
-        byte key[] = keyAndSalt[0]; //TODO check if this key is the right length
-        SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        IvParameterSpec iv = new IvParameterSpec(new byte[16]);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-        byte encryptedKey[] = cipher.doFinal(keyPair.getPrivate().getEncoded());
-        user.put("privKey", Base64.getEncoder().encodeToString(encryptedKey));
-        user.put("privKeySalt", Base64.getEncoder().encodeToString
-                (keyAndSalt[1]));
+        user.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
+        String keys[] = generateUserKeys(password);
+        user.put("pubKey", keys[0]);
+        user.put("privKey", keys[1]);
+        user.put("privKeySalt", keys[2]);
 
         sendJson(user,sslSocket);
         JSONObject newUser = receiveJson(sslSocket);
@@ -86,8 +60,11 @@ public class AccountsController {
             int uid = newUser.getInt("uid");
             int parentFolderid = newUser.getInt("parentFolderid");
 
-            PrivateKey privKey = getPrivKeyFromJSON(user, password);
-            PublicKey pubKey = getPubKeyFromJSON(user);
+            String encodedPrivKey = user.getString("privKey");
+            String privKeySalt = user.getString("privKeySalt");
+            PrivateKey privKey = getPrivKeyFromJSON(encodedPrivKey,
+                    privKeySalt, password);
+            PublicKey pubKey = getPubKeyFromJSON(user.getString("pubKey"));
 
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
             Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
@@ -100,69 +77,6 @@ public class AccountsController {
             throw new RegistrationFailException("Received bad response " +
                     "from server");
         }
-    }
-
-    private byte[][] pwdBasedKey(String pwd) {
-        Random random = new SecureRandom();
-        //TODO: 32 is currently the salt length. Is this correct?
-        byte salt[] = new byte[32];
-        random.nextBytes(salt);
-        byte[] hashedPW = hash(pwd, salt);
-        if (DEBUG_MODE) {
-            System.out.println("On Client side: key generated from pwd and salt:");
-            System.out.println(Base64.getEncoder().encodeToString(hashedPW));
-        }
-        byte returnedValues[][] = new byte[2][128];
-        returnedValues[0] = hashedPW;
-        returnedValues[1] = salt;
-        return returnedValues;
-    }
-
-    private byte[] hash(String pwd, byte[] salt) {
-        PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
-        generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
-                pwd.toCharArray()), salt, 3000);
-        //TODO: 256 is currently the key length. Is this correct?
-        KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
-                (128);
-        return kp.getKey();
-    }
-
-    private PublicKey getPubKeyFromJSON(JSONObject json) throws
-            NoSuchAlgorithmException, InvalidKeySpecException {
-        String encodedPubKey = json.getString("pubKey");
-        byte[] decodedPub = Base64.getDecoder().decode(encodedPubKey);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePublic(new X509EncodedKeySpec(decodedPub));
-    }
-
-    private PrivateKey getPrivKeyFromJSON(JSONObject json, String password)
-    throws NoSuchAlgorithmException, NoSuchPaddingException,
-            IllegalBlockSizeException, BadPaddingException,
-            InvalidKeySpecException, InvalidKeyException,
-            NoSuchProviderException, InvalidAlgorithmParameterException {
-        String encodedPrivKey = json.getString("privKey");
-        String privKeySalt = json.getString("privKeySalt");
-        byte[] decodedPriv = decryptPwdBasedKey(encodedPrivKey,
-                password, privKeySalt);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(new PKCS8EncodedKeySpec(decodedPriv));
-    }
-
-    private byte[] decryptPwdBasedKey(String enc, String pwd, String salt)
-    throws NoSuchAlgorithmException, NoSuchPaddingException,
-            IllegalBlockSizeException, BadPaddingException,
-            InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        byte key[] = hash(pwd, Base64.getDecoder().decode(salt));
-        if (DEBUG_MODE) {
-            System.out.println("From server: key generated from pwd and salt:");
-            System.out.println(Base64.getEncoder().encodeToString(key));
-        }
-        SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
-        IvParameterSpec iv = new IvParameterSpec(new byte[16]);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-        return cipher.doFinal(Base64.getDecoder().decode(enc));
     }
 
     /**
@@ -196,17 +110,18 @@ public class AccountsController {
 
             if (user.getString("msgType").equals("loginAck")) {
                 int uid = user.getInt("uid");
-                //TODO get username?
                 int parentFolderid = user.getInt("parentFolderid");
                 String email = user.getString("email");
 
-                PrivateKey privKey = getPrivKeyFromJSON(user, password);
-                PublicKey pubKey = getPubKeyFromJSON(user);
+                String encodedPrivKey = user.getString("privKey");
+                String privKeySalt = user.getString("privKeySalt");
+                PrivateKey privKey = getPrivKeyFromJSON(encodedPrivKey, privKeySalt,
+                        password);
+                PublicKey pubKey = getPubKeyFromJSON(user.getString("pubKey"));
 
                 Folder parentFolder = getFolderFromId(parentFolderid, uid);
-                User currUser = new User(uid, username, email, parentFolder,
+                return new User(uid, username, email, parentFolder,
                         privKey, pubKey);
-                return currUser;
             } else if (user.getString("msgType").equals("error")) {
                 throw new LoginFailException(user.getString
                         ("message"));
@@ -214,7 +129,6 @@ public class AccountsController {
                 throw new LoginFailException("Received bad response " +
                         "from server");
             }
-            //TODO: create relevant controllers? and pass them? ???
         } catch (JSONException | NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
                 IllegalBlockSizeException | BadPaddingException |
@@ -224,7 +138,7 @@ public class AccountsController {
         return null;
     }
 
-    public Folder getFolderFromId(int folderId, int uid) {
+    private Folder getFolderFromId(int folderId, int uid) {
         try {
         //TODO: send to server and get the corresponding folder
         Folder parentFolder = new Folder(folderId, "", null,null);
@@ -244,7 +158,6 @@ public class AccountsController {
             String type = c.getString("FSOType");
             if (type.equals("FOLDER")) {
                 Folder childFolder = new Folder(id, name, parentFolder, lastModified);
-
                 parentFolder.addChild(childFolder);
             } else {
                 File childFile = new File(id, name, parentFolder, longSize,
@@ -260,13 +173,13 @@ public class AccountsController {
     }
 
     public class RegistrationFailException extends Exception {
-        public RegistrationFailException (String message) {
+        RegistrationFailException(String message) {
             super(message);
         }
     }
 
     public class LoginFailException extends Exception {
-        public LoginFailException (String message) {
+        LoginFailException(String message) {
             super(message);
         }
     }

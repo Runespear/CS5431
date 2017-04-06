@@ -2,9 +2,6 @@ package org.cs5431.controller;
 
 import javafx.concurrent.Task;
 import org.cs5431.model.*;
-import org.cs5431.model.File;
-import org.cs5431.SQL_Connection;
-import org.cs5431.Validator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,7 +9,9 @@ import org.json.JSONObject;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
 import java.sql.Timestamp;
@@ -20,12 +19,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static org.cs5431.JSON.receiveJson;
-import static org.cs5431.JSON.receiveJsonArray;
-import static org.cs5431.JSON.sendJson;
+import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.JSON.*;
 import static org.cs5431.model.FileActionType.DOWNLOAD;
 import static org.cs5431.model.FileActionType.OVERWRITE;
-import static org.cs5431.Constants.DEBUG_MODE;
 
 public class FileController {
     private org.cs5431.model.User user;
