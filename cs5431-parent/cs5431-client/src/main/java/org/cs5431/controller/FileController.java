@@ -20,6 +20,7 @@ import java.util.Base64;
 import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Encryption.*;
 import static org.cs5431.JSON.*;
 import static org.cs5431.model.FileActionType.DOWNLOAD;
 import static org.cs5431.model.FileActionType.OVERWRITE;
@@ -121,82 +122,6 @@ public class FileController {
         UploadFailException(String message) {
             super(message);
         }
-    }
-
-    private byte[] encryptFile(java.io.File file, SecretKey secretKey,
-                               IvParameterSpec ivSpec) throws
-            NoSuchAlgorithmException, NoSuchProviderException,
-            NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IOException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-        FileInputStream inputStream = new FileInputStream(file);
-        byte[] filebytes = new byte[inputStream.available()];
-        inputStream.read(filebytes);
-        inputStream.close();
-        return cipher.doFinal(filebytes);
-    }
-
-    private byte[] encryptFileName(String fileName, SecretKey secretKey,
-                                   IvParameterSpec ivSpec) throws
-            NoSuchAlgorithmException, NoSuchProviderException,
-            NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-        return cipher.doFinal(fileName.getBytes());
-    }
-
-    private byte[] encFileSecretKey (SecretKey secretKey, PublicKey
-            userPubKey) throws NoSuchAlgorithmException,
-            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException {
-        Cipher cipher = Cipher.getInstance
-                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, userPubKey);
-        return cipher.doFinal(secretKey.getEncoded());
-    }
-
-    private boolean decryptFile(byte[] encFile, String fileName,
-                             SecretKey secretKey, IvParameterSpec ivSpec,
-                                java.io.File directory)
-            throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
-            InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException, IOException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-        byte[] fileDec = cipher.doFinal(encFile);
-        java.io.File fileToWrite = new java.io.File(directory, fileName);
-        FileOutputStream fos = new FileOutputStream(fileToWrite);
-        fos.write(fileDec);
-        fos.close();
-        return true;
-    }
-
-    private String decryptFileName(byte[] encFileName, SecretKey fileSK,
-                                   IvParameterSpec ivSpec) throws NoSuchAlgorithmException,
-            NoSuchProviderException, NoSuchPaddingException,
-            InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, fileSK, ivSpec);
-        byte fileName[] = cipher.doFinal(encFileName);
-        return new String(fileName);
-    }
-
-    private SecretKey decFileSecretKey(byte[] encSK, PrivateKey userPrivKey)
-            throws NoSuchAlgorithmException, NoSuchProviderException,
-            NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException{
-        Cipher cipher = Cipher.getInstance
-                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, userPrivKey);
-        byte SKbytes[] = cipher.doFinal(encSK);
-        return new SecretKeySpec(SKbytes, 0, SKbytes.length, "AES");
     }
 
     /**
@@ -397,21 +322,9 @@ public class FileController {
      * @return true if delete is successful; false otherwise
      */
     public boolean delete(FileSystemObject fso, Folder parentFolder) {
-        Task<Boolean> task = new Task<Boolean>() {
-            @Override
-            protected Boolean call() throws Exception {
-                //TODO: remove from db
-                parentFolder.removeChild(fso);
-                return false;
-            }
-        };
-        final Boolean[] ret = new Boolean[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        //TODO: remove from db
+        parentFolder.removeChild(fso);
+        return false;
     }
 
     /**

@@ -268,7 +268,24 @@ public class FileViewController implements Initializable {
         File fileToUpload = fileChooser.showOpenDialog(stage);
 
         if (fileToUpload != null) {
-            fileController.overwrite((org.cs5431.model.File) fso, fileToUpload);
+            Task<org.cs5431.model.File> task = new Task<org.cs5431.model.File>() {
+                @Override
+                protected org.cs5431.model.File call() throws Exception {
+                    return fileController.overwrite((org.cs5431.model.File) fso, fileToUpload);
+                }
+            };
+            task.setOnSucceeded(t -> {
+                //TODO check return value?
+                populateListView();
+            });
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                //TODO don't throw exception if due to not enough privileges?
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            });
         }
     }
 
@@ -308,10 +325,26 @@ public class FileViewController implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
-            fileController.delete(fso, currParent);
+            Task<Boolean> task = new Task<Boolean>() {
+                @Override
+                protected Boolean call() throws Exception {
+                    return fileController.delete(fso, currParent);
+                }
+            };
+            task.setOnSucceeded(t -> {
+                //TODO check return value?
+                populateListView();
+                showAppropriateImages(false, false, false);
+            });
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                //TODO don't throw exception if due to not enough privileges?
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            });
         }
-        populateListView();
-        showAppropriateImages(false, false, false);
     }
 
     /**

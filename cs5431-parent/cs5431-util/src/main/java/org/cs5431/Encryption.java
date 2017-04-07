@@ -10,6 +10,9 @@ import org.json.JSONObject;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -21,6 +24,82 @@ import java.util.Random;
 import static org.cs5431.Constants.DEBUG_MODE;
 
 public class Encryption {
+    public static byte[] encryptFile(java.io.File file, SecretKey secretKey,
+                               IvParameterSpec ivSpec) throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] filebytes = new byte[inputStream.available()];
+        inputStream.read(filebytes);
+        inputStream.close();
+        return cipher.doFinal(filebytes);
+    }
+
+    public static byte[] encryptFileName(String fileName, SecretKey secretKey,
+                                   IvParameterSpec ivSpec) throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
+        return cipher.doFinal(fileName.getBytes());
+    }
+
+    public static byte[] encFileSecretKey (SecretKey secretKey, PublicKey
+            userPubKey) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        Cipher cipher = Cipher.getInstance
+                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, userPubKey);
+        return cipher.doFinal(secretKey.getEncoded());
+    }
+
+    public static boolean decryptFile(byte[] encFile, String fileName,
+                                SecretKey secretKey, IvParameterSpec ivSpec,
+                                java.io.File directory)
+            throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException, IOException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+        byte[] fileDec = cipher.doFinal(encFile);
+        java.io.File fileToWrite = new java.io.File(directory, fileName);
+        FileOutputStream fos = new FileOutputStream(fileToWrite);
+        fos.write(fileDec);
+        fos.close();
+        return true;
+    }
+
+    public static String decryptFileName(byte[] encFileName, SecretKey fileSK,
+                                   IvParameterSpec ivSpec) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, fileSK, ivSpec);
+        byte fileName[] = cipher.doFinal(encFileName);
+        return new String(fileName);
+    }
+
+    public static SecretKey decFileSecretKey(byte[] encSK, PrivateKey
+            userPrivKey) throws NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException{
+        Cipher cipher = Cipher.getInstance
+                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, userPrivKey);
+        byte SKbytes[] = cipher.doFinal(encSK);
+        return new SecretKeySpec(SKbytes, 0, SKbytes.length, "AES");
+    }
+
     public static byte[] pwdBasedHash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
