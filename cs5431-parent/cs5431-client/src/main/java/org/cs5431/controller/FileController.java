@@ -181,27 +181,15 @@ public class FileController {
      * @return the file that is modified and uploaded to server successfully; null otherwise.
      */
     public File overwrite(File originalFile, java.io.File file) {
-        Task<File> task = new Task<File>() {
-            @Override
-            protected File call() throws Exception {
-            boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
-            if (canOverWrite) {
-                //originalFile.setFileContents(newFileContent);
-                FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
-                FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
-                fileSent.getFileLog().addLogEntry(logEntry);
-                return (File) fileSent;
-            }
-            return null; // to return null or throw exception?
-            }
-        };
-        final File[] ret = new File[1];
-        task.setOnSucceeded(t -> ret[0] = task.getValue());
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-
-        return ret[0];
+        boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
+        if (canOverWrite) {
+            //originalFile.setFileContents(newFileContent);
+            FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
+            FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
+            fileSent.getFileLog().addLogEntry(logEntry);
+            return (File) fileSent;
+        }
+        return null; //TODO to return null or throw exception?
     }
 
     /**
