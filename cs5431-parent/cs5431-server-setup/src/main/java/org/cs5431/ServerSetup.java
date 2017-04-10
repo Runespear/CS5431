@@ -226,7 +226,8 @@ public class ServerSetup {
     // Command for keystore generation
     private static void generateKeyStore(String filename) throws Exception{
         //If keystore has already been created, just skip the step
-        File f = new File(System.getProperty("user.dir") + "/keystorefilename.jks");
+        File f = new File("./server-config/" +
+                filename + ".jks");
         if(!f.exists()) {
             String command = " -genkeypair " +
                     " -alias mykey " +
