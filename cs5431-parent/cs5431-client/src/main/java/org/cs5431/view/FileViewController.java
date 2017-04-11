@@ -27,7 +27,6 @@ import org.cs5431.model.User;
 import java.io.File;
 import java.net.Socket;
 import java.net.URL;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -265,14 +264,14 @@ public class FileViewController implements Initializable {
         File fileToUpload = fileChooser.showOpenDialog(stage);
 
         if (fileToUpload != null) {
-            Task<org.cs5431.model.File> task = new Task<org.cs5431.model.File>() {
+            Task<Void> task = new Task<Void>() {
                 @Override
-                protected org.cs5431.model.File call() throws Exception {
-                    return fileController.overwrite((org.cs5431.model.File) fso, fileToUpload);
+                protected Void call() throws Exception {
+                    fileController.overwrite((org.cs5431.model.File) fso, fileToUpload);
+                    return null;
                 }
             };
             task.setOnSucceeded(t -> {
-                //TODO check return value?
                 populateListView();
             });
             Thread th = new Thread(task);
@@ -427,49 +426,6 @@ public class FileViewController implements Initializable {
         populateListView();
     }
 
-    private void initFakeFiles() {
-        //TODO: uncomment following line once UserController fully implemented
-        // List<FileSystemObject> fsoList = userController.getFileSystemObjects();
-        System.out.print("Initializing fake files...");
-        currParent = user.getUserParentFolder();
-        //populating with some dummy stuff instead
-        Folder dummyFolder = new Folder(1, "fake folder1", currParent, new Timestamp(System.currentTimeMillis()));
-        org.cs5431.model.File dummyChild =
-                new org.cs5431.model.File(2, "fake child1", dummyFolder,100,
-                new Timestamp(System.currentTimeMillis()));
-        currParent.addChild(dummyFolder);
-        dummyFolder.addChild(dummyChild);
-        dummyChild =
-                new org.cs5431.model.File(3, "fake child2", dummyFolder, 100,
-                        new Timestamp(System.currentTimeMillis()));
-        dummyFolder.addChild(dummyChild);
-        Folder dummyFolder2 = new Folder(4,"fake folder2", currParent, new Timestamp(System.currentTimeMillis()));
-        currParent.addChild(dummyFolder2);
-        org.cs5431.model.File dummyFile;
-        dummyFile =
-                new org.cs5431.model.File(5,"fake file1", currParent,100,
-                        new Timestamp(System.currentTimeMillis()));
-        currParent.addChild(dummyFile);
-        dummyFolder.addChild(dummyFile);
-        dummyFolder2.addChild(dummyFile);
-        dummyFile =
-                new org.cs5431.model.File(6,"fake file2", currParent, 100,
-                        new Timestamp(System.currentTimeMillis()));
-        currParent.addChild(dummyFile);
-        dummyFolder.addChild(dummyFile);
-        dummyFolder2.addChild(dummyFile);
-        dummyFile =
-                new org.cs5431.model.File(7,"fake file3", currParent, 100,
-                        new Timestamp(System.currentTimeMillis()));
-        currParent.addChild(dummyFile);
-        dummyFolder.addChild(dummyFile);
-        dummyFile =
-                new org.cs5431.model.File(8, "fake file4", currParent, 100,
-                        new Timestamp(System.currentTimeMillis()));
-        currParent.addChild(dummyFile);
-        dummyFolder2.addChild(dummyFolder);
-    }
-
     private void populateListView() {
         Task<List<FileSystemObject>> task = new Task<List<FileSystemObject>>() {
             @Override
@@ -518,15 +474,9 @@ public class FileViewController implements Initializable {
         }
         imgViewLog.setVisible(fileSelected);
         imgViewLog.setDisable(!fileSelected);
-        /*TODO uncomment
         imgShare.setVisible(editAllowed);
         imgShare.setDisable(!editAllowed);
         imgDelete.setVisible(editAllowed);
         imgDelete.setDisable(!editAllowed);
-        */
-        imgShare.setVisible(fileSelected);
-        imgShare.setDisable(!fileSelected);
-        imgDelete.setVisible(fileSelected);
-        imgDelete.setDisable(!fileSelected);
     }
 }

@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -230,5 +231,61 @@ public class Encryption {
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         return cipher.doFinal(Base64.getDecoder().decode(enc));
+    }
+
+    //[0] is encFile, [1] is encFileName, [2] is fileSK, [3] is fileIV, [4]
+    // is fsoNameIV
+    public static String[] generateAndEncFile(File file, String name, PublicKey
+            publicKey) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, IOException {
+        String ret[] = new String[5];
+        SecretKey fileSK = generateSecretKey();
+        IvParameterSpec fileIVSpec = generateIV();
+        IvParameterSpec fsoNameIVSpec = generateIV();
+
+        byte[] encFile = encryptFile(file, fileSK, fileIVSpec);
+        //TODO change to more appropriate format?
+        ret[0] = Base64.getEncoder().encodeToString(encFile);
+        ret[1] = Base64.getEncoder().encodeToString(encryptFileName(name,fileSK, fsoNameIVSpec));
+        ret[2] = Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, publicKey));
+        ret[3] = Base64.getEncoder().encodeToString(fileIVSpec.getIV());
+        ret[4] = Base64.getEncoder().encodeToString(fsoNameIVSpec.getIV());
+        return ret;
+    }
+
+    //[0] is encFileName, [1] is fileSK, [2] is fsoNameIV
+    public static String[] generateAndEncFileName(String folderName, PublicKey
+            pubKey) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        String ret[] = new String[3];
+
+        SecretKey fileSK = generateSecretKey();
+        IvParameterSpec ivSpec = generateIV();
+        ret[2] = Base64.getEncoder().encodeToString(ivSpec.getIV());
+        ret[0] = Base64.getEncoder().encodeToString
+                (encryptFileName(folderName,fileSK, ivSpec));
+        ret[1] = Base64.getEncoder().encodeToString
+                (encFileSecretKey(fileSK, pubKey));
+        return ret;
+    }
+
+    private static SecretKey generateSecretKey() throws
+            NoSuchAlgorithmException {
+        KeyGenerator kg = KeyGenerator.getInstance("AES");
+        kg.init(128, new SecureRandom());
+        SecretKey secretKey = kg.generateKey();
+        return secretKey;
+    }
+
+    private static IvParameterSpec generateIV() {
+        SecureRandom random = new SecureRandom();
+        byte iv[] = new byte[16];
+        random.nextBytes(iv);
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        return ivSpec;
     }
 }

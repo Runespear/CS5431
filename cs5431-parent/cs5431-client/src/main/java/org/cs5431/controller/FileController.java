@@ -75,28 +75,12 @@ public class FileController {
         fso.put("lastModified", lastModified);
         fso.put("isFile", true);
 
-        KeyGenerator kg = KeyGenerator.getInstance("AES");
-        kg.init(128, new SecureRandom());
-        SecretKey fileSK = kg.generateKey();
-        SecureRandom random = new SecureRandom();
-        byte iv[] = new byte[16];
-        random.nextBytes(iv);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        fso.put("fileIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
-
-        byte[] encFile = encryptFile(file, fileSK, ivSpec);
-        //TODO change to more appropriate format?
-        fso.put("file", Base64.getEncoder().encodeToString(encFile));
-
-        random.nextBytes(iv);
-        ivSpec = new IvParameterSpec(iv);
-        fso.put("fsoNameIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
-        String encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,
-                fileSK, ivSpec));
-        fso.put("fsoName", encFileName);
-        String encFileKey = Base64.getEncoder().encodeToString
-                (encFileSecretKey(fileSK, user.getPubKey()));
-        fso.put("encSK", encFileKey);
+        String fileDetails[] = generateAndEncFile(file, name, user.getPubKey());
+        fso.put("file", fileDetails[0]);
+        fso.put("fsoName", fileDetails[1]);
+        fso.put("encSK", fileDetails[2]);
+        fso.put("fileIV", fileDetails[3]);
+        fso.put("fsoNameIV", fileDetails[4]);
         sendJson(fso, sslSocket);
         JSONObject fsoAck = receiveJson(sslSocket);
         if (fsoAck.get("msgType").equals("uploadAck")) {
@@ -117,21 +101,19 @@ public class FileController {
         }
     }
 
-    public class UploadFailException extends Exception {
-        UploadFailException(String message) {
-            super(message);
-        }
-    }
-
     /**
      * Creates a new folder and uploads it to the server along with its log entry. Adds the new folder as a
      * child of the parent folder.
      * @param folderName is the name of the folder that is to be created
      * @param parentFolder Folder where the file is to be uploaded
-     * @return the folder that is created and uploaded to server successfully; null otherwise
+     * @throws UploadFailException If the upload fails because of some
+     * communication issue with the server or server-side issue
      */
-    public Folder createFolder(String folderName, Folder parentFolder) throws
-            Exception {
+    public void createFolder(String folderName, Folder parentFolder) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, IOException, ClassNotFoundException,
+            UploadFailException {
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         if (isAcceptableInput(folderName)) {
             JSONObject fso = new JSONObject();
@@ -143,20 +125,11 @@ public class FileController {
             fso.put("lastModified", lastModified);
             fso.put("isFile", false);
 
-            KeyGenerator kg = KeyGenerator.getInstance("AES");
-            kg.init(128, new SecureRandom());
-            SecretKey fileSK = kg.generateKey();
-            SecureRandom random = new SecureRandom();
-            byte iv[] = new byte[16];
-            random.nextBytes(iv);
-            IvParameterSpec ivSpec = new IvParameterSpec(iv);
-            fso.put("fsoNameIV", Base64.getEncoder().encodeToString(ivSpec.getIV()));
-            String encFileName = Base64.getEncoder().encodeToString
-                    (encryptFileName(folderName,fileSK, ivSpec));
-            fso.put("fsoName", encFileName);
-            String encFileKey = Base64.getEncoder().encodeToString
-                    (encFileSecretKey(fileSK, user.getPubKey()));
-            fso.put("encSK", encFileKey);
+            String fsoNameDetails[] = generateAndEncFileName(folderName, user
+                    .getPubKey());
+            fso.put("fsoName", fsoNameDetails[0]);
+            fso.put("encSK", fsoNameDetails[1]);
+            fso.put("fsoNameIV", fsoNameDetails[2]);
 
             sendJson(fso, sslSocket);
             JSONObject fsoAck = receiveJson(sslSocket);
@@ -166,10 +139,10 @@ public class FileController {
                 Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
                 folderSent.addPriv(PrivType.EDIT, user.getId()); //TODO: do we even need this
                 parentFolder.addChild(folderSent);
-                return folderSent;
+            } else {
+                throw new UploadFailException("Failed to create folder");
             }
         }
-        return null;
     }
 
     /**
@@ -177,18 +150,27 @@ public class FileController {
      * the changes are sent to the server along with its log entry.
      * @param originalFile is the file to be overwritten
      * @param file object returned by the javaFX file picker dialogue box
-     * @return the file that is modified and uploaded to server successfully; null otherwise.
+     * @throws UploadFailException If the upload fails because of some
+     * communication issue with the server or server-side issue
+     * @throws IOException If the file to upload cannot be read
      */
-    public File overwrite(File originalFile, java.io.File file) {
-        boolean canOverWrite = isAllowed(OVERWRITE, originalFile);
-        if (canOverWrite) {
-            //originalFile.setFileContents(newFileContent);
-            FileLogEntry logEntry = new FileLogEntry(user.getId(), OVERWRITE);
-            FileSystemObject fileSent = modifyFSOContents(originalFile.getId(), file, logEntry);
-            fileSent.getFileLog().addLogEntry(logEntry);
-            return (File) fileSent;
-        }
-        return null; //TODO to return null or throw exception?
+    public void overwrite(File originalFile, java.io.File file) throws
+            IOException, NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, ClassNotFoundException {
+        JSONObject jsonKeys = new JSONObject();
+        jsonKeys.put("msgType","overwriteKeys");
+        jsonKeys.put("fsoid", originalFile.getId());
+        jsonKeys.put("uid", user.getId());
+        sendJson(jsonKeys, sslSocket);
+        JSONObject keyResponse = receiveJson(sslSocket);
+        if (keyResponse.getString("msgType").equals("overwriteKeysAck")) {
+            byte[] encFileSK = Base64.getDecoder().decode(keyResponse.getString
+                    ("fileSK"));
+            SecretKey fileSK = decFileSecretKey(encFileSK, user.getPrivKey());
+            //TODO more stuff
+        } //TODO throw exception
     }
 
     /**
@@ -406,7 +388,13 @@ public class FileController {
     }
 
     public class FileControllerException extends Exception {
-        public FileControllerException(String message) {
+        FileControllerException(String message) {
+            super(message);
+        }
+    }
+
+    public class UploadFailException extends Exception {
+        UploadFailException(String message) {
             super(message);
         }
     }
