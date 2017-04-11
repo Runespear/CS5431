@@ -34,6 +34,9 @@ public class SQL_Connection {
         this.DB_PASSWORD = password;
     }
 
+    /** Determines if the username already exists in the database.
+     * @param username is the username to be checked in the database.
+     * @return true if the username does not exist; false otherwise. */
     public boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -77,6 +80,13 @@ public class SQL_Connection {
         return false;
     }
 
+    /** Adds the user into the db. Creates a parent folder for the user where he/she is an editor.
+     * Adds a user log to log the registration of the user.
+     * @param user json containing the details of the user to be added
+     * @param hashedPwd hashed password of the user that is to be created
+     * @param pwdSalt salt of the password that was used
+     * @return json containing registrationAck and details of the user added (refer to protocols doc)
+     * */
     public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -221,7 +231,8 @@ public class SQL_Connection {
         return null;
     }
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
-     * @return fsoid of created fso **/
+     * Verifies that the user has permission.
+     * @return fsoid of created fso; if no permission, return -1. **/
     public int createFso (JSONObject fso) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
@@ -468,6 +479,7 @@ public class SQL_Connection {
         return null;
     }
 
+    /*
     public String getPrivKeySalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
 
@@ -500,9 +512,10 @@ public class SQL_Connection {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 
-    /** Gets pwdSalt of pwd associated with username **/
+    /** Gets pwdSalt of pwd associated with username.
+     * @return salt of password associated with username */
     public String getSalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -540,7 +553,10 @@ public class SQL_Connection {
         return null;
     }
 
-    //how does an admin delete user? not functional, need to update db on delete cascade
+    //how does an admin delete user?
+    /** Deletes the user with uid. To be first authenticated using username and password.
+     * Creates a log entry of the deletion of user.
+     * @return the uid of the user that is deleted; -1 if unsuccessful deletion. */
     public int deleteUser(int uid, String username, String password) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", "username");
@@ -614,6 +630,13 @@ public class SQL_Connection {
         return -1;
     }
 
+    /** Changes the password of the user and the privKey which is encrypted by the password of the user.
+     * Authenticates the user with his/her old password before making any changes.
+     * Logs the change of password in the userlog.
+     * @param newEncPwd the new encrypted version of the password.
+     * @param allegedUser json with the credentials of the user to be modified along
+     *                    a new privKey.
+     * @return json with changePwdAck and the uid; if user is not authenticated, return null. */
     public JSONObject changePassword(JSONObject allegedUser, String newEncPwd) {
         int uid = allegedUser.getInt("uid");
         String username = allegedUser.getString("username");
@@ -694,9 +717,10 @@ public class SQL_Connection {
         return null;
     }
 
-    //TODO: test this please
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
-     * @return An array of JsonObjects of all childrens  **/
+     * Verifies that the user has permission.
+     * @param json with uid and fsoid details.
+     * @return An JsonArray of all children. */
     public JSONArray getChildren(JSONObject json) {
 
         int uid = json.getInt("uid");
@@ -802,6 +826,10 @@ public class SQL_Connection {
         return null;
     }
 
+    /** Verifies that the user has permission before getting the enc file contents
+     * and IV used to encrypt the file.
+     * @param json with details on uid and fsoid.
+     * @return json with downloadAck and path of t*/
     public JSONObject getFile(JSONObject json) throws Exception {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
@@ -890,7 +918,8 @@ public class SQL_Connection {
     }
 
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
-     * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value; returns null otherwise  **/
+     * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value;
+     * returns null otherwise  **/
     public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -1184,6 +1213,11 @@ public class SQL_Connection {
         return -1;
     }
 
+    /** Gets the public key of newUid (user to be granted permission) and the sk of the file
+     * that is enc with the uid's pubKey. First verifies if uid has permission to add priv.
+     * @param fsoid the file that is to be added permissions.
+     * @param newUid the user to be granted permission,
+     * @param uid the user that is performing the addition of priv.*/
     public JSONObject getKeys(int fsoid, int uid, int newUid) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
@@ -1252,6 +1286,10 @@ public class SQL_Connection {
         return null;
     }
 
+    /** Adds newUid as editor of the file. Adds sk of the file that is encrypted with newUid's public key.
+     * First verifies that the user has permission. Logs the action.
+     * @param json with fsoid, newUid, and uid (user performing the add priv function).
+     * @return newUid if successful; else -1 if unsuccessful. */
     public int addEditPriv(JSONObject json) {
 
         int uid = json.getInt("uid");
@@ -1336,6 +1374,10 @@ public class SQL_Connection {
         return -1;
     }
 
+    /** Adds newUid as viewer of the file. Adds sk of the file that is encrypted with newUid's public key.
+     * First verifies that the user has permission. Logs the action.
+     * @param json with fsoid, newUid, and uid (user performing the add priv function).
+     * @return newUid if successful; else -1 if unsuccessful. */
     public int addViewPriv(JSONObject json) {
 
         int uid = json.getInt("uid");

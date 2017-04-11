@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.cs5431_client.view.RegistrationController">
+    <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0">
+        <Text strokeType="OUTSIDE" strokeWidth="0.0"
+              text="Short writeup goes here. This secure file sharing system allows you to retrieve files securely from a server. Even the server admin does not know the content of your files. If there are any problems, email bcp39@cornell.edu to scold him."
+              textAlignment="CENTER" wrappingWidth="400.0"/>
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Username*" GridPane.columnIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Password*" GridPane.columnIndex="1"
+                  GridPane.rowIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm Password*" GridPane.columnIndex="1"
+                  GridPane.rowIndex="2"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Email"
+                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+            <TextField fx:id="txtUsername" promptText="username"
+                       GridPane.columnIndex="2"/>
+            <PasswordField fx:id="txtPassword" promptText="password"
+                           GridPane.columnIndex="2"
+                           GridPane.rowIndex="1"/>
+            <PasswordField fx:id="txtConfirmPassword"
+                           promptText="password"
+                           GridPane.columnIndex="2"
+                           GridPane.rowIndex="2"/>
+            <TextField fx:id="txtEmail" promptText="email"
+                       GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+        </GridPane>
+        <Text strokeType="OUTSIDE" strokeWidth="0.0"
+              text="* indicates compulsory fields" textAlignment="CENTER"
+              wrappingWidth="400.0"/>
+        <HBox alignment="TOP_CENTER" prefWidth="200.0">
+            <Button fx:id="registerButton" mnemonicParsing="false"
+                    text="Register"/>
+            <Button fx:id="cancelButton" mnemonicParsing="false"
+                    text="Cancel"/>
+        </HBox>
+    </VBox>
+</AnchorPane>

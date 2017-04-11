@@ -45,10 +45,10 @@ public class SSLServer extends Thread {
                         response = login(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
-                    case "getPrivKeySalt":
+                    /*case "getPrivKeySalt":
                         response = getPrivKeySalt(jsonObject, sqlConnection);
                         sendJson(response, s);
-                        break;
+                        break;*/
                     case "changePwd":
                         response = changePwd(jsonObject, sqlConnection);
                         sendJson(response, s);
@@ -147,7 +147,7 @@ public class SSLServer extends Thread {
     }
 
 
-    private JSONObject getPrivKeySalt(JSONObject jsonObject, SQL_Connection
+    /*private JSONObject getPrivKeySalt(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         String privSalt = sqlConnection.getPrivKeySalt(jsonObject.getString
                 ("username"));
@@ -165,7 +165,7 @@ public class SSLServer extends Thread {
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Unable to get privKeySalt");
         return jsonErr;
-    }
+    }*/
 
     private JSONObject changePwd(JSONObject jsonObject, SQL_Connection
             sqlConnection) {

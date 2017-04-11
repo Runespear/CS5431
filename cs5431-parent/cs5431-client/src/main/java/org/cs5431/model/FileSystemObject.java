@@ -13,7 +13,7 @@ public abstract class FileSystemObject {
     protected long size;
     protected Timestamp lastModified;
     protected FSOType type;
-    protected  FileLog fileLog;
+    protected FileLog fileLog;
 
     //ownerId only used when creating new file; otherwise not saved
     public FileSystemObject (int id, String name, Folder parentFolder, Timestamp lastModified) {

@@ -140,7 +140,6 @@ public class AccountsController {
 
     private Folder getFolderFromId(int folderId, int uid) {
         try {
-        //TODO: send to server and get the corresponding folder
         Folder parentFolder = new Folder(folderId, "", null,null);
         JSONObject json = new JSONObject();
         json.put("fsoid", folderId);

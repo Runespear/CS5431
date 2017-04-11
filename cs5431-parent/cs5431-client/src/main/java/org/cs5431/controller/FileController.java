@@ -39,6 +39,7 @@ public class FileController {
      * Returns true if the user has the permission to perform the action.
      * @param action FileActionType that the user intends to perform
      * @return true if the user has the permission; false otherwise
+     * TO BE DEPRECATED
      */
     public boolean isAllowed(FileActionType action, FileSystemObject fso) {
         //TODO: to be done on server side
@@ -50,7 +51,7 @@ public class FileController {
     }
 
     /**
-     * Creates new file and uploads it to the server along with its log entry. Adds the file as a child
+     * Sends java.io.file object to the server. Adds the file as a child
      * of the parent folder.
      * @param file File that is was returned from the javaFX dialogue box
      * @param parentFolder Folder where the file is to be uploaded
@@ -91,11 +92,7 @@ public class FileController {
             }
             if (fileSentid != -1) {
                 File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
-                parentFolder.addChild(fileSent);
                 fileSent.addPriv(PrivType.EDIT, user.getId());
-                if (DEBUG_MODE) {
-                    System.out.print(parentFolder.getChildren());
-                }
             } else {
                 throw new FileControllerException("Failed to add file");
             }
@@ -139,7 +136,7 @@ public class FileController {
 
             sendJson(fso, sslSocket);
             JSONObject fsoAck = receiveJson(sslSocket);
-
+            
             if (fsoAck.get("msgType").equals("uploadAck")) {
                 int folderSentId = fsoAck.getInt("fsoid");
 
