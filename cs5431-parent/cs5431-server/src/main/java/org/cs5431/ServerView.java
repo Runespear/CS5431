@@ -1,5 +1,7 @@
 package org.cs5431;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -90,8 +92,8 @@ public class ServerView {
                     outPort, serverPrivKey);
             new Thread(cst).start();
 
-            SSLSocketThread sst = new SSLSocketThread(sqlConnection,
-                    serverName, sslPort);
+            ServerSocket ss = setup_SSLServerSocket(serverName, sslPort);
+            SSLSocketThread sst = new SSLSocketThread(sqlConnection, ss);
             new Thread(sst).start();
 
             PromptAdminThread pat = new PromptAdminThread(sqlConnection);
@@ -102,5 +104,24 @@ public class ServerView {
                     " throw exception");
             e.printStackTrace();
         }
+    }
+
+    public static ServerSocket setup_SSLServerSocket(String serverName, int
+            Port_Number) throws Exception{
+
+        System.setProperty("javax.net.ssl.keyStore", "./server-config/" + serverName + ".jks");
+
+        Scanner scanner = new Scanner (System.in);
+        System.out.println("Type in your password to access the keystore: ");
+        String pass = scanner.nextLine(); //Obtain user's command
+
+        System.setProperty("javax.net.ssl.keyStorePassword", pass);
+
+        final SSLServerSocketFactory sslSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        final SSLServerSocket sslServerSocket = (SSLServerSocket) sslSocketFactory.createServerSocket(Port_Number);
+
+        String[] ciphersuite = {"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"};
+        sslServerSocket.setEnabledCipherSuites(ciphersuite);
+        return sslServerSocket;
     }
 }

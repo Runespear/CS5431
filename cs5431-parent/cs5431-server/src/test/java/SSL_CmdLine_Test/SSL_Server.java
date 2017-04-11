@@ -3,7 +3,7 @@ package SSL_CmdLine_Test;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static org.cs5431.SSLSocketThread.setup_SSLServerSocket;
+import static org.cs5431.ServerView.setup_SSLServerSocket;
 
 public class SSL_Server {
 

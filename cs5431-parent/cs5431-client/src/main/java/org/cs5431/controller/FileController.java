@@ -1,19 +1,21 @@
 package org.cs5431.controller;
 
-import javafx.concurrent.Task;
 import org.cs5431.model.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -23,7 +25,6 @@ import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.*;
 import static org.cs5431.JSON.*;
 import static org.cs5431.model.FileActionType.DOWNLOAD;
-import static org.cs5431.model.FileActionType.OVERWRITE;
 
 public class FileController {
     private org.cs5431.model.User user;
@@ -53,7 +54,7 @@ public class FileController {
      * of the parent folder.
      * @param file File that is was returned from the javaFX dialogue box
      * @param parentFolder Folder where the file is to be uploaded
-     * @throws UploadFailException If the upload fails because of some
+     * @throws FileControllerException If the upload fails because of some
      * communication issue with the server or server-side issue
      * @throws IOException If the file to upload cannot be read
      */
@@ -61,7 +62,7 @@ public class FileController {
             IOException, JSONException, NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException, ClassNotFoundException, UploadFailException {
+            BadPaddingException, ClassNotFoundException, FileControllerException {
         String name = file.getName();
         long size = file.length();
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -96,8 +97,13 @@ public class FileController {
                     System.out.print(parentFolder.getChildren());
                 }
             } else {
-                throw new UploadFailException("Failed to add file");
+                throw new FileControllerException("Failed to add file");
             }
+        } else if (fsoAck.getString("msgType").equals("error")) {
+            throw new FileControllerException(fsoAck.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
         }
     }
 
@@ -106,14 +112,14 @@ public class FileController {
      * child of the parent folder.
      * @param folderName is the name of the folder that is to be created
      * @param parentFolder Folder where the file is to be uploaded
-     * @throws UploadFailException If the upload fails because of some
+     * @throws FileControllerException If the upload fails because of some
      * communication issue with the server or server-side issue
      */
     public void createFolder(String folderName, Folder parentFolder) throws NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException, IOException, ClassNotFoundException,
-            UploadFailException {
+            FileControllerException {
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         if (isAcceptableInput(folderName)) {
             JSONObject fso = new JSONObject();
@@ -133,14 +139,22 @@ public class FileController {
 
             sendJson(fso, sslSocket);
             JSONObject fsoAck = receiveJson(sslSocket);
-            int folderSentId = fsoAck.getInt("fsoid");
 
-            if (folderSentId != -1) {
-                Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
-                folderSent.addPriv(PrivType.EDIT, user.getId()); //TODO: do we even need this
-                parentFolder.addChild(folderSent);
+            if (fsoAck.get("msgType").equals("uploadAck")) {
+                int folderSentId = fsoAck.getInt("fsoid");
+
+                if (folderSentId != -1) {
+                    Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
+                    folderSent.addPriv(PrivType.EDIT, user.getId()); //TODO: do we even need this
+                    parentFolder.addChild(folderSent);
+                } else {
+                    throw new FileControllerException("Failed to create folder");
+                }
+            } else if (fsoAck.getString("msgType").equals("error")) {
+                throw new FileControllerException(fsoAck.getString("message"));
             } else {
-                throw new UploadFailException("Failed to create folder");
+                throw new FileControllerException("Received bad response " +
+                        "from server");
             }
         }
     }
@@ -150,7 +164,7 @@ public class FileController {
      * the changes are sent to the server along with its log entry.
      * @param originalFile is the file to be overwritten
      * @param file object returned by the javaFX file picker dialogue box
-     * @throws UploadFailException If the upload fails because of some
+     * @throws FileControllerException If the upload fails because of some
      * communication issue with the server or server-side issue
      * @throws IOException If the file to upload cannot be read
      */
@@ -179,10 +193,11 @@ public class FileController {
      * the system object on client side is renamed as well.
      * @param systemObject is the file/folder to be renamed
      * @param newName New name of the file/folder
-     * @return true if the name of the file/folder is successfully modified; false otherwise
+     * @throws FileControllerException If the file is not successfully
+     * modified due to communication failure with server or bad server response
      */
-    public boolean rename(FileSystemObject systemObject, String newName)
-            throws IOException, ClassNotFoundException{
+    public void rename(FileSystemObject systemObject, String newName)
+            throws IOException, ClassNotFoundException, FileControllerException{
         JSONObject json = new JSONObject();
         json.put("msgType", "rename");
         json.put("fsoid", systemObject.getId());
@@ -190,10 +205,17 @@ public class FileController {
         json.put("newName", newName);   //TODO encryption
         sendJson(json, sslSocket);
         JSONObject response = receiveJson(sslSocket);
-        if (response.getString("msgType").equals("renameAck"))
-            return true;
-        else    //TODO error handling? e.g. not enough permissions?
-            return false;
+        if (response.getString("msgType").equals("renameAck") && response
+                .getInt("fsoid") == systemObject.getId() && response.getInt
+                ("uid") == user.getId()) {
+            systemObject.rename(newName);
+        }
+        else if (response.getString("msgType").equals("error")) {
+            throw new FileControllerException(response.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     /**
@@ -389,12 +411,6 @@ public class FileController {
 
     public class FileControllerException extends Exception {
         FileControllerException(String message) {
-            super(message);
-        }
-    }
-
-    public class UploadFailException extends Exception {
-        UploadFailException(String message) {
             super(message);
         }
     }
