@@ -199,10 +199,11 @@ public class FileViewController implements Initializable {
 
         if (fileToUpload != null) {
             System.out.println(fileToUpload.getName());
-            Task<org.cs5431.model.File> task = new Task<org.cs5431.model.File>() {
+            Task<Void> task = new Task<Void>() {
                 @Override
-                protected org.cs5431.model.File call() throws Exception {
-                    return fileController.uploadFile(fileToUpload, currParent);
+                protected Void call() throws Exception {
+                    fileController.uploadFile(fileToUpload, currParent);
+                    return null;
                 }
             };
             Thread th = new Thread(task);
@@ -215,12 +216,8 @@ public class FileViewController implements Initializable {
                     ex.printStackTrace();
                 }
             });
-            task.setOnSucceeded(t -> {
-                populateListView();
-            });
-            task.setOnFailed(t -> {
-                populateListView();
-            });
+            task.setOnSucceeded(t -> populateListView());
+            task.setOnFailed(t -> populateListView());
         }
 
     }

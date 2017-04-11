@@ -53,9 +53,11 @@ public class FileController {
      * of the parent folder.
      * @param file File that is was returned from the javaFX dialogue box
      * @param parentFolder Folder where the file is to be uploaded
-     * @return file created if the user file upload to server was successful; false otherwise
+     * @throws UploadFailException If the upload fails because of some
+     * communication issue with the server or server-side issue
+     * @throws IOException If the file to upload cannot be read
      */
-    public File uploadFile(java.io.File file, Folder parentFolder) throws
+    public void uploadFile(java.io.File file, Folder parentFolder) throws
             IOException, JSONException, NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
@@ -104,18 +106,15 @@ public class FileController {
             }
             if (fileSentid != -1) {
                 File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
-
                 parentFolder.addChild(fileSent);
                 fileSent.addPriv(PrivType.EDIT, user.getId());
                 if (DEBUG_MODE) {
                     System.out.print(parentFolder.getChildren());
                 }
-                return fileSent;
             } else {
                 throw new UploadFailException("Failed to add file");
             }
         }
-        return null;
     }
 
     public class UploadFailException extends Exception {
