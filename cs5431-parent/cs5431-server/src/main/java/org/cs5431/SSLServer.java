@@ -47,6 +47,10 @@ public class SSLServer extends Thread {
                         response = login(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
+                    case "getPrivKeySalt":
+                         response = getPrivKeySalt(jsonObject, sqlConnection);
+                         sendJson(response, s);
+                         break;
                     case "editPassword":
                         response = changePwd(jsonObject, sqlConnection);
                         sendJson(response, s);
@@ -129,6 +133,26 @@ public class SSLServer extends Thread {
         if (response == null)
             return makeErrJson("Failed to register user");
         return response;
+    }
+
+    private JSONObject getPrivKeySalt(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        String privSalt = sqlConnection.getPrivKeySalt(jsonObject.getString
+            ("username"));
+        if (privSalt != null) {
+            JSONObject salt = new JSONObject();
+            salt.put("msgType", "getPrivKeySaltAck");
+            salt.put("privKeySalt", privSalt);
+            return salt;
+        }
+
+        if (DEBUG_MODE) {
+            System.out.println("Sending error -- unable to get salt");
+        }
+        JSONObject jsonErr = new JSONObject();
+        jsonErr.put("msgType", "error");
+        jsonErr.put("message", "Unable to get privKeySalt");
+        return jsonErr;
     }
 
     private JSONObject login(JSONObject jsonObject, SQL_Connection

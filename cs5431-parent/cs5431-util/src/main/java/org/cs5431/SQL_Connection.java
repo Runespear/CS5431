@@ -1617,5 +1617,39 @@ System.out.println("removed key");
 System.out.println("failed to remove editor");
         return -1;
     }
+
+    public String getPrivKeySalt(String username) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+
+        System.out.println("Connecting to database...");
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            System.out.println("Database connected!");
+            PreparedStatement getSalt = null;
+
+            String selectSalt = "SELECT U.privKeySalt FROM Users U WHERE U.username = ?";
+            String salt = null;
+
+            try {
+                getSalt = connection.prepareStatement(selectSalt);
+                getSalt.setString(1, username);
+                ResultSet rs = getSalt.executeQuery();
+                if (rs.next()) {
+                    salt = rs.getString(1);
+                }
+                return salt;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getSalt != null) {
+                    getSalt.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
 
