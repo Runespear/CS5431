@@ -109,12 +109,11 @@ public class FileViewCellController implements Initializable {
         size.setText(formatSize(fso.getFileSize()));
         //default image is file, so if it's folder change img to folder
         if (fso instanceof File)
-            imgFile.setImage(
-                    new Image("/cs5431-parent/cs5431-client/src/main/java/org" +
-                            "/cs5431/assets/ic_file.png"));
+            imgFile.setImage(new Image(getClass().getResource(
+                    "../assets/ic_file.png").toExternalForm()));
         else
-            imgFile.setImage(
-                    new Image("/cs5431-parent/cs5431-client/src/main/java/org/cs5431/assets/ic_folder.png"));
+            imgFile.setImage(new Image(getClass().getResource(
+                    "../assets/ic_folder.png").toExternalForm()));
         imgFile.setPreserveRatio(true);
         //TODO: don't hardcode this number?
         imgFile.setFitHeight(20);
