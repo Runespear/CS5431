@@ -123,10 +123,11 @@ public class EditDetailsController implements Initializable {
                         "long.");
             } else {
                 pwdTaskRunning = true;
-                Task<Integer> task = new Task<Integer>() {
+                Task<Void> task = new Task<Void>() {
                     @Override
-                    protected Integer call() throws Exception {
-                        return userController.changePassword(oldPassword, newPassword);
+                    protected Void call() throws Exception {
+                        userController.changePassword(oldPassword, newPassword);
+                        return null;
                     }
                 };
                 task.setOnFailed(t -> {
@@ -161,10 +162,11 @@ public class EditDetailsController implements Initializable {
                 emailMessages.add("The email entered is invalid.");
             } else {
                 emailTaskRunning = true;
-                Task<Boolean> task = new Task<Boolean>() {
+                Task<Void> task = new Task<Void>() {
                     @Override
-                    protected Boolean call() throws Exception {
-                        return userController.changeEmail(oldEmail, newEmail);
+                    protected Void call() throws Exception {
+                        userController.changeEmail(oldEmail, newEmail);
+                        return null;
                     }
                 };
                 task.setOnFailed(t -> {

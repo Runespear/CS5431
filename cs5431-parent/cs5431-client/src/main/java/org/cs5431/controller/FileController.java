@@ -1,5 +1,6 @@
 package org.cs5431.controller;
 
+import org.cs5431.Validator;
 import org.cs5431.model.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -118,7 +119,7 @@ public class FileController {
             BadPaddingException, IOException, ClassNotFoundException,
             FileControllerException {
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-        if (isAcceptableInput(folderName)) {
+        if (Validator.validFileName(folderName)) {
             JSONObject fso = new JSONObject();
             fso.put("msgType","upload");
             fso.put("uid", user.getId());
@@ -218,9 +219,9 @@ public class FileController {
     /**
      * Gets the file/folder contents from server and decrpyts it.
      * @param fsoId is ID of the file to be downloaded
-     * @return true if successful
+     * @throws FileControllerException If download fails
      */
-    public boolean download(int fsoId, String fsoName, java.io.File dir) throws
+    public void download(int fsoId, String fsoName, java.io.File dir) throws
         IOException, JSONException, NoSuchAlgorithmException,
         NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
         InvalidAlgorithmParameterException, IllegalBlockSizeException,
@@ -245,7 +246,9 @@ public class FileController {
             String ivString = fileAck.getString("fileIV");
             IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
                     .decode(ivString));
-            return decryptFile(fsoBytes, fsoName, fileSK, iv, dir);
+            if (!decryptFile(fsoBytes, fsoName, fileSK, iv, dir))
+                throw new FileControllerException("Failed to decrypt file " +
+                        "that was downloaded");
         } else if (fileAck.getString("msgType").equals("error")) {
             throw new FileControllerException(fileAck.getString("message"));
         } else {
@@ -307,12 +310,13 @@ public class FileController {
      * Deletes the file from server entirely and from parentFolder No one is able to access it anymore.
      * @param fso is the file to be deleted
      * @param parentFolder is parentFolder of the fso associated with the id
-     * @return true if delete is successful; false otherwise
+     * @throws FileControllerException If file cannot be deleted
      */
-    public boolean delete(FileSystemObject fso, Folder parentFolder) {
+    public void delete(FileSystemObject fso, Folder parentFolder) throws
+            FileControllerException {
         //TODO: remove from db
         parentFolder.removeChild(fso);
-        return false;
+        //throw new FileControllerException("Failed to delete file");
     }
 
     /**
@@ -394,16 +398,6 @@ public class FileController {
 
     private FileSystemObject modifyFSOContents(int fsoId, java.io.File file, FileLogEntry logEntry) {
         return null;
-    }
-
-    /**
-     * Sanitizes the input to ensure that it is not at risk of causing SQL injection
-     * @param input raw data that is to be used in the sql query
-     * @return true if the input string is safe; false otherwise
-     */
-    private boolean isAcceptableInput(String input) {
-        //TODO move this into Validator and do an actual check
-        return true;
     }
 
     public class FileControllerException extends Exception {

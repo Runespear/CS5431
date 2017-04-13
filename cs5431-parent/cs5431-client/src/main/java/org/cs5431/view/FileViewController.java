@@ -231,11 +231,12 @@ public class FileViewController implements Initializable {
         File dir = directoryChooser.showDialog(stage);
 
         if (dir != null) {
-            Task<Boolean> task = new Task<Boolean>() {
+            Task<Void> task = new Task<Void>() {
                 @Override
-                protected Boolean call() throws Exception {
-                    return fileController.download(fso.getId(), fso
+                protected Void call() throws Exception {
+                    fileController.download(fso.getId(), fso
                             .getFileName(), dir);
+                    return null;
                 }
             };
             Thread th = new Thread(task);
@@ -321,10 +322,11 @@ public class FileViewController implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
-            Task<Boolean> task = new Task<Boolean>() {
+            Task<Void> task = new Task<Void>() {
                 @Override
-                protected Boolean call() throws Exception {
-                    return fileController.delete(fso, currParent);
+                protected Void call() throws Exception {
+                    fileController.delete(fso, currParent);
+                    return null;
                 }
             };
             task.setOnSucceeded(t -> {

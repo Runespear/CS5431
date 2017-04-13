@@ -42,8 +42,11 @@ public class UserController {
      * Change the password of the user associated with this controller.
      * @param oldPassword Old password to be changed from
      * @param newPassword Password to be changed to.
+     * @throws ChangePwdFailException If password could not be changed, with
+     * a message explaining why
      */
-    public int changePassword(String oldPassword, String newPassword) throws ChangePwdFailException {
+    public void changePassword(String oldPassword, String newPassword) throws
+            ChangePwdFailException {
         try {
             JSONObject getSalt = new JSONObject();
             getSalt.put("msgType", "getPrivKeySalt");
@@ -69,15 +72,17 @@ public class UserController {
                 if (DEBUG_MODE) {
                     System.out.println("waiting to receive json...");
                 }
-                JSONObject user = receiveJson(sslSocket);
+                JSONObject jsonAck = receiveJson(sslSocket);
                 if (DEBUG_MODE) {
-                    System.out.println("change pwd json recived: " + user);
+                    System.out.println("change pwd json recived: " + jsonAck);
                 }
 
-                if (user.getString("msgType").equals("changePwdAck")) {
-                    return user.getInt("uid");
-                } else if (user.getString("msgType").equals("error")) {
-                    throw new ChangePwdFailException(user.getString
+                if (jsonAck.getString("msgType").equals("changePwdAck")) {
+                    if (jsonAck.getInt("uid") != user.getId())
+                        throw new ChangePwdFailException("Received bad response " +
+                                "from server - user id does not match up");
+                } else if (jsonAck.getString("msgType").equals("error")) {
+                    throw new ChangePwdFailException(jsonAck.getString
                             ("message"));
                 } else {
                     throw new ChangePwdFailException("Received bad response " +
@@ -95,17 +100,15 @@ public class UserController {
                 | BadPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
-        return -1;
     }
 
     /**
      * Change the password of the user associated with this controller.
      * @param oldEmail Old password to be changed from
      * @param newEmail Password to be changed to.
-     * @return true if successful
-     * @throws ChangeEmailFailException if failed
+     * @throws ChangeEmailFailException if failed, with message explaining why
      */
-    public boolean changeEmail(String oldEmail, String newEmail) throws
+    public void changeEmail(String oldEmail, String newEmail) throws
             IOException, ClassNotFoundException, ChangeEmailFailException {
         JSONObject json = new JSONObject();
         json.put("msgType","changeEmail");
@@ -115,7 +118,9 @@ public class UserController {
 
         JSONObject response = receiveJson(sslSocket);
         if (response.getString("msgType").equals("changeEmailAck")) {
-            return true;
+            if (response.getInt("uid") != user.getId())
+                throw new ChangeEmailFailException("Bad response from server " +
+                        "- user id does not match up");
         } else if (response.getString("msgType").equals("error")) {
             throw new ChangeEmailFailException(response.getString
                     ("message"));
