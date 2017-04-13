@@ -7,9 +7,11 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Random;
 
 import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Constants.MAX_LOGINS_PER_MINUTE;
 import static org.cs5431.Encryption.secondPwdHash;
 import static org.cs5431.JSON.receiveJson;
 import static org.cs5431.JSON.sendJson;
@@ -18,13 +20,16 @@ import static org.cs5431.JSON.sendJsonArray;
 public class SSLServer extends Thread {
     protected Socket s;
     private SQL_Connection sqlConnection;
+    private int failedLogins = 0;
+    private Date failedTime;
 
-    public SSLServer(Socket socket, SQL_Connection sqlConnection){
+    SSLServer(Socket socket, SQL_Connection sqlConnection){
         this.s = socket;
         this.sqlConnection = sqlConnection;
     }
 
     public void run(){
+        failedTime = new Date();
         try {
         while(true) {
                 JSONObject jsonObject = receiveJson(s);
@@ -39,17 +44,10 @@ public class SSLServer extends Thread {
                         sendJson(response, s);
                         break;
                     case "login":
-                        if (DEBUG_MODE) {
-                            System.out.println("trying to login");
-                        }
                         response = login(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
-                    /*case "getPrivKeySalt":
-                        response = getPrivKeySalt(jsonObject, sqlConnection);
-                        sendJson(response, s);
-                        break;*/
-                    case "changePwd":
+                    case "editPassword":
                         response = changePwd(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
@@ -65,11 +63,15 @@ public class SSLServer extends Thread {
                         response = rename(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
-                    case "add privilege":
+                    case "renameKeys":
+                        response = renameKeys(jsonObject, sqlConnection);
+                        sendJson(response, s);
+                        break;
+                    case "addPriv":
                         response = addPriv(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
-                    case "remove privilege":
+                    case "removePriv":
                         response = removePriv(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
@@ -77,8 +79,12 @@ public class SSLServer extends Thread {
                         response = delete(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
-                    case "edit user details":
-                        response = editDetails(jsonObject, sqlConnection);
+                    case "overwriteKeys":
+                        response = overwrite(jsonObject, sqlConnection);
+                        sendJson(response, s);
+                        break;
+                    case "editEmail":
+                        response = changeEmail(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
                     case "getFileLogs":
@@ -127,6 +133,16 @@ public class SSLServer extends Thread {
 
     private JSONObject login(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
+        //rate limiting: check if too many failed logins within this one minute
+        Date now = new Date();
+        if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
+                failedTime)) {
+            JSONObject jsonErr = new JSONObject();
+            jsonErr.put("msgType", "error");
+            jsonErr.put("message", "Too many failed logins recently");
+            return jsonErr;
+        }
+
         String pwdSalt = sqlConnection.getSalt(jsonObject.getString
                 ("username"));
         String hashedPwd = jsonObject.getString("hashedPwd");
@@ -143,45 +159,36 @@ public class SSLServer extends Thread {
         JSONObject jsonErr = new JSONObject();
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Login failed");
+        //Rate limiting: keep track of failed logins
+        if (withinOneMinute(now,failedTime))
+            failedLogins++;
+        else {
+            failedTime = new Date();
+            failedLogins = 1;
+        }
         return jsonErr;
     }
 
-
-    /*private JSONObject getPrivKeySalt(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        String privSalt = sqlConnection.getPrivKeySalt(jsonObject.getString
-                ("username"));
-        if (privSalt != null) {
-            JSONObject salt = new JSONObject();
-            salt.put("msgType", "getPrivKeySaltAck");
-            salt.put("privKeySalt", privSalt);
-            if (salt != null) {
-                return salt;
-            }
-        }
-
-        System.out.println("Sending error -- unable to get salt");
-        JSONObject jsonErr = new JSONObject();
-        jsonErr.put("msgType", "error");
-        jsonErr.put("message", "Unable to get privKeySalt");
-        return jsonErr;
-    }*/
+    private boolean withinOneMinute(Date now, Date then) {
+        return (now.getTime() - then.getTime() <= 60*1000);
+    }
 
     private JSONObject changePwd(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         String newHashedPwd = jsonObject.getString("newHashedPwd");
-        String pwdSalt = sqlConnection.getSalt(jsonObject.getString
-                ("username"));
+        String pwdSalt = sqlConnection.getSalt(jsonObject.getString("username"));
         if (pwdSalt != null) {
             String newEncPwd = secondPwdHash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd);
             if (verification != null) {
                 if (DEBUG_MODE) {
-                    System.out.println("chaning pwd: " + verification);
+                    System.out.println("changing pwd: " + verification);
                 }
                 return verification;
             }
         }
+        //TODO: return error that says unable to authenticate IF AND ONLY IF
+        //the authentication is the part that failed!
         if (DEBUG_MODE) {
             System.out.println("Sending error -- unable to authenticate");
         }
@@ -209,14 +216,22 @@ public class SSLServer extends Thread {
 
     private JSONObject download(JSONObject jsonObject, SQL_Connection
             sqlConnection) throws Exception {
-        int fsoid = jsonObject.getInt("fsoid");
-        int uid = jsonObject.getInt("uid");
-
-        JSONObject downloadAck = sqlConnection.getFile(jsonObject);
-        return downloadAck;
+        return sqlConnection.getFile(jsonObject);
     }
 
     private JSONObject rename(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+        return null;
+    }
+
+    private JSONObject renameKeys(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        //TODO
+        return null;
+    }
+
+    private JSONObject overwrite(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;
@@ -253,7 +268,7 @@ public class SSLServer extends Thread {
         return null;
     }
 
-    private JSONObject editDetails(JSONObject jsonObject, SQL_Connection
+    private JSONObject changeEmail(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         //TODO
         return null;

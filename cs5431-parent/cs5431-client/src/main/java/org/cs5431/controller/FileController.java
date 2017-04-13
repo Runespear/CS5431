@@ -136,7 +136,7 @@ public class FileController {
 
             sendJson(fso, sslSocket);
             JSONObject fsoAck = receiveJson(sslSocket);
-            
+
             if (fsoAck.get("msgType").equals("uploadAck")) {
                 int folderSentId = fsoAck.getInt("fsoid");
 

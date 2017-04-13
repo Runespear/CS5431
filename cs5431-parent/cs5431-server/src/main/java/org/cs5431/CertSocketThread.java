@@ -38,7 +38,7 @@ public class CertSocketThread implements Runnable {
 class CertTransferThread extends Thread{
 
     protected Socket s;
-    protected PrivateKey key;
+    private PrivateKey key;
     private String serverName;
 
     CertTransferThread(Socket socket, PrivateKey key,
@@ -64,7 +64,8 @@ class CertTransferThread extends Thread{
         //Get the cert, mac and store in object
         FileInputStream inputStream = new FileInputStream(filepath);
         byte[] filebytes = new byte[inputStream.available()];
-        inputStream.read(filebytes);
+        if (inputStream.read(filebytes) == 0)
+            throw new Exception("Cert transmitted is empty!");
         inputStream.close();
         byte[] signedCert = signCert(filebytes, key);
         TransmittedFile file_to_send = new TransmittedFile();
