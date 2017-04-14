@@ -161,6 +161,15 @@ public class Encryption {
         return dsa.sign();
     }
 
+    static byte[] signJKS(byte[] message, PrivateKey key) throws
+            NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        //SHA-256 hashing algorithm with RSA, getting the signature object
+        Signature dsa = Signature.getInstance("SHA256withRSA");
+        dsa.initSign(key); //initializing the private key
+        dsa.update(message);
+        return dsa.sign();
+    }
+
     //[0] is Base64 encoded public key, [1] is Base64 encoded password
     // encrypted private key, [2] is salt used for password based encryption
     public static String[] generateUserKeys(String password) throws

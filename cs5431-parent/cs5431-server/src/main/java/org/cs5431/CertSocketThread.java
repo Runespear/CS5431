@@ -6,8 +6,10 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 
 import static org.cs5431.Encryption.signCert;
+import static org.cs5431.Encryption.signJKS;
 
 public class CertSocketThread implements Runnable {
     private String serverName;
@@ -50,9 +52,12 @@ class CertTransferThread extends Thread{
 
     public void run(){
         try {
-            String filename = serverName + ".cer";
-            String filepath = "./server-config/" + serverName + ".cer";
-            sendCert(s, filepath, filename, key);
+            String certfilename = serverName + ".cer";
+            String certfilepath = "./server-config/" + serverName + ".cer";
+            String jksfilename = serverName + ".jks";
+            String jksfilepath = "./server-config/" + serverName + ".jks";
+            sendCert(s, certfilepath, certfilename, key);
+            sendJKS(s,jksfilepath, jksfilename,key);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -76,4 +81,25 @@ class CertTransferThread extends Thread{
 
         out_to_Client.writeObject(file_to_send);
     }
+
+    public static void sendJKS(Socket s, String filepath, String filename, PrivateKey key) throws Exception{
+        ObjectOutputStream out_to_Client = new ObjectOutputStream(s.getOutputStream());
+
+        //Get the cert, mac and store in object
+        FileInputStream inputStream = new FileInputStream(filepath);
+        byte[] filebytes = new byte[inputStream.available()];
+        if (inputStream.read(filebytes) == 0)
+            throw new Exception("JKS transmitted is empty!");
+        inputStream.close();
+        byte[] signedJKS = signJKS(filebytes, key);
+        TransmittedFile file_to_send = new TransmittedFile();
+        file_to_send.file = filebytes;
+        file_to_send.signature = signedJKS;
+        file_to_send.filename = filename;
+        //Send the file to client
+
+        out_to_Client.writeObject(file_to_send);
+    }
+
+
 }

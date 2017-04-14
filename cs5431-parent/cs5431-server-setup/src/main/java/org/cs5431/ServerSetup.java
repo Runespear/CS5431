@@ -213,6 +213,7 @@ public class ServerSetup {
             generateKeyStore(name);
             //export certificate and public key
             exportCert(name);
+            importCert(name);
 
             System.out.println("Distribute the "+name+".config and the "+name+
                     ".pub file found in the /user-config folder to your users.");
@@ -254,5 +255,43 @@ public class ServerSetup {
             System.out.println(command);
             sun.security.tools.keytool.Main.main(options);
         }
+    }
+
+    public static void importCert(String name) throws Exception{
+        String security = getRandomString(10);
+        System.setProperty("javax.net.ssl.trustStorePassword", security);
+        System.out.println("importing cert");
+        String command = " -import " +
+                " -alias mykey " +
+                //" -keyalg RSA " +
+                //" -sigalg SHA256withRSA "+
+                //" -dname CN=Java "+
+                //" -storetype JKS "+
+                " -file ./server-config/" + name + ".cer "+
+                " -keystore ./server-config/" + "clientTrustStore.jks"+
+                " -storepass " +security ;
+
+
+        String[] options = command.trim().split("\\s+");
+        System.out.println(command);
+        sun.security.tools.keytool.Main.main(options);
+
+        //Scanner scanner = new Scanner (System.in);
+        //System.out.println("Type in your password to access the truststore:");
+        //String pass = scanner.nextLine(); //Obtain user's command
+    }
+
+    public static String getRandomString(int Length) {
+        String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,./;'[]-=~!@#$%^&*()_+";
+        StringBuilder rs = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        while (rs.length() < Length) {
+            int index = (int) (random.nextFloat() * CHARS.length());
+            rs.append(CHARS.charAt(index));
+        }
+        String randStr = rs.toString();
+        //String[] strArray = new String[] {randStr};
+        return randStr;
+
     }
 }

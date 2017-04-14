@@ -13,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.stage.Stage;
+import org.cs5431.TransmittedFile;
 import org.cs5431.Validator;
 
 import java.io.*;
@@ -21,8 +22,8 @@ import java.net.URL;
 import java.security.PublicKey;
 import java.util.ResourceBundle;
 
-import static org.cs5431.controller.SSLController.importCert;
-import static org.cs5431.controller.SSLController.verify_and_receive_Cert;
+import static org.cs5431.controller.SSLController.*;
+
 
 public class ConnectController implements Initializable {
     @FXML
@@ -80,17 +81,27 @@ public class ConnectController implements Initializable {
             //TODO create secure channel here
 
             File cert = new File("./user-config/"+serverName+".cer");
+            File jks = new File("./user-config/"+serverName+".jks");
             if (!cert.exists()) {
                 Socket s = new Socket(server, Integer.parseInt(outPort));
 
                 String filepath = "./user-config/";
-                verify_and_receive_Cert(serverPubKey, s, filepath);
+                TransmittedFile received = receive_Cert(s, filepath);
+                Boolean is_Cert_Modified = verify_Cert(serverPubKey,received);
+                TransmittedFile received2 = receive_JKS(s,filepath);
+                Boolean is_JKS_Modified = verify_JKS(serverPubKey, received2);
                 if (!cert.exists()) {
                     throw new CertException("Could not create new " +
                             "certificate.");
                 }
-                importCert(serverName);
+                if (!jks.exists()) {
+                    throw new JKSException("Could not create new " +
+                            "truststore.");
+                }
+
             }
+
+
 
             goToLogin(e, server, serverName, sslPort);
         } catch (IOException | ClassNotFoundException ex) {
@@ -104,6 +115,8 @@ public class ConnectController implements Initializable {
             ex.printStackTrace();
         }
     }
+
+
 
     /**
      * Tries to open the registration page to allow the user to create an
@@ -139,6 +152,11 @@ public class ConnectController implements Initializable {
     }
     public class CertException extends Exception {
         CertException(String message) {
+            super(message);
+        }
+    }
+    public class JKSException extends Exception {
+        JKSException(String message) {
             super(message);
         }
     }

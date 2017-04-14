@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.security.Signature;
 
-import static org.cs5431.controller.SSLController.verify_and_receive_Cert;
 
 /**
  * Created by Brandon on 28/3/2017.
@@ -22,7 +21,7 @@ public class Unsecured_Client {
 
             //TESTING METHODS FROM HERE ON
             String filepath = System.getProperty("user.dir") + "/Testing SSL Stuff/Client/";
-            verify_and_receive_Cert(null,s,filepath);
+            //verify_and_receive_Cert(null,s,filepath);
 
 
         } catch (Exception e) {
