@@ -152,14 +152,17 @@ public class ServerSetup {
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createFileLog = "CREATE TABLE FileLog (fileLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
-                "fsoid INT UNSIGNED NOT NULL,\n" +
+                "fsoid INT UNSIGNED,\n" +
                 "uid INT UNSIGNED NOT NULL, \n" +
-                "lastModified TIMESTAMP, actionType VARCHAR(20),\n" +
-                "ipAddr VARCHAR(15) NOT NULL, \n" +
-                "newUid INT UNSIGNED NOT NULL);";
+                "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(20) NOT NULL,\n" +
+                "status CHAR(10) NOT NULL,\n" +
+                "sourceIp VARCHAR(30) NOT NULL, \n" +
+                "newUid INT UNSIGNED);";
         String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
-                "uid INT UNSIGNED NOT NULL, \n" +
-                "lastModified TIMESTAMP, actionType CHAR(20);";
+                "uid INT UNSIGNED, \n" +
+                "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(20) NOT NULL,\n" +
+                "status CHAR(10) NOT NULL,\n" +
+                "sourceIp VARCHAR(30) NOT NULL);";
         String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL, uid INT UNSIGNED NOT NULL,\n" +
                 "encKey BLOB NOT NULL, fileIV CHAR(255), \n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +

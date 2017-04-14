@@ -87,7 +87,7 @@ public class SQL_Connection {
      * @param pwdSalt salt of the password that was used
      * @return json containing registrationAck and details of the user added (refer to protocols doc)
      * */
-    public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt) {
+    public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -109,8 +109,8 @@ public class SQL_Connection {
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
-            String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
-                    + "values (?, ?, ?, ?)";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType, status, sourceIp)"
+                    + "values (?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
 
             String username = user.getString("username");
@@ -165,6 +165,8 @@ public class SQL_Connection {
                 createLog.setInt(2, uid);
                 createLog.setTimestamp(3, currDate);
                 createLog.setString(4, "CREATE_USER");
+                createLog.setString(5, "SUCCESS");
+                createLog.setString(6, sourceIp);
                 createLog.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("created log");
@@ -200,6 +202,17 @@ public class SQL_Connection {
                 e.printStackTrace();
                 if (connection != null) {
                     try {
+                        Timestamp currDate = new Timestamp(System.currentTimeMillis());
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, 0);
+                        createLog.setTimestamp(3, currDate);
+                        createLog.setString(4, "CREATE_USER");
+                        createLog.setString(5, "FAILURE");
+                        createLog.setString(6, ip);
+                        createLog.executeUpdate();
+                        if (DEBUG_MODE) {
+                            System.out.println("created failure log");
+                        }
                         System.err.println("Transaction is being rolled back");
                         connection.rollback();
                     } catch(SQLException excep) {
@@ -233,7 +246,7 @@ public class SQL_Connection {
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * Verifies that the user has permission.
      * @return fsoid of created fso; if no permission, return -1. **/
-    public int createFso (JSONObject fso) throws IOException {
+    public int createFso (JSONObject fso, String ip) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -272,8 +285,8 @@ public class SQL_Connection {
                         "lastModified, isFile, fsoNameIV)"
                         + " values (?, ?, ?, ?, ?, ?, ?)";
                 String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey, fileIV) values (?, ?, ?, ?)";
-                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
-                        + "values (?, ?, ?, ?, ?)";
+                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid)"
+                        + "values (?, ?, ?, ?, ?, ?, ?, ?)";
                 String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
                 String insertFilePath = "INSERT INTO FileContents (fsoid, path, fileIV) values (?, ?, ?)";
 
@@ -321,6 +334,9 @@ public class SQL_Connection {
                     createLog.setInt(3, uid);
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, actionType);
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, ip);
+                    createLog.setInt(8, 0);
                     createLog.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("created log");
@@ -358,6 +374,26 @@ public class SQL_Connection {
                     e.printStackTrace();
                     if (connection != null) {
                         try {
+                            isFile = fso.getBoolean("isFile");
+                            String actionType;
+                            if (isFile) {
+                                actionType = "UPLOAD_FILE";
+                            } else {
+                                actionType = "CREATE_FOLDER";
+                            }
+
+                            createLog.setInt(1, 0);
+                            createLog.setInt(2, 0);
+                            createLog.setInt(3, uid);
+                            createLog.setTimestamp(4, lastModified);
+                            createLog.setString(5, actionType);
+                            createLog.setString(6, "FAILURE");
+                            createLog.setString(7, ip);
+                            createLog.setInt(8, 0);
+                            createLog.executeUpdate();
+                            if (DEBUG_MODE) {
+                                System.out.println("created failure log");
+                            }
                             System.err.println("Transaction is being rolled back");
                             connection.rollback();
                         } catch (SQLException excep) {

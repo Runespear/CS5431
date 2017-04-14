@@ -128,8 +128,10 @@ public class SSLServer extends Thread {
         String hashAndSalt[] = generatePasswordHash(hashedPwd);
         String hash = hashAndSalt[0];
         String pwdSalt = hashAndSalt[1];
+        String ip = s.getRemoteSocketAddress().toString();
+        System.out.println("ip: " + ip);
         JSONObject response = sqlConnection.createUser(jsonObject, hash,
-                pwdSalt);
+                pwdSalt, ip);
         if (response == null)
             return makeErrJson("Failed to register user");
         return response;
@@ -224,7 +226,7 @@ public class SSLServer extends Thread {
 
     private JSONObject upload(JSONObject jsonObject, SQL_Connection
             sqlConnection) throws Exception {
-        int fsoid = sqlConnection.createFso(jsonObject);
+        int fsoid = sqlConnection.createFso(jsonObject, s.getRemoteSocketAddress().toString());
         if (fsoid != -1) {
             JSONObject response = new JSONObject();
             response.put("msgType","uploadAck");
