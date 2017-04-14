@@ -154,13 +154,12 @@ public class ServerSetup {
         String createFileLog = "CREATE TABLE FileLog (fileLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
                 "fsoid INT UNSIGNED NOT NULL,\n" +
                 "uid INT UNSIGNED NOT NULL, \n" +
-                "lastModified TIMESTAMP, actionType CHAR(20),\n" +
-                "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
-                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE);";
+                "lastModified TIMESTAMP, actionType VARCHAR(20),\n" +
+                "ipAddr VARCHAR(15) NOT NULL, \n" +
+                "newUid INT UNSIGNED NOT NULL);";
         String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
                 "uid INT UNSIGNED NOT NULL, \n" +
-                "lastModified TIMESTAMP, actionType CHAR(20),\n" +
-                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE);";
+                "lastModified TIMESTAMP, actionType CHAR(20);";
         String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL, uid INT UNSIGNED NOT NULL,\n" +
                 "encKey BLOB NOT NULL, fileIV CHAR(255), \n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
