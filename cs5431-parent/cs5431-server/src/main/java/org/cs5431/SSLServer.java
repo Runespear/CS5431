@@ -23,7 +23,7 @@ public class SSLServer extends Thread {
     private int failedLogins = 0;
     private Date failedTime;
 
-    SSLServer(Socket socket, SQL_Connection sqlConnection){
+    public SSLServer(Socket socket, SQL_Connection sqlConnection){
         this.s = socket;
         this.sqlConnection = sqlConnection;
     }
@@ -317,7 +317,7 @@ public class SSLServer extends Thread {
         return response;
     }
 
-    private String[] generatePasswordHash(String pwd) {
+    public static String[] generatePasswordHash(String pwd) {
         Random random = new SecureRandom();
         //TODO: 32 is currently the salt length. Is this correct?
         byte salt[] = new byte[32];

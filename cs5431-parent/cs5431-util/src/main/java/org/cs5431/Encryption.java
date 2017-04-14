@@ -273,7 +273,7 @@ public class Encryption {
         return ret;
     }
 
-    private static SecretKey generateSecretKey() throws
+    public static SecretKey generateSecretKey() throws
             NoSuchAlgorithmException {
         KeyGenerator kg = KeyGenerator.getInstance("AES");
         kg.init(128, new SecureRandom());
@@ -281,7 +281,7 @@ public class Encryption {
         return secretKey;
     }
 
-    private static IvParameterSpec generateIV() {
+    public static IvParameterSpec generateIV() {
         SecureRandom random = new SecureRandom();
         byte iv[] = new byte[16];
         random.nextBytes(iv);
