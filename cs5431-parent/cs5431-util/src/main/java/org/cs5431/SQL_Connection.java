@@ -1788,7 +1788,6 @@ System.out.println("failed to remove editor");
      * @return the fsoid if successful, -1 otherwise
      */
     public int overwrite(int fsoid, int uid, String newFileIV, String encFile) {
-        
         return -1;
     }
 
@@ -1798,8 +1797,69 @@ System.out.println("failed to remove editor");
      * @param uid the id of the requesting user
      * @return The fsoid if successful, -1 otherwise
      */
-    public int deleteFile(int fsoid, int uid) {
-        //TODO RUIXIN
+    public int deleteFile(int fsoid, int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        PreparedStatement deleteFile = null;
+        PreparedStatement createLog = null;
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            boolean hasPermission = verifyEditPermission(fsoid, uid);
+            String removeFso = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                deleteFile = connection.prepareStatement(removeFso);
+                createLog = connection.prepareStatement(insertLog);
+                if (hasPermission) {
+                    deleteFile.setInt(1, fsoid);
+                    deleteFile.executeUpdate();
+
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "DELETE FSO");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, null);
+                    createLog.execute();
+
+                    return fsoid;
+
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "DELETE FSO");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return -1;
+            } finally {
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (deleteFile != null) {
+                    deleteFile.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return -1;
     }
 
