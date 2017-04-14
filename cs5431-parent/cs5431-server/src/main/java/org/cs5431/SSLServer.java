@@ -22,10 +22,12 @@ public class SSLServer extends Thread {
     private SQL_Connection sqlConnection;
     private int failedLogins = 0;
     private Date failedTime;
+    private String sourceIp;
 
     public SSLServer(Socket socket, SQL_Connection sqlConnection){
         this.s = socket;
         this.sqlConnection = sqlConnection;
+        this.sourceIp = s.getRemoteSocketAddress().toString();
     }
 
     public void run(){
@@ -128,10 +130,8 @@ public class SSLServer extends Thread {
         String hashAndSalt[] = generatePasswordHash(hashedPwd);
         String hash = hashAndSalt[0];
         String pwdSalt = hashAndSalt[1];
-        String ip = s.getRemoteSocketAddress().toString();
-        System.out.println("ip: " + ip);
         JSONObject response = sqlConnection.createUser(jsonObject, hash,
-                pwdSalt, ip);
+                pwdSalt, sourceIp);
         if (response == null)
             return makeErrJson("Failed to register user");
         return response;
@@ -170,11 +170,11 @@ public class SSLServer extends Thread {
         }
 
         String pwdSalt = sqlConnection.getSalt(jsonObject.getString
-                ("username"));
+                ("username"), sourceIp);
         String hashedPwd = jsonObject.getString("hashedPwd");
         if (pwdSalt != null) {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
-            JSONObject auth = sqlConnection.authenticate(jsonObject, encPwd);
+            JSONObject auth = sqlConnection.authenticate(jsonObject, encPwd, sourceIp);
             if (auth != null) {
                 return auth;
             }
@@ -202,10 +202,10 @@ public class SSLServer extends Thread {
     private JSONObject changePwd(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         String newHashedPwd = jsonObject.getString("newHashedPwd");
-        String pwdSalt = sqlConnection.getSalt(jsonObject.getString("username"));
+        String pwdSalt = sqlConnection.getSalt(jsonObject.getString("username"), sourceIp);
         if (pwdSalt != null) {
             String newEncPwd = secondPwdHash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
-            JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd);
+            JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd, sourceIp);
             if (verification != null) {
                 if (DEBUG_MODE) {
                     System.out.println("changing pwd: " + verification);
