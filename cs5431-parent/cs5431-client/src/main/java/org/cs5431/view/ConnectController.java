@@ -76,8 +76,6 @@ public class ConnectController implements Initializable {
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream
                     (pubKeyFile));
             PublicKey serverPubKey = (PublicKey) ois.readObject();
-            //TODO actually connect to the server with these details
-            //TODO create secure channel here
 
             File cert = new File("./user-config/"+serverName+".cer");
             if (!cert.exists()) {

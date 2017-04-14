@@ -5,22 +5,20 @@ import org.json.JSONObject;
 
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Random;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Constants.MAX_LOGINS_PER_MINUTE;
+import static org.cs5431.Encryption.generatePasswordHash;
 import static org.cs5431.Encryption.secondPwdHash;
-import static org.cs5431.JSON.receiveJson;
-import static org.cs5431.JSON.sendJson;
-import static org.cs5431.JSON.sendJsonArray;
+import static org.cs5431.JSON.*;
 
 public class SSLServer extends Thread {
     protected Socket s;
     private SQL_Connection sqlConnection;
     private int failedLogins = 0;
+    private int loggedInUid = -1;
     private Date failedTime;
     private String sourceIp;
 
@@ -39,7 +37,26 @@ public class SSLServer extends Thread {
                     System.out.println("received json: " + jsonObject.toString());
                 }
                 String type = jsonObject.getString("msgType");
+
                 JSONObject response;
+                boolean check = true;
+                if (type.equals("editPassword") || type.equals("upload") ||
+                        type.equals("download") || type.equals("rename") ||
+                        type.equals("renameKeys") || type.equals("addPriv") ||
+                        type.equals("removePriv") || type.equals("delete") ||
+                        type.equals("overwrite") || type.equals
+                        ("overwriteKeys") || type.equals("editEmail") || type
+                        .equals("getFileLogs") || type.equals("getChildren")
+                        || type.equals("logout")) {
+                    if (!isLoggedInUser(jsonObject)) {
+                        check = false;
+                        response = makeErrJson("Requesting user does not match " +
+                                "logged in user");
+                        sendJson(response, s);
+                    }
+                }
+
+                if (check) {
                 switch (type) {
                     case "registration":
                         response = register(jsonObject, sqlConnection);
@@ -50,9 +67,9 @@ public class SSLServer extends Thread {
                         sendJson(response, s);
                         break;
                     case "getPrivKeySalt":
-                         response = getPrivKeySalt(jsonObject, sqlConnection);
-                         sendJson(response, s);
-                         break;
+                        response = getPrivKeySalt(jsonObject, sqlConnection);
+                        sendJson(response, s);
+                        break;
                     case "editPassword":
                         response = changePwd(jsonObject, sqlConnection);
                         sendJson(response, s);
@@ -113,11 +130,16 @@ public class SSLServer extends Thread {
                         response = getUserId(jsonObject, sqlConnection);
                         sendJson(response, s);
                         break;
+                    case "logout":
+                        response = logout(jsonObject);
+                        sendJson(response, s);
+                        break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
                         sendJson(response, s);
                         break;
+                    }
                 }
             }
         } catch (NullPointerException | SocketException e) {
@@ -188,6 +210,7 @@ public class SSLServer extends Thread {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject auth = sqlConnection.authenticate(jsonObject, encPwd, sourceIp);
             if (auth != null) {
+                loggedInUid = auth.getInt("uid");
                 return auth;
             }
         }
@@ -321,7 +344,7 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
 
-        if (sqlConnection.deleteFile(fsoid, uid) == fsoid) {
+        if (sqlConnection.deleteFile(fsoid, uid, sourceIp) == fsoid) {
             JSONObject response = new JSONObject();
             response.put("msgType","deleteAck");
             response.put("fsoid", fsoid);
@@ -409,7 +432,24 @@ public class SSLServer extends Thread {
             response.put("uid", jsonObject.getInt("uid"));
             return response;
         }
-        return null;
+        return makeErrJson("File secret key could not be retrieved");
+    }
+
+    private JSONObject logout(JSONObject jsonObject) {
+        int uid = jsonObject.getInt("uid");
+        if (uid == loggedInUid) {
+            loggedInUid = -1;
+            JSONObject response = new JSONObject();
+            response.put("msgType", "logoutAck");
+            response.put("uid", uid);
+            return response;
+        } else {
+            return makeErrJson("User id does not match with logged in user");
+        }
+    }
+
+    private boolean isLoggedInUser(JSONObject jsonObject) {
+        return jsonObject.getInt("uid") == loggedInUid;
     }
 
     private JSONObject makeErrJson(String message) {
@@ -418,17 +458,5 @@ public class SSLServer extends Thread {
         response.put("msgType","error");
         response.put("message", message);
         return response;
-    }
-
-    public static String[] generatePasswordHash(String pwd) {
-        Random random = new SecureRandom();
-        //TODO: 32 is currently the salt length. Is this correct?
-        byte salt[] = new byte[32];
-        random.nextBytes(salt);
-        String hashedPW = secondPwdHash(pwd, salt);
-        String returnedValues[] = new String[2];
-        returnedValues[0] = hashedPW;
-        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
-        return returnedValues;
     }
 }
