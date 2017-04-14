@@ -21,11 +21,6 @@ public class SQL_Connection {
     private String DB_USER;
     private String DB_PASSWORD;
 
-    public SQL_Connection(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
-    }
-
     public SQL_Connection(String ip, int dbPort, String username, String
             password) {
         this.ip = ip;
@@ -1138,9 +1133,10 @@ public class SQL_Connection {
         return null;
     }
 
-    //TODO: to send in new IV when renaming
-    public int renameFso(int fsoid, int uid, String newName) {
+    public int renameFso(int fsoid, int uid, String newName, String
+            newFSONameIV) {
 
+        //TODO: save newFSONameIV into the table
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             if (DEBUG_MODE) {
@@ -1614,6 +1610,80 @@ System.out.println("removed key");
         }
         if (DEBUG_MODE)
 System.out.println("failed to remove editor");
+        return -1;
+    }
+
+    /**
+     * Gets the encrypted file secret key associated with this fso and this
+     * user. First checks to see if the user has edit rights.
+     * @param fsoid the id of the fso
+     * @param uid the id of the requesting user
+     * @return The file secret key associated with this fso and user
+     */
+    public String getFileSK(int fsoid, int uid) {
+        //TODO RUIXIN
+        return null;
+    }
+
+    /**
+     * Overwrites the file with First checks to see if the user has edit
+     * rights.
+     * @param fsoid the id of the file to overwrite
+     * @param uid the id of the requesting user
+     * @param newFileIV The new fileIV to be written into the database
+     * @param encFile The encrypted contents of the file to be written into
+     *                the database
+     * @return the fsoid if successful, -1 otherwise
+     */
+    public int overwrite(int fsoid, int uid, String newFileIV, String encFile) {
+        //TODO RUIXIN
+        return -1;
+    }
+
+    /**
+     * Deletes the file. First checks to see if the user has edit rights.
+     * @param fsoid the id of the file
+     * @param uid the id of the requesting user
+     * @return The fsoid if successful, -1 otherwise
+     */
+    public int deleteFile(int fsoid, int uid) {
+        //TODO RUIXIN
+        return -1;
+    }
+
+    /**
+     * Changes the email associated with a certain user.
+     * @param uid The user id of the user
+     * @param oldEmail The alleged old email address of the user
+     * @param newEmail The email address to change to
+     * @return true if the change of email is successful, false otherwise.
+     */
+    public boolean changeEmail(int uid, String oldEmail, String newEmail) {
+        //TODO RUIXIN
+        return false;
+    }
+
+    /**
+     * Checks that the username and password associated with this instance of
+     * SQL_Connection can be used to connect to the database
+     * @return true if the username and password combination can be used to
+     * connect to the database, false otherwise
+     */
+    public boolean checkCredentials() {
+        //TODO RUIXIN
+        //JUST DOUBLE CHECK THAT THE CREDENTIALS WORK
+        return true;
+    }
+
+    public String getUsername(JSONObject jsonObject) {
+        //TODO RUIXIN
+        int userId = jsonObject.getInt("uid");
+        return null;
+    }
+
+    public int getUserId(JSONObject jsonObject) {
+        //TODO RUIXIN
+        String username = jsonObject.getString("username");
         return -1;
     }
 }

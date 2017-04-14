@@ -86,6 +86,11 @@ public class ServerView {
 
         SQL_Connection sqlConnection = new SQL_Connection(server, dbPort,
                 username, password);
+        if (!sqlConnection.checkCredentials()) {
+            System.err.println("Could not connect to SQL server with given " +
+                    "credentials");
+            return;
+        }
 
         try {
             CertSocketThread cst = new CertSocketThread(serverName,

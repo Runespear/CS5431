@@ -17,6 +17,7 @@ public class SSLSocketThread implements Runnable {
             while (true) {
                 Socket s = ss.accept();
                 new SSLServer(s, sqlConnection).start();
+
             }
         } catch (Exception e) {
             e.printStackTrace();
