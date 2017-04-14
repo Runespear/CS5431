@@ -15,7 +15,6 @@ public class User extends Account {
         this.username = username;
         this.email = email;
         this.userParentFolder = userParentFolder;
-        //TODO: get user's logid from controller/server
         this.privKey = privKey;
         this.pubKey = pubKey;
     }

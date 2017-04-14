@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -171,6 +172,38 @@ public class AccountsController {
         return null;
     }
 
+    public String getUsername(int uid) throws IOException,
+            ClassNotFoundException, UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","username");
+        json.put("uid", uid);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("usernameAck"))
+            return response.getString("username");
+        else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+    }
+
+    public int getUserId(String username) throws IOException,
+            ClassNotFoundException, UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","userid");
+        json.put("username", username);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("useridAck"))
+            return response.getInt("uid");
+        else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+    }
+
     public class RegistrationFailException extends Exception {
         RegistrationFailException(String message) {
             super(message);
@@ -183,4 +216,9 @@ public class AccountsController {
         }
     }
 
+    public class UserRetrieveException extends Exception {
+        UserRetrieveException(String message) {
+            super(message);
+        }
+    }
 }

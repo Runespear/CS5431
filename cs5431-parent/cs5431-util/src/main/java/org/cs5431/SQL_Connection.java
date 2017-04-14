@@ -21,11 +21,6 @@ public class SQL_Connection {
     private String DB_USER;
     private String DB_PASSWORD;
 
-    public SQL_Connection(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
-    }
-
     public SQL_Connection(String ip, int dbPort, String username, String
             password) {
         this.ip = ip;
@@ -109,8 +104,8 @@ public class SQL_Connection {
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?, ?)";
-            String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType, status, sourceIp)"
-                    + "values (?, ?, ?, ?, ?, ?)";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
 
             String username = user.getString("username");
@@ -167,6 +162,7 @@ public class SQL_Connection {
                 createLog.setString(4, "CREATE_USER");
                 createLog.setString(5, "SUCCESS");
                 createLog.setString(6, sourceIp);
+                createLog.setString(7, null);
                 createLog.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("created log");
@@ -208,7 +204,8 @@ public class SQL_Connection {
                         createLog.setTimestamp(3, currDate);
                         createLog.setString(4, "CREATE_USER");
                         createLog.setString(5, "FAILURE");
-                        createLog.setString(6, ip);
+                        createLog.setString(6, sourceIp);
+                        createLog.setString(7, "DB ERROR");
                         createLog.executeUpdate();
                         if (DEBUG_MODE) {
                             System.out.println("created failure log");
@@ -246,7 +243,7 @@ public class SQL_Connection {
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * Verifies that the user has permission.
      * @return fsoid of created fso; if no permission, return -1. **/
-    public int createFso (JSONObject fso, String ip) throws IOException {
+    public int createFso (JSONObject fso, String sourceIp) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -272,25 +269,30 @@ public class SQL_Connection {
             String fsoNameIV = fso.getString("fsoNameIV");
 
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
+            PreparedStatement createFso = null;
+            PreparedStatement addKey = null;
+            PreparedStatement createLog = null;
+            PreparedStatement addPermission = null;
+            PreparedStatement addFile = null;
+            PreparedStatement addPath = null;
 
-            if (hasPermission) {
-                PreparedStatement createFso = null;
-                PreparedStatement addKey = null;
-                PreparedStatement createLog = null;
-                PreparedStatement addPermission = null;
-                PreparedStatement addFile = null;
-                PreparedStatement addPath = null;
+            String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
+                    "lastModified, isFile, fsoNameIV)"
+                    + " values (?, ?, ?, ?, ?, ?, ?)";
+            String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey, fileIV) values (?, ?, ?, ?)";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
+            String insertFilePath = "INSERT INTO FileContents (fsoid, path, fileIV) values (?, ?, ?)";
 
-                String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
-                        "lastModified, isFile, fsoNameIV)"
-                        + " values (?, ?, ?, ?, ?, ?, ?)";
-                String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey, fileIV) values (?, ?, ?, ?)";
-                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid)"
-                        + "values (?, ?, ?, ?, ?, ?, ?, ?)";
-                String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
-                String insertFilePath = "INSERT INTO FileContents (fsoid, path, fileIV) values (?, ?, ?)";
-
-                try {
+            try {
+                String actionType;
+                if (isFile) {
+                    actionType = "UPLOAD_FILE";
+                } else {
+                    actionType = "CREATE_FOLDER";
+                }
+                if (hasPermission) {
                     connection.setAutoCommit(false);
                     createFso = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
                     createLog = connection.prepareStatement(insertLog);
@@ -322,21 +324,15 @@ public class SQL_Connection {
                         System.out.println("added added sk");
                     }
 
-                    String actionType;
-                    if (isFile) {
-                        actionType = "UPLOAD_FILE";
-                    } else {
-                        actionType = "CREATE_FOLDER";
-                    }
-
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, actionType);
                     createLog.setString(6, "SUCCESS");
-                    createLog.setString(7, ip);
+                    createLog.setString(7, sourceIp);
                     createLog.setInt(8, 0);
+                    createLog.setString(9, null);
                     createLog.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("created log");
@@ -369,7 +365,18 @@ public class SQL_Connection {
                     connection.commit();
 
                     return fsoid;
-
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, actionType);
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.executeUpdate();
+                }
                 } catch (SQLException e) {
                     e.printStackTrace();
                     if (connection != null) {
@@ -381,15 +388,15 @@ public class SQL_Connection {
                             } else {
                                 actionType = "CREATE_FOLDER";
                             }
-
                             createLog.setInt(1, 0);
                             createLog.setInt(2, 0);
                             createLog.setInt(3, uid);
                             createLog.setTimestamp(4, lastModified);
                             createLog.setString(5, actionType);
                             createLog.setString(6, "FAILURE");
-                            createLog.setString(7, ip);
+                            createLog.setString(7, sourceIp);
                             createLog.setInt(8, 0);
+                            createLog.setString(9, "DB ERROR");
                             createLog.executeUpdate();
                             if (DEBUG_MODE) {
                                 System.out.println("created failure log");
@@ -422,9 +429,7 @@ public class SQL_Connection {
                     }
                     connection.setAutoCommit(true);
                 }
-            }
-
-        } catch (SQLException e) {
+    } catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -434,7 +439,7 @@ public class SQL_Connection {
 
     /** Compares username and encrypted password with row of User table.
      * @return h(privKey) of the user if the authentication is valid. **/
-    public JSONObject authenticate(JSONObject allegedUser, String encPwd) {
+    public JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -447,13 +452,17 @@ public class SQL_Connection {
                 System.out.println("Database connected!");
             }
             PreparedStatement verifyUser = null;
+            PreparedStatement addLog = null;
 
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
             String username = allegedUser.getString("username");
 
             try {
+                addLog = connection.prepareStatement(insertLog);
                 verifyUser = connection.prepareStatement(checkPassword);
                 verifyUser.setString(1, username);
                 verifyUser.setString(2, encPwd);
@@ -477,26 +486,31 @@ public class SQL_Connection {
                     user.put("privKey", privKey);
                     user.put("pubKey", pubKey);
                     user.put("privKeySalt", privKeySalt);
+
+                    addLog.setInt(1, 0);
+                    addLog.setInt(2, uid);
+                    addLog.setString(3, username);
+                    addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    addLog.setString(5, "LOGIN");
+                    addLog.setString(6, "SUCCESS");
+                    addLog.setString(7, sourceIp);
+                    addLog.setString(8, null);
+                    addLog.execute();
                     return user;
                 } else {
                     //TODO: log the number of failed authentications? send email directly?
-                    String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
-                            + "values (?, ?, ?, ?)";
-                    String selectUsername = "SELECT U.uid FROM Users U WHERE U.username = ?";
-                    PreparedStatement getUid = connection.prepareStatement(selectUsername);
-                    PreparedStatement logFailed = connection.prepareStatement(insertLog);
-
-                    getUid.setString(1, username);
-                    rs = getUid.executeQuery();
-
-                    if (rs.next()) {
-                        int uid = rs.getInt(1);
-                        logFailed.setInt(1, 0);
-                        logFailed.setInt(2, uid);
-                        logFailed.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-                        logFailed.setString(4, "FAILED_LOGIN");
-                        logFailed.execute();
+                    addLog.setInt(1, 0);
+                    addLog.setInt(2, 0);
+                    addLog.setString(3, username);
+                    addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    addLog.setString(5, "LOGIN");
+                    addLog.setString(6, "FAILURE");
+                    addLog.setString(7, sourceIp);
+                    addLog.setString(8, "WRONG PASSWORD");
+                    if (DEBUG_MODE) {
+                        System.out.println("invalid login");
                     }
+                    addLog.execute();
                     return null;
                 }
             } catch (JSONException e) {
@@ -504,6 +518,9 @@ public class SQL_Connection {
             } finally {
                 if (verifyUser != null) {
                     verifyUser.close();
+                }
+                if (addLog != null) {
+                    addLog.close();
                 }
             }
         } catch (SQLException e) {
@@ -551,7 +568,7 @@ public class SQL_Connection {
 
     /** Gets pwdSalt of pwd associated with username.
      * @return salt of password associated with username */
-    public String getSalt(String username) {
+    public String getSalt(String username, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -562,16 +579,30 @@ public class SQL_Connection {
                 System.out.println("Database connected!");
             }
             PreparedStatement getSalt = null;
+            PreparedStatement addLog = null;
 
             String selectSalt = "SELECT U.pwdSalt FROM Users U WHERE U.username = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String salt = null;
 
             try {
+                addLog = connection.prepareStatement(insertLog);
                 getSalt = connection.prepareStatement(selectSalt);
                 getSalt.setString(1, username);
                 ResultSet rs = getSalt.executeQuery();
                 if (rs.next()) {
                     salt = rs.getString(1);
+                } else {
+                    addLog.setInt(1, 0);
+                    addLog.setInt(2, 0);
+                    addLog.setString(3, username);
+                    addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    addLog.setString(5, "LOGIN");
+                    addLog.setString(6, "FAILURE");
+                    addLog.setString(7, sourceIp);
+                    addLog.setString(8, "INVALID USERNAME");
+                    addLog.execute();
                 }
                 return salt;
             } catch (SQLException e) {
@@ -581,6 +612,9 @@ public class SQL_Connection {
                 if (getSalt != null) {
                     getSalt.close();
                 }
+                if (addLog != null) {
+                    addLog.close();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -588,17 +622,27 @@ public class SQL_Connection {
         return null;
     }
 
+    /*
+     * Deletes the user with uid, without knowing the password of the user.
+     * This can only be done by the admin.
+     * @return the uid of the user that is deleted; -1 if unsuccessful deletion.
+     */
+    public int adminDeleteUser(int uid) {
+        //TODO RUIXIN
+        return -1;
+    }
+
     //how does an admin delete user?
     /** Deletes the user with uid. To be first authenticated using username and password.
      * Creates a log entry of the deletion of user.
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion. */
-    public int deleteUser(int uid, String username, String password) {
+    public int deleteUser(int uid, String username, String password, String sourceIp) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", "username");
         //allegedUser.put("pwd", password);
-        String salt = getSalt(username);
+        String salt = getSalt(username, "");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
-        JSONObject user = authenticate(allegedUser, encPwd);
+        JSONObject user = authenticate(allegedUser, encPwd, sourceIp);
 
         if (user != null) {
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
@@ -613,8 +657,8 @@ public class SQL_Connection {
                 PreparedStatement createLog = null;
 
                 String deleteUser = "DELETE FROM Users WHERE username = ? AND pwd = ?";
-                String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
-                        + "values (?, ?, ?, ?)";
+                String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp)"
+                        + "values (?, ?, ?, ?, ?, ?, ?)";
 
                 try {
                     createLog = connection.prepareStatement(insertLog);
@@ -627,10 +671,14 @@ public class SQL_Connection {
                         System.out.println("deleted user");
                     }
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
-                    createLog.setTimestamp(3, lastModified);
-                    createLog.setString(4, "DELETE");
+                    createLog.setString(3, username);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DELETE");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
                     createLog.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("created log");
@@ -672,20 +720,19 @@ public class SQL_Connection {
      * @param allegedUser json with the credentials of the user to be modified along
      *                    a new privKey.
      * @return json with changePwdAck and the uid; if user is not authenticated, return null. */
-    public JSONObject changePassword(JSONObject allegedUser, String newEncPwd) {
+    public JSONObject changePassword(JSONObject allegedUser, String newEncPwd, String sourceIp) {
         int uid = allegedUser.getInt("uid");
         String username = allegedUser.getString("username");
         String password = allegedUser.getString("hashedPwd");
         String newPrivKey = allegedUser.getString("newPrivKey");
-        String salt = getSalt(username);
+        String salt = getSalt(username, "");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
-        JSONObject user = authenticate(allegedUser, encPwd);
-        if (user != null) {
+        JSONObject user = authenticate(allegedUser, encPwd, "");
+
             String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
             }
-
             try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
                 if (DEBUG_MODE) {
                     System.out.println("Database connected!");
@@ -693,62 +740,85 @@ public class SQL_Connection {
                 PreparedStatement changePwd = null;
                 PreparedStatement createLog = null;
                 JSONObject response = new JSONObject();
-
                 String updatePwd = "UPDATE Users SET pwd = ?, privKey = ? WHERE uid = ? AND username = ?";
-                String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType)"
-                        + "values (?, ?, ?, ?)";
-
+                String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                            + "values (?, ?, ?, ?, ?, ?, ?, ?)";
                 try {
-                    createLog = connection.prepareStatement(insertLog);
-                    changePwd = connection.prepareStatement(updatePwd);
-                    connection.setAutoCommit(false);
-                    changePwd.setString(1, newEncPwd);
-                    changePwd.setString(2, newPrivKey);
-                    changePwd.setInt(3, uid);
-                    changePwd.setString(4, username);
-                    changePwd.executeUpdate();
-                    if (DEBUG_MODE) {
-                        System.out.println("changed password");
-                    }
-
-                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-                    createLog.setInt(1, 0);
-                    createLog.setInt(2, uid);
-                    createLog.setTimestamp(3, lastModified);
-                    createLog.setString(4, "CHANGE_PWD");
-                    createLog.executeUpdate();
-                    if (DEBUG_MODE) {
-                        System.out.println("created log");
-                    }
-
-                    connection.commit();
-                    response.put("msgType", "changePwdAck");
-                    response.put("uid", uid);
-                    return response;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if (connection != null) {
-                        try {
-                            System.err.println("Transaction is being rolled back");
-                            connection.rollback();
-                        } catch (SQLException excep) {
-                            excep.printStackTrace();
+                    if (user != null) {
+                        createLog = connection.prepareStatement(insertLog);
+                        changePwd = connection.prepareStatement(updatePwd);
+                        connection.setAutoCommit(false);
+                        changePwd.setString(1, newEncPwd);
+                        changePwd.setString(2, newPrivKey);
+                        changePwd.setInt(3, uid);
+                        changePwd.setString(4, username);
+                        changePwd.executeUpdate();
+                        if (DEBUG_MODE) {
+                            System.out.println("changed password");
                         }
+
+                        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, uid);
+                        createLog.setString(3, username);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "CHANGE_PWD");
+                        createLog.setString(6, "SUCCESS");
+                        createLog.setString(7, sourceIp);
+                        createLog.executeUpdate();
+                        if (DEBUG_MODE) {
+                            System.out.println("created log");
+                        }
+
+                        connection.commit();
+                        response.put("msgType", "changePwdAck");
+                        response.put("uid", uid);
+                        return response;
+                    } else {
+                        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, uid);
+                        createLog.setString(3, username);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "CHANGE_PWD");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setString(8, "INVALID PASSWORD");
+                        createLog.executeUpdate();
                     }
-                    return null;
-                } finally {
-                    if (changePwd != null) {
-                        changePwd.close();
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        if (connection != null) {
+                            try {
+                                Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                                createLog.setInt(1, 0);
+                                createLog.setInt(2, uid);
+                                createLog.setString(3, username);
+                                createLog.setTimestamp(4, lastModified);
+                                createLog.setString(5, "CHANGE_PWD");
+                                createLog.setString(6, "FAILURE");
+                                createLog.setString(7, sourceIp);
+                                createLog.setString(8, "DB ERROR");
+                                createLog.executeUpdate();
+                                System.err.println("Transaction is being rolled back");
+                                connection.rollback();
+                            } catch (SQLException excep) {
+                                excep.printStackTrace();
+                            }
+                        }
+                        return null;
+                    } finally {
+                        if (changePwd != null) {
+                            changePwd.close();
+                        }
+                        if (createLog != null) {
+                            createLog.close();
+                        }
+                        connection.setAutoCommit(true);
                     }
-                    if (createLog != null) {
-                        createLog.close();
-                    }
-                    connection.setAutoCommit(true);
-                }
-            } catch (SQLException e) {
+           } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }
         return null;
     }
 
@@ -1174,9 +1244,10 @@ public class SQL_Connection {
         return null;
     }
 
-    //TODO: to send in new IV when renaming
-    public int renameFso(int fsoid, int uid, String newName) {
+    public int renameFso(int fsoid, int uid, String newName, String
+            newFSONameIV) {
 
+        //TODO: save newFSONameIV into the table
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         if (hasPermission) {
             if (DEBUG_MODE) {
@@ -1650,6 +1721,199 @@ System.out.println("removed key");
         }
         if (DEBUG_MODE)
 System.out.println("failed to remove editor");
+        return -1;
+    }
+
+    /**
+     * Gets the encrypted file secret key associated with this fso and this
+     * user. First checks to see if the user has edit rights.
+     * @param fsoid the id of the fso
+     * @param uid the id of the requesting user
+     * @return The file secret key associated with this fso and user
+     */
+    public String getFileSK(int fsoid, int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        PreparedStatement getSK = null;
+        PreparedStatement createLog = null;
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            boolean hasPermission = verifyEditPermission(fsoid, uid);
+            String selectSK = "SELECT F.encKey FROM FsoEncryption F WHERE F.username = ? AND F.fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                getSK = connection.prepareStatement(selectSK);
+                createLog = connection.prepareStatement(insertLog);
+                if (hasPermission) {
+                    getSK.setInt(1, uid);
+                    getSK.setInt(2, fsoid);
+                    ResultSet rs = getSK.executeQuery();
+                    if (rs.next()) {
+                        return rs.getString(1);
+                    }
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "GET FILE SK");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (getSK != null) {
+                    getSK.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Overwrites the file with First checks to see if the user has edit
+     * rights.
+     * @param fsoid the id of the file to overwrite
+     * @param uid the id of the requesting user
+     * @param newFileIV The new fileIV to be written into the database
+     * @param encFile The encrypted contents of the file to be written into
+     *                the database
+     * @return the fsoid if successful, -1 otherwise
+     */
+    public int overwrite(int fsoid, int uid, String newFileIV, String encFile) {
+        return -1;
+    }
+
+    /**
+     * Deletes the file. First checks to see if the user has edit rights.
+     * @param fsoid the id of the file
+     * @param uid the id of the requesting user
+     * @return The fsoid if successful, -1 otherwise
+     */
+    public int deleteFile(int fsoid, int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        PreparedStatement deleteFile = null;
+        PreparedStatement createLog = null;
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            boolean hasPermission = verifyEditPermission(fsoid, uid);
+            String removeFso = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                deleteFile = connection.prepareStatement(removeFso);
+                createLog = connection.prepareStatement(insertLog);
+                if (hasPermission) {
+                    deleteFile.setInt(1, fsoid);
+                    deleteFile.executeUpdate();
+
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "DELETE FSO");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, null);
+                    createLog.execute();
+
+                    return fsoid;
+
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "DELETE FSO");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return -1;
+            } finally {
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (deleteFile != null) {
+                    deleteFile.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
+     * Changes the email associated with a certain user.
+     * @param uid The user id of the user
+     * @param oldEmail The alleged old email address of the user
+     * @param newEmail The email address to change to
+     * @return true if the change of email is successful, false otherwise.
+     */
+    public boolean changeEmail(int uid, String oldEmail, String newEmail) {
+        //TODO RUIXIN
+        return false;
+    }
+
+    /**
+     * Checks that the username and password associated with this instance of
+     * SQL_Connection can be used to connect to the database
+     * @return true if the username and password combination can be used to
+     * connect to the database, false otherwise
+     */
+    public boolean checkCredentials() {
+        //TODO RUIXIN
+        //JUST DOUBLE CHECK THAT THE CREDENTIALS WORK
+        return true;
+    }
+
+    /**
+     * Gets the user name that is associated with this user id
+     * @param userId The userid of the user
+     * @return The username of the user
+     */
+    public String getUsername(int userId) {
+        //TODO RUIXIN
+        return null;
+    }
+
+    /**
+     * Gets the user id that is associated with this user name
+     * @param username The userid of the user
+     * @return The userid of the user
+     */
+    public int getUserId(String username) {
+        //TODO RUIXIN
         return -1;
     }
 }

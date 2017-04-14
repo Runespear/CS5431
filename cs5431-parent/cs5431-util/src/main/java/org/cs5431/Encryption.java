@@ -111,7 +111,6 @@ public class Encryption {
         return kp.getKey();
     }
 
-    //[0] is the hashed password, [1] is the salt
     public static byte[] newPwdSalt() {
         Random random = new SecureRandom();
         //TODO: 32 is currently the salt length. Is this correct?
@@ -296,5 +295,14 @@ public class Encryption {
         random.nextBytes(iv);
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
         return ivSpec;
+    }
+
+    public static String[] generatePasswordHash(String pwd) {
+        byte salt[] = newPwdSalt();
+        String hashedPW = secondPwdHash(pwd, salt);
+        String returnedValues[] = new String[2];
+        returnedValues[0] = hashedPW;
+        returnedValues[1] = Base64.getEncoder().encodeToString(salt);
+        return returnedValues;
     }
 }

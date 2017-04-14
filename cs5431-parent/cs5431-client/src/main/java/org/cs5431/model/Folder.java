@@ -8,11 +8,8 @@ import java.util.PriorityQueue;
 public class Folder extends FileSystemObject {
     private List<FileSystemObject> children;
 
-    //TODO: populated from database instead?
-
     public void addChild(FileSystemObject child) {
         this.children.add(child);
-        //TODO: database stuff?
     }
 
     public Folder (int id, String name, Folder parentFolder, Timestamp lastModified) {

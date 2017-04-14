@@ -157,12 +157,15 @@ public class ServerSetup {
                 "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(20) NOT NULL,\n" +
                 "status CHAR(10) NOT NULL,\n" +
                 "sourceIp VARCHAR(30) NOT NULL, \n" +
-                "newUid INT UNSIGNED);";
+                "newUid INT UNSIGNED, \n" +
+                "failureType VARCHAR(100));";
         String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
                 "uid INT UNSIGNED, \n" +
+                "simulatedUsername VARCHAR(50), \n" +
                 "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(20) NOT NULL,\n" +
                 "status CHAR(10) NOT NULL,\n" +
-                "sourceIp VARCHAR(30) NOT NULL);";
+                "sourceIp VARCHAR(30) NOT NULL, \n" +
+                "failureType VARCHAR(100));";
         String createFSOEnc = "CREATE TABLE FsoEncryption (fsoid INT UNSIGNED NOT NULL, uid INT UNSIGNED NOT NULL,\n" +
                 "encKey BLOB NOT NULL, fileIV CHAR(255), \n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
