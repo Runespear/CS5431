@@ -400,6 +400,19 @@ public class FileController {
         return null;
     }
 
+    public List<String> getFileLogs(int fsoid) throws IOException,
+            ClassNotFoundException {
+        JSONObject request = new JSONObject();
+        request.put("msgType", "getFileLogs");
+        request.put("fsoid", fsoid);
+        request.put("uid", user.getId());
+        sendJson(request, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        //TODO parse into list of strings
+        return null;
+    }
+
     public class FileControllerException extends Exception {
         FileControllerException(String message) {
             super(message);

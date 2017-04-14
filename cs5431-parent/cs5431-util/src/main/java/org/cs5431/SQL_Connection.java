@@ -619,6 +619,16 @@ public class SQL_Connection {
         return null;
     }
 
+    /*
+     * Deletes the user with uid, without knowing the password of the user.
+     * This can only be done by the admin.
+     * @return the uid of the user that is deleted; -1 if unsuccessful deletion.
+     */
+    public int adminDeleteUser(int uid) {
+        //TODO RUIXIN
+        return -1;
+    }
+
     //how does an admin delete user?
     /** Deletes the user with uid. To be first authenticated using username and password.
      * Creates a log entry of the deletion of user.
@@ -1773,15 +1783,23 @@ System.out.println("failed to remove editor");
         return true;
     }
 
-    public String getUsername(JSONObject jsonObject) {
+    /**
+     * Gets the user name that is associated with this user id
+     * @param userId The userid of the user
+     * @return The username of the user
+     */
+    public String getUsername(int userId) {
         //TODO RUIXIN
-        int userId = jsonObject.getInt("uid");
         return null;
     }
 
-    public int getUserId(JSONObject jsonObject) {
+    /**
+     * Gets the user id that is associated with this user name
+     * @param username The userid of the user
+     * @return The userid of the user
+     */
+    public int getUserId(String username) {
         //TODO RUIXIN
-        String username = jsonObject.getString("username");
         return -1;
     }
 }

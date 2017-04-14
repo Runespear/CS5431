@@ -386,7 +386,7 @@ public class FileViewController implements Initializable {
             Parent root = fxmlLoader.load();
             LogViewController lvc = fxmlLoader.getController();
             lvc.setStage(stage);
-            lvc.setDetails(fileController, fso.getId());
+            lvc.setDetails(fileController, fso.getId(), fso.getFileName());
             scene.setRoot(root);
         } catch (Exception e1) {
             e1.printStackTrace();

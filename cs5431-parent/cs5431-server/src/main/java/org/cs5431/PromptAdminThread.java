@@ -1,5 +1,12 @@
 package org.cs5431;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -44,7 +51,25 @@ public class PromptAdminThread implements Runnable {
     }
 
     private static void downloadUserLogs(SQL_Connection sql_connection) {
-        //TODO
+        Scanner scanner = new Scanner(System.in);
+        String logFileName = "/";
+        while(Validator.validFileName(logFileName)) {
+            System.out.println("Enter the file name of the log that will be " +
+                    "saved");
+            logFileName = scanner.nextLine();
+        }
+        JSONArray array = sql_connection.getUserLog(-1,-1);
+        try {
+            File logFile = new File(logFileName);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
+            for (int i = 0; i < array.length(); ++i) {
+                JSONObject logEntry = array.getJSONObject(i);
+                //TODO write to file
+            }
+        } catch (IOException e) {
+            System.out.println("Error when writing logs to file");
+            e.printStackTrace();
+        }
     }
 
     private static void deleteUser(SQL_Connection sql_connection) throws SQLException {
@@ -57,7 +82,18 @@ public class PromptAdminThread implements Runnable {
                     "delete by entering it again:");
             String confirm = scanner.nextLine();
             if (userToDelete.equals(confirm)) {
-                //TODO
+                int uid = sql_connection.getUserId(userToDelete);
+                if (uid == -1)
+                    System.out.println("There is no user associated with this" +
+                            " username.");
+                else {
+                    if (sql_connection.adminDeleteUser(uid) == uid) {
+                        System.out.println("User successfully deleted.");
+                    } else {
+                        System.out.println("User found but could not be " +
+                                "deleted.");
+                    }
+                }
             }
         }
     }

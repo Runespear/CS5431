@@ -358,7 +358,8 @@ public class SSLServer extends Thread {
 
     private JSONObject getUsername(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        String username = sqlConnection.getUsername(jsonObject);
+        int uid = jsonObject.getInt("uid");
+        String username = sqlConnection.getUsername(uid);
         if (username != null) {
             JSONObject response = new JSONObject();
             response.put("msgType", "usernameAck");
@@ -370,7 +371,8 @@ public class SSLServer extends Thread {
 
     private JSONObject getUserId(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        int userId = sqlConnection.getUserId(jsonObject);
+        String username = jsonObject.getString("username");
+        int userId = sqlConnection.getUserId(username);
         if (userId != -1) {
             JSONObject response = new JSONObject();
             response.put("msgType", "useridAck");
