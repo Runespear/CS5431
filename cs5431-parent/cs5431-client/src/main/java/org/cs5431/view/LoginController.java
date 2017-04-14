@@ -106,7 +106,7 @@ public class LoginController implements Initializable {
                 Client.fileViewNode = root;
                 FileViewController fvc = fxmlLoader.getController();
 
-                fvc.setUserDetails(task.getValue(), sslSocket);
+                fvc.setUserDetails(task.getValue(), sslSocket, accountsController);
                 fvc.setStage(stage);
                 scene.setRoot(root);
             } catch (IOException ex) {

@@ -17,6 +17,7 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.FileController;
 import org.cs5431.controller.UserController;
 import org.cs5431.model.FileActionType;
@@ -78,6 +79,7 @@ public class FileViewController implements Initializable {
     private User user;
     private UserController userController;
     private FileController fileController;
+    private AccountsController accountsController;
     private Folder currParent;
     private List<Folder> path;
 
@@ -302,7 +304,7 @@ public class FileViewController implements Initializable {
             Parent root = fxmlLoader.load();
             PrivViewController pvc = fxmlLoader.getController();
             pvc.setStage(stage);
-            pvc.setDetails(fileController, fso);
+            pvc.setDetails(fileController, fso, accountsController);
             scene.setRoot(root);
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -415,7 +417,7 @@ public class FileViewController implements Initializable {
      * and port that is associated with the logged in user.
      * @param user User (containing username, pwd, etc) that is logged in
      */
-    void setUserDetails(User user, Socket sslSocket) {
+    void setUserDetails(User user, Socket sslSocket, AccountsController accountsController) {
         this.user = user;
         txtUsername.setText(user.getUsername());
         currParent = user.getUserParentFolder();
@@ -423,6 +425,7 @@ public class FileViewController implements Initializable {
         path.add(currParent);
         fileController = new FileController(user,sslSocket);
         userController = new UserController(user,sslSocket);
+        this.accountsController = accountsController;
         currParent = user.getUserParentFolder();
         //initFakeFiles();
         populateListView();
