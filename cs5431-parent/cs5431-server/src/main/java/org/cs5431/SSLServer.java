@@ -402,7 +402,7 @@ public class SSLServer extends Thread {
             sqlConnection) {
         JSONObject response = new JSONObject();
         String fileSK = sqlConnection.getFileSK(jsonObject.getInt("fsoid"),
-                jsonObject.getInt("uid"));
+                jsonObject.getInt("uid"), sourceIp);
         if (fileSK != null) {
             response.put("fileSK", fileSK);
             response.put("fsoid", jsonObject.getInt("fsoid"));
