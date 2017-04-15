@@ -38,24 +38,23 @@ public class SQL_Files {
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
-        int fsoid;
+        int uid = fso.getInt("uid");
+        int parentFolderid = fso.getInt("parentFolderid");
+        String fsoName = fso.getString("fsoName");
+        String size = fso.getString("size");
+        Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
+        boolean isFile = fso.getBoolean("isFile");
+        String sk = fso.getString("encSK");
+        String fileIV = null;
+        if (isFile) {
+            fileIV = fso.getString("fileIV");
+        }
+        String fsoNameIV = fso.getString("fsoNameIV");
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
-            int uid = fso.getInt("uid");
-            int parentFolderid = fso.getInt("parentFolderid");
-            String fsoName = fso.getString("fsoName");
-            String size = fso.getString("size");
-            Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
-            boolean isFile = fso.getBoolean("isFile");
-            String sk = fso.getString("encSK");
-            String fileIV = null;
-            if (isFile) {
-                fileIV = fso.getString("fileIV");
-            }
-            String fsoNameIV = fso.getString("fsoNameIV");
 
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
             PreparedStatement createFso = null;
@@ -81,10 +80,10 @@ public class SQL_Files {
                 } else {
                     actionType = "CREATE_FOLDER";
                 }
+                createLog = connection.prepareStatement(insertLog);
                 if (hasPermission) {
                     connection.setAutoCommit(false);
                     createFso = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
-                    createLog = connection.prepareStatement(insertLog);
                     addPermission = connection.prepareStatement(insertEditor);
                     addKey = connection.prepareStatement(insertKey);
 
@@ -102,7 +101,7 @@ public class SQL_Files {
 
                     ResultSet rs = createFso.getGeneratedKeys();
                     rs.next();
-                    fsoid = rs.getInt(1);
+                    int fsoid = rs.getInt(1);
 
                     addKey.setInt(1, fsoid);
                     addKey.setInt(2, uid);
@@ -150,9 +149,7 @@ public class SQL_Files {
                             System.out.println("added file path");
                         }
                     }
-
                     connection.commit();
-
                     return fsoid;
                 } else {
                     createLog.setInt(1, 0);
@@ -165,11 +162,14 @@ public class SQL_Files {
                     createLog.setInt(8, 0);
                     createLog.setString(9, "NO PERMISSION");
                     createLog.executeUpdate();
+                    return -1;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
                 if (connection != null) {
                     try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
                         isFile = fso.getBoolean("isFile");
                         String actionType;
                         if (isFile) {
@@ -190,8 +190,6 @@ public class SQL_Files {
                         if (DEBUG_MODE) {
                             System.out.println("created failure log");
                         }
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
                     } catch (SQLException excep) {
                         excep.printStackTrace();
                     }
@@ -577,10 +575,7 @@ public class SQL_Files {
                     }
                     return fileLogArray;
 
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    return null;
-                } catch (JSONException e) {
+                } catch (SQLException | JSONException e) {
                     e.printStackTrace();
                     return null;
                 } finally {
@@ -613,12 +608,12 @@ public class SQL_Files {
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, " +
                     "sourceIp, newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try {
+                createLog = connection.prepareStatement(insertLog);
                 if (hasPermission) {
                     if (DEBUG_MODE) {
                         System.out.println("Can rename fso");
                     }
                     renameFso = connection.prepareStatement(updateName);
-                    createLog = connection.prepareStatement(insertLog);
                     connection.setAutoCommit(false);
                     renameFso.setString(1, newName);
                     renameFso.setString(2, newFSONameIV);
@@ -641,9 +636,11 @@ public class SQL_Files {
                     if (DEBUG_MODE) {
                         System.out.println("created success log");
                     }
+                    connection.commit();
+                    return fsoid;
                 } else {
                     createLog.setInt(1, 0);
-                    createLog.setInt(2, 0);
+                    createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "RENAME");
@@ -652,11 +649,8 @@ public class SQL_Files {
                     createLog.setInt(8, 0);
                     createLog.setString(9, "NO PERMISSION");
                     createLog.executeUpdate();
+                    return -1;
                 }
-
-                connection.commit();
-                return fsoid;
-
             } catch (SQLException e) {
                 e.printStackTrace();
                 if (connection != null) {
@@ -664,7 +658,7 @@ public class SQL_Files {
                         System.err.println("Transaction is being rolled back");
                         connection.rollback();
                         createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
+                        createLog.setInt(2, fsoid);
                         createLog.setInt(3, uid);
                         createLog.setTimestamp(4, lastModified);
                         createLog.setString(5, "RENAME");
@@ -771,9 +765,10 @@ public class SQL_Files {
 
     /** Adds newUid as editor of the file. Adds sk of the file that is encrypted with newUid's public key.
      * First verifies that the user has permission. Logs the action.
+     * Note that a user must first be a viewer before he/she can be an editor based on the controller.
      * @param json with fsoid, newUid, and uid (user performing the add priv function).
      * @return newUid if successful; else -1 if unsuccessful. */
-    public int addEditPriv(JSONObject json) {
+    public int addEditPriv(JSONObject json, String sourceIp) {
 
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
@@ -781,40 +776,45 @@ public class SQL_Files {
         String encKey = json.getString("encSecretKey");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
-        if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-            PreparedStatement addEditor = null;
-            PreparedStatement createLog = null;
-            PreparedStatement shareFsoKey = null;
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement addEditor = null;
+        PreparedStatement createLog = null;
+        PreparedStatement shareFsoKey = null;
+        PreparedStatement removeViewer = null;
 
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE) {
-                    System.out.println("Database connected!");
-                }
-                String insertEditor = "INSERT INTO Editors (fsoid, uid) " +
-                        "values (?, ?)";
-                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
-                        + "values (?, ?, ?, ?, ?)";
-                String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
+                    "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+            String deleteViewer = "DELETE FROM Viewers WHERE uid = ?";
 
-                try {
-                    createLog = connection.prepareStatement(insertLog);
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                if (hasPermission) {
                     addEditor = connection.prepareStatement(insertEditor);
                     shareFsoKey = connection.prepareStatement(insertFsoKey);
+                    removeViewer = connection.prepareStatement(deleteViewer);
                     connection.setAutoCommit(false);
                     addEditor.setInt(1, fsoid);
                     addEditor.setInt(2, newUid);
 
-                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    removeViewer.setInt(1, newUid);
+                    removeViewer.executeUpdate();
+
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
                     createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, "ADD_PRIV");
-                    createLog.executeUpdate();
-                    if (DEBUG_MODE) {
-                        System.out.println("created log");
-                    }
+                    createLog.setString(5, "ADD_EDITOR");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, newUid);
+                    createLog.setString(9, null);
 
                     shareFsoKey.setInt(1, fsoid);
                     shareFsoKey.setInt(2, uid);
@@ -823,33 +823,57 @@ public class SQL_Files {
 
                     connection.commit();
                     return newUid;
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if (connection != null) {
-                        try {
-                            System.err.println("Transaction is being rolled back");
-                            connection.rollback();
-                        } catch (SQLException excep) {
-                            excep.printStackTrace();
-                        }
-                    }
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_EDITOR");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, newUid);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.executeUpdate();
                     return -1;
-                } finally {
-                    if (addEditor != null) {
-                        addEditor.close();
-                    }
-                    if (createLog != null) {
-                        createLog.close();
-                    }
-                    if (shareFsoKey != null) {
-                        shareFsoKey.close();
-                    }
-                    connection.setAutoCommit(true);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, fsoid);
+                        createLog.setInt(3, uid);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "ADD_EDITOR");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setInt(8, newUid);
+                        createLog.setString(9, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return -1;
+            } finally {
+                if (addEditor != null) {
+                    addEditor.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (shareFsoKey != null) {
+                    shareFsoKey.close();
+                }
+                if (removeViewer != null) {
+                    removeViewer.close();
+                }
+                connection.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         if (DEBUG_MODE) {
             System.out.println("failed to add priv");
@@ -861,7 +885,7 @@ public class SQL_Files {
      * First verifies that the user has permission. Logs the action.
      * @param json with fsoid, newUid, and uid (user performing the add priv function).
      * @return newUid if successful; else -1 if unsuccessful. */
-    public int addViewPriv(JSONObject json) {
+    public int addViewPriv(JSONObject json, String sourceIp) {
 
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
@@ -869,37 +893,64 @@ public class SQL_Files {
         String encKey = json.getString("encSecretKey");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
-        if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-            PreparedStatement addViewer = null;
-            PreparedStatement createLog = null;
-            PreparedStatement shareFsoKey = null;
+        boolean wasEditor = verifyEditPermission(fsoid, newUid);
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement addViewer = null;
+        PreparedStatement createLog = null;
+        PreparedStatement shareFsoKey = null;
+        PreparedStatement removeEditor = null;
+        PreparedStatement logRmEditor = null;
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE)
-                    System.out.println("Database connected!");
-                String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
-                String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
-                        + "values (?, ?, ?, ?, ?)";
-                String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE)
+                System.out.println("Database connected!");
+            String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                    + "values (?, ?, ?, ?, ?)";
+            String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+            String deleteEditor = "DELETE FROM Editors WHERE uid = ?";
+            String rmEditorLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
+                    + "values (?, ?, ?, ?, ?)";
 
-                try {
-                    createLog = connection.prepareStatement(insertLog);
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                if (hasPermission) {
                     addViewer = connection.prepareStatement(insertViewer);
                     shareFsoKey = connection.prepareStatement(insertFsoKey);
                     connection.setAutoCommit(false);
                     addViewer.setInt(1, fsoid);
                     addViewer.setInt(2, newUid);
+                    addViewer.executeUpdate();
 
-                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
                     createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, "ADD_PRIV");
+                    createLog.setString(5, "ADD_VIEWER");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, newUid);
+                    createLog.setString(9, null);
                     createLog.executeUpdate();
-                    if (DEBUG_MODE)
-                        System.out.println("created log");
+
+                    if (wasEditor) {
+                        removeEditor = connection.prepareStatement(deleteEditor);
+                        logRmEditor = connection.prepareStatement(rmEditorLog);
+                        removeEditor.setInt(1, newUid);
+                        removeEditor.executeUpdate();
+
+                        logRmEditor.setInt(1, 0);
+                        logRmEditor.setInt(2, fsoid);
+                        logRmEditor.setInt(3, uid);
+                        logRmEditor.setTimestamp(4, lastModified);
+                        logRmEditor.setString(5, "REMOVE_EDITOR");
+                        logRmEditor.setString(6, "SUCCESS");
+                        logRmEditor.setString(7, sourceIp);
+                        logRmEditor.setInt(8, newUid);
+                        logRmEditor.setString(9, null);
+                        logRmEditor.executeUpdate();
+                    }
 
                     shareFsoKey.setInt(1, fsoid);
                     shareFsoKey.setInt(2, uid);
@@ -908,33 +959,54 @@ public class SQL_Files {
 
                     connection.commit();
                     return newUid;
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if (connection != null) {
-                        try {
-                            System.err.println("Transaction is being rolled back");
-                            connection.rollback();
-                        } catch (SQLException excep) {
-                            excep.printStackTrace();
-                        }
-                    }
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_VIEWER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, newUid);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.executeUpdate();
                     return -1;
-                } finally {
-                    if (addViewer != null) {
-                        addViewer.close();
-                    }
-                    if (createLog != null) {
-                        createLog.close();
-                    }
-                    if (shareFsoKey != null) {
-                        shareFsoKey.close();
-                    }
-                    connection.setAutoCommit(true);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, fsoid);
+                        createLog.setInt(3, uid);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "ADD_EDITOR");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setInt(8, newUid);
+                        createLog.setString(9, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return -1;
+            } finally {
+                if (addViewer != null) {
+                    addViewer.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (shareFsoKey != null) {
+                    shareFsoKey.close();
+                }
+                connection.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         if (DEBUG_MODE)
             System.out.println("failed to add priv");
