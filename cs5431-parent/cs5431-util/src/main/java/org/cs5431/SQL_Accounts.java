@@ -664,8 +664,7 @@ public class SQL_Accounts {
                 getParentFolder.setInt(1, uid);
                 ResultSet rs = getParentFolder.executeQuery();
                 if (rs.next()) {
-                    int parentFolderid = rs.getInt(1);
-                    return parentFolderid;
+                    return rs.getInt(1);
                 }
 
             } catch (SQLException e) {
@@ -972,8 +971,7 @@ public class SQL_Accounts {
                 ResultSet rs = getUsername.executeQuery();
 
                 if (rs.next()) {
-                    String username = rs.getString(1);
-                    return username;
+                    return rs.getString(1);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
