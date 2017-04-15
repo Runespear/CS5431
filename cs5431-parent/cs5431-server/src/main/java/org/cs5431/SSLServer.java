@@ -204,7 +204,7 @@ public class SSLServer extends Thread {
         }
 
         String pwdSalt = sqlConnection.getSalt(jsonObject.getString
-                ("username"), sourceIp);
+                ("username"), sourceIp, "LOGIN");
         String hashedPwd = jsonObject.getString("hashedPwd");
         if (pwdSalt != null) {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
@@ -237,7 +237,7 @@ public class SSLServer extends Thread {
     private JSONObject changePwd(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
         String newHashedPwd = jsonObject.getString("newHashedPwd");
-        String pwdSalt = sqlConnection.getSalt(jsonObject.getString("username"), sourceIp);
+        String pwdSalt = sqlConnection.getSalt(jsonObject.getString("username"), sourceIp, "CHANGE_PWD");
         if (pwdSalt != null) {
             String newEncPwd = secondPwdHash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd, sourceIp);
@@ -284,7 +284,7 @@ public class SSLServer extends Thread {
         String newName = jsonObject.getString("newName");
         String newFsoNameIV = jsonObject.getString("newFsoNameIV");
 
-        if (sqlConnection.renameFso(fsoid, uid, newName, newFsoNameIV) ==
+        if (sqlConnection.renameFso(fsoid, uid, newName, newFsoNameIV, sourceIp) ==
                 fsoid) {
             JSONObject response = new JSONObject();
             response.put("msgType","renameAck");
