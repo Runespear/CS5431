@@ -135,11 +135,12 @@ public class UserController {
      * @param password Password of the logged in user
      * @throws DeleteUserException If the user could not be deleted
      */
-    public void deleteUser(String password) throws IOException,
+    public void deleteUser(String username, String password) throws IOException,
             ClassNotFoundException, DeleteUserException {
         JSONObject request = new JSONObject();
         request.put("msgType", "deleteUser");
         request.put("uid", user.getId());
+        request.put("username", username);
         request.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256
                 (password)));
         sendJson(request, sslSocket);

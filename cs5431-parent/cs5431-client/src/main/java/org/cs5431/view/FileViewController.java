@@ -20,7 +20,6 @@ import javafx.stage.Stage;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.FileController;
 import org.cs5431.controller.UserController;
-import org.cs5431.model.FileActionType;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.Folder;
 import org.cs5431.model.User;
@@ -274,9 +273,7 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
-            task.setOnSucceeded(t -> {
-                populateListView();
-            });
+            task.setOnSucceeded(t -> populateListView());
             Thread th = new Thread(task);
             th.setDaemon(true);
             th.start();

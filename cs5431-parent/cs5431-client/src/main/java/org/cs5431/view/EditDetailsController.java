@@ -248,7 +248,7 @@ public class EditDetailsController implements Initializable {
                     Task<Void> task = new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            userController.deleteUser(password);
+                            userController.deleteUser(username, password);
                             return null;
                         }
                     };

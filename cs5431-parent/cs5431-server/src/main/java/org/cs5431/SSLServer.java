@@ -139,6 +139,10 @@ public class SSLServer extends Thread {
                                 sqlConnection);
                         sendJson(response, s);
                         break;
+                    case "deleteUser":
+                        response = deleteUser(jsonObject, sqlConnection);
+                        sendJson(response, s);
+                        break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
@@ -483,6 +487,22 @@ public class SSLServer extends Thread {
         else
             return makeErrJson("This user does not have permission to see " +
                     "this list");
+    }
+
+    private JSONObject deleteUser(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        int uid = jsonObject.getInt("uid");
+        String username = jsonObject.getString("username");
+        String password = jsonObject.getString("password");
+        int deletedUid = sqlConnection.deleteUser(uid, username, password,
+                s.getRemoteSocketAddress().toString());
+        if (deletedUid == uid) {
+            JSONObject response = new JSONObject();
+            response.put("msgType", "deleteUserAck");
+            response.put("uid", uid);
+            return response;
+        }
+        return makeErrJson("The user could not be deleted.");
     }
 
     private JSONObject makeErrJson(String message) {
