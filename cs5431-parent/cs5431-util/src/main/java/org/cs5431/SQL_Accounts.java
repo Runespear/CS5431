@@ -630,10 +630,11 @@ public class SQL_Accounts {
         return null;
     }
 
-
-
-    //TODO: userlog
-    public JSONArray getUserLog(int fsoid, int uid) {
+    /** Saves the userlog as csv file into /tmp/userlogs.csv
+     * Logs the change of password in the userlog.
+     * Creates failure file log invalid password or db error (rollsback accordingly). */
+    //TODO: how to verify admin?
+    public void getUserLog() {
         boolean hasPermission = true; //verifyBothPermission(fsoid, uid);
         if (hasPermission) {
             if (DEBUG_MODE) {
@@ -650,29 +651,16 @@ public class SQL_Accounts {
                     System.out.println("Database connected!");
                 }
 
-                String selectLog = "SELECT L.uid, L.lastModified, L.actionType FROM FileLog L WHERE L.fsoid = ?";
-                getFileLog = connection.prepareStatement(selectLog);
-                JSONArray fileLogArray = new JSONArray();
+                String selectLog = "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\' FIELDS TERMINATED BY ','\n" +
+                        "    ENCLOSED BY '\"'\n" +
+                        "    LINES TERMINATED BY '\\n'; ";
 
                 try {
-                    getFileLog.setInt(1, fsoid);
-                    ResultSet rs = getFileLog.executeQuery();
-
-                    while (rs.next()) {
-                        JSONObject log = new JSONObject();
-                        log.put("uid", rs.getInt(1));
-                        log.put("lastModified", rs.getTimestamp(2));
-                        log.put("actionType", rs.getString(3));
-                        fileLogArray.put(log);
-                    }
-                    return fileLogArray;
+                    getFileLog = connection.prepareStatement(selectLog);
+                    getFileLog.executeQuery();
 
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    return null;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return null;
                 } finally {
                     if (getFileLog != null) {
                         getFileLog.close();
@@ -680,12 +668,11 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             }
         }
-        return null;
     }
 
+    //TODO: dont need old email??
     /**
      * Changes the email associated with a certain user.
      * @param uid The user id of the user
@@ -693,8 +680,82 @@ public class SQL_Accounts {
      * @param newEmail The email address to change to
      * @return true if the change of email is successful, false otherwise.
      */
-    public boolean changeEmail(int uid, String oldEmail, String newEmail) {
-        //TODO RUIXIN
+    public boolean changeEmail(int uid, String oldEmail, String newEmail, String sourceIp) {
+
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement changeEmail = null;
+            PreparedStatement createLog = null;
+
+            String deleteUser = "UPDATE Users SET email = ? WHERE uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                changeEmail = connection.prepareStatement(deleteUser);
+                connection.setAutoCommit(false);
+                changeEmail.setString(1, newEmail);
+                changeEmail.setInt(2, uid);
+                changeEmail.executeUpdate();
+                if (DEBUG_MODE) {
+                    System.out.println("changed email");
+                }
+
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "CHANGE_EMAIL");
+                createLog.setString(6, "SUCCESS");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, null);
+                createLog.executeUpdate();
+                if (DEBUG_MODE) {
+                    System.out.println("created log");
+                }
+
+                connection.commit();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, uid);
+                        createLog.setString(3, null);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "CHANGE_EMAIL");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setString(8, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return false;
+            } finally {
+                if (changeEmail != null) {
+                    changeEmail.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -705,8 +766,21 @@ public class SQL_Accounts {
      * connect to the database, false otherwise
      */
     public boolean checkCredentials() {
-        //TODO RUIXIN
-        //JUST DOUBLE CHECK THAT THE CREDENTIALS WORK
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (connection != null) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            if (DEBUG_MODE) {
+                System.out.println("Unable to connect to the db");
+            }
+            return false;
+        }
         return true;
     }
 
@@ -716,7 +790,38 @@ public class SQL_Accounts {
      * @return The username of the user
      */
     public String getUsername(int userId) {
-        //TODO RUIXIN
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement getUsername = null;
+            String selectUsername = "SELECT U.username FROM Users U WHERE U.uid = ?";
+
+            try {
+                getUsername = connection.prepareStatement(selectUsername);
+                connection.setAutoCommit(false);
+                getUsername.setInt(1, userId);
+                ResultSet rs = getUsername.executeQuery();
+
+                if (rs.next()) {
+                    String username = rs.getString(1);
+                    return username;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getUsername != null) {
+                    getUsername.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -726,7 +831,38 @@ public class SQL_Accounts {
      * @return The userid of the user
      */
     public int getUserId(String username) {
-        //TODO RUIXIN
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement getUid = null;
+            String selectUid = "SELECT U.uid FROM Users U WHERE U.username = ?";
+
+            try {
+                getUid = connection.prepareStatement(selectUid);
+                connection.setAutoCommit(false);
+                getUid.setString(1, username);
+                ResultSet rs = getUid.executeQuery();
+
+                if (rs.next()) {
+                    int uid = rs.getInt(1);
+                    return uid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return -1;
+            } finally {
+                if (getUid != null) {
+                    getUid.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return -1;
     }
 }
