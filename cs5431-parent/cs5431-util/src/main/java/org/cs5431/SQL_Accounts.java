@@ -429,13 +429,107 @@ public class SQL_Accounts {
         return null;
     }
 
-    /*
+    /**
      * Deletes the user with uid, without knowing the password of the user.
      * This can only be done by the admin.
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion.
      */
-    public int adminDeleteUser(int uid) {
-        //TODO RUIXIN
+    public int adminDeleteUser(int uid, String sourceIp) {
+        int parentFolderid = getParentFolderid(uid);
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            PreparedStatement removeUser = null;
+            PreparedStatement createLog = null;
+            PreparedStatement removeFolder = null;
+
+            String deleteUser = "DELETE FROM Users WHERE uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String deleteFolder = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                removeUser = connection.prepareStatement(deleteUser);
+                removeFolder = connection.prepareStatement(deleteFolder);
+                connection.setAutoCommit(false);
+
+                removeUser.setInt(1, uid);
+                int affectedRows = removeUser.executeUpdate();
+                if (DEBUG_MODE) {
+                    System.out.println("deleted user");
+                }
+                if (affectedRows == 1) {
+                    removeFolder.setInt(1, parentFolderid);
+                    removeFolder.executeUpdate();
+
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADMIN_DELETE_USER");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
+                    connection.commit();
+                    return uid;
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADMIN_DELETE_USER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "INVALID USER");
+                    createLog.executeUpdate();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, 0);
+                        createLog.setString(3, null);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "ADMIN_DELETE_USER");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setString(8, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return -1;
+            } finally {
+                if (removeUser != null) {
+                    removeUser.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (removeFolder != null) {
+                    removeFolder.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return -1;
     }
 
@@ -450,76 +544,146 @@ public class SQL_Accounts {
         String salt = getSalt(username, sourceIp, "DELETE_USER");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd, sourceIp);
-
+        int parentFolderid = -1;
         if (user != null) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+            parentFolderid = getParentFolderid(uid);
+        }
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
-                System.out.println("Connecting to database...");
+                System.out.println("Database connected!");
             }
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE) {
-                    System.out.println("Database connected!");
-                }
-                PreparedStatement removeUser = null;
-                PreparedStatement createLog = null;
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            PreparedStatement removeUser = null;
+            PreparedStatement createLog = null;
+            PreparedStatement removeFolder = null;
 
-                String deleteUser = "DELETE FROM Users WHERE username = ? AND pwd = ?";
-                String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp)"
-                        + "values (?, ?, ?, ?, ?, ?, ?)";
+            String deleteUser = "DELETE FROM Users WHERE uid = ? username = ? AND pwd = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String deleteFolder = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
 
-                try {
+            try {
+                if (user != null) {
                     createLog = connection.prepareStatement(insertLog);
                     removeUser = connection.prepareStatement(deleteUser);
+                    removeFolder = connection.prepareStatement(deleteFolder);
                     connection.setAutoCommit(false);
-                    removeUser.setString(1, username);
-                    removeUser.setString(2, password);
+                    removeUser.setInt(1, uid);
+                    removeUser.setString(2, username);
+                    removeUser.setString(3, password);
                     removeUser.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("deleted user");
                     }
-                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
+                    removeFolder.setInt(1, parentFolderid);
+                    removeFolder.executeUpdate();
 
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, username);
                     createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, "DELETE");
+                    createLog.setString(5, "DELETE_USER");
                     createLog.setString(6, "SUCCESS");
                     createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
                     createLog.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("created log");
                     }
-
                     connection.commit();
                     return uid;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if (connection != null) {
-                        try {
-                            System.err.println("Transaction is being rolled back");
-                            connection.rollback();
-                        } catch (SQLException excep) {
-                            excep.printStackTrace();
-                        }
-                    }
-                    return -1;
-                } finally {
-                    if (removeUser != null) {
-                        removeUser.close();
-                    }
-                    if (createLog != null) {
-                        createLog.close();
-                    }
-                    connection.setAutoCommit(true);
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, username);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DELETE_USER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "INVALID PASSWORD");
+                    createLog.executeUpdate();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, uid);
+                        createLog.setString(3, username);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "DELETE_USER");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setString(8, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return -1;
+            } finally {
+                if (removeUser != null) {
+                    removeUser.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                if (removeFolder != null) {
+                    removeFolder.close();
+                }
+                connection.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return -1;
     }
 
+    private int getParentFolderid (int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+
+            PreparedStatement getParentFolder = null;
+
+            String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
+            try {
+                getParentFolder = connection.prepareStatement(selectParent);
+                getParentFolder.setInt(1, uid);
+                ResultSet rs = getParentFolder.executeQuery();
+                if (rs.next()) {
+                    int parentFolderid = rs.getInt(1);
+                    return parentFolderid;
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return -1;
+            } finally {
+                if (getParentFolder != null) {
+                    getParentFolder.close();
+                }
+                if (getParentFolder != null) {
+                    getParentFolder.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
     /** Changes the password of the user and the privKey which is encrypted by the password of the user.
      * Authenticates the user with his/her old password before making any changes.
      * Logs the change of password in the userlog.
