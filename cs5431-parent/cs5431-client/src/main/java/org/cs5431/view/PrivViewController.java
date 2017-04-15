@@ -3,6 +3,7 @@ package org.cs5431.view;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -15,15 +16,15 @@ import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.FileController;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.PrivType;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class PrivViewController implements Initializable{
-    //TODO: currently we only have the user ids, we should translate them
-    // into usernames
     @FXML
     public Text txtFilename;
 
@@ -87,7 +88,7 @@ public class PrivViewController implements Initializable{
                             fileController.addPriv(bundle.fso, bundle.userId,
                                     PrivType.EDIT);
                             bundle.canEdit = true;
-                        } else if (now.equals("Can View") && bundle.canEdit) {
+                        } else if (now.equals("Can View") && bundle.canView) {
                             fileController.removePriv(bundle.fso, bundle.userId,
                                     PrivType.EDIT);
                             bundle.canEdit = false;
@@ -144,26 +145,31 @@ public class PrivViewController implements Initializable{
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(username -> {
-            try {
-                int userId = accountsController.getUserId(username);
-                fileController.addPriv(fso, userId, PrivType.VIEW);
+            Task<Integer> task = new Task<Integer>() {
+                @Override
+                protected Integer call() throws Exception {
+                    int userId = accountsController.getUserId(username);
+                    fileController.addPriv(fso, userId, PrivType.VIEW);
+                    return userId;
+                }
+            };
+            task.setOnFailed(t -> showError("Failed to share with this " +
+                    "user - they might not exist."));
+            task.setOnSucceeded(t -> {
                 ObservableList<PrivBundle> observableList = tableViewPriv.getItems();
-                observableList.add(new PrivBundle(userId, fso, false,
-                        true, accountsController));
+                observableList.add(new PrivBundle(task.getValue(), fso,
+                        false,true, accountsController));
                 tableViewPriv.setItems(observableList);
-            } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setContentText("User id not valid: needs to be a number");
-                alert.showAndWait();
-            } catch (AccountsController.UserRetrieveException ex) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setContentText(ex.getMessage());
-                alert.showAndWait();
-            } catch (IOException | ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }
+            });
+            Thread th = new Thread(task);
+            th.setDaemon(true);
+            th.start();
+            task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                if(newValue != null) {
+                    Exception ex = (Exception) newValue;
+                    ex.printStackTrace();
+                }
+            });
         });
     }
 
@@ -188,19 +194,54 @@ public class PrivViewController implements Initializable{
     void setDetails(FileController fileController, FileSystemObject fso,
                     AccountsController accountsController) {
         this.fileController = fileController;
+        this.accountsController = accountsController;
         this.fso = fso;
         txtFilename.setText("Sharing for " + fso.getFileName());
 
         ObservableList<PrivBundle> observableList =
                 FXCollections.observableArrayList();
-        for (Integer editor : fso.getEditors()) {
-            observableList.add(new PrivBundle(editor, fso, true,true, accountsController));
-        }
-        for (Integer viewer : fso.getViewers()) {
-            observableList.add(new PrivBundle(viewer, fso,false,true, accountsController));
-        }
 
-        tableViewPriv.setItems(observableList);
+        Task<JSONObject> task = new Task<JSONObject>() {
+            @Override
+            protected JSONObject call() throws Exception {
+                return fileController.getEditorsViewers(fso);
+            }
+        };
+        task.setOnFailed(t -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sharing error");
+            alert.setContentText("Could not retrieve list of editors and " +
+                    "viewers");
+            alert.showAndWait();
+        });
+        task.setOnSucceeded(t -> {
+            JSONObject response = task.getValue();
+            @SuppressWarnings("unchecked") List<Integer> editors = (List<Integer>) response.get("editors");
+            @SuppressWarnings("unchecked") List<Integer> viewers = (List<Integer>) response.get("viewers");
+            for (Integer editor : editors) {
+                observableList.add(new PrivBundle(editor, fso, true,true, accountsController));
+            }
+            for (Integer viewer : viewers) {
+                observableList.add(new PrivBundle(viewer, fso,false,true, accountsController));
+            }
+            tableViewPriv.setItems(observableList);
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void showError(String error) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(error);
+        alert.showAndWait();
     }
 }
 

@@ -12,12 +12,12 @@ public class Folder extends FileSystemObject {
         this.children.add(child);
     }
 
-    public Folder (int id, String name, Folder parentFolder, Timestamp lastModified) {
-        super(id, name, parentFolder, lastModified);
+    public Folder (int id, String name, Timestamp
+            lastModified, boolean isEditor, boolean isViewer) {
+        super(id, name, lastModified, isEditor, isViewer);
         this.type = FSOType.FOLDER;
         this.children = new ArrayList<>();
         this.size = 0;
-        //TODO: date modified set by DB timestamp
     }
 
     public List<FileSystemObject> getChildren() {
@@ -25,84 +25,4 @@ public class Folder extends FileSystemObject {
     }
 
     public void removeChild(FileSystemObject fso) { this.children.remove(fso); }
-
-    //TODO: update size to be sum of size of children
-    public void addPriv(PrivType priv, int userId) {
-        if (priv == PrivType.EDIT) {
-            editorIds.add(userId);
-        } else {
-            viewerIds.add(userId);
-        }
-
-        /*if (priv == PrivType.EDIT) {
-            editorIds.add(userId);
-                PriorityQueue<FileSystemObject> fsoToAddPriv = new PriorityQueue<>();
-                for (int i = 0; i < children.size(); i++) {
-                    fsoToAddPriv.add(children.get(i));
-                }
-                while (!fsoToAddPriv.isEmpty()) {
-                    FileSystemObject fso = fsoToAddPriv.poll();
-                    this.editorIds.add(fso.getId());
-                    if (fso.type == FSOType.FOLDER) {
-                        for (int i = 0; i < children.size(); i++) {
-                            fsoToAddPriv.add(children.get(i));
-                        }
-                    }
-                }
-        } else {
-            viewerIds.add(userId);
-            PriorityQueue<FileSystemObject> fsoToAddPriv = new PriorityQueue<>();
-            for (int i = 0; i < children.size(); i++) {
-                fsoToAddPriv.add(children.get(i));
-            }
-            while (!fsoToAddPriv.isEmpty()) {
-                FileSystemObject fso = fsoToAddPriv.poll();
-                this.viewerIds.add(fso.getId());
-                if (fso.type == FSOType.FOLDER) {
-                    for (int i = 0; i < children.size(); i++) {
-                        fsoToAddPriv.add(children.get(i));
-                    }
-                }
-            }
-        }*/
-    }
-
-    public void removePriv(PrivType priv, int userId) {
-        if (priv == PrivType.EDIT) {
-            editorIds.remove((Integer) userId);
-        } else {
-            viewerIds.remove((Integer) userId);
-        }
-        /*if (priv == PrivType.EDIT) {
-            editorIds.remove((Integer) userId);
-            PriorityQueue<FileSystemObject> fsoToAddPriv = new PriorityQueue<>();
-            for (int i = 0; i < children.size(); i++) {
-                fsoToAddPriv.add(children.get(i));
-            }
-            while (!fsoToAddPriv.isEmpty()) {
-                FileSystemObject fso = fsoToAddPriv.poll();
-                this.editorIds.remove((Integer) fso.getId());
-                if (fso.type == FSOType.FOLDER) {
-                    for (int i = 0; i < children.size(); i++) {
-                        fsoToAddPriv.add(children.get(i));
-                    }
-                }
-            }
-        } else {
-            viewerIds.remove((Integer) userId);
-            PriorityQueue<FileSystemObject> fsoToAddPriv = new PriorityQueue<>();
-            for (int i = 0; i < children.size(); i++) {
-                fsoToAddPriv.add(children.get(i));
-            }
-            while (!fsoToAddPriv.isEmpty()) {
-                FileSystemObject fso = fsoToAddPriv.poll();
-                this.viewerIds.remove((Integer) fso.getId());
-                if (fso.type == FSOType.FOLDER) {
-                    for (int i = 0; i < children.size(); i++) {
-                        fsoToAddPriv.add(children.get(i));
-                    }
-                }
-            }
-        }*/
-    }
 }

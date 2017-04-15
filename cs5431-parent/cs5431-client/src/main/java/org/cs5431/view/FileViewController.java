@@ -116,7 +116,7 @@ public class FileViewController implements Initializable {
             FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
             if (fso != null) {
                 showAppropriateImages(true,
-                    fileController.isAllowed(FileActionType.OVERWRITE, fso),
+                    fileController.isEditor(fso),
                     fso instanceof org.cs5431.model.File);
             } else {
                 showAppropriateImages(false, false, false);

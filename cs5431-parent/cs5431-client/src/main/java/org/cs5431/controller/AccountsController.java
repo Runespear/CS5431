@@ -2,6 +2,7 @@ package org.cs5431.controller;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431.model.File;
+import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.Folder;
 import org.cs5431.model.User;
 import org.json.JSONArray;
@@ -17,6 +18,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
 import java.util.Base64;
+import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.*;
@@ -68,7 +70,8 @@ public class AccountsController {
             PublicKey pubKey = getPubKeyFromJSON(user.getString("pubKey"));
 
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-            Folder parentFolder = new Folder(parentFolderid, username, null, lastModified);
+            Folder parentFolder = new Folder(parentFolderid, username,
+                    lastModified, true, true);
             return new User(uid, username, email, parentFolder,
                     privKey, pubKey);
         } else if (newUser.getString("msgType").equals("error")) {
@@ -78,16 +81,6 @@ public class AccountsController {
             throw new RegistrationFailException("Received bad response " +
                     "from server");
         }
-    }
-
-    /**
-     * Deletes user with the userId and logs it.
-     * @param userId User to be deleted
-     * @return true if successful, returns false otherwise.
-     */
-    public boolean deleteUser(int userId) {
-        //TODO
-        return false;
     }
 
     /**
@@ -120,7 +113,8 @@ public class AccountsController {
                         password);
                 PublicKey pubKey = getPubKeyFromJSON(user.getString("pubKey"));
 
-                Folder parentFolder = getFolderFromId(parentFolderid, uid);
+                Folder parentFolder = getFolderFromId(parentFolderid, uid,
+                        privKey);
                 return new User(uid, username, email, parentFolder,
                         privKey, pubKey);
             } else if (user.getString("msgType").equals("error")) {
@@ -139,35 +133,17 @@ public class AccountsController {
         return null;
     }
 
-    private Folder getFolderFromId(int folderId, int uid) {
+    private Folder getFolderFromId(int folderId, int uid, PrivateKey
+            userPrivKey) {
         try {
-        Folder parentFolder = new Folder(folderId, "", null,null);
-        JSONObject json = new JSONObject();
-        json.put("fsoid", folderId);
-        json.put("uid", uid);
-        json.put("msgType", "getChildren");
-        sendJson(json, sslSocket);
-        JSONArray children = receiveJsonArray(sslSocket);
-        for (int i=0; i<children.length(); i++) {
-            JSONObject c = children.getJSONObject(i);
-            int id = c.getInt("id");
-            String name = c.getString("name");
-            String size = c.getString("size");
-            long longSize = Long.parseLong(size);
-            Timestamp lastModified = Timestamp.valueOf(c.getString("lastModified"));
-            String type = c.getString("FSOType");
-            if (type.equals("FOLDER")) {
-                Folder childFolder = new Folder(id, name, parentFolder, lastModified);
-                parentFolder.addChild(childFolder);
-            } else {
-                File childFile = new File(id, name, parentFolder, longSize,
-                        lastModified);
-                parentFolder.addChild(childFile);
-            }
-        }
+            Folder parentFolder = new Folder(folderId, "", null, true, true);
+            List<FileSystemObject> contents = FileController.getChildrenWithId
+                    (folderId, uid, sslSocket, userPrivKey);
+            for (FileSystemObject child : contents)
+                parentFolder.addChild(child);
             return parentFolder;
-        }    catch (Exception e) {
-                e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }

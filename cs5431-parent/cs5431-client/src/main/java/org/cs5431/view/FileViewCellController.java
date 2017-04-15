@@ -1,5 +1,6 @@
 package org.cs5431.view;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -45,13 +46,15 @@ public class FileViewCellController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        fileName.setOnMouseClicked(click -> {
-            if (click.getButton() == MouseButton.PRIMARY &&
-                    click.getClickCount() == 2) {
-                renameFile();
-                click.consume();
-            }
-        });
+        if (fso.isEditor()) {
+            fileName.setOnMouseClicked(click -> {
+                if (click.getButton() == MouseButton.PRIMARY &&
+                        click.getClickCount() == 2) {
+                    renameFile();
+                    click.consume();
+                }
+            });
+        }
     }
 
     private void renameFile() {
@@ -78,14 +81,29 @@ public class FileViewCellController implements Initializable {
     }
 
     private void performRename(TextField renameBox, Label currLabel) {
-        fso.rename(renameBox.getCharacters().toString()); //TODO: delete once the other function starts working
-        currLabel.setText(renameBox.getCharacters().toString());
-
-        /*if (fileController.rename(fso,renameBox.getCharacters().toString())) {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                fileController.rename(fso,renameBox.getCharacters().toString());
+                return null;
+            }
+        };
+        task.setOnSucceeded(t -> {
+            fso.rename(renameBox.getCharacters().toString());
             currLabel.setText(renameBox.getCharacters().toString());
-        }*/
-        nameBox.getChildren().remove(0);
-        nameBox.getChildren().add(0, currLabel);
+            nameBox.getChildren().remove(0);
+            nameBox.getChildren().add(0, currLabel);
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
     }
 
     public FileViewCellController(FileController fileController) {

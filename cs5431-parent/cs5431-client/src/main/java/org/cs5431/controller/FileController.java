@@ -13,10 +13,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -36,19 +33,12 @@ public class FileController {
         this.sslSocket = sslSocket;
     }
 
-    /**
-     * Returns true if the user has the permission to perform the action.
-     * @param action FileActionType that the user intends to perform
-     * @return true if the user has the permission; false otherwise
-     * TO BE DEPRECATED
-     */
-    public boolean isAllowed(FileActionType action, FileSystemObject fso) {
-        //TODO: to be done on server side
-        List<Integer> usersWithPermission = fso.getEditors();
-        if (action == DOWNLOAD) {
-            usersWithPermission.addAll(fso.getViewers());
-        }
-        return (usersWithPermission.contains(user.getId()));
+    public boolean isEditor(FileSystemObject fso) {
+        return fso.isEditor();
+    }
+
+    public boolean isViewer(FileSystemObject fso) {
+        return fso.isViewer();
     }
 
     /**
@@ -92,8 +82,8 @@ public class FileController {
                 System.out.println(fileSentid);
             }
             if (fileSentid != -1) {
-                File fileSent = new File(fileSentid, name, parentFolder, size, lastModified);
-                fileSent.addPriv(PrivType.EDIT, user.getId());
+                File fileSent = new File(fileSentid, name, size,
+                        lastModified, true, true);
             } else {
                 throw new FileControllerException("Failed to add file");
             }
@@ -142,8 +132,8 @@ public class FileController {
                 int folderSentId = fsoAck.getInt("fsoid");
 
                 if (folderSentId != -1) {
-                    Folder folderSent = new Folder(folderSentId, folderName, parentFolder, lastModified);
-                    folderSent.addPriv(PrivType.EDIT, user.getId()); //TODO: do we even need this
+                    Folder folderSent = new Folder(folderSentId, folderName,
+                            lastModified, true, true);
                     parentFolder.addChild(folderSent);
                 } else {
                     throw new FileControllerException("Failed to create folder");
@@ -236,7 +226,9 @@ public class FileController {
         JSONObject fileAck = receiveJson(sslSocket);
 
         if (fileAck.getString("msgType").equals("downloadAck")) {
-            int fsoID = fileAck.getInt("fsoid");
+            if (fileAck.getInt("fsoid") != fsoId)
+                throw new FileControllerException("Received bad response " +
+                        "from server");
             byte encFileSKbytes[] = Base64.getDecoder()
                     .decode(fileAck.getString("encFileSK"));
             SecretKey fileSK = decFileSecretKey(encFileSKbytes, user.getPrivKey());
@@ -265,13 +257,19 @@ public class FileController {
     public List<FileSystemObject> getChildren(Folder parentFolder) throws
             Exception {
         int parentFolderid = parentFolder.getId();
+        int uid = user.getId();
+        return getChildrenWithId(parentFolderid, uid, sslSocket, user.getPrivKey());
+    }
+
+    public static List<FileSystemObject> getChildrenWithId(int folderid, int
+            uid, Socket s, PrivateKey userPrivKey) throws Exception {
         ArrayList<FileSystemObject> children = new ArrayList<>();
         JSONObject json = new JSONObject();
         json.put("msgType", "getChildren");
-        json.put("fsoid", parentFolderid);
-        json.put("uid", user.getId());
-        sendJson(json, sslSocket);
-        JSONArray jsonChildren = receiveJsonArray(sslSocket);
+        json.put("fsoid", folderid);
+        json.put("uid", uid);
+        sendJson(json, s);
+        JSONArray jsonChildren = receiveJsonArray(s);
         for (int i = 0; i < jsonChildren.length(); i++) {
             JSONObject c = jsonChildren.getJSONObject(i);
             try {
@@ -282,21 +280,21 @@ public class FileController {
                 Timestamp lastModified = Timestamp.valueOf(c.getString("lastModified"));
                 String ivNameString = c.getString("fsoNameIV");
                 String encKeyString = c.getString("encKey");
+                boolean isEditor = c.getBoolean("isEditor");
+                boolean isViewer = c.getBoolean("isViewer");
                 SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
-                                (encKeyString), user.getPrivKey());
+                        (encKeyString), userPrivKey);
                 IvParameterSpec ivSpec = new IvParameterSpec(Base64.getDecoder()
                         .decode(ivNameString));
                 String name = decryptFileName(Base64.getDecoder().decode
-                                (encName), fileSK, ivSpec);
+                        (encName), fileSK, ivSpec);
 
                 String type = c.getString("FSOType");
                 FileSystemObject child;
                 if (type.equals("FOLDER")) {
-                    child = new Folder(id, name, parentFolder,
-                            lastModified);
+                    child = new Folder(id, name, lastModified, isEditor, isViewer);
                 } else {
-                    child = new File(id, name, parentFolder,
-                            longSize, lastModified);
+                    child = new File(id, name, longSize, lastModified, isEditor, isViewer);
                 }
                 children.add(child);
             } catch (JSONException e) {
@@ -369,10 +367,9 @@ public class FileController {
      * @param fsoId ID of fso modified
      * @param userId Refers to the user that is given more privileges
      * @param priv Type of priv to be given
-     * @param logEntry to be sent
      * * @return the file/folder that is uploaded to server if successful; null otherwise
      */
-    private FileSystemObject addFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
+    private FileSystemObject addFSOPriv(int fsoId, int userId, PrivType priv) {
         //TODO: remember to add new file to parent folder of userId
         //TODO: remember to change priv to child too
         return null;
@@ -383,20 +380,11 @@ public class FileController {
      * @param fsoId ID of fso modified
      * @param userId Refers to the user that is to have his/her privileges removed
      * @param priv Type of priv to be given
-     * @param logEntry to be sent
      * * @return the file/folder that is uploaded to server if successful; null otherwise
      */
-    private FileSystemObject removeFSOPriv(int fsoId, int userId, PrivType priv, FileLogEntry logEntry) {
+    private FileSystemObject removeFSOPriv(int fsoId, int userId, PrivType priv) {
         //TODO: remember to remove the file from parent folder of userId if view privileges are removed
         //TODO: remember to change priv to child too
-        return null;
-    }
-
-    private FileSystemObject modifyFSOName(int fsoId, String newName, FileLogEntry logEntry) {
-        return null;
-    }
-
-    private FileSystemObject modifyFSOContents(int fsoId, java.io.File file, FileLogEntry logEntry) {
         return null;
     }
 
@@ -411,6 +399,26 @@ public class FileController {
         JSONObject response = receiveJson(sslSocket);
         //TODO parse into list of strings
         return null;
+    }
+
+
+    public JSONObject getEditorsViewers(FileSystemObject fso)
+            throws IOException, ClassNotFoundException, FileControllerException{
+        JSONObject request = new JSONObject();
+        request.put("msgType", "getEditorViewerList");
+        request.put("fsoid", fso.getId());
+        request.put("uid", user.getId());
+        sendJson(request, sslSocket);
+
+        JSONObject reqAck = receiveJson(sslSocket);
+        if (reqAck.getString("msgType").equals("getEditorViewerListAck")) {
+            return reqAck;
+        } else if (reqAck.getString("msgType").equals("error")) {
+            throw new FileControllerException(reqAck.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     public class FileControllerException extends Exception {

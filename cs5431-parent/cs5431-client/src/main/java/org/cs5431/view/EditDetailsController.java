@@ -4,18 +4,17 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.cs5431.controller.UserController;
 import org.cs5431.Validator;
+import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class EditDetailsController implements Initializable {
@@ -42,6 +41,9 @@ public class EditDetailsController implements Initializable {
 
     @FXML
     public Button exitButton;
+
+    @FXML
+    public Button deleteButton;
 
     private Stage stage;
     private UserController userController;
@@ -87,6 +89,8 @@ public class EditDetailsController implements Initializable {
         saveButton.setOnAction(e -> trySaveDetails());
 
         exitButton.setOnAction(e -> exit());
+
+        deleteButton.setOnAction(e -> delete());
     }
 
     /**
@@ -224,6 +228,55 @@ public class EditDetailsController implements Initializable {
         Scene scene = stage.getScene();
         scene.setRoot(Client.fileViewNode);
         stage.show();
+    }
+
+    private void delete() {
+        TextInputDialog dialog = new TextInputDialog("username");
+        dialog.setTitle("Delete this account");
+        dialog.setContentText("Please enter the username of this account to " +
+                "confirm");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(username -> {
+            if (userController.isLoggedInUser(username)) {
+                TextInputDialog dialog2 = new TextInputDialog("password");
+                dialog2.setTitle("Delete this account");
+                dialog2.setContentText("Please enter the password of this " +
+                        "account to confirm");
+                Optional<String> result2 = dialog.showAndWait();
+                result2.ifPresent(password-> {
+                    Task<Void> task = new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            userController.deleteUser(password);
+                            return null;
+                        }
+                    };
+                    task.setOnFailed(t -> showError("Failed to delete this account - please " +
+                            "double check your password."));
+                    task.setOnSucceeded(t -> exit());
+                    Thread th = new Thread(task);
+                    th.setDaemon(true);
+                    th.start();
+                    task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                        if(newValue != null) {
+                            Exception ex = (Exception) newValue;
+                            ex.printStackTrace();
+                        }
+                    });
+                });
+            } else {
+                showError("Failed to delete this account - please " +
+                        "double check your username.");
+            }
+        });
+    }
+
+    private void showError(String error) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(error);
+        alert.showAndWait();
     }
 
     /**

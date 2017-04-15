@@ -22,7 +22,7 @@ public class SSLServer extends Thread {
     private Date failedTime;
     private String sourceIp;
 
-    public SSLServer(Socket socket, SQL_Connection sqlConnection){
+    SSLServer(Socket socket, SQL_Connection sqlConnection){
         this.s = socket;
         this.sqlConnection = sqlConnection;
         this.sourceIp = s.getRemoteSocketAddress().toString();
@@ -47,7 +47,7 @@ public class SSLServer extends Thread {
                         type.equals("overwrite") || type.equals
                         ("overwriteKeys") || type.equals("editEmail") || type
                         .equals("getFileLogs") || type.equals("getChildren")
-                        || type.equals("logout")) {
+                        || type.equals("logout") || type.equals("getEditorViewerList")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         response = makeErrJson("Requesting user does not match " +
@@ -132,6 +132,11 @@ public class SSLServer extends Thread {
                         break;
                     case "logout":
                         response = logout(jsonObject);
+                        sendJson(response, s);
+                        break;
+                    case "getEditorViewerList":
+                        response = getEditorViewerList(jsonObject,
+                                sqlConnection);
                         sendJson(response, s);
                         break;
                     default:
@@ -376,7 +381,17 @@ public class SSLServer extends Thread {
 
     private JSONArray getChildren(JSONObject jsonObject, SQL_Connection
             sqlConnection) {
-        return sqlConnection.getChildren(jsonObject);
+        JSONArray arr = sqlConnection.getChildren(jsonObject);
+        int uid = jsonObject.getInt("uid");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.getJSONObject(i);
+            int fsoid = obj.getInt("id");
+            obj.put("isEditor", sqlConnection.verifyEditPermission(fsoid,
+                    uid));
+            obj.put("isViewer", sqlConnection.verifyBothPermission(fsoid,
+                    uid));
+        }
+        return arr;
     }
 
     private JSONObject getUsername(JSONObject jsonObject, SQL_Connection
@@ -450,6 +465,24 @@ public class SSLServer extends Thread {
 
     private boolean isLoggedInUser(JSONObject jsonObject) {
         return jsonObject.getInt("uid") == loggedInUid;
+    }
+
+    private JSONObject getEditorViewerList(JSONObject jsonObject, SQL_Connection
+            sqlConnection) {
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
+        if (sqlConnection.verifyEditPermission(fsoid, uid)) {
+            JSONObject response = sqlConnection.getPermissions(fsoid);
+            if (response != null) {
+                response.put("msgType", "getEditorViewerListAck");
+                return response;
+            } else
+                return makeErrJson("There is no file/folder corresponding to " +
+                        "this file/folder id");
+            }
+        else
+            return makeErrJson("This user does not have permission to see " +
+                    "this list");
     }
 
     private JSONObject makeErrJson(String message) {
