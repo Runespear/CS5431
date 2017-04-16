@@ -401,10 +401,19 @@ public class FileViewController implements Initializable {
      * Exits back to the login page.
      */
     private void tryLogout() {
-        showAppropriateImages(false, false, false);
-        Scene scene = stage.getScene();
-        scene.setRoot(Client.loginNode);
-        stage.show();
+        try {
+            userController.logout(); //has to block the UI thread for correctness
+            showAppropriateImages(false, false, false);
+            Scene scene = stage.getScene();
+            scene.setRoot(Client.loginNode);
+            stage.show();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Logout error");
+            alert.setContentText("Logout unsuccessful. Please try again.");
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
 
     /**

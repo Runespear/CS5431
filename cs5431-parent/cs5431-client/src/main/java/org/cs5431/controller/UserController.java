@@ -167,6 +167,30 @@ public class UserController {
         return user.getUsername().equals(username);
     }
 
+    /**
+     * Logs out the current user
+     */
+    public void logout() throws IOException, ClassNotFoundException,
+            LogoutException {
+        JSONObject request = new JSONObject();
+        request.put("msgType", "logout");
+        request.put("uid", user.getId());
+        sendJson(request, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("logoutAck")) {
+            if (response.getInt("uid") != user.getId())
+                throw new LogoutException("Failed to logout - wrong user " +
+                        "logged out");
+        } else if (response.getString("msgType").equals("error")) {
+            throw new LogoutException(response.getString
+                    ("message"));
+        } else {
+            throw new LogoutException("Received bad response " +
+                    "from server");
+        }
+    }
+
     public class ChangePwdFailException extends Exception {
         ChangePwdFailException(String message) {
             super(message);
@@ -181,6 +205,12 @@ public class UserController {
 
     public class DeleteUserException extends Exception {
         DeleteUserException(String message) {
+            super(message);
+        }
+    }
+
+    public class LogoutException extends Exception {
+        LogoutException(String message) {
             super(message);
         }
     }
