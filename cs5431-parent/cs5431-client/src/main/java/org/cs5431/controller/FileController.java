@@ -181,7 +181,7 @@ public class FileController {
 
             sendJson(jsonFile, sslSocket);
             JSONObject fileResponse = receiveJson(sslSocket);
-            if (fileResponse.getString("msgType").equals("overwriteKeysAck")) {
+            if (fileResponse.getString("msgType").equals("overwriteAck")) {
                 if (fileResponse.getInt("fsoid") != originalFile.getId() ||
                         fileResponse.getInt("uid") != user.getId())
                     throw new FileControllerException("Received bad response " +
