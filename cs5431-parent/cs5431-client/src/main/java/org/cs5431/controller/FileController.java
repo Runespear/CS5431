@@ -372,7 +372,7 @@ public class FileController {
 
         JSONObject response = receiveJson(sslSocket);
 
-        if (response.getString("msgType").equals("downloadAck")) {
+        if (response.getString("msgType").equals("deleteAck")) {
             if (response.getInt("fsoid") != fso.getId())
                 throw new FileControllerException("Received bad response " +
                         "from server");
