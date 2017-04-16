@@ -471,7 +471,7 @@ public class SQL_Accounts {
                     removeFolder.executeUpdate();
 
                     createLog.setInt(1, 0);
-                    createLog.setInt(2, 0);
+                    createLog.setInt(2, uid);
                     createLog.setString(3, null);
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "ADMIN_DELETE_USER");
@@ -814,9 +814,9 @@ public class SQL_Accounts {
                     System.out.println("Database connected!");
                 }
 
-                String selectLog = "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\' FIELDS TERMINATED BY ','\n" +
-                        "    ENCLOSED BY '\"'\n" +
-                        "    LINES TERMINATED BY '\\n'; ";
+                String selectLog = "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\" FIELDS TERMINATED BY ','\n" +
+                        "ENCLOSED BY '\"'\n" +
+                        "LINES TERMINATED BY '\\n'; ";
 
                 try {
                     getFileLog = connection.prepareStatement(selectLog);

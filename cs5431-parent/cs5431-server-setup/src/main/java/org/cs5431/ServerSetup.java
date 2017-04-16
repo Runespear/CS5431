@@ -136,6 +136,7 @@ public class ServerSetup {
         String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
         String createUser = "CREATE USER ?@? IDENTIFIED BY ?;";
         String grantPermissions = "GRANT ALL ON cs5431.* TO ?@? IDENTIFIED BY ?;";
+        String grantFile = "GRANT FILE ON *.* TO ?@?;";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV CHAR(255));";
@@ -188,6 +189,10 @@ public class ServerSetup {
             statement.setString(2, ip);
             statement.setString(3, serverPwd);
             statement.execute();
+
+            statement = connection.prepareStatement(grantFile);
+            statement.setString(1, serverUser);
+            statement.setString(2, ip);
             connection.close();
             connection = DriverManager.getConnection(url+"/cs5431?autoReconnect=true&useSSL=false",
                     serverUser, serverPwd);

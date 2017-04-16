@@ -112,7 +112,7 @@ public class SSLServer extends Thread {
                         response = overwriteKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "editEmail":
+                    case "changeEmail":
                         response = changeEmail(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
