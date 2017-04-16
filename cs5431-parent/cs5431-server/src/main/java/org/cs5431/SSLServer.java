@@ -202,14 +202,14 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject login(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        if (loggedInUid != -1) {
+            return makeErrJson("There is another logged in user");
+        }
         //rate limiting: check if too many failed logins within this one minute
         Date now = new Date();
         if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
                 failedTime)) {
-            JSONObject jsonErr = new JSONObject();
-            jsonErr.put("msgType", "error");
-            jsonErr.put("message", "Too many failed logins recently");
-            return jsonErr;
+            return makeErrJson("Too many failed logins recently");
         }
 
         String pwdSalt = sql_accounts.getSalt(jsonObject.getString
