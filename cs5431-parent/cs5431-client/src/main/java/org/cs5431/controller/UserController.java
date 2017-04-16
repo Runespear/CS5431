@@ -112,6 +112,7 @@ public class UserController {
             IOException, ClassNotFoundException, ChangeEmailFailException {
         JSONObject json = new JSONObject();
         json.put("msgType","changeEmail");
+        json.put("uid", user.getId());
         json.put("oldEmail", oldEmail);
         json.put("newEmail", newEmail);
         sendJson(json, sslSocket);
@@ -124,9 +125,6 @@ public class UserController {
         } else if (response.getString("msgType").equals("error")) {
             throw new ChangeEmailFailException(response.getString
                     ("message"));
-        } else {
-            throw new ChangeEmailFailException("Received bad response " +
-                    "from server");
         }
     }
 
