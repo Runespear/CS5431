@@ -567,8 +567,8 @@ public class SQL_Accounts {
             String deleteFolder = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
 
             try {
+                createLog = connection.prepareStatement(insertLog);
                 if (user != null) {
-                    createLog = connection.prepareStatement(insertLog);
                     removeUser = connection.prepareStatement(deleteUser);
                     removeFolder = connection.prepareStatement(deleteFolder);
                     connection.setAutoCommit(false);

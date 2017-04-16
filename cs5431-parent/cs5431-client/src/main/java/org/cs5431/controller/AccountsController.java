@@ -1,11 +1,9 @@
 package org.cs5431.controller;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cs5431.model.File;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.Folder;
 import org.cs5431.model.User;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,7 +20,8 @@ import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.*;
-import static org.cs5431.JSON.*;
+import static org.cs5431.JSON.receiveJson;
+import static org.cs5431.JSON.sendJson;
 
 /**
  * A controller for all accounts.

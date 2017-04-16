@@ -139,7 +139,7 @@ public class UserController {
         request.put("msgType", "deleteUser");
         request.put("uid", user.getId());
         request.put("username", username);
-        request.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256
+        request.put("password", Base64.getEncoder().encodeToString(SHA256
                 (password)));
         sendJson(request, sslSocket);
 

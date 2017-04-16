@@ -242,7 +242,7 @@ public class EditDetailsController implements Initializable {
                 dialog2.setTitle("Delete this account");
                 dialog2.setContentText("Please enter the password of this " +
                         "account to confirm");
-                Optional<String> result2 = dialog.showAndWait();
+                Optional<String> result2 = dialog2.showAndWait();
                 result2.ifPresent(password-> {
                     Task<Void> task = new Task<Void>() {
                         @Override

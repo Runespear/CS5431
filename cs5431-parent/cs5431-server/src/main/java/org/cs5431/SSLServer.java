@@ -478,7 +478,7 @@ public class SSLServer extends Thread {
         String username = jsonObject.getString("username");
         String password = jsonObject.getString("password");
         int deletedUid = sql_accounts.deleteUser(uid, username, password,
-                s.getRemoteSocketAddress().toString());
+                sourceIp);
         if (deletedUid == uid) {
             JSONObject response = new JSONObject();
             response.put("msgType", "deleteUserAck");

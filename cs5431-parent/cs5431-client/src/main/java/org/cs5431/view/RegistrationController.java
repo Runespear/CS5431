@@ -122,9 +122,7 @@ public class RegistrationController implements Initializable {
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
-
                     return accountsController.createUser(username, password, email);
-
                 }
             };
             task.setOnSucceeded(t -> {
