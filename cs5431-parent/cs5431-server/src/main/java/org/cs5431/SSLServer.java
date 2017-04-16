@@ -16,15 +16,17 @@ import static org.cs5431.JSON.*;
 
 public class SSLServer extends Thread {
     protected Socket s;
-    private SQL_Connection sqlConnection;
     private int failedLogins = 0;
     private int loggedInUid = -1;
     private Date failedTime;
     private String sourceIp;
+    private SQL_Accounts sql_accounts;
+    private SQL_Files sql_files;
 
-    SSLServer(Socket socket, SQL_Connection sqlConnection){
+    SSLServer(Socket socket, SQL_Accounts sql_accounts, SQL_Files sql_files){
         this.s = socket;
-        this.sqlConnection = sqlConnection;
+        this.sql_accounts = sql_accounts;
+        this.sql_files = sql_files;
         this.sourceIp = s.getRemoteSocketAddress().toString();
     }
 
@@ -60,75 +62,75 @@ public class SSLServer extends Thread {
                 if (check) {
                 switch (type) {
                     case "registration":
-                        response = register(jsonObject, sqlConnection);
+                        response = register(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "login":
-                        response = login(jsonObject, sqlConnection);
+                        response = login(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "getPrivKeySalt":
-                        response = getPrivKeySalt(jsonObject, sqlConnection);
+                        response = getPrivKeySalt(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
-                    case "editPassword":
-                        response = changePwd(jsonObject, sqlConnection);
+                    case "changePwd":
+                        response = changePwd(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "upload":
-                        response = upload(jsonObject, sqlConnection);
+                        response = upload(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "download":
-                        response = download(jsonObject, sqlConnection);
+                        response = download(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "rename":
-                        response = rename(jsonObject, sqlConnection);
+                        response = rename(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "renameKeys":
-                        response = renameKeys(jsonObject, sqlConnection);
+                        response = renameKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "addPriv":
-                        response = addPriv(jsonObject, sqlConnection);
+                        response = addPriv(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "removePriv":
-                        response = removePriv(jsonObject, sqlConnection);
+                        response = removePriv(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "delete":
-                        response = delete(jsonObject, sqlConnection);
+                        response = delete(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "overwrite":
-                        response = overwrite(jsonObject, sqlConnection);
+                        response = overwrite(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "overwriteKeys":
-                        response = overwriteKeys(jsonObject, sqlConnection);
+                        response = overwriteKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "editEmail":
-                        response = changeEmail(jsonObject, sqlConnection);
+                    case "changeEmail":
+                        response = changeEmail(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "getFileLogs":
-                        JSONArray arr = getFileLog(jsonObject, sqlConnection);
+                        JSONArray arr = getFileLog(jsonObject, sql_files);
                         sendJsonArray(arr, s);
                         break;
                     case "getChildren":
-                        JSONArray arr2 = getChildren(jsonObject, sqlConnection);
+                        JSONArray arr2 = getChildren(jsonObject, sql_files);
                         sendJsonArray(arr2, s);
                         break;
                     case "username":
-                        response = getUsername(jsonObject, sqlConnection);
+                        response = getUsername(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "userid":
-                        response = getUserId(jsonObject, sqlConnection);
+                        response = getUserId(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "logout":
@@ -137,11 +139,11 @@ public class SSLServer extends Thread {
                         break;
                     case "getEditorViewerList":
                         response = getEditorViewerList(jsonObject,
-                                sqlConnection);
+                                sql_files);
                         sendJson(response, s);
                         break;
                     case "deleteUser":
-                        response = deleteUser(jsonObject, sqlConnection);
+                        response = deleteUser(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     default:
@@ -163,9 +165,8 @@ public class SSLServer extends Thread {
         }
     }
 
-    private JSONObject register(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        boolean isUniqueUsername = sqlConnection.isUniqueUsername(jsonObject
+    private JSONObject register(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        boolean isUniqueUsername = sql_accounts.isUniqueUsername(jsonObject
                 .getString("username"));
         if (!isUniqueUsername)
             return makeErrJson("Username has already been chosen");
@@ -174,16 +175,15 @@ public class SSLServer extends Thread {
         String hashAndSalt[] = generatePasswordHash(hashedPwd);
         String hash = hashAndSalt[0];
         String pwdSalt = hashAndSalt[1];
-        JSONObject response = sqlConnection.createUser(jsonObject, hash,
+        JSONObject response = sql_accounts.createUser(jsonObject, hash,
                 pwdSalt, sourceIp);
         if (response == null)
             return makeErrJson("Failed to register user");
         return response;
     }
 
-    private JSONObject getPrivKeySalt(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        String privSalt = sqlConnection.getPrivKeySalt(jsonObject.getString
+    private JSONObject getPrivKeySalt(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        String privSalt = sql_accounts.getPrivKeySalt(jsonObject.getString
             ("username"));
         if (privSalt != null) {
             JSONObject salt = new JSONObject();
@@ -201,8 +201,7 @@ public class SSLServer extends Thread {
         return jsonErr;
     }
 
-    private JSONObject login(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject login(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         //rate limiting: check if too many failed logins within this one minute
         Date now = new Date();
         if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
@@ -213,12 +212,12 @@ public class SSLServer extends Thread {
             return jsonErr;
         }
 
-        String pwdSalt = sqlConnection.getSalt(jsonObject.getString
+        String pwdSalt = sql_accounts.getSalt(jsonObject.getString
                 ("username"), sourceIp, "LOGIN");
         String hashedPwd = jsonObject.getString("hashedPwd");
         if (pwdSalt != null) {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
-            JSONObject auth = sqlConnection.authenticate(jsonObject, encPwd, sourceIp);
+            JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp);
             if (auth != null) {
                 loggedInUid = auth.getInt("uid");
                 return auth;
@@ -244,13 +243,12 @@ public class SSLServer extends Thread {
         return (now.getTime() - then.getTime() <= 60*1000);
     }
 
-    private JSONObject changePwd(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject changePwd(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         String newHashedPwd = jsonObject.getString("newHashedPwd");
-        String pwdSalt = sqlConnection.getSalt(jsonObject.getString("username"), sourceIp, "CHANGE_PWD");
+        String pwdSalt = sql_accounts.getSalt(jsonObject.getString("username"), sourceIp, "CHANGE_PWD");
         if (pwdSalt != null) {
             String newEncPwd = secondPwdHash(newHashedPwd, Base64.getDecoder().decode(pwdSalt));
-            JSONObject verification = sqlConnection.changePassword(jsonObject, newEncPwd, sourceIp);
+            JSONObject verification = sql_accounts.changePassword(jsonObject, newEncPwd, sourceIp);
             if (verification != null) {
                 if (DEBUG_MODE) {
                     System.out.println("changing pwd: " + verification);
@@ -269,9 +267,8 @@ public class SSLServer extends Thread {
         return jsonErr;
     }
 
-    private JSONObject upload(JSONObject jsonObject, SQL_Connection
-            sqlConnection) throws Exception {
-        int fsoid = sqlConnection.createFso(jsonObject, s.getRemoteSocketAddress().toString());
+    private JSONObject upload(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
+        int fsoid = sql_files.createFso(jsonObject, s.getRemoteSocketAddress().toString());
         if (fsoid != -1) {
             JSONObject response = new JSONObject();
             response.put("msgType","uploadAck");
@@ -282,19 +279,17 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to upload");
     }
 
-    private JSONObject download(JSONObject jsonObject, SQL_Connection
-            sqlConnection) throws Exception {
-        return sqlConnection.getFile(jsonObject);
+    private JSONObject download(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
+        return sql_files.getFile(jsonObject);
     }
 
-    private JSONObject rename(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject rename(JSONObject jsonObject, SQL_Files sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         String newName = jsonObject.getString("newName");
         String newFsoNameIV = jsonObject.getString("newFsoNameIV");
 
-        if (sqlConnection.renameFso(fsoid, uid, newName, newFsoNameIV, sourceIp) ==
+        if (sql_files.renameFso(fsoid, uid, newName, newFsoNameIV, sourceIp) ==
                 fsoid) {
             JSONObject response = new JSONObject();
             response.put("msgType","renameAck");
@@ -306,14 +301,13 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to rename");
     }
 
-    private JSONObject overwrite(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject overwrite(JSONObject jsonObject, SQL_Files sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         String newFileIV = jsonObject.getString("newFileIV");
         String encFile = jsonObject.getString("encFile");
 
-        if (sqlConnection.overwrite(fsoid, uid, newFileIV, encFile) ==
+        if (sql_files.overwrite(fsoid, uid, newFileIV, encFile, sourceIp) ==
                 fsoid) {
             JSONObject response = new JSONObject();
             response.put("msgType","overwriteAck");
@@ -324,8 +318,7 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to overwrite file");
     }
 
-    private JSONObject removePriv(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject removePriv(JSONObject jsonObject, SQL_Files sql_files) {
         //TODO
 
         //copied from FileController
@@ -337,8 +330,7 @@ public class SSLServer extends Thread {
         return null;
     }
 
-    private JSONObject addPriv(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject addPriv(JSONObject jsonObject, SQL_Files sql_files) {
         //TODO
         //copied from FileController:
         /*if (priv == PrivType.EDIT) {
@@ -349,12 +341,11 @@ public class SSLServer extends Thread {
         return null;
     }
 
-    private JSONObject delete(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject delete(JSONObject jsonObject, SQL_Files sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
 
-        if (sqlConnection.deleteFile(fsoid, uid, sourceIp) == fsoid) {
+        if (sql_files.deleteFile(fsoid, uid, sourceIp) == fsoid) {
             JSONObject response = new JSONObject();
             response.put("msgType","deleteAck");
             response.put("fsoid", fsoid);
@@ -364,13 +355,12 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to delete file");
     }
 
-    private JSONObject changeEmail(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject changeEmail(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         int uid = jsonObject.getInt("uid");
         String oldEmail = jsonObject.getString("oldEmail");
         String newEmail = jsonObject.getString("newEmail");
 
-        if (sqlConnection.changeEmail(uid, oldEmail, newEmail)) {
+        if (sql_accounts.changeEmail(uid, oldEmail, newEmail, sourceIp)) {
             JSONObject response = new JSONObject();
             response.put("msgType","editEmailAck");
             response.put("uid", uid);
@@ -379,30 +369,28 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to change email");
     }
 
-    private JSONArray getFileLog(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        return sqlConnection.getFileLog(jsonObject);
+    private JSONArray getFileLog(JSONObject jsonObject, SQL_Files sql_files) {
+        return sql_files.getFileLog(jsonObject);
     }
 
-    private JSONArray getChildren(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        JSONArray arr = sqlConnection.getChildren(jsonObject);
+    private JSONArray getChildren(JSONObject jsonObject, SQL_Files sql_files) {
+        JSONArray arr = sql_files.getChildren(jsonObject);
         int uid = jsonObject.getInt("uid");
         for (int i = 0; i < arr.length(); i++) {
             JSONObject obj = arr.getJSONObject(i);
             int fsoid = obj.getInt("id");
-            obj.put("isEditor", sqlConnection.verifyEditPermission(fsoid,
+            obj.put("isEditor", sql_files.verifyEditPermission(fsoid,
                     uid));
-            obj.put("isViewer", sqlConnection.verifyBothPermission(fsoid,
+            obj.put("isViewer", sql_files.verifyBothPermission(fsoid,
                     uid));
         }
         return arr;
     }
 
-    private JSONObject getUsername(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject getUsername(JSONObject jsonObject, SQL_Accounts
+            sql_accounts) {
         int uid = jsonObject.getInt("uid");
-        String username = sqlConnection.getUsername(uid);
+        String username = sql_accounts.getUsername(uid);
         if (username != null) {
             JSONObject response = new JSONObject();
             response.put("msgType", "usernameAck");
@@ -412,10 +400,9 @@ public class SSLServer extends Thread {
         return makeErrJson("Could not find user with that username");
     }
 
-    private JSONObject getUserId(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject getUserId(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         String username = jsonObject.getString("username");
-        int userId = sqlConnection.getUserId(username);
+        int userId = sql_accounts.getUserId(username);
         if (userId != -1) {
             JSONObject response = new JSONObject();
             response.put("msgType", "useridAck");
@@ -425,26 +412,23 @@ public class SSLServer extends Thread {
         return makeErrJson("Could not find user with that userid");
     }
 
-    private JSONObject renameKeys(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        JSONObject response = getFileSK(jsonObject, sqlConnection);
+    private JSONObject renameKeys(JSONObject jsonObject, SQL_Files sql_files) {
+        JSONObject response = getFileSK(jsonObject, sql_files);
         if (response != null)
             response.put("msgType", "renameKeysAck");
         return response;
     }
 
-    private JSONObject overwriteKeys(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
-        JSONObject response = getFileSK(jsonObject, sqlConnection);
+    private JSONObject overwriteKeys(JSONObject jsonObject, SQL_Files sql_files) {
+        JSONObject response = getFileSK(jsonObject, sql_files);
         if (response != null)
             response.put("msgType", "overwriteKeysAck");
         return response;
     }
 
-    private JSONObject getFileSK(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject getFileSK(JSONObject jsonObject, SQL_Files sql_files) {
         JSONObject response = new JSONObject();
-        String fileSK = sqlConnection.getFileSK(jsonObject.getInt("fsoid"),
+        String fileSK = sql_files.getFileSK(jsonObject.getInt("fsoid"),
                 jsonObject.getInt("uid"), sourceIp);
         if (fileSK != null) {
             response.put("fileSK", fileSK);
@@ -472,12 +456,11 @@ public class SSLServer extends Thread {
         return jsonObject.getInt("uid") == loggedInUid;
     }
 
-    private JSONObject getEditorViewerList(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject getEditorViewerList(JSONObject jsonObject, SQL_Files sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
-        if (sqlConnection.verifyEditPermission(fsoid, uid)) {
-            JSONObject response = sqlConnection.getPermissions(fsoid);
+        if (sql_files.verifyEditPermission(fsoid, uid)) {
+            JSONObject response = sql_files.getPermissions(fsoid);
             if (response != null) {
                 response.put("msgType", "getEditorViewerListAck");
                 return response;
@@ -490,12 +473,11 @@ public class SSLServer extends Thread {
                     "this list");
     }
 
-    private JSONObject deleteUser(JSONObject jsonObject, SQL_Connection
-            sqlConnection) {
+    private JSONObject deleteUser(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         int uid = jsonObject.getInt("uid");
         String username = jsonObject.getString("username");
         String password = jsonObject.getString("password");
-        int deletedUid = sqlConnection.deleteUser(uid, username, password,
+        int deletedUid = sql_accounts.deleteUser(uid, username, password,
                 s.getRemoteSocketAddress().toString());
         if (deletedUid == uid) {
             JSONObject response = new JSONObject();
