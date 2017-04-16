@@ -14,6 +14,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
@@ -387,34 +388,82 @@ public class FileController {
         }
     }
 
-    /**
-     * Adds privileges the file/folder and sends the changes to the server.
-     * @param systemObject Privileges are added to this file/folder.
-     * @return true if privilege was added successfully; false otherwise.
-     */
-    public boolean addPriv(FileSystemObject systemObject, int userId,
-                           PrivType priv) throws IOException, ClassNotFoundException {
-        int newUser = -1;
+    public void addEditor(FileSystemObject systemObject, int newUserId)
+            throws IOException, ClassNotFoundException,
+            FileControllerException {
         JSONObject json = new JSONObject();
-        json.put("msgType", "addPriv");
-        json.put("addPrivType", priv);
+        json.put("msgType", "addEditor");
         json.put("fsoid", systemObject.getId());
         json.put("uid", user.getId());
-        json.put("newUid", userId);
+        json.put("newUid", newUserId);
         sendJson(json, sslSocket);
         JSONObject response = receiveJson(sslSocket);
 
-        if (response.getString("msgType").equals("addPrivKeys")) {
-            //TODO
-            return true;
+        if (response.getString("msgType").equals("addEditorAck")) {
+            if (response.getInt("newUid") != newUserId)
+                throw new FileControllerException("User that was added as " +
+                        "editor was not the user requested");
+        } else if (response.getString("msgType").equals("error")) {
+            throw new FileControllerException(response.getString("message"));
         } else {
-            //throw error?
-            return false;
+            throw new FileControllerException("Received bad response " +
+                    "from server");
         }
-
-        //TODO add this eventually?
-        //systemObject.addPriv(priv, userId);
     }
+
+    public void addViewer(FileSystemObject systemObject, int newUserId)
+            throws IOException, ClassNotFoundException,
+            FileControllerException, NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, InvalidKeySpecException {
+        int fsoid = systemObject.getId();
+        int uid = user.getId();
+        JSONObject jsonKeys = new JSONObject();
+        jsonKeys.put("msgType", "addViewerKeys");
+        jsonKeys.put("fsoid", fsoid);
+        jsonKeys.put("uid", uid);
+        jsonKeys.put("newUid", newUserId);
+        sendJson(jsonKeys, sslSocket);
+        JSONObject responseKeys = receiveJson(sslSocket);
+
+        if (responseKeys.getString("msgType").equals("addViewerKeysAck")) {
+            String pubKeyString = responseKeys.getString("pubKey");
+            String fileSKString = responseKeys.getString("secretKey");
+            PublicKey pubKey = getPubKeyFromJSON(pubKeyString);
+            SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
+                    (fileSKString), user.getPrivKey());
+            byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
+            JSONObject jsonViewer = new JSONObject();
+            jsonViewer.put("msgType", "addViewer");
+            jsonViewer.put("encSecretKey", Base64.getEncoder()
+                            .encodeToString(encFileSK));
+            jsonViewer.put("fsoid", fsoid);
+            jsonViewer.put("uid", uid);
+            jsonViewer.put("newUid", newUserId);
+            sendJson(jsonViewer, sslSocket);
+
+            JSONObject responseViewer = receiveJson(sslSocket);
+            if (responseViewer.getString("msgType").equals("addViewerAck")) {
+                if (responseViewer.getInt("newUid") != newUserId)
+                    throw new FileControllerException("User that was added as " +
+                            "viewer was not the user requested");
+            } else if (responseViewer.getString("msgType").equals("error")) {
+                throw new FileControllerException(responseViewer.getString
+                        ("message"));
+            } else {
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            }
+        } else if (responseKeys.getString("msgType").equals("error")) {
+            throw new FileControllerException(responseKeys.getString
+                    ("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
+    }
+
 
     /**
      * Removes privileges the file/folder and sends the changes to the server.

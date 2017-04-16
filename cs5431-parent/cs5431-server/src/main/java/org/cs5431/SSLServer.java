@@ -44,8 +44,10 @@ public class SSLServer extends Thread {
                 boolean check = true;
                 if (type.equals("editPassword") || type.equals("upload") ||
                         type.equals("download") || type.equals("rename") ||
-                        type.equals("renameKeys") || type.equals("addPriv") ||
-                        type.equals("removePriv") || type.equals("delete") ||
+                        type.equals("renameKeys") || type.equals("addEditor")
+                        || type.equals("addViewer") || type.equals
+                        ("addViewerKeys") || type.equals("removeViewer") ||
+                        type.equals("removeEditor") || type.equals("delete") ||
                         type.equals("overwrite") || type.equals
                         ("overwriteKeys") || type.equals("editEmail") || type
                         .equals("getFileLogs") || type.equals("getChildren")
@@ -93,12 +95,24 @@ public class SSLServer extends Thread {
                         response = renameKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "addPriv":
-                        response = addPriv(jsonObject, sql_files);
+                    case "addEditor":
+                        response = addEditor(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "removePriv":
-                        response = removePriv(jsonObject, sql_files);
+                    case "addViewer":
+                        response = addViewer(jsonObject, sql_files);
+                        sendJson(response, s);
+                        break;
+                    case "addViewerKeys":
+                        response = addViewerKeys(jsonObject, sql_files);
+                        sendJson(response, s);
+                        break;
+                    case "removeViewer":
+                        response = removeViewer(jsonObject, sql_files);
+                        sendJson(response, s);
+                        break;
+                    case "removeEditor":
+                        response = removeEditor(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "delete":
@@ -318,27 +332,58 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to overwrite file");
     }
 
-    private JSONObject removePriv(JSONObject jsonObject, SQL_Files sql_files) {
+    private JSONObject removeViewer(JSONObject jsonObject, SQL_Files
+            sql_files) {
         //TODO
-
-        //copied from FileController
-        /*if (priv == PrivType.EDIT) {
-            rmUser = sql_connection.removeEditPriv(systemObject.getId(), user.getId(), userId);
-        } else {
-            rmUser = sql_connection.removeViewPriv(systemObject.getId(), user.getId(), userId);
-        }*/
         return null;
     }
 
-    private JSONObject addPriv(JSONObject jsonObject, SQL_Files sql_files) {
+    private JSONObject removeEditor(JSONObject jsonObject, SQL_Files
+            sql_files) {
         //TODO
-        //copied from FileController:
-        /*if (priv == PrivType.EDIT) {
-            newUser = sql_connection.addEditPriv(json);
-        } else {
-            newUser = sql_connection.addViewPriv(json);
-        }*/
         return null;
+    }
+
+    private JSONObject addEditor(JSONObject jsonObject, SQL_Files sql_files) {
+        jsonObject.put("encSecretKey","");
+        int newUid = sql_files.addEditPriv(jsonObject, sourceIp);
+        if (newUid == jsonObject.getInt("newUid")) {
+            JSONObject response = new JSONObject();
+            response.put("msgType", "addEditorAck");
+            response.put("newUid", newUid);
+            return response;
+        } else if (newUid == -1)
+            return makeErrJson("Failed to add this new editor - double check " +
+                    "user id");
+        return makeErrJson("Could not add editor - added the wrong user with " +
+                "id " + newUid);
+    }
+
+    private JSONObject addViewerKeys(JSONObject jsonObject, SQL_Files
+            sql_files){
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
+        int newUid = jsonObject.getInt("newUid");
+        JSONObject response = sql_files.getKeys(fsoid, uid, newUid);
+        if (response != null)
+            return response;
+        else
+            return makeErrJson("Could not retrieve keys - check if you have " +
+                    "the permission to add privileges to this file");
+    }
+
+    private JSONObject addViewer(JSONObject jsonObject, SQL_Files sql_files) {
+        int newUid = sql_files.addViewPriv(jsonObject, sourceIp);
+        if (newUid == jsonObject.getInt("newUid")) {
+            JSONObject response = new JSONObject();
+            response.put("msgType", "addViewerAck");
+            response.put("newUid", newUid);
+            return response;
+        } else if (newUid == -1)
+            return makeErrJson("Failed to add this new viewer - double check " +
+                    "user id");
+        return makeErrJson("Could not add viewer - added the wrong user with " +
+                "id " + newUid);
     }
 
     private JSONObject delete(JSONObject jsonObject, SQL_Files sql_files) {
@@ -406,7 +451,7 @@ public class SSLServer extends Thread {
         if (userId != -1) {
             JSONObject response = new JSONObject();
             response.put("msgType", "useridAck");
-            response.put("userid", userId);
+            response.put("uid", userId);
             return response;
         }
         return makeErrJson("Could not find user with that userid");

@@ -85,18 +85,10 @@ public class PrivViewController implements Initializable{
                 setGraphic(comboBox);
 
                 comboBox.valueProperty().addListener((observableValue, prev, now) -> {
-                    try {
-                        if (now.equals("Can Edit") && !bundle.canEdit) {
-                            fileController.addPriv(bundle.fso, bundle.userId,
-                                    PrivType.EDIT);
-                            bundle.canEdit = true;
-                        } else if (now.equals("Can View") && bundle.canView) {
-                            fileController.removePriv(bundle.fso, bundle.userId,
-                                    PrivType.EDIT);
-                            bundle.canEdit = false;
-                        }
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
+                    if (now.equals("Can Edit") && !bundle.canEdit) {
+                        changeToEditor(bundle);
+                    } else if (now.equals("Can View") && bundle.canView) {
+                        changeToViewer(bundle);
                     }
                 });
             }
@@ -128,6 +120,50 @@ public class PrivViewController implements Initializable{
         });
     }
 
+    private void changeToEditor(PrivBundle bundle) {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                fileController.addEditor(bundle.fso, bundle.userId);
+                return null;
+            }
+        };
+        task.setOnFailed(t -> showError("Failed to change sharing " +
+                "permissions of user: " + bundle.getUsername()));
+        task.setOnSucceeded(t -> bundle.canEdit = true);
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void changeToViewer(PrivBundle bundle) {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                fileController.addViewer(bundle.fso, bundle.userId);
+                return null;
+            }
+        };
+        task.setOnFailed(t -> showError("Failed to change sharing " +
+                "permissions of user: " + bundle.getUsername()));
+        task.setOnSucceeded(t -> bundle.canEdit = false);
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
+    }
+
     /**
      * Exits back to the file viewer.
      */
@@ -151,7 +187,7 @@ public class PrivViewController implements Initializable{
                 @Override
                 protected PrivBundle call() throws Exception {
                     int userId = accountsController.getUserId(username);
-                    fileController.addPriv(fso, userId, PrivType.VIEW);
+                    fileController.addViewer(fso, userId);
                     return new PrivBundle(userId, retrieveUsername(userId), fso,
                             false,true);
                 }
