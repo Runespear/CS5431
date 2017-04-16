@@ -297,6 +297,36 @@ public class Encryption {
         return ivSpec;
     }
 
+    //[0] is the new IV, [1] is the encrypted file
+    public static String[] reEncryptFile(File file, SecretKey sk) throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
+        //TODO BRANDON! I MADE THIS NEW METHOD!
+        String ret[] = new String[2];
+        IvParameterSpec iv = generateIV();
+        byte[] encryptedFile = encryptFile(file, sk, iv);
+        ret[0] = Base64.getEncoder().encodeToString(iv.getIV());
+        ret[1] = Base64.getEncoder().encodeToString(encryptedFile);
+        return ret;
+    }
+
+    //[0] is the new IV, [1] is the encrypted file name
+    public static String[] reEncryptFileName(String fileName, SecretKey sk)
+            throws NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
+        //TODO BRANDON! I MADE THIS NEW METHOD!
+        String ret[] = new String[2];
+        IvParameterSpec iv = generateIV();
+        byte[] encFileName = encryptFileName(fileName, sk, iv);
+        ret[0] = Base64.getEncoder().encodeToString(iv.getIV());
+        ret[1] = Base64.getEncoder().encodeToString(encFileName);
+        return ret;
+    }
+
     public static String[] generatePasswordHash(String pwd) {
         byte salt[] = newPwdSalt();
         String hashedPW = secondPwdHash(pwd, salt);

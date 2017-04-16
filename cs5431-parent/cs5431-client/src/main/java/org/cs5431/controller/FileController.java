@@ -160,7 +160,7 @@ public class FileController {
             IOException, NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException, ClassNotFoundException {
+            BadPaddingException, ClassNotFoundException, FileControllerException {
         JSONObject jsonKeys = new JSONObject();
         jsonKeys.put("msgType","overwriteKeys");
         jsonKeys.put("fsoid", originalFile.getId());
@@ -171,8 +171,34 @@ public class FileController {
             byte[] encFileSK = Base64.getDecoder().decode(keyResponse.getString
                     ("fileSK"));
             SecretKey fileSK = decFileSecretKey(encFileSK, user.getPrivKey());
-            //TODO more stuff
-        } //TODO throw exception
+            JSONObject jsonFile = new JSONObject();
+            jsonFile.put("msgType", "overwrite");
+            jsonFile.put("fsoid", originalFile.getId());
+            jsonFile.put("uid", user.getId());
+            String reencryptedFile[] = reEncryptFile(file, fileSK);
+            jsonFile.put("newFileIV", reencryptedFile[0]);
+            jsonFile.put("encFile", reencryptedFile[1]);
+
+            sendJson(jsonFile, sslSocket);
+            JSONObject fileResponse = receiveJson(sslSocket);
+            if (fileResponse.getString("msgType").equals("overwriteKeysAck")) {
+                if (fileResponse.getInt("fsoid") != originalFile.getId() ||
+                        fileResponse.getInt("uid") != user.getId())
+                    throw new FileControllerException("Received bad response " +
+                            "from server - details don't match the file " +
+                            "changed");
+            } else if (fileResponse.getString("msgType").equals("error")) {
+                throw new FileControllerException(fileResponse.getString("message"));
+            } else {
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            }
+        } else if (keyResponse.getString("msgType").equals("error")) {
+            throw new FileControllerException(keyResponse.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     /**
@@ -185,21 +211,47 @@ public class FileController {
      * modified due to communication failure with server or bad server response
      */
     public void rename(FileSystemObject systemObject, String newName)
-            throws IOException, ClassNotFoundException, FileControllerException{
-        JSONObject json = new JSONObject();
-        json.put("msgType", "rename");
-        json.put("fsoid", systemObject.getId());
-        json.put("uid", user.getId());
-        json.put("newName", newName);   //TODO encryption
-        sendJson(json, sslSocket);
-        JSONObject response = receiveJson(sslSocket);
-        if (response.getString("msgType").equals("renameAck") && response
-                .getInt("fsoid") == systemObject.getId() && response.getInt
-                ("uid") == user.getId()) {
-            systemObject.rename(newName);
-        }
-        else if (response.getString("msgType").equals("error")) {
-            throw new FileControllerException(response.getString("message"));
+            throws IOException, ClassNotFoundException,
+            FileControllerException, NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException,
+            IOException, IllegalBlockSizeException, BadPaddingException{
+        JSONObject jsonKeys = new JSONObject();
+        jsonKeys.put("msgType","renameKeys");
+        jsonKeys.put("fsoid", systemObject.getId());
+        jsonKeys.put("uid", user.getId());
+        sendJson(jsonKeys, sslSocket);
+        JSONObject keyResponse = receiveJson(sslSocket);
+        if (keyResponse.getString("msgType").equals("renameKeysAck")) {
+            byte[] encFileSK = Base64.getDecoder().decode(keyResponse.getString
+                    ("fileSK"));
+            SecretKey fileSK = decFileSecretKey(encFileSK, user.getPrivKey());
+            JSONObject jsonFile = new JSONObject();
+            jsonFile.put("msgType", "rename");
+            jsonFile.put("fsoid", systemObject.getId());
+            jsonFile.put("uid", user.getId());
+            String reencryptedFile[] = reEncryptFileName(newName, fileSK);
+            jsonFile.put("newFsoNameIV", reencryptedFile[0]);
+            jsonFile.put("newName", reencryptedFile[1]);
+
+            sendJson(jsonFile, sslSocket);
+            JSONObject fileResponse = receiveJson(sslSocket);
+            if (fileResponse.getString("msgType").equals("renameKeysAck")) {
+                if (fileResponse.getInt("fsoid") != systemObject.getId() ||
+                        fileResponse.getInt("uid") != user.getId())
+                    throw new FileControllerException("Received bad response " +
+                            "from server - details don't match the file " +
+                            "changed");
+                else
+                    systemObject.rename(newName);
+            } else if (fileResponse.getString("msgType").equals("error")) {
+                throw new FileControllerException(fileResponse.getString("message"));
+            } else {
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            }
+        } else if (keyResponse.getString("msgType").equals("error")) {
+            throw new FileControllerException(keyResponse.getString("message"));
         } else {
             throw new FileControllerException("Received bad response " +
                     "from server");
@@ -311,10 +363,27 @@ public class FileController {
      * @throws FileControllerException If file cannot be deleted
      */
     public void delete(FileSystemObject fso, Folder parentFolder) throws
-            FileControllerException {
-        //TODO: remove from db
-        parentFolder.removeChild(fso);
-        //throw new FileControllerException("Failed to delete file");
+            FileControllerException, IOException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("msgType", "delete");
+        jsonObject.put("fsoid", fso.getId());
+        jsonObject.put("uid", user.getId());
+        sendJson(jsonObject, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+
+        if (response.getString("msgType").equals("downloadAck")) {
+            if (response.getInt("fsoid") != fso.getId())
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            else
+                parentFolder.removeChild(fso);
+        } else if (response.getString("msgType").equals("error")) {
+            throw new FileControllerException(response.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     /**

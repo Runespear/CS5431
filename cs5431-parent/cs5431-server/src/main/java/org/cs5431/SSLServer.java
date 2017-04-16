@@ -47,7 +47,8 @@ public class SSLServer extends Thread {
                         type.equals("overwrite") || type.equals
                         ("overwriteKeys") || type.equals("editEmail") || type
                         .equals("getFileLogs") || type.equals("getChildren")
-                        || type.equals("logout") || type.equals("getEditorViewerList")) {
+                        || type.equals("logout") || type.equals
+                        ("getEditorViewerList") || type.equals("deleteUser")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         response = makeErrJson("Requesting user does not match " +
