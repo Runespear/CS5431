@@ -240,6 +240,13 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
+            task.setOnSucceeded(t-> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Download successful");
+                alert.setContentText("Successfully downloaded " + fso
+                        .getFileName() + "!");
+                alert.showAndWait();
+            });
             Thread th = new Thread(task);
             th.setDaemon(true);
             th.start();
