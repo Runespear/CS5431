@@ -16,6 +16,7 @@ import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.FileController;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.PrivType;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -216,13 +217,15 @@ public class PrivViewController implements Initializable{
         });
         task.setOnSucceeded(t -> {
             JSONObject response = task.getValue();
-            @SuppressWarnings("unchecked") List<Integer> editors = (List<Integer>) response.get("editors");
-            @SuppressWarnings("unchecked") List<Integer> viewers = (List<Integer>) response.get("viewers");
-            for (Integer editor : editors) {
-                observableList.add(new PrivBundle(editor, fso, true,true, accountsController));
+            JSONArray editors = response.getJSONArray("editors");
+            JSONArray viewers = response.getJSONArray("viewers");
+            for (int i = 0; i < editors.length(); i++) {
+                observableList.add(new PrivBundle(editors.getInt(i), fso, true,
+                        true, accountsController));
             }
-            for (Integer viewer : viewers) {
-                observableList.add(new PrivBundle(viewer, fso,false,true, accountsController));
+            for (int i = 0; i < viewers.length(); i++) {
+                observableList.add(new PrivBundle(viewers.getInt(i), fso,false,
+                        true, accountsController));
             }
             tableViewPriv.setItems(observableList);
         });

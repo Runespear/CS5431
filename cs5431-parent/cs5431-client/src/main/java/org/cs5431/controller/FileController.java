@@ -14,10 +14,9 @@ import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
+import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.*;
@@ -27,6 +26,7 @@ import static org.cs5431.model.FileActionType.DOWNLOAD;
 public class FileController {
     private org.cs5431.model.User user;
     private Socket sslSocket;
+    private Map<Integer, String> uidToUsername = new HashMap<>();
 
     public FileController(User user, Socket sslSocket) {
         this.user = user;
@@ -459,16 +459,186 @@ public class FileController {
     }
 
     public List<String> getFileLogs(int fsoid) throws IOException,
-            ClassNotFoundException {
+            ClassNotFoundException, FileControllerException {
         JSONObject request = new JSONObject();
         request.put("msgType", "getFileLogs");
         request.put("fsoid", fsoid);
         request.put("uid", user.getId());
         sendJson(request, sslSocket);
 
+        JSONArray response = receiveJsonArray(sslSocket);
+
+        List<String> logs = new ArrayList<>();
+        for (int i = 0; i < response.length(); i++) {
+            JSONObject logEntry = response.getJSONObject(i);
+            if (!logEntry.getString("msgType").equals("getFileLogAck") ||
+                    logEntry.getInt("fsoid") != fsoid) {
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            }
+            int uid = logEntry.getInt("uid");
+            String username = checkUsername(uid);
+            Timestamp lastModified = (Timestamp) logEntry.get("lastModified");
+            String actionType = logEntry.getString("actionType");
+            String status = logEntry.getString("status");
+
+            String logMsg = null;
+            if (actionType.equals("ADD_EDITOR") || actionType.equals
+                    ("ADD_VIEWER") || actionType.equals("REMOVE_EDITOR") ||
+                    actionType.equals("REMOVE_VIEWER")) {
+                int newUid = logEntry.getInt("newUid");
+                String newUser = checkUsername(newUid);
+
+                if (status.equals("SUCCESS")) {
+                    switch (actionType) {
+                        case "ADD_EDITOR":
+                            logMsg = username + " successfully added " + newUser +
+                                    " as an editor on " + lastModified.toString();
+                            break;
+                        case "ADD_VIEWER":
+                            logMsg = username + " successfully added " + newUser +
+                                    " as an viewer on " + lastModified.toString();
+                            break;
+                        case "REMOVE_EDITOR":
+                            logMsg = username + " successfully removed " + newUser +
+                                    " as an editor on " + lastModified.toString();
+                            break;
+                        case "REMOVE_VIEWER":
+                            logMsg = username + " successfully removed " + newUser +
+                                    " as an viewer on " + lastModified.toString();
+                            break;
+                        default:
+                            throw new FileControllerException("Received bad response " +
+                                    "from server: action type = " + actionType);
+                    }
+                } else if (status.equals("FAILURE")) {
+                    switch (actionType) {
+                        case "ADD_EDITOR":
+                            logMsg = username + " failed to add " + newUser +
+                                    " as an editor on " + lastModified.toString();
+                            break;
+                        case "ADD_VIEWER":
+                            logMsg = username + " failed to add " + newUser +
+                                    " as an viewer on " + lastModified.toString();
+                            break;
+                        case "REMOVE_EDITOR":
+                            logMsg = username + " failed to remove " + newUser +
+                                    " as an editor on " + lastModified.toString();
+                            break;
+                        case "REMOVE_VIEWER":
+                            logMsg = username + " failed to remove " + newUser +
+                                    " as an viewer on " + lastModified.toString();
+                            break;
+                        default:
+                            throw new FileControllerException("Received bad response " +
+                                    "from server: action type = " + actionType);
+                    }
+                } else {
+                    throw new FileControllerException("Received bad response " +
+                            "from server");
+                }
+            } else {
+                if (status.equals("SUCCESS")) {
+                    switch (actionType) {
+                        case "CREATE_FOLDER":
+                            logMsg = username + " created this folder on " +
+                                    lastModified.toString();
+                            break;
+                        case "UPLOAD_FILE":
+                            logMsg = username + " uploaded this file on "
+                                    + lastModified.toString();
+                            break;
+                        case "RENAME":
+                            logMsg = username + " renamed this file on "
+                                    + lastModified.toString();
+                            break;
+                        case "OVERWRITE":
+                            logMsg = username + " overwrote this file on "
+                                    + lastModified.toString();
+                            break;
+                        case "DELETE_FSO":
+                            logMsg = username + " deleted this file on "
+                                    + lastModified.toString();
+                            break;
+                        default:
+                            throw new FileControllerException("Received bad response " +
+
+                                    "from server: action type = " + actionType);
+                    }
+                } else if (status.equals("FAILURE")) {
+                    switch (actionType) {
+                        case "CREATE_FOLDER":
+                            logMsg = username + " failed to create this " +
+                                    "folder on " +
+                                    lastModified.toString();
+                            break;
+                        case "UPLOAD_FILE":
+                            logMsg = username + " failed to upload this file " +
+                                    "on "
+                                    + lastModified.toString();
+                            break;
+                        case "RENAME":
+                            logMsg = username + " failed to rename this file " +
+                                    "on "
+                                    + lastModified.toString();
+                            break;
+                        case "OVERWRITE":
+                            logMsg = username + " failed to overwrite this " +
+                                    "file on "
+                                    + lastModified.toString();
+                            break;
+                        case "DELETE_FSO":
+                            logMsg = username + " failed to delete this file on "
+                                    + lastModified.toString();
+                            break;
+                        default:
+                            throw new FileControllerException("Received bad response " +
+                                    "from server: action type = " + actionType);
+                    }
+                }
+            }
+            if (logMsg != null)
+                logs.add(logMsg);
+        }
+        return logs;
+    }
+
+    /**
+     * Gets username from uid that's locally stored
+     * @param uid User id of the user
+     * @return Username of the corresponding user
+     */
+    private String checkUsername(int uid) throws IOException,
+            ClassNotFoundException, FileControllerException {
+        String username;
+        if (uidToUsername.containsKey(uid))
+            username = uidToUsername.get(uid);
+        else {
+            username = getUsername(uid);
+            uidToUsername.put(uid, username);
+        }
+        return username;
+    }
+
+    /**
+     * Requests for username from server that corresponds to a certain user id
+     * @param uid User id of user
+     * @return Username of the corresponding user
+     */
+    public String getUsername(int uid) throws IOException,
+            ClassNotFoundException, FileControllerException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","username");
+        json.put("uid", uid);
+        sendJson(json, sslSocket);
         JSONObject response = receiveJson(sslSocket);
-        //TODO parse into list of strings
-        return null;
+        if (response.getString("msgType").equals("usernameAck"))
+            return response.getString("username");
+        else if (response.getString("msgType").equals("error"))
+            throw new FileControllerException(response.getString("message"));
+        else
+            throw new FileControllerException("Received bad response from " +
+                    "server");
     }
 
 
