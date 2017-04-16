@@ -14,6 +14,8 @@ import java.security.Signature;
 import java.util.Random;
 import java.util.Scanner;
 
+import static org.cs5431.Constants.DEBUG_MODE;
+
 public class SSLController {
 
 
@@ -42,7 +44,8 @@ public class SSLController {
         sig.initVerify(ver_key);//initializing verification with public verification key of server
         sig.update(received.file);//supply signature object with cert to be verified
         boolean verifies = sig.verify(received.signature); //verifying with received signature
-        System.out.println("Is Signature Verified: "+ verifies);
+        if (DEBUG_MODE)
+            System.out.println("Is Cert Signature Verified: "+ verifies);
         return verifies;
     }
 
@@ -62,7 +65,8 @@ public class SSLController {
         sig.initVerify(ver_key);//initializing verification with public verification key of server
         sig.update(received.file);//supply signature object with cert to be verified
         boolean verifies = sig.verify(received.signature); //verifying with received signature
-        System.out.println("Is Signature Verified: "+ verifies);
+        if (DEBUG_MODE)
+            System.out.println("Is Truststore Signature Verified: "+ verifies);
         return verifies;
     }
 

@@ -96,10 +96,13 @@ public class ConnectController implements Initializable {
                     throw new JKSException("Could not create new " +
                             "truststore.");
                 }
-
+                if (!is_Cert_Modified)
+                    throw new CertException("Certificate transmitted " +
+                            "from server cannot be trusted!");
+                if (!is_JKS_Modified)
+                    throw new JKSException("Trust store transmitted from " +
+                            "server cannot be trusted!");
             }
-
-
 
             goToLogin(e, server, serverName, sslPort);
         } catch (IOException | ClassNotFoundException ex) {
@@ -109,7 +112,13 @@ public class ConnectController implements Initializable {
                     "check with your server admin.");
             alert.showAndWait();
             ex.printStackTrace();
-        } catch(Exception ex) {
+        } catch (CertException | JKSException ex) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Server cannot be trusted!");
+            alert.setContentText(ex.getMessage());
+            alert.showAndWait();
+            ex.printStackTrace();
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
