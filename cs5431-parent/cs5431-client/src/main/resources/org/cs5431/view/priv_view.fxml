@@ -18,7 +18,7 @@
               prefWidth="600.0">
         <columns>
             <TableColumn fx:id="usernameColumn" text="Username"
-                         prefWidth="350.0">
+                         prefWidth="300.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="username" />
                 </cellValueFactory>
@@ -29,7 +29,7 @@
                     <PropertyValueFactory property="privilege" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="deleteColumn" text="Delete" prefWidth="50.0">
+            <TableColumn fx:id="deleteColumn" text="Delete" prefWidth="100.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="delete" />
                 </cellValueFactory>

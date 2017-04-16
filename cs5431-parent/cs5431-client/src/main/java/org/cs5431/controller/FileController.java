@@ -411,7 +411,7 @@ public class FileController {
         }
     }
 
-    public void addViewer(FileSystemObject systemObject, int newUserId)
+    public void addNewViewer(FileSystemObject systemObject, int newUserId)
             throws IOException, ClassNotFoundException,
             FileControllerException, NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException,
@@ -434,27 +434,8 @@ public class FileController {
             SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
                     (fileSKString), user.getPrivKey());
             byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
-            JSONObject jsonViewer = new JSONObject();
-            jsonViewer.put("msgType", "addViewer");
-            jsonViewer.put("encSecretKey", Base64.getEncoder()
-                            .encodeToString(encFileSK));
-            jsonViewer.put("fsoid", fsoid);
-            jsonViewer.put("uid", uid);
-            jsonViewer.put("newUid", newUserId);
-            sendJson(jsonViewer, sslSocket);
-
-            JSONObject responseViewer = receiveJson(sslSocket);
-            if (responseViewer.getString("msgType").equals("addViewerAck")) {
-                if (responseViewer.getInt("newUid") != newUserId)
-                    throw new FileControllerException("User that was added as " +
-                            "viewer was not the user requested");
-            } else if (responseViewer.getString("msgType").equals("error")) {
-                throw new FileControllerException(responseViewer.getString
-                        ("message"));
-            } else {
-                throw new FileControllerException("Received bad response " +
-                        "from server");
-            }
+            addViewer(fsoid, uid, newUserId, Base64.getEncoder()
+                    .encodeToString(encFileSK));
         } else if (responseKeys.getString("msgType").equals("error")) {
             throw new FileControllerException(responseKeys.getString
                     ("message"));
@@ -464,6 +445,38 @@ public class FileController {
         }
     }
 
+    private void addViewer(int fsoid, int uid, int newUserId, String
+            encSecretKey) throws IOException, ClassNotFoundException,
+            FileControllerException {
+        JSONObject jsonViewer = new JSONObject();
+        jsonViewer.put("msgType", "addViewer");
+        jsonViewer.put("encSecretKey", encSecretKey);
+        jsonViewer.put("fsoid", fsoid);
+        jsonViewer.put("uid", uid);
+        jsonViewer.put("newUid", newUserId);
+        sendJson(jsonViewer, sslSocket);
+
+        JSONObject responseViewer = receiveJson(sslSocket);
+        if (responseViewer.getString("msgType").equals("addViewerAck")) {
+            if (responseViewer.getInt("newUid") != newUserId)
+                throw new FileControllerException("User that was added as " +
+                        "viewer was not the user requested");
+        } else if (responseViewer.getString("msgType").equals("error")) {
+            throw new FileControllerException(responseViewer.getString
+                    ("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
+    }
+
+    public void changeEditorToViewer(FileSystemObject systemObject, int newUserId)
+        throws IOException, ClassNotFoundException,
+        FileControllerException {
+        int fsoid = systemObject.getId();
+        int uid = user.getId();
+        addViewer(fsoid, uid, newUserId, "");
+    }
 
     /**
      * Removes privileges the file/folder and sends the changes to the server.
@@ -708,6 +721,10 @@ public class FileController {
             throw new FileControllerException("Received bad response " +
                     "from server");
         }
+    }
+
+    public int getLoggedInUid() {
+        return user.getId();
     }
 
     public class FileControllerException extends Exception {

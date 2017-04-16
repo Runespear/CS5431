@@ -71,7 +71,7 @@ public class PrivViewController implements Initializable{
             ObservableList<String> options =
                     FXCollections.observableArrayList("Can Edit", "Can View");
             private final ComboBox<String> comboBox = new ComboBox<>(options);
-
+            private final Label selfLabel = new Label("Can Edit");
             @Override
             protected void updateItem(PrivBundle bundle, boolean empty) {
                 super.updateItem(bundle, empty);
@@ -81,16 +81,21 @@ public class PrivViewController implements Initializable{
                     return;
                 }
 
-                comboBox.setValue(bundle.privilege);
-                setGraphic(comboBox);
+                if (bundle.userId == fileController.getLoggedInUid()) {
+                    setGraphic(selfLabel);
+                } else {
+                    comboBox.setValue(bundle.privilege);
+                    setGraphic(comboBox);
 
-                comboBox.valueProperty().addListener((observableValue, prev, now) -> {
-                    if (now.equals("Can Edit") && !bundle.canEdit) {
-                        changeToEditor(bundle);
-                    } else if (now.equals("Can View") && bundle.canView) {
-                        changeToViewer(bundle);
-                    }
-                });
+                    comboBox.valueProperty().addListener((observableValue, prev, now) -> {
+
+                        if (now.equals("Can Edit") && !bundle.canEdit) {
+                            changeToEditor(bundle);
+                        } else if (now.equals("Can View") && bundle.canView) {
+                            changeToViewer(bundle);
+                        }
+                    });
+                }
             }
         });
 
@@ -110,12 +115,14 @@ public class PrivViewController implements Initializable{
                     return;
                 }
 
-                setGraphic(deleteButton);
-                deleteButton.setOnAction(event -> {
-                    fileController.removePriv(bundle.fso, bundle.userId,
-                            PrivType.VIEW);
-                    getTableView().getItems().remove(bundle);
-                });
+                if (bundle.userId != fileController.getLoggedInUid()) {
+                    setGraphic(deleteButton);
+                    deleteButton.setOnAction(event -> {
+                        fileController.removePriv(bundle.fso, bundle.userId,
+                                PrivType.VIEW);
+                        getTableView().getItems().remove(bundle);
+                    });
+                }
             }
         });
     }
@@ -146,7 +153,7 @@ public class PrivViewController implements Initializable{
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                fileController.addViewer(bundle.fso, bundle.userId);
+                fileController.changeEditorToViewer(bundle.fso, bundle.userId);
                 return null;
             }
         };
@@ -187,7 +194,7 @@ public class PrivViewController implements Initializable{
                 @Override
                 protected PrivBundle call() throws Exception {
                     int userId = accountsController.getUserId(username);
-                    fileController.addViewer(fso, userId);
+                    fileController.addNewViewer(fso, userId);
                     return new PrivBundle(userId, retrieveUsername(userId), fso,
                             false,true);
                 }
