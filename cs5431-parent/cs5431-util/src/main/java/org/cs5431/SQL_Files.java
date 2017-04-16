@@ -1245,7 +1245,7 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
             boolean hasPermission = verifyEditPermission(fsoid, uid);
-            String selectSK = "SELECT F.encKey FROM FsoEncryption F WHERE F.username = ? AND F.fsoid = ?";
+            String selectSK = "SELECT F.encKey FROM FsoEncryption F WHERE F.uid = ? AND F.fsoid = ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
