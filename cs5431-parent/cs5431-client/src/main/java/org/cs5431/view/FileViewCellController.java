@@ -43,18 +43,17 @@ public class FileViewCellController implements Initializable {
 
     private FileController fileController;
     private FileSystemObject fso;
+    private boolean isEditor;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if (fso.isEditor()) {
             fileName.setOnMouseClicked(click -> {
                 if (click.getButton() == MouseButton.PRIMARY &&
-                        click.getClickCount() == 2) {
+                        click.getClickCount() == 2 && isEditor) {
                     renameFile();
                     click.consume();
                 }
             });
-        }
     }
 
     private void renameFile() {
@@ -122,6 +121,7 @@ public class FileViewCellController implements Initializable {
     public void setInfo(FileSystemObject fso)
     {
         this.fso = fso;
+        this.isEditor = fso.isEditor();
         fileName.setText(fso.getFileName());
         lastModified.setText(fso.getLastModified().toString());
         size.setText(formatSize(fso.getFileSize()));
