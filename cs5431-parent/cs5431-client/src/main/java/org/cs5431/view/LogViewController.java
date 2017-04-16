@@ -81,6 +81,7 @@ public class LogViewController implements Initializable {
         });
         task.setOnSucceeded(t -> {
             ObservableList<String> items = FXCollections.observableArrayList();
+            items.addAll(task.getValue());
             listViewLog.setItems(items);
         });
         Thread th = new Thread(task);

@@ -65,7 +65,7 @@ public class FileViewCellController implements Initializable {
 
         renameBox.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
-                performRename(renameBox, currLabel);
+                lastModified.requestFocus();
             }
         });
 

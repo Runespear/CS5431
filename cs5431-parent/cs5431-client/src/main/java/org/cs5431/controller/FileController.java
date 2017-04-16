@@ -478,7 +478,7 @@ public class FileController {
             }
             int uid = logEntry.getInt("uid");
             String username = checkUsername(uid);
-            Timestamp lastModified = (Timestamp) logEntry.get("lastModified");
+            String lastModified = logEntry.getString("lastModified");
             String actionType = logEntry.getString("actionType");
             String status = logEntry.getString("status");
 
@@ -493,19 +493,19 @@ public class FileController {
                     switch (actionType) {
                         case "ADD_EDITOR":
                             logMsg = username + " successfully added " + newUser +
-                                    " as an editor on " + lastModified.toString();
+                                    " as an editor on " + lastModified;
                             break;
                         case "ADD_VIEWER":
                             logMsg = username + " successfully added " + newUser +
-                                    " as an viewer on " + lastModified.toString();
+                                    " as an viewer on " + lastModified;
                             break;
                         case "REMOVE_EDITOR":
                             logMsg = username + " successfully removed " + newUser +
-                                    " as an editor on " + lastModified.toString();
+                                    " as an editor on " + lastModified;
                             break;
                         case "REMOVE_VIEWER":
                             logMsg = username + " successfully removed " + newUser +
-                                    " as an viewer on " + lastModified.toString();
+                                    " as an viewer on " + lastModified;
                             break;
                         default:
                             throw new FileControllerException("Received bad response " +
@@ -515,19 +515,19 @@ public class FileController {
                     switch (actionType) {
                         case "ADD_EDITOR":
                             logMsg = username + " failed to add " + newUser +
-                                    " as an editor on " + lastModified.toString();
+                                    " as an editor on " + lastModified;
                             break;
                         case "ADD_VIEWER":
                             logMsg = username + " failed to add " + newUser +
-                                    " as an viewer on " + lastModified.toString();
+                                    " as an viewer on " + lastModified;
                             break;
                         case "REMOVE_EDITOR":
                             logMsg = username + " failed to remove " + newUser +
-                                    " as an editor on " + lastModified.toString();
+                                    " as an editor on " + lastModified;
                             break;
                         case "REMOVE_VIEWER":
                             logMsg = username + " failed to remove " + newUser +
-                                    " as an viewer on " + lastModified.toString();
+                                    " as an viewer on " + lastModified;
                             break;
                         default:
                             throw new FileControllerException("Received bad response " +
@@ -542,23 +542,23 @@ public class FileController {
                     switch (actionType) {
                         case "CREATE_FOLDER":
                             logMsg = username + " created this folder on " +
-                                    lastModified.toString();
+                                    lastModified;
                             break;
                         case "UPLOAD_FILE":
                             logMsg = username + " uploaded this file on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         case "RENAME":
                             logMsg = username + " renamed this file on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         case "OVERWRITE":
                             logMsg = username + " overwrote this file on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         case "DELETE_FSO":
                             logMsg = username + " deleted this file on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         default:
                             throw new FileControllerException("Received bad response " +
@@ -570,26 +570,26 @@ public class FileController {
                         case "CREATE_FOLDER":
                             logMsg = username + " failed to create this " +
                                     "folder on " +
-                                    lastModified.toString();
+                                    lastModified;
                             break;
                         case "UPLOAD_FILE":
                             logMsg = username + " failed to upload this file " +
                                     "on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         case "RENAME":
                             logMsg = username + " failed to rename this file " +
                                     "on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         case "OVERWRITE":
                             logMsg = username + " failed to overwrite this " +
                                     "file on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         case "DELETE_FSO":
                             logMsg = username + " failed to delete this file on "
-                                    + lastModified.toString();
+                                    + lastModified;
                             break;
                         default:
                             throw new FileControllerException("Received bad response " +
