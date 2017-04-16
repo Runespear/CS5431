@@ -557,7 +557,8 @@ public class SQL_Files {
                     System.out.println("Database connected!");
                 }
 
-                String selectLog = "SELECT L.uid, L.lastModified, L.actionType FROM FileLog L WHERE L.fsoid = ?";
+                String selectLog = "SELECT L.uid, L.lastModified, L.actionType, L.status, L.newUid, L.fsoid FROM " +
+                        "FileLog L WHERE L.fsoid = ?";
                 JSONArray fileLogArray = new JSONArray();
 
                 try {
@@ -571,6 +572,9 @@ public class SQL_Files {
                         log.put("uid", rs.getInt(1));
                         log.put("lastModified", rs.getTimestamp(2));
                         log.put("actionType", rs.getString(3));
+                        log.put("status", rs.getString(4));
+                        log.put("newUid", rs.getInt(5));
+                        log.put("fsoid", rs.getInt(6));
                         fileLogArray.put(log);
                     }
                     return fileLogArray;
@@ -604,7 +608,7 @@ public class SQL_Files {
             if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
-            String updateName = "UPDATE FileSystemObjects SET fsoName = ? AND fsoNameIV = ? WHERE fsoid =  ?";
+            String updateName = "UPDATE FileSystemObjects SET fsoName = ?, fsoNameIV = ? WHERE fsoid =  ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, " +
                     "sourceIp, newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try {
@@ -1415,6 +1419,7 @@ public class SQL_Files {
         }
         PreparedStatement deleteFile = null;
         PreparedStatement createLog = null;
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
@@ -1426,29 +1431,32 @@ public class SQL_Files {
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             try {
-                deleteFile = connection.prepareStatement(removeFso);
                 createLog = connection.prepareStatement(insertLog);
                 if (hasPermission) {
+                    deleteFile = connection.prepareStatement(removeFso);
+                    connection.setAutoCommit(false);
                     deleteFile.setInt(1, fsoid);
                     deleteFile.executeUpdate();
 
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
-                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    createLog.setString(5, "DELETE FSO");
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DELETE_FSO");
                     createLog.setString(6, "SUCCESS");
                     createLog.setString(7, sourceIp);
                     createLog.setInt(8, 0);
                     createLog.setString(9, null);
                     createLog.execute();
+
+                    connection.commit();
                     return fsoid;
                 } else {
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
-                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    createLog.setString(5, "DELETE FSO");
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DELETE_FSO");
                     createLog.setString(6, "FAILURE");
                     createLog.setString(7, sourceIp);
                     createLog.setInt(8, 0);
@@ -1457,6 +1465,27 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, fsoid);
+                        createLog.setInt(3, uid);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "DELETE_FSO");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setInt(8, 0);
+                        createLog.setString(9, "DB ERROR");
+                        createLog.executeUpdate();
+                        if (DEBUG_MODE) {
+                            System.out.println("created failure log");
+                        }
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
                 return -1;
             } finally {
                 if (createLog != null) {

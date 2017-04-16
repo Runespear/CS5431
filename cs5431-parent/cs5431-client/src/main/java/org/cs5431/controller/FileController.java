@@ -236,14 +236,15 @@ public class FileController {
 
             sendJson(jsonFile, sslSocket);
             JSONObject fileResponse = receiveJson(sslSocket);
-            if (fileResponse.getString("msgType").equals("renameKeysAck")) {
+            if (fileResponse.getString("msgType").equals("renameAck")) {
                 if (fileResponse.getInt("fsoid") != systemObject.getId() ||
-                        fileResponse.getInt("uid") != user.getId())
+                        fileResponse.getInt("uid") != user.getId()) {
                     throw new FileControllerException("Received bad response " +
                             "from server - details don't match the file " +
                             "changed");
-                else
+                } else {
                     systemObject.rename(newName);
+                }
             } else if (fileResponse.getString("msgType").equals("error")) {
                 throw new FileControllerException(fileResponse.getString("message"));
             } else {
