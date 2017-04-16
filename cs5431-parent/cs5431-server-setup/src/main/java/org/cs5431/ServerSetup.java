@@ -138,7 +138,7 @@ public class ServerSetup {
         String grantPermissions = "GRANT ALL ON cs5431.* TO ?@? IDENTIFIED BY ?;";
         String grantFile = "GRANT FILE ON *.* TO ?@?;";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
-                "parentFolderid INT UNSIGNED NOT NULL, fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
+                "fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV CHAR(255));";
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
@@ -173,6 +173,9 @@ public class ServerSetup {
                 "FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createFileContents = "CREATE TABLE FileContents (fsoid INT UNSIGNED NOT NULL, path VARCHAR(100),\n" +
                 "fileIV VARCHAR(32), FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String createParentChild = "CREATE TABLE FolderChildren (parentid INT UNSIGNED NOT NULL, childid INT UNSIGNED NOT NULL,\n" +
+                "FOREIGN KEY (parentid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
@@ -212,6 +215,8 @@ public class ServerSetup {
             statement = connection.prepareStatement(createFSOEnc);
             statement.execute();
             statement = connection.prepareStatement(createFileContents);
+            statement.execute();
+            statement = connection.prepareStatement(createParentChild);
             statement.execute();
 
             connection.close();

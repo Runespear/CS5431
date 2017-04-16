@@ -364,7 +364,7 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         int newUid = jsonObject.getInt("newUid");
-        JSONObject response = sql_files.getKeys(fsoid, uid, newUid);
+        JSONObject response = sql_files.getKeys(fsoid, uid, newUid, sourceIp);
         if (response != null)
             return response;
         else
