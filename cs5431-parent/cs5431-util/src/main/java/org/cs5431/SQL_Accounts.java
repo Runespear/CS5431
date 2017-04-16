@@ -736,6 +736,7 @@ public class SQL_Accounts {
                     createLog.setString(5, "CHANGE_PWD");
                     createLog.setString(6, "SUCCESS");
                     createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
                     createLog.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("created log");

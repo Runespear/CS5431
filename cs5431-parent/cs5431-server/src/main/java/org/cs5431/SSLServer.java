@@ -72,7 +72,7 @@ public class SSLServer extends Thread {
                         response = getPrivKeySalt(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
-                    case "editPassword":
+                    case "changePwd":
                         response = changePwd(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
