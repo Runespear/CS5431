@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -146,20 +147,20 @@ public class PrivViewController implements Initializable{
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(username -> {
-            Task<Integer> task = new Task<Integer>() {
+            Task<PrivBundle> task = new Task<PrivBundle>() {
                 @Override
-                protected Integer call() throws Exception {
+                protected PrivBundle call() throws Exception {
                     int userId = accountsController.getUserId(username);
                     fileController.addPriv(fso, userId, PrivType.VIEW);
-                    return userId;
+                    return new PrivBundle(userId, retrieveUsername(userId), fso,
+                            false,true);
                 }
             };
             task.setOnFailed(t -> showError("Failed to share with this " +
                     "user - they might not exist."));
             task.setOnSucceeded(t -> {
                 ObservableList<PrivBundle> observableList = tableViewPriv.getItems();
-                observableList.add(new PrivBundle(task.getValue(), fso,
-                        false,true, accountsController));
+                observableList.add(task.getValue());
                 tableViewPriv.setItems(observableList);
             });
             Thread th = new Thread(task);
@@ -202,10 +203,23 @@ public class PrivViewController implements Initializable{
         ObservableList<PrivBundle> observableList =
                 FXCollections.observableArrayList();
 
-        Task<JSONObject> task = new Task<JSONObject>() {
+        Task<List<PrivBundle>> task = new Task<List<PrivBundle>>() {
             @Override
-            protected JSONObject call() throws Exception {
-                return fileController.getEditorsViewers(fso);
+            protected List<PrivBundle> call() throws Exception {
+                JSONObject response = fileController.getEditorsViewers(fso);
+                List<PrivBundle> privBundles = new ArrayList<>();
+                JSONArray editors = response.getJSONArray("editors");
+                JSONArray viewers = response.getJSONArray("viewers");
+                for (int i = 0; i < editors.length(); i++) {
+                    privBundles.add(new PrivBundle(editors.getInt(i), retrieveUsername(editors
+                            .getInt(i)), fso, true, true));
+                }
+                for (int i = 0; i < viewers.length(); i++) {
+                    privBundles.add(new PrivBundle(viewers.getInt(i),
+                            retrieveUsername(viewers.getInt(i)), fso, false,
+                            true));
+                }
+                return privBundles;
             }
         };
         task.setOnFailed(t -> {
@@ -216,17 +230,7 @@ public class PrivViewController implements Initializable{
             alert.showAndWait();
         });
         task.setOnSucceeded(t -> {
-            JSONObject response = task.getValue();
-            JSONArray editors = response.getJSONArray("editors");
-            JSONArray viewers = response.getJSONArray("viewers");
-            for (int i = 0; i < editors.length(); i++) {
-                observableList.add(new PrivBundle(editors.getInt(i), fso, true,
-                        true, accountsController));
-            }
-            for (int i = 0; i < viewers.length(); i++) {
-                observableList.add(new PrivBundle(viewers.getInt(i), fso,false,
-                        true, accountsController));
-            }
+            observableList.addAll(task.getValue());
             tableViewPriv.setItems(observableList);
         });
         Thread th = new Thread(task);
@@ -240,37 +244,9 @@ public class PrivViewController implements Initializable{
         });
     }
 
-    private void showError(String error) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setContentText(error);
-        alert.showAndWait();
-    }
-}
-
-class PrivBundle {
-    int userId;
-    FileSystemObject fso;
-    boolean canEdit;
-    boolean canView;
-    String username;
-    String privilege;
-
-    PrivBundle(int userId, FileSystemObject fso, boolean canEdit, boolean
-            canView, AccountsController accountsController) {
-        this.userId = userId;
-        this.fso = fso;
-        this.canEdit = canEdit;
-        this.canView = canView;
-        if (canEdit && canView)
-            privilege = "Can Edit";
-        else if (canView)
-            privilege = "Can View";
-        else
-            privilege = "Corrupted";
-
+    private String retrieveUsername(int userId) {
         try {
-            this.username = accountsController.getUsername(userId);
+            return accountsController.getUsername(userId);
         } catch (AccountsController.UserRetrieveException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -279,5 +255,13 @@ class PrivBundle {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    private void showError(String error) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(error);
+        alert.showAndWait();
     }
 }
