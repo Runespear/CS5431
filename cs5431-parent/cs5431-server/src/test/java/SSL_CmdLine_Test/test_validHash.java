@@ -1,6 +1,5 @@
 package SSL_CmdLine_Test;
 
-import org.cs5431.SQL_Connection;
 import org.junit.jupiter.api.Test;
 import org.cs5431.SSLServer;
 
