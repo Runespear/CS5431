@@ -925,7 +925,7 @@ public class SQL_Accounts {
 
     /**
      * Checks that the username and password associated with this instance of
-     * SQL_Connection can be used to connect to the database
+     * SQL_Accounts can be used to connect to the database
      * @return true if the username and password combination can be used to
      * connect to the database, false otherwise
      */
