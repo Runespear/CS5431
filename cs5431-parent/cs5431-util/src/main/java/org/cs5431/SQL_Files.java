@@ -1442,9 +1442,7 @@ public class SQL_Files {
                     createLog.setInt(8, 0);
                     createLog.setString(9, null);
                     createLog.execute();
-
                     return fsoid;
-
                 } else {
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);

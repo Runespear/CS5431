@@ -84,13 +84,14 @@ public class ServerView {
             return;
         }
 
-        SQL_Connection sqlConnection = new SQL_Connection(server, dbPort,
+        SQL_Accounts sql_accounts = new SQL_Accounts(server, dbPort,
                 username, password);
-        if (!sqlConnection.checkCredentials()) {
+        if (!sql_accounts.checkCredentials()) {
             System.err.println("Could not connect to SQL server with given " +
                     "credentials");
             return;
         }
+        SQL_Files sql_files = new SQL_Files(server, dbPort, username, password);
 
         try {
             CertSocketThread cst = new CertSocketThread(serverName,
@@ -98,10 +99,10 @@ public class ServerView {
             new Thread(cst).start();
 
             ServerSocket ss = setup_SSLServerSocket(serverName, sslPort);
-            SSLSocketThread sst = new SSLSocketThread(sqlConnection, ss);
+            SSLSocketThread sst = new SSLSocketThread(sql_accounts, sql_files, ss);
             new Thread(sst).start();
 
-            PromptAdminThread pat = new PromptAdminThread(sqlConnection);
+            PromptAdminThread pat = new PromptAdminThread(sql_accounts);
             new Thread(pat).start();
 
         } catch(Exception e) {
