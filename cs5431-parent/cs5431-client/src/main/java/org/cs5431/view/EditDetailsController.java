@@ -157,9 +157,8 @@ public class EditDetailsController implements Initializable {
         //Tries to change the email if the email fields are not blank.
         if (!oldEmail.isEmpty() || !newEmail.isEmpty() ||
                 !confirmNewEmail.isEmpty()) {
-            if (oldEmail.isEmpty() || newEmail.isEmpty() ||
-                    confirmNewEmail.isEmpty()) {
-                emailMessages.add("At least one email field is empty.");
+            if (oldEmail.isEmpty() || confirmNewEmail.isEmpty()) {
+                emailMessages.add("New email cannot be empty.");
             } else if (!newEmail.equals(confirmNewEmail)){
                 emailMessages.add("New emails don't match.");
             } else if (!Validator.validEmail(newEmail)) {
