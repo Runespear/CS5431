@@ -394,6 +394,7 @@ public class SSLServer extends Thread {
         int uid = jsonObject.getInt("uid");
 
         if (sql_files.deleteFile(fsoid, uid, sourceIp) == fsoid) {
+            sql_files.deleteIfOrphanFile(fsoid, uid, sourceIp);
             JSONObject response = new JSONObject();
             response.put("msgType","deleteAck");
             response.put("fsoid", fsoid);

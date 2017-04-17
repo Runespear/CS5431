@@ -41,12 +41,12 @@ public class SQL_Accounts {
             if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
-            PreparedStatement verifyUniqueness;
+            PreparedStatement verifyUniqueness = null;
 
             String checkUsername = "SELECT U.uid FROM Users U WHERE U.username = ?";
-            verifyUniqueness = connection.prepareStatement(checkUsername);
 
             try {
+                verifyUniqueness = connection.prepareStatement(checkUsername);
                 verifyUniqueness.setString(1, username);
                 ResultSet rs = verifyUniqueness.executeQuery();
                 if (rs.next()) {
