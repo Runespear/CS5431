@@ -1790,7 +1790,6 @@ public class SQL_Files {
             }
             boolean isOnlyViewer = isOnlyViewer(fsoid);
             boolean isFile = isFile(fsoid);
-            boolean hasPermission = verifyEditPermission(fsoid, uid);
 
             PreparedStatement deleteObject = null;
             PreparedStatement logDeleteObject = null;
@@ -1804,60 +1803,47 @@ public class SQL_Files {
 
             try {
                 logDeleteObject = connection.prepareStatement(deleteLog);
-                if (hasPermission) {
-                    if (isOnlyViewer) {
-                        int ownerid = -1;
-                        getUid = connection.prepareStatement(selectUid);
-                        connection.setAutoCommit(false);
+                if (isOnlyViewer) {
+                    int ownerid = -1;
+                    getUid = connection.prepareStatement(selectUid);
+                    connection.setAutoCommit(false);
 
-                        getUid.setInt(1, fsoid);
-                        ResultSet rs = getUid.executeQuery();
+                    getUid.setInt(1, fsoid);
+                    ResultSet rs = getUid.executeQuery();
 
-                        if (rs.next()) {
-                            ownerid = rs.getInt(1);
-                        }
+                    if (rs.next()) {
+                        ownerid = rs.getInt(1);
+                    }
 
+                    if (DEBUG_MODE) {
+                        System.out.println("user is the only viewer left!");
+                    }
+                    deleteObject = connection.prepareStatement(removeFso);
+                    deleteObject.setInt(1, fsoid);
+                    deleteObject.executeUpdate();
+
+                    //delete actual file
+                    if (isFile) {
                         if (DEBUG_MODE) {
-                            System.out.println("user is the only viewer left!");
+                            System.out.println("trying to delete file!");
                         }
-                        deleteObject = connection.prepareStatement(removeFso);
-                        deleteObject.setInt(1, fsoid);
-                        deleteObject.executeUpdate();
-
-                        //delete actual file
-                        if (isFile) {
-                            if (DEBUG_MODE) {
-                                System.out.println("trying to delete file!");
-                            }
-                            Path path = Paths.get("./files/" + ownerid + "/" + fsoid);
-                            Files.delete(path);
-                            if (DEBUG_MODE) {
-                                System.out.println("deleted actual file!");
-                            }
-                            logDeleteObject.setInt(1, 0);
-                            logDeleteObject.setInt(2, fsoid);
-                            logDeleteObject.setInt(3, uid);
-                            logDeleteObject.setTimestamp(4, lastModified);
-                            logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
-                            logDeleteObject.setString(6, "SUCCESS");
-                            logDeleteObject.setString(7, sourceIp);
-                            logDeleteObject.setInt(8, 0);
-                            logDeleteObject.setString(9, null);
-                            logDeleteObject.execute();
+                        Path path = Paths.get("./files/" + ownerid + "/" + fsoid);
+                        Files.delete(path);
+                        if (DEBUG_MODE) {
+                            System.out.println("deleted actual file!");
                         }
-                        connection.commit();
-                    } else {
                         logDeleteObject.setInt(1, 0);
                         logDeleteObject.setInt(2, fsoid);
                         logDeleteObject.setInt(3, uid);
                         logDeleteObject.setTimestamp(4, lastModified);
                         logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
-                        logDeleteObject.setString(6, "FAILURE");
+                        logDeleteObject.setString(6, "SUCCESS");
                         logDeleteObject.setString(7, sourceIp);
                         logDeleteObject.setInt(8, 0);
-                        logDeleteObject.setString(9, "NO PERMISSION");
+                        logDeleteObject.setString(9, null);
                         logDeleteObject.execute();
                     }
+                    connection.commit();
                 }
             } catch (SQLException e) {
                 if (connection != null) {
