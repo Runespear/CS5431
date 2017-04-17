@@ -448,8 +448,8 @@ public class SQL_Files {
             String selectEditors = "SELECT E.uid FROM Editors E WHERE E.fsoid = ?";
             String selectViewers = "SELECT V.uid FROM Viewers V WHERE V.fsoid = ?";
 
-            ArrayList<Integer> editors = new ArrayList<>();
-            ArrayList<Integer> viewers = new ArrayList<>();
+            JSONArray editors = new JSONArray();
+            JSONArray viewers = new JSONArray();
 
             try {
                 verifyEditors = connection.prepareStatement(selectEditors);
@@ -457,19 +457,25 @@ public class SQL_Files {
 
                 verifyEditors.setInt(1, fsoid);
                 ResultSet editorsId = verifyEditors.executeQuery();
+                System.out.println("fsoid: " + fsoid);
+
+                while (editorsId.next()) {
+                    int editor = editorsId.getInt(1);
+                    editors.put(editor);
+                    System.out.println("editor: " + editor);
+                }
 
                 verifyViewers.setInt(1, fsoid);
                 ResultSet viewersId = verifyViewers.executeQuery();
 
-                while (editorsId.next()) {
-                    int editor = editorsId.getInt(1);
-                    editors.add(editor);
-                }
-                while (editorsId.next()) {
+                while (viewersId.next()) {
                     int viewer = viewersId.getInt(1);
-                    viewers.add(viewer);
+                    viewers.put(viewer);
+                    System.out.println("viewer: " + viewer);
                 }
                 JSONObject permissions = new JSONObject();
+                System.out.println("editors" + editors);
+                System.out.println("viewers" + viewers);
                 permissions.put("editors", editors);
                 permissions.put("viewers", viewers);
                 return permissions;
@@ -517,6 +523,7 @@ public class SQL_Files {
         if (permissions != null) {
             try {
                 JSONArray viewers = permissions.getJSONArray("viewers");
+                System.out.print("look here " + viewers);
                 for (int i = 0; i < viewers.length(); i++) {
                     int viewerid = (int) viewers.get(i);
                     if (viewerid == uid) {
