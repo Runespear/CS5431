@@ -331,7 +331,10 @@ public class FileViewController implements Initializable {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    fileController.delete(fso, currParent);
+                    if (fso.isEditor())
+                        fileController.deleteForAll(fso, currParent);
+                    else
+                        fileController.deleteForUser(fso, currParent);
                     return null;
                 }
             };
