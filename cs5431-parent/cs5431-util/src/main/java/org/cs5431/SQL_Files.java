@@ -73,7 +73,7 @@ public class SQL_Files {
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
             String insertFilePath = "INSERT INTO FileContents (fsoid, path, fileIV) values (?, ?, ?)";
-            String insertParent = "INSERT INTO FolderChildren (parentid, childid) values (?, ?)";
+            String insertParent = "INSERT INTO FolderChildren (parentid, childid, uid) values (?, ?, ?)";
 
             try {
                 String actionType;
@@ -107,6 +107,7 @@ public class SQL_Files {
                     addParent = connection.prepareStatement(insertParent);
                     addParent.setInt(1, parentFolderid);
                     addParent.setInt(2, fsoid);
+                    addParent.setInt(3, uid);
                     addParent.executeUpdate();
 
                     addKey.setInt(1, fsoid);
@@ -829,6 +830,7 @@ public class SQL_Files {
         String encKey = json.getString("encSecretKey");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
+        boolean editorExists = verifyEditPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement addEditor = null;
         PreparedStatement createLog = null;
@@ -848,6 +850,19 @@ public class SQL_Files {
 
             try {
                 createLog = connection.prepareStatement(insertLog);
+                if (editorExists) {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_EDITOR");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, newUid);
+                    createLog.setString(9, "EDITOR ALREADY EXISTS");
+                    createLog.executeUpdate();
+                    return -1;
+                }
                 if (hasPermission) {
                     addEditor = connection.prepareStatement(insertEditor);
                     shareFsoKey = connection.prepareStatement(insertFsoKey);
@@ -970,7 +985,7 @@ public class SQL_Files {
             String deleteEditor = "DELETE FROM Editors WHERE uid = ?";
             String rmEditorLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
                     + "values (?, ?, ?, ?, ?)";
-            String insertParent = "INSERT INTO FolderChildren (parentid, childid) values (?, ?);";
+            String insertParent = "INSERT INTO FolderChildren (parentid, childid, uid) values (?, ?, ?);";
             String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
 
             try {
@@ -1039,6 +1054,7 @@ public class SQL_Files {
                             addParent = connection.prepareStatement(insertParent);
                             addParent.setInt(1, parentFolderid);
                             addParent.setInt(2, fsoid);
+                            addParent.setInt(3, newUid);
                             addParent.executeUpdate();
                         }
                     }
@@ -1067,7 +1083,7 @@ public class SQL_Files {
                         createLog.setInt(2, fsoid);
                         createLog.setInt(3, uid);
                         createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "ADD_EDITOR");
+                        createLog.setString(5, "ADD_VIEWER");
                         createLog.setString(6, "FAILURE");
                         createLog.setString(7, sourceIp);
                         createLog.setInt(8, newUid);
@@ -1094,6 +1110,12 @@ public class SQL_Files {
                 if (removeEditor != null) {
                     removeEditor.close();
                 }
+                if (addParent != null) {
+                    addParent.close();
+                }
+                if (getParentFolder != null) {
+                    getParentFolder.close();
+                }
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
@@ -1111,6 +1133,7 @@ public class SQL_Files {
         PreparedStatement rmViewer = null;
         PreparedStatement createLog = null;
         PreparedStatement removeKey = null;
+        PreparedStatement rmFso = null;
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1120,6 +1143,7 @@ public class SQL_Files {
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String deleteKey = "DELETE FROM FsoEncryption WHERE fsoid = ? AND uid = ?";
+            String deleteFso = "DELETE FROM FolderChildren WHERE childid = ? AND uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1130,6 +1154,11 @@ public class SQL_Files {
                     rmViewer.setInt(1, fsoid);
                     rmViewer.setInt(2, rmUid);
                     rmViewer.executeUpdate();
+
+                    rmFso = connection.prepareStatement(deleteFso);
+                    rmFso.setInt(1, fsoid);
+                    rmFso.setInt(2, rmUid);
+                    rmFso.executeUpdate();
 
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
@@ -1195,6 +1224,9 @@ public class SQL_Files {
                 }
                 if (removeKey != null) {
                     removeKey.close();
+                }
+                if (rmFso != null) {
+                    rmFso.close();
                 }
                 connection.setAutoCommit(true);
             }
@@ -1509,6 +1541,7 @@ public class SQL_Files {
         }
         PreparedStatement deleteFile = null;
         PreparedStatement createLog = null;
+        PreparedStatement deleteChild = null;
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1516,6 +1549,8 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
             boolean hasPermission = verifyEditPermission(fsoid, uid);
+            //TODO: remove more from folderchildren if folder? and delete fso if orphan, delete actual folder as well?
+            String  removeChild= "DELETE FROM FolderChildren WHERE childid = ? AND uid = ?";
             String removeFso = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -1523,9 +1558,10 @@ public class SQL_Files {
             try {
                 createLog = connection.prepareStatement(insertLog);
                 if (hasPermission) {
-                    deleteFile = connection.prepareStatement(removeFso);
+                    deleteFile = connection.prepareStatement(removeChild);
                     connection.setAutoCommit(false);
                     deleteFile.setInt(1, fsoid);
+                    deleteFile.setInt(2, uid);
                     deleteFile.executeUpdate();
 
                     createLog.setInt(1, 0);
