@@ -10,6 +10,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
 import java.nio.file.Files;
 import java.security.*;
+import java.util.Arrays;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,6 +26,20 @@ class test_Encryption {
     public static PublicKey wrongPublicKeyAlgoAndSize;
     public static PrivateKey wrongPrivateKeySize;
     public static PrivateKey wrongPrivateKeyAlgoAndSize;
+
+
+
+    public static byte[] serialize(Object obj) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream os = new ObjectOutputStream(out);
+        os.writeObject(obj);
+        return out.toByteArray();
+    }
+    public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(in);
+        return is.readObject();
+    }
 
 
     public static String getRandomString(int Length, int seed) {
@@ -77,12 +92,14 @@ class test_Encryption {
 
 
     @Test
-    void test_IVgeneration(){ //Just need to ensure that the returned results are not the same
+    void test_IVgeneration()throws Exception{ //Just need to ensure that the returned results are not the same
 
         IvParameterSpec previous = Encryption.generateIV();
         for (int i =0; i<100; i++) {
             IvParameterSpec new_iv = Encryption.generateIV();
-            assertNotEquals(previous,new_iv);
+            byte[] one = new_iv.getIV();
+            byte[] two = previous.getIV();
+            assertEquals(Arrays.equals(one,two),false);
             previous = new_iv;
         }
     }
@@ -93,19 +110,26 @@ class test_Encryption {
         SecretKey previous = Encryption.generateSecretKey();
         for (int i =0; i<100; i++) {
             SecretKey new_key = Encryption.generateSecretKey();
-            assertNotEquals(previous,new_key);
+            byte[] one = new_key.getEncoded();
+            byte[] two = previous.getEncoded();
+            assertEquals(Arrays.equals(one,two),false);
             previous = new_key;
         }
     }
 
     @Test
-    void test_encFile() throws Exception{ //Test to ensure that same encrypted file is encrypted differently
+    void test_encFile() throws Exception{ //Test to ensure that same encrypted file is encrypted differently under different IV and encrypted similarly under the same IV
         File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
         SecretKey key = Encryption.generateSecretKey();
         IvParameterSpec iv = Encryption.generateIV();
+        IvParameterSpec iv2 = Encryption.generateIV();
         byte[] one = Encryption.encryptFile(file,key,iv);
         byte[] two = Encryption.encryptFile(file,key,iv);
-        assertNotEquals(one,two);
+        //System.out.println(Arrays.toString(one));
+        //System.out.println(Arrays.toString(two));
+        assertEquals(Arrays.equals(one,two), true);
+        byte[] three = Encryption.encryptFile(file, key, iv2);
+        assertEquals(Arrays.equals(one, three), false);
 
     }
 
@@ -122,7 +146,7 @@ class test_Encryption {
         IvParameterSpec iv = Encryption.generateIV();
         byte[] one = Encryption.encryptFile(file,correctkey,iv);
         byte[] two = Encryption.encryptFile(file,key,iv);
-        assertNotEquals(one,two);
+        assertEquals(Arrays.equals(one,two),false);
 
         try {
             KeyGenerator kg2 = KeyGenerator.getInstance("AES"); //generating key with different size but correct algo
@@ -145,13 +169,14 @@ class test_Encryption {
     }
 
     @Test
-    void test_encFileName() throws Exception{ //Test to ensure that same encrypted file name is encrypted differently
+    void test_encFileName() throws Exception{ //Test to ensure that same encrypted file name is encrypted differently with different iV
         String randomFileName = getRandomString(10, 2000);
         SecretKey correctkey = Encryption.generateSecretKey();
         IvParameterSpec iv = Encryption.generateIV();
+        IvParameterSpec iv2 = Encryption.generateIV();
         byte[] one = Encryption.encryptFileName(randomFileName,correctkey,iv);
-        byte[] two = Encryption.encryptFileName(randomFileName,correctkey,iv);
-        assertNotEquals(one,two);
+        byte[] two = Encryption.encryptFileName(randomFileName,correctkey,iv2);
+        assertEquals(Arrays.equals(one,two),false);
 
     }
 
@@ -167,7 +192,7 @@ class test_Encryption {
         IvParameterSpec iv = Encryption.generateIV();
         byte[] one = Encryption.encryptFileName(file,correctkey,iv);
         byte[] two = Encryption.encryptFileName(file,key,iv);
-        assertNotEquals(one,two);
+        assertEquals(Arrays.equals(one,two),false);
 
         try {
             KeyGenerator kg2 = KeyGenerator.getInstance("AES"); //generating key with different size but correct algo
@@ -206,7 +231,7 @@ class test_Encryption {
 
         byte[] one = Encryption.encFileSecretKey(secretkey,correctPublicKey);
         byte[] two = Encryption.encFileSecretKey(secretkey,correctPublicKey);
-        assertNotEquals(one,two);
+        assertEquals(Arrays.equals(one,two), false);
     }
 
     @Test
@@ -232,11 +257,9 @@ class test_Encryption {
         byte[] one = Encryption.encFileSecretKey(secretkey,correctPublicKey);
         try {
             byte[] two = Encryption.encFileSecretKey(secretkey, pubKey);
-            assertNotEquals(one,two);
             fail("This is supposed to throw an exception for wrong key");
         }catch(Exception e){
         }
-
 
         //generating public key with correct algorithm but different size
         KeyPairGenerator keygen3 = KeyPairGenerator.getInstance("RSA");
@@ -245,8 +268,7 @@ class test_Encryption {
         PublicKey pubKey2 = keypair3.getPublic();
 
         byte[] third = Encryption.encFileSecretKey(secretkey,pubKey2);
-        assertNotEquals(one,third);
-
+        assertEquals(Arrays.equals(one,third),false);
     }
 
     @Test
@@ -262,35 +284,37 @@ class test_Encryption {
         boolean saved = Encryption.decryptFile(encryptedFile,filename,key,iv,directory);
         assertEquals(saved,true);
 
-
+        //Testing File content
         String path = "./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt";
         FileInputStream inputStream = new FileInputStream(path);
-//        byte[] originalTxt = new byte[inputStream.available()];
-//        inputStream.read(originalTxt);
-//        inputStream.close();
         BufferedReader myInput = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder originalTxt = new StringBuilder();
         String thisLine;
         while ((thisLine = myInput.readLine()) != null) {
             originalTxt.append(thisLine);
         }
-
         String path2 = "./Encryption_Test_Folder/Decrypted_Stuff/test.txt";
         FileInputStream inputStream2 = new FileInputStream(path2);
-//        byte[] decryptedTxt = new byte[inputStream2.available()];
-//        inputStream2.read(decryptedTxt);
-//        inputStream2.close();
         BufferedReader myInput2 = new BufferedReader(new InputStreamReader(inputStream2));
         StringBuilder decryptedTxt = new StringBuilder();
         String thisLine2;
         while ((thisLine2 = myInput2.readLine()) != null) {
            decryptedTxt.append(thisLine2);
         }
+        assertEquals(originalTxt.toString().equals(decryptedTxt.toString()), true);
+
+        //Testing Byte Array of Files
+        byte[] originalTxtByte = new byte[inputStream.available()];
+        inputStream.read(originalTxtByte);
+        inputStream.close();
+        byte[] decryptedTxtByte = new byte[inputStream2.available()];
+        inputStream2.read(decryptedTxtByte);
+        inputStream2.close();
+        assertEquals(Arrays.equals(originalTxtByte,decryptedTxtByte), true);
 
         File file_to_delete = new File("./Encryption_Test_Folder/Decrypted_Stuff/test.txt");
         Boolean isittrue = file_to_delete.delete();
         System.out.println(isittrue);
-        assertEquals(originalTxt.toString().equals(decryptedTxt.toString()), true);
     }
 
     @Test
@@ -307,7 +331,6 @@ class test_Encryption {
         File directory = new File("./Encryption_Test_Folder/Decrypted_Stuff/");
         try {
             boolean saved = Encryption.decryptFile(encryptedFile, filename, wrongKey, iv, directory);
-            assertEquals(saved,true);
             fail("Error Message on Wrong key used should be displayed");
         }catch(Exception e){
         }
@@ -327,7 +350,6 @@ class test_Encryption {
         File directory = new File("./Encryption_Test_Folder/Decrypted_Stuff/");
         try {
             boolean saved = Encryption.decryptFile(encryptedFile, filename, key, wrongIV, directory);
-            assertEquals(saved,true);
             fail("Error Message on wrong IV used should be displayed");
         }catch(Exception e){
     }
@@ -350,7 +372,6 @@ class test_Encryption {
         File directory = new File("./Encryption_Test_Folder/Decrypted_Stuff/");
         try {
             boolean saved = Encryption.decryptFile(encryptedFile, filename, wrongKey, wrongIV, directory);
-            assertEquals(saved,true);
             fail("Error Message on wrong IV or wrong key used should be displayed");
         }catch(Exception e){
         }
@@ -375,7 +396,6 @@ class test_Encryption {
         SecretKey wrongkey = Encryption.generateSecretKey();
         try {
             String decryptedFileName = Encryption.decryptFileName(encryptedFileName, wrongkey, iv);
-            assertEquals(filename.equals(decryptedFileName),true);
             fail("Wrong key error should be displayed");
         }catch (Exception e){
         }
@@ -406,7 +426,7 @@ class test_Encryption {
         SecretKey wrongkey = Encryption.generateSecretKey();
         try {
             String decryptedFileName = Encryption.decryptFileName(encryptedFileName, wrongkey, wrongiv);
-            assertEquals(filename.equals(decryptedFileName),true);
+//            assertEquals(filename.equals(decryptedFileName),true);
             fail("Wrong IV and Key error should be displayed");
         }catch (Exception e){
         }
@@ -419,7 +439,9 @@ class test_Encryption {
         SecretKey secretkey = kg.generateKey();
         byte[] encSK = Encryption.encFileSecretKey(secretkey, correctPublicKey);
         SecretKey decryptedkey = Encryption.decFileSecretKey(encSK,correctPrivateKey);
-        assertEquals(decryptedkey, secretkey);
+        byte[] one = secretkey.getEncoded();
+        byte[] two = decryptedkey.getEncoded();
+        assertEquals(Arrays.equals(one,two), true);
     }
 
     @Test
@@ -431,33 +453,52 @@ class test_Encryption {
         byte[] encSK = Encryption.encFileSecretKey(secretkey, correctPublicKey);
         try {
             SecretKey decryptedkey = Encryption.decFileSecretKey(encSK, wrongPrivateKeyAlgoAndSize);//testing with wrong algo and size
-            assertEquals(decryptedkey, wrongPrivateKeyAlgoAndSize);
             fail("Wrong Key error message should be shown");
         }catch(Exception e){
         }
         try{
             SecretKey decryptedkey2 = Encryption.decFileSecretKey(encSK, wrongPrivateKeySize);//testing with wrong size but correct algo
-            assertEquals(decryptedkey2,wrongPrivateKeySize);
+            fail("Wrong Key error message should be shown");
         }catch (Exception e){
         }
     }
 
-    @Test
+    @Test //TODO: CHECK IF THIS IS CORRECT?
     void test_sameHashedPassword(){//Check whether pwdBasedHash gives same result with same salt and password
-
+        byte[] randomsalt = Encryption.newPwdSalt();
+        String password = getRandomString(20, 593);
+        byte[] one = Encryption.pwdBasedHash(password, randomsalt);
+        byte[] two = Encryption.pwdBasedHash(password, randomsalt);
+        assertEquals(Arrays.equals(one,two), true);
     }
 
     @Test
-    void test_diffHashedPassword(){//Check whether pwdBasedHash gives diff result with 3 diff cases: 1. same salt, diff password, 2. diff salt, same password, 3. diff salt, diff password
+    void test_diffHashedPassword() {//Check whether pwdBasedHash gives diff result with 3 diff cases: 1. same salt, diff password, 2. diff salt, same password, 3. diff salt, diff password
+        //same salt, diff password
+        byte[] randomsalt = Encryption.newPwdSalt();
+        String password = getRandomString(20, 593);
+        String password2 = "password";
+        byte[] one = Encryption.pwdBasedHash(password, randomsalt);
+        byte[] two = Encryption.pwdBasedHash(password2, randomsalt);
+        assertEquals(Arrays.equals(one, two), false);
 
+        //diff salt, same password
+        byte[] randomsalt2 = Encryption.newPwdSalt();
+        byte[] three = Encryption.pwdBasedHash(password, randomsalt);
+        byte[] four = Encryption.pwdBasedHash(password, randomsalt2);
+        assertEquals(Arrays.equals(three, four), false);
+
+        //diff salt, diff password
+        byte[] five = Encryption.pwdBasedHash(password2, randomsalt2);
+        assertEquals(Arrays.equals(one, five), false);
     }
 
     @Test
     void test_generatedSalt(){//Salts should be unique
-        byte[] previous = Encryption.newPwdSalt();
+        byte[] previous = Encryption.newPwdSalt();//unable to thoroughly test for uniqueness through unit tests, but this will do for now
         for (int i =0; i<100; i++) {
             byte[] new_salt = Encryption.newPwdSalt();
-            assertNotEquals(previous,new_salt);
+            assertEquals(Arrays.equals(new_salt,previous), false);
             previous = new_salt;
         }
     }
