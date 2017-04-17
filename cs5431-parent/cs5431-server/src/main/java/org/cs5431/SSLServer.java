@@ -45,9 +45,8 @@ public class SSLServer extends Thread {
                 if (type.equals("editPassword") || type.equals("upload") ||
                         type.equals("download") || type.equals("rename") ||
                         type.equals("renameKeys") || type.equals("addEditor")
-                        || type.equals("addViewer") || type.equals
-                        ("addViewerKeys") || type.equals("removeViewer") ||
-                        type.equals("removeEditor") || type.equals("delete") ||
+                        || type.equals("addViewer") || type.equals("addViewerKeys") ||
+                        type.equals("removePriv") || type.equals("delete") ||
                         type.equals("overwrite") || type.equals
                         ("overwriteKeys") || type.equals("editEmail") || type
                         .equals("getFileLogs") || type.equals("getChildren")
@@ -105,10 +104,6 @@ public class SSLServer extends Thread {
                         break;
                     case "addViewerKeys":
                         response = addViewerKeys(jsonObject, sql_files);
-                        sendJson(response, s);
-                        break;
-                    case "removePrivKeys":
-                        response = removePrivKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "removePriv":
@@ -332,18 +327,12 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to overwrite file");
     }
 
-    private JSONObject removePrivKeys(JSONObject jsonObject, SQL_Files
-            sql_files) {
-        //TODO
-        return null;
-    }
 
     private JSONObject removePriv(JSONObject jsonObject, SQL_Files
             sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         int removeUid = jsonObject.getInt("removeUid");
-        //TODO rewrite the file + all the SKs
         int removed;
         if (jsonObject.getString("userType").equals("editor"))
             removed = sql_files.removeEditPriv(fsoid, uid, removeUid, sourceIp);

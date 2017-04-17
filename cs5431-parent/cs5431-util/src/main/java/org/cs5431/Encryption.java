@@ -5,7 +5,6 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.json.JSONObject;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -35,15 +34,6 @@ public class Encryption {
         byte[] fileBytes = new byte[inputStream.available()];
         inputStream.read(fileBytes);
         inputStream.close();
-        return encryptFileContents(fileBytes, secretKey, ivSpec);
-    }
-
-    public static byte[] encryptFileContents(byte[] fileBytes, SecretKey secretKey,
-                                             IvParameterSpec ivSpec)throws
-            NoSuchAlgorithmException, NoSuchProviderException,
-            NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IOException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
         return cipher.doFinal(fileBytes);
@@ -77,23 +67,14 @@ public class Encryption {
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException, IOException {
-        byte[] fileDec = decryptFileContents(encFile, secretKey, ivSpec);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+        byte[] fileDec = cipher.doFinal(encFile);
         java.io.File fileToWrite = new java.io.File(directory, fileName);
         FileOutputStream fos = new FileOutputStream(fileToWrite);
         fos.write(fileDec);
         fos.close();
         return true;
-    }
-
-    public static byte[] decryptFileContents(byte[] encFile, SecretKey
-            secretKey, IvParameterSpec ivSpec) throws NoSuchAlgorithmException,
-            NoSuchProviderException, NoSuchPaddingException,
-            InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException, IOException {
-        //TODO BRANDON! ANOTHER NEW METHOD
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-        return cipher.doFinal(encFile);
     }
 
     public static String decryptFileName(byte[] encFileName, SecretKey fileSK,
@@ -281,27 +262,6 @@ public class Encryption {
         return ret;
     }
 
-    //[0] is encFile, [1] is encFileName, [2] is fileSK, [3] is fileIV, [4]
-    // is fsoNameIV
-    public static String[] generateAndEncFileContents(byte fileContents[],
-            String name, PublicKey publicKey) throws NoSuchAlgorithmException,
-            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException, IOException {
-        String ret[] = new String[5];
-        SecretKey fileSK = generateSecretKey();
-        IvParameterSpec fileIVSpec = generateIV();
-        IvParameterSpec fsoNameIVSpec = generateIV();
-
-        byte[] encFile = encryptFileContents(fileContents, fileSK, fileIVSpec);
-        ret[0] = Base64.getEncoder().encodeToString(encFile);
-        ret[1] = Base64.getEncoder().encodeToString(encryptFileName(name,fileSK, fsoNameIVSpec));
-        ret[2] = Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, publicKey));
-        ret[3] = Base64.getEncoder().encodeToString(fileIVSpec.getIV());
-        ret[4] = Base64.getEncoder().encodeToString(fsoNameIVSpec.getIV());
-        return ret;
-    }
-
     //[0] is encFileName, [1] is fileSK, [2] is fsoNameIV
     public static String[] generateAndEncFileName(String folderName, PublicKey
             pubKey) throws NoSuchAlgorithmException,
@@ -324,16 +284,14 @@ public class Encryption {
             NoSuchAlgorithmException {
         KeyGenerator kg = KeyGenerator.getInstance("AES");
         kg.init(128, new SecureRandom());
-        SecretKey secretKey = kg.generateKey();
-        return secretKey;
+        return kg.generateKey();
     }
 
     public static IvParameterSpec generateIV() {
         SecureRandom random = new SecureRandom();
         byte iv[] = new byte[16];
         random.nextBytes(iv);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        return ivSpec;
+        return new IvParameterSpec(iv);
     }
 
     //[0] is the new IV, [1] is the encrypted file
