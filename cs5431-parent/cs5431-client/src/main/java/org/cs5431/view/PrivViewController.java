@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.FileController;
 import org.cs5431.model.FileSystemObject;
-import org.cs5431.model.PrivType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -117,12 +116,33 @@ public class PrivViewController implements Initializable{
 
                 if (bundle.userId != fileController.getLoggedInUid()) {
                     setGraphic(deleteButton);
-                    deleteButton.setOnAction(event -> {
-                        fileController.removePriv(bundle.fso, bundle.userId,
-                                PrivType.VIEW);
-                        getTableView().getItems().remove(bundle);
-                    });
+                    deleteButton.setOnAction(event -> removePriv(bundle, getTableView()));
                 }
+            }
+        });
+    }
+
+    private void removePriv(PrivBundle bundle, TableView tableView) {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+            if (bundle.canEdit)
+                fileController.removeEditor(bundle.fso, bundle.userId);
+            else
+                fileController.removeViewer(bundle.fso, bundle.userId);
+            return null;
+            }
+        };
+        task.setOnFailed(t -> showError("Failed to remove sharing " +
+                "permissions of user: " + bundle.getUsername()));
+        task.setOnSucceeded(t -> tableView.getItems().remove(bundle));
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
             }
         });
     }
