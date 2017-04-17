@@ -89,11 +89,14 @@ public class PrivViewController implements Initializable{
                     setGraphic(comboBox);
 
                     comboBox.valueProperty().addListener((observableValue, prev, now) -> {
-
-                        if (now.equals("Can Edit") && !bundle.canEdit) {
-                            changeToEditor(bundle);
-                        } else if (now.equals("Can View") && bundle.canEdit) {
-                            changeToViewer(bundle);
+                        if (!prev.equals(now) && now.equals("Can Edit") &&
+                                !bundle.canEdit) {
+                            bundle.canEdit = true;
+                            changeToEditor(bundle, comboBox);
+                        } else if (!prev.equals(now) && now.equals("Can " +
+                                "View") && bundle.canEdit) {
+                            bundle.canEdit = false;
+                            changeToViewer(bundle, comboBox);
                         }
                     });
                 }
@@ -149,7 +152,7 @@ public class PrivViewController implements Initializable{
         });
     }
 
-    private void changeToEditor(PrivBundle bundle) {
+    private void changeToEditor(PrivBundle bundle, ComboBox comboBox) {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -167,11 +170,13 @@ public class PrivViewController implements Initializable{
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
+                bundle.canEdit = false;
+                comboBox.getSelectionModel().select(2);
             }
         });
     }
 
-    private void changeToViewer(PrivBundle bundle) {
+    private void changeToViewer(PrivBundle bundle, ComboBox comboBox) {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -181,7 +186,10 @@ public class PrivViewController implements Initializable{
         };
         task.setOnFailed(t -> showError("Failed to change sharing " +
                 "permissions of user: " + bundle.getUsername()));
-        task.setOnSucceeded(t -> bundle.canEdit = false);
+        task.setOnSucceeded(t -> {
+            bundle.canEdit = false;
+
+        });
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();
@@ -189,6 +197,8 @@ public class PrivViewController implements Initializable{
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
+                bundle.canEdit = true;
+                comboBox.getSelectionModel().select(1);
             }
         });
     }
