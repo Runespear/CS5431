@@ -221,6 +221,9 @@ public class SQL_Files {
                 if (addPath != null) {
                     addPath.close();
                 }
+                if (addParent != null) {
+                    addParent.close();
+                }
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
@@ -236,34 +239,37 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with uid and fsoid details.
      * @return An JsonArray of all children. */
-    public JSONArray getChildren(JSONObject json) {
+    public JSONArray getChildren(JSONObject json, String sourceIp) {
 
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
 
         boolean hasPermission = verifyEditPermission(parentFolderid, uid);
-        if (hasPermission) {
-            JSONArray files = new JSONArray();
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        JSONArray files = new JSONArray();
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
-                System.out.println("Connecting to database...");
+                System.out.println("Database connected!");
             }
+            PreparedStatement getFiles = null;
+            PreparedStatement getKey = null;
+            PreparedStatement getIv = null;
+            PreparedStatement createLog = null;
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE) {
-                    System.out.println("Database connected!");
-                }
-                PreparedStatement getFiles = null;
-                PreparedStatement getKey = null;
-                PreparedStatement getIv = null;
+            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV " +
+                    "FROM FileSystemObjects F " +
+                    "WHERE EXISTS (SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid);";
+            String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
+            String selectIv = "SELECT F.fileIV FROM FileContents WHERE F.fsoid = ? AND F.uid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)";
 
-                String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV " +
-                        "FROM FileSystemObjects F " +
-                        "WHERE EXISTS (SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid);";
-                String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
-                String selectIv = "SELECT F.fileIV FROM FileContents WHERE F.fsoid = ? AND F.uid = ?";
-
-                try {
+            try {
+                if (hasPermission) {
                     getFiles = connection.prepareStatement(selectFiles);
                     getKey = connection.prepareStatement(selectKey);
                     getIv = connection.prepareStatement(selectIv);
@@ -304,32 +310,58 @@ public class SQL_Files {
                         files.put(fso);
                     }
                     return files;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if (connection != null) {
-                        try {
-                            System.err.println("Transaction is being rolled back");
-                            connection.rollback();
-                        } catch (SQLException excep) {
-                            excep.printStackTrace();
-                        }
-                    }
-                    return null;
-                } finally {
-                    if (getFiles != null) {
-                        getFiles.close();
-                    }
-                    if (getKey != null) {
-                        getKey.close();
-                    }
-                    if (getIv != null) {
-                        getIv.close();
-                    }
-                    connection.setAutoCommit(true);
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, parentFolderid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "GET_CHILDREN");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.executeUpdate();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog = connection.prepareStatement(insertLog);
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, parentFolderid);
+                        createLog.setInt(3, uid);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "GET_CHILDREN");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setInt(8, 0);
+                        createLog.setString(9, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return null;
+            } finally {
+                if (getFiles != null) {
+                    getFiles.close();
+                }
+                if (getKey != null) {
+                    getKey.close();
+                }
+                if (getIv != null) {
+                    getIv.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         if (DEBUG_MODE) {
             System.out.println("User does not have permission to edit");
@@ -342,27 +374,30 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with details on uid and fsoid.
      * @return json with downloadAck and path of t*/
-    public JSONObject getFile(JSONObject json) throws Exception {
+    public JSONObject getFile(JSONObject json, String sourceIp) throws Exception {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
-        if (hasPermission) {
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
-                System.out.println("Connecting to database...");
+                System.out.println("Database connected!");
             }
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE) {
-                    System.out.println("Database connected!");
-                }
-                PreparedStatement getPath = null;
-                PreparedStatement getKey = null;
+            PreparedStatement getPath = null;
+            PreparedStatement getKey = null;
+            PreparedStatement createLog = null;
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-                String selectPath = "SELECT F.path, F.fileIV FROM FileContents F WHERE F.fsoid = ?";
-                String selectSk = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
-
-                try {
+            String selectPath = "SELECT F.path, F.fileIV FROM FileContents F WHERE F.fsoid = ?";
+            String selectSk = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try {
+                if (hasPermission) {
                     getPath = connection.prepareStatement(selectPath);
                     getKey = connection.prepareStatement(selectSk);
                     connection.setAutoCommit(false);
@@ -399,29 +434,55 @@ public class SQL_Files {
                         fso.put("fileIV", rs.getString(2));
                     }
                     return fso;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if (connection != null) {
-                        try {
-                            System.err.println("Transaction is being rolled back");
-                            connection.rollback();
-                        } catch (SQLException excep) {
-                            excep.printStackTrace();
-                        }
-                    }
-                    return null;
-                } finally {
-                    if (getPath != null) {
-                        getPath.close();
-                    }
-                    if (getKey != null) {
-                        getKey.close();
-                    }
-                    connection.setAutoCommit(true);
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DOWNLOAD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.executeUpdate();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        createLog = connection.prepareStatement(insertLog);
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, fsoid);
+                        createLog.setInt(3, uid);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "DOWNLOAD");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setInt(8, 0);
+                        createLog.setString(9, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+                return null;
+            } finally {
+                if (getPath != null) {
+                    getPath.close();
+                }
+                if (getKey != null) {
+                    getKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         if (DEBUG_MODE) {
             System.out.println("User does not have permission to the file");
@@ -562,30 +623,34 @@ public class SQL_Files {
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @Return A JsonArray of filelog entries; returns null otherwise  **/
-    public JSONArray getFileLog(JSONObject jsonObject) {
+    public JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
-        if (hasPermission) {
+        if (DEBUG_MODE) {
+            System.out.println("Can view file logs");
+        }
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement getFileLog = null;
+        PreparedStatement createLog = null;
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
-                System.out.println("Can view file logs");
-            }
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-            PreparedStatement getFileLog = null;
-            if (DEBUG_MODE) {
-                System.out.println("Connecting to database...");
+                System.out.println("Database connected!");
             }
 
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE) {
-                    System.out.println("Database connected!");
-                }
+            String selectLog = "SELECT L.uid, L.lastModified, L.actionType, L.status, L.newUid, L.fsoid FROM " +
+                    "FileLog L WHERE L.fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)";
 
-                String selectLog = "SELECT L.uid, L.lastModified, L.actionType, L.status, L.newUid, L.fsoid FROM " +
-                        "FileLog L WHERE L.fsoid = ?";
-                JSONArray fileLogArray = new JSONArray();
+            JSONArray fileLogArray = new JSONArray();
 
-                try {
+            try {
+                if (hasPermission) {
                     getFileLog = connection.prepareStatement(selectLog);
                     getFileLog.setInt(1, fsoid);
                     ResultSet rs = getFileLog.executeQuery();
@@ -602,21 +667,52 @@ public class SQL_Files {
                         fileLogArray.put(log);
                     }
                     return fileLogArray;
-
-                } catch (SQLException | JSONException e) {
-                    e.printStackTrace();
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "GET_FILELOG");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.executeUpdate();
                     return null;
-                } finally {
-                    if (getFileLog != null) {
-                        getFileLog.close();
+                }
+            } catch (SQLException | JSONException e) {
+                e.printStackTrace();
+                if (connection != null) {
+                    try {
+                        createLog = connection.prepareStatement(insertLog);
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, fsoid);
+                        createLog.setInt(3, uid);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "GET_FILELOG");
+                        createLog.setString(6, "FAILURE");
+                        createLog.setString(7, sourceIp);
+                        createLog.setInt(8, 0);
+                        createLog.setString(9, "DB ERROR");
+                        createLog.executeUpdate();
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
                     }
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
                 return null;
+            } finally {
+                if (getFileLog != null) {
+                    getFileLog.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public int renameFso(int fsoid, int uid, String newName, String
@@ -809,6 +905,9 @@ public class SQL_Files {
                 }
                 if (getPubKey != null) {
                     getPubKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
                 }
                 connection.setAutoCommit(true);
             }
