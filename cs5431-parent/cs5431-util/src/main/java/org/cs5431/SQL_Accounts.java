@@ -244,7 +244,7 @@ public class SQL_Accounts {
      * Creates a failure login log if the user's password and username does not match. (username is valid).
      * Creates a success login log upon success.
      * @return h(privKey) of the user if the authentication is valid. **/
-    public JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp) {
+    public JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -296,7 +296,11 @@ public class SQL_Accounts {
                     addLog.setInt(2, uid);
                     addLog.setString(3, username);
                     addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    addLog.setString(5, "LOGIN");
+                    if (action.equals("login")) {
+                        addLog.setString(5, "LOGIN");
+                    } else {
+                        addLog.setString(5, "AUTHENTICATE");
+                    }
                     addLog.setString(6, "SUCCESS");
                     addLog.setString(7, sourceIp);
                     addLog.setString(8, null);
@@ -311,7 +315,7 @@ public class SQL_Accounts {
                     addLog.setString(5, "LOGIN");
                     addLog.setString(6, "FAILURE");
                     addLog.setString(7, sourceIp);
-                    addLog.setString(8, "WRONG PASSWORD");
+                    addLog.setString(8, "INVALID PASSWORD");
                     if (DEBUG_MODE) {
                         System.out.println("invalid login");
                     }
@@ -542,7 +546,7 @@ public class SQL_Accounts {
         //allegedUser.put("pwd", password);
         String salt = getSalt(username, sourceIp, "DELETE_USER");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
-        JSONObject user = authenticate(allegedUser, encPwd, sourceIp);
+        JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");
         int parentFolderid = -1;
         if (user != null) {
             parentFolderid = getParentFolderid(uid);
@@ -700,7 +704,7 @@ public class SQL_Accounts {
         String newPrivKey = allegedUser.getString("newPrivKey");
         String salt = getSalt(username, sourceIp, "CHANGE_PWD");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
-        JSONObject user = authenticate(allegedUser, encPwd, "");
+        JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
