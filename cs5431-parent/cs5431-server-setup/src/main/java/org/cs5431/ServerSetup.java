@@ -137,6 +137,7 @@ public class ServerSetup {
         String createUser = "CREATE USER ?@? IDENTIFIED BY ?;";
         String grantPermissions = "GRANT ALL ON cs5431.* TO ?@? IDENTIFIED BY ?;";
         String grantFile = "GRANT FILE ON *.* TO ?@?;";
+        String flushPriv = "FLUSH PRIVILEGES;";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "fsoName VARCHAR(100) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV CHAR(255));";
@@ -196,9 +197,15 @@ public class ServerSetup {
             statement = connection.prepareStatement(grantFile);
             statement.setString(1, serverUser);
             statement.setString(2, ip);
+            statement.execute();
+
+            statement = connection.prepareStatement(flushPriv);
+            statement.execute();
             connection.close();
+
             connection = DriverManager.getConnection(url+"/cs5431?autoReconnect=true&useSSL=false",
                     serverUser, serverPwd);
+
 
             statement = connection.prepareStatement(createFSO);
             statement.execute();
