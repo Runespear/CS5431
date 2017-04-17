@@ -175,7 +175,9 @@ public class ServerSetup {
         String createFileContents = "CREATE TABLE FileContents (fsoid INT UNSIGNED NOT NULL, path VARCHAR(100),\n" +
                 "fileIV VARCHAR(32), FOREIGN KEY (fsoid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createParentChild = "CREATE TABLE FolderChildren (parentid INT UNSIGNED NOT NULL, childid INT UNSIGNED NOT NULL,\n" +
+                "uid INT UNSIGNED NOT NULL,\n" +
                 "FOREIGN KEY (parentid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
 
         try {
