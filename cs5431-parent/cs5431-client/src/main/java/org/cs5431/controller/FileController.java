@@ -478,48 +478,129 @@ public class FileController {
         addViewer(fsoid, uid, newUserId, "");
     }
 
+    public void removeEditor(FileSystemObject systemObject, int removeUid) throws IOException,
+            ClassNotFoundException, FileControllerException,
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, InvalidKeySpecException {
+        removePriv(systemObject, removeUid, "editor");
+    }
+
+    public void removeViewer(FileSystemObject systemObject, int removeUid) throws IOException,
+            ClassNotFoundException, FileControllerException,
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, InvalidKeySpecException{
+        removePriv(systemObject, removeUid, "viewer");
+    }
+
     /**
      * Removes privileges the file/folder and sends the changes to the server.
      * @param systemObject Privileges are added to this file/folder.
-     * @return true if privilege was added successfully; false otherwise.
      */
-    public boolean removePriv(FileSystemObject systemObject, int userId, PrivType priv) {
-        return false;
+    private void removePriv(FileSystemObject systemObject, int removeUid,
+                            String userType) throws IOException,
+            ClassNotFoundException, FileControllerException,
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, InvalidKeySpecException {
+        JSONObject keyObject = new JSONObject();
+        keyObject.put("msgType","removePrivKeys");
+        keyObject.put("fsoid", systemObject.getId());
+        keyObject.put("uid", user.getId());
+        keyObject.put("removeUid", removeUid);
+        sendJson(keyObject, sslSocket);
 
-        //todo add this enventually?
-        //systemObject.removePriv(priv, userId);
+        JSONObject keyResponse = receiveJson(sslSocket);
+
+        if (keyResponse.getString("msgType").equals("removePrivKeysAck")) {
+            String fileIVString = keyResponse.getString("fileIV");
+            String fsoNameIVString = keyResponse.getString("fsoIV");
+            String encFileSKString = keyResponse.getString("fileSK");
+            IvParameterSpec fileIV = new IvParameterSpec(Base64.getDecoder()
+                    .decode(fileIVString));
+            IvParameterSpec fsoNameIV = new IvParameterSpec(Base64.getDecoder()
+                    .decode(fsoNameIVString));
+            SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
+                            (encFileSKString), user.getPrivKey());
+            JSONArray pkArray = keyResponse.getJSONArray("pkArray");
+            JSONArray uidArray = keyResponse.getJSONArray("uidArray");
+
+            JSONObject removeRequest = new JSONObject();
+            removeRequest.put("msgType", "removePriv");
+            removeRequest.put("fsoid", systemObject.getId());
+            removeRequest.put("uid", user.getId());
+            removeRequest.put("removeUid", removeUid);
+            removeRequest.put("userType", userType);
+            List<String> encArray = new ArrayList<>();
+            List<Integer> putUidArray = new ArrayList<>();
+            if (systemObject instanceof File) {
+                String encFile = keyResponse.getString("file");
+                byte decFile[] = decryptFileContents(Base64.getDecoder().decode
+                        (encFile), fileSK, fileIV);
+                String reEnc[] = generateAndEncFileContents(decFile,
+                        systemObject.getFileName(), user.getPubKey());
+                //[0] is encFile, [1] is encFileName, [2] is fileSK, [3] is fileIV, [4]
+                // is fsoNameIV
+                removeRequest.put("encFile", reEnc[0]);
+                removeRequest.put("fsoName", reEnc[1]);
+                encArray.add(reEnc[2]);
+                putUidArray.add(user.getId());
+                removeRequest.put("fileIV", reEnc[3]);
+                removeRequest.put("fsoNameIV", reEnc[4]);
+                removeRequest.put("isFile", true);
+            } else {
+                String reEnc[] = generateAndEncFileName(systemObject
+                        .getFileName(), user.getPubKey());
+                //[0] is encFileName, [1] is fileSK, [2] is fsoNameIV
+                removeRequest.put("fsoName", reEnc[0]);
+                encArray.add(reEnc[1]);
+                putUidArray.add(user.getId());
+                removeRequest.put("fsoNameIV", reEnc[2]);
+                removeRequest.put("isFile", false);
+            }
+            SecretKey newFileSK = decFileSecretKey(Base64.getDecoder().decode
+                    (encArray.get(0)), user.getPrivKey());
+            for (int i = 0; i < pkArray.length(); i++) {
+                String pkString = pkArray.getString(i);
+                int otherUid = uidArray.getInt(i);
+                PublicKey pk = getPubKeyFromJSON(pkString);
+                byte encSK[] = encFileSecretKey(newFileSK, pk);
+                encArray.add(Base64.getEncoder().encodeToString(encSK));
+                putUidArray.add(otherUid);
+            }
+            removeRequest.put("encArray", encArray);
+            removeRequest.put("uidArray", putUidArray);
+
+            sendJson(removeRequest, sslSocket);
+            JSONObject removeAck = receiveJson(sslSocket);
+            if (removeAck.getString("msgType").equals("removePrivAck")) {
+                if (removeAck.getInt("removeUid") != removeUid)
+                    throw new FileControllerException("User that was removed " +
+                            "was not the user requested");
+            } else if (removeAck.getString("msgType").equals("error")) {
+                throw new FileControllerException(removeAck.getString
+                        ("message"));
+            } else {
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            }
+        } else if (keyResponse.getString("msgType").equals("error")) {
+            throw new FileControllerException(keyResponse.getString
+                    ("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     public void rollback(int rollbackToThisfileId) {
         //TODO: how???
     }
-
-    /**
-     * Sends the update of privileges to the server with the serverIP attribute of the fileController.
-     * @param fsoId ID of fso modified
-     * @param userId Refers to the user that is given more privileges
-     * @param priv Type of priv to be given
-     * * @return the file/folder that is uploaded to server if successful; null otherwise
-     */
-    private FileSystemObject addFSOPriv(int fsoId, int userId, PrivType priv) {
-        //TODO: remember to add new file to parent folder of userId
-        //TODO: remember to change priv to child too
-        return null;
-    }
-
-    /**
-     * Sends the update of privileges to the server with the serverIP attribute of the fileController.
-     * @param fsoId ID of fso modified
-     * @param userId Refers to the user that is to have his/her privileges removed
-     * @param priv Type of priv to be given
-     * * @return the file/folder that is uploaded to server if successful; null otherwise
-     */
-    private FileSystemObject removeFSOPriv(int fsoId, int userId, PrivType priv) {
-        //TODO: remember to remove the file from parent folder of userId if view privileges are removed
-        //TODO: remember to change priv to child too
-        return null;
-    }
-
+    
     public List<String> getFileLogs(int fsoid) throws IOException,
             ClassNotFoundException, FileControllerException {
         JSONObject request = new JSONObject();
