@@ -497,7 +497,7 @@ public class FileViewController implements Initializable {
         imgViewLog.setDisable(!fileSelected);
         imgShare.setVisible(editAllowed);
         imgShare.setDisable(!editAllowed);
-        imgDelete.setVisible(editAllowed);
-        imgDelete.setDisable(!editAllowed);
+        imgDelete.setVisible(fileSelected);
+        imgDelete.setDisable(!fileSelected);
     }
 }
