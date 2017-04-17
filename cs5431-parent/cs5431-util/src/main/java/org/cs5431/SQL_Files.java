@@ -1780,6 +1780,7 @@ public class SQL_Files {
     }
 
     public int deleteForAll(){
+        //TODO: Update SSLServer with the call in the comment
         return -1;
     }
 

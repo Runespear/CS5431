@@ -46,7 +46,8 @@ public class SSLServer extends Thread {
                         type.equals("download") || type.equals("rename") ||
                         type.equals("renameKeys") || type.equals("addEditor")
                         || type.equals("addViewer") || type.equals("addViewerKeys") ||
-                        type.equals("removePriv") || type.equals("delete") ||
+                        type.equals("removePriv") || type.equals
+                        ("deleteForAll") || type.equals("deleteForUser") ||
                         type.equals("overwrite") || type.equals
                         ("overwriteKeys") || type.equals("editEmail") || type
                         .equals("getFileLogs") || type.equals("getChildren")
@@ -110,8 +111,12 @@ public class SSLServer extends Thread {
                         response = removePriv(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "delete":
-                        response = delete(jsonObject, sql_files);
+                    case "deleteForAll":
+                        response = deleteForAll(jsonObject, sql_files);
+                        sendJson(response, s);
+                        break;
+                    case "deleteForUser":
+                        response = deleteForUser(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "overwrite":
@@ -389,14 +394,31 @@ public class SSLServer extends Thread {
                 "id " + newUid);
     }
 
-    private JSONObject delete(JSONObject jsonObject, SQL_Files sql_files) {
+    private JSONObject deleteForAll(JSONObject jsonObject, SQL_Files
+            sql_files) {
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
+
+        //TODO: deleteForAll(fsoid, uid, sourceIp)
+        if (sql_files.deleteForAll() == fsoid) {
+            sql_files.deleteIfOrphanFile(fsoid, uid, sourceIp);
+            JSONObject response = new JSONObject();
+            response.put("msgType","deleteForAllAck");
+            response.put("fsoid", fsoid);
+            response.put("uid", uid);
+            return response;
+        }
+        return makeErrJson("Unable to delete file");
+    }
+
+    private JSONObject deleteForUser(JSONObject jsonObject, SQL_Files sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
 
         if (sql_files.deleteForUser(fsoid, uid, sourceIp) == fsoid) {
             sql_files.deleteIfOrphanFile(fsoid, uid, sourceIp);
             JSONObject response = new JSONObject();
-            response.put("msgType","deleteAck");
+            response.put("msgType","deleteForUserAck");
             response.put("fsoid", fsoid);
             response.put("uid", uid);
             return response;

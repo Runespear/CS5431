@@ -364,17 +364,47 @@ public class FileController {
      * @param parentFolder is parentFolder of the fso associated with the id
      * @throws FileControllerException If file cannot be deleted
      */
-    public void delete(FileSystemObject fso, Folder parentFolder) throws
+    public void deleteForAll(FileSystemObject fso, Folder parentFolder) throws
             FileControllerException, IOException, ClassNotFoundException {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("msgType", "delete");
+        jsonObject.put("msgType", "deleteForAll");
         jsonObject.put("fsoid", fso.getId());
         jsonObject.put("uid", user.getId());
         sendJson(jsonObject, sslSocket);
 
         JSONObject response = receiveJson(sslSocket);
 
-        if (response.getString("msgType").equals("deleteAck")) {
+        if (response.getString("msgType").equals("deleteForAllAck")) {
+            if (response.getInt("fsoid") != fso.getId())
+                throw new FileControllerException("Received bad response " +
+                        "from server");
+            else
+                parentFolder.removeChild(fso);
+        } else if (response.getString("msgType").equals("error")) {
+            throw new FileControllerException(response.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
+    }
+
+    /**
+     * Deletes the file only for the user so they can't see it any more.
+     * @param fso is the file to be deleted
+     * @param parentFolder is parentFolder of the fso associated with the id
+     * @throws FileControllerException If file cannot be deleted
+     */
+    public void deleteForUser(FileSystemObject fso, Folder parentFolder) throws
+            FileControllerException, IOException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("msgType", "deleteForUser");
+        jsonObject.put("fsoid", fso.getId());
+        jsonObject.put("uid", user.getId());
+        sendJson(jsonObject, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+
+        if (response.getString("msgType").equals("deleteForUserAck")) {
             if (response.getInt("fsoid") != fso.getId())
                 throw new FileControllerException("Received bad response " +
                         "from server");
