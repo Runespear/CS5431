@@ -231,7 +231,7 @@ public class SSLServer extends Thread {
         String hashedPwd = jsonObject.getString("hashedPwd");
         if (pwdSalt != null) {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
-            JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp);
+            JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "login");
             if (auth != null) {
                 loggedInUid = auth.getInt("uid");
                 return auth;
