@@ -289,7 +289,7 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject download(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
-        return sql_files.getFile(jsonObject);
+        return sql_files.getFile(jsonObject, sourceIp);
     }
 
     private JSONObject rename(JSONObject jsonObject, SQL_Files sql_files) {
@@ -394,6 +394,7 @@ public class SSLServer extends Thread {
         int uid = jsonObject.getInt("uid");
 
         if (sql_files.deleteFile(fsoid, uid, sourceIp) == fsoid) {
+            sql_files.deleteIfOrphanFile(fsoid, uid, sourceIp);
             JSONObject response = new JSONObject();
             response.put("msgType","deleteAck");
             response.put("fsoid", fsoid);
@@ -418,11 +419,11 @@ public class SSLServer extends Thread {
     }
 
     private JSONArray getFileLog(JSONObject jsonObject, SQL_Files sql_files) {
-        return sql_files.getFileLog(jsonObject);
+        return sql_files.getFileLog(jsonObject, sourceIp);
     }
 
     private JSONArray getChildren(JSONObject jsonObject, SQL_Files sql_files) {
-        JSONArray arr = sql_files.getChildren(jsonObject);
+        JSONArray arr = sql_files.getChildren(jsonObject, sourceIp);
         int uid = jsonObject.getInt("uid");
         for (int i = 0; i < arr.length(); i++) {
             JSONObject obj = arr.getJSONObject(i);
