@@ -864,16 +864,17 @@ public class SQL_Accounts {
             PreparedStatement changeEmail = null;
             PreparedStatement createLog = null;
 
-            String deleteUser = "UPDATE Users SET email = ? WHERE uid = ?";
+            String updateEmail = "UPDATE Users SET email = ? WHERE uid = ? AND email = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
-                changeEmail = connection.prepareStatement(deleteUser);
+                changeEmail = connection.prepareStatement(updateEmail);
                 connection.setAutoCommit(false);
                 changeEmail.setString(1, newEmail);
                 changeEmail.setInt(2, uid);
+                changeEmail.setString(3, oldEmail);
                 changeEmail.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("changed email");

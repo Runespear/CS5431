@@ -1687,7 +1687,7 @@ public class SQL_Files {
      * @param uid the id of the requesting user
      * @return The fsoid if successful, -1 otherwise
      */
-    public int deleteFile(int fsoid, int uid, String sourceIp) {
+    public int deleteForUser(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1776,6 +1776,10 @@ public class SQL_Files {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return -1;
+    }
+
+    public int deleteForAll(){
         return -1;
     }
 
