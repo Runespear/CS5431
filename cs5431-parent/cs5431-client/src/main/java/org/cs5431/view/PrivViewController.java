@@ -54,6 +54,8 @@ public class PrivViewController implements Initializable{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        System.out.println("Initialising priv view controller");
+
         imgExit.setOnMouseClicked(e -> exit());
 
         imgAdd.setOnMouseClicked(e -> addUser());
@@ -90,7 +92,7 @@ public class PrivViewController implements Initializable{
 
                         if (now.equals("Can Edit") && !bundle.canEdit) {
                             changeToEditor(bundle);
-                        } else if (now.equals("Can View") && bundle.canView) {
+                        } else if (now.equals("Can View") && bundle.canEdit) {
                             changeToViewer(bundle);
                         }
                     });
