@@ -101,9 +101,9 @@ public class SQL_Accounts {
 
             String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, " +
                     "pubKey, pwdSalt, privKeySalt) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            String insertFolder = "INSERT INTO FileSystemObjects (fsoid, parentFolderid, fsoName, size, " +
+            String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
                     "lastModified, isFile)"
-                    + " values (?, ?, ?, ?, ?, ?)";
+                    + " values (?, ?, ?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
@@ -127,11 +127,10 @@ public class SQL_Accounts {
 
                 Timestamp currDate = new Timestamp(System.currentTimeMillis());
                 createFolder.setInt (1, 0);
-                createFolder.setInt (2, 0); //TODO: what to set as parent folder id?
-                createFolder.setString (3, username);
-                createFolder.setString   (4, Integer.toString(0));
-                createFolder.setTimestamp (5, currDate);
-                createFolder.setBoolean    (6, false);
+                createFolder.setString (2, username);
+                createFolder.setString   (3, Integer.toString(0));
+                createFolder.setTimestamp (4, currDate);
+                createFolder.setBoolean    (5, false);
                 createFolder.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("created folder");
@@ -646,7 +645,10 @@ public class SQL_Accounts {
         return -1;
     }
 
-    private int getParentFolderid (int uid) {
+    private int
+
+
+    getParentFolderid (int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
