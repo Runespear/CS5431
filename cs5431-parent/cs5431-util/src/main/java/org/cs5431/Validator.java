@@ -37,6 +37,8 @@ public class Validator {
     }
 
     public static boolean validFileName(String fileName) {
+        if (fileName == null)
+            return false;
         // No dots allowed
         Pattern pattern = Pattern.compile("^[a-zA-Z0-9\\s_-]{1,255}$");
         if (pattern.matcher(fileName).find()) {

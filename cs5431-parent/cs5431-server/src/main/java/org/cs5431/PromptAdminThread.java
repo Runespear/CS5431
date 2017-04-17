@@ -32,6 +32,7 @@ public class PromptAdminThread implements Runnable {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter 'u' to download user logs");
+            System.out.println("Enter 'f' to download file logs");
             System.out.println("Enter 'd' to delete a user");
             String command = scanner.nextLine();
             String[] elements = command.trim().split("\\s+");
@@ -43,6 +44,9 @@ public class PromptAdminThread implements Runnable {
                 case "d":
                     deleteUser(sql_accounts);
                     return;
+                case "f":
+                    downloadFileLogs(sql_accounts);
+                    return;
                 default:
                     System.out.println("Sorry, your command was not " +
                             "understood.");
@@ -51,14 +55,21 @@ public class PromptAdminThread implements Runnable {
     }
 
     private static void downloadUserLogs(SQL_Accounts sql_accounts) {
+        /*
         Scanner scanner = new Scanner(System.in);
-        String logFileName = "/";
-        while(Validator.validFileName(logFileName)) {
-            System.out.println("Enter the file name of the log that will be " +
-                    "saved");
+        System.out.println("Enter the file name of the log that will be " +
+                "saved");
+        String logFileName = scanner.nextLine();
+        while(!Validator.validFileName(logFileName)) {
+            System.out.println("Please enter a valid file name");
             logFileName = scanner.nextLine();
         }
+        */
         sql_accounts.getUserLog();
+    }
+
+    private static void downloadFileLogs(SQL_Accounts sql_accounts) {
+        //TODO
     }
 
     private static void deleteUser(SQL_Accounts sql_accounts) throws SQLException {

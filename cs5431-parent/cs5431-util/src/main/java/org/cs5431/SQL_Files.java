@@ -448,8 +448,8 @@ public class SQL_Files {
             String selectEditors = "SELECT E.uid FROM Editors E WHERE E.fsoid = ?";
             String selectViewers = "SELECT V.uid FROM Viewers V WHERE V.fsoid = ?";
 
-            ArrayList<Integer> editors = new ArrayList<>();
-            ArrayList<Integer> viewers = new ArrayList<>();
+            JSONArray editors = new JSONArray();
+            JSONArray viewers = new JSONArray();
 
             try {
                 verifyEditors = connection.prepareStatement(selectEditors);
@@ -458,16 +458,17 @@ public class SQL_Files {
                 verifyEditors.setInt(1, fsoid);
                 ResultSet editorsId = verifyEditors.executeQuery();
 
+                while (editorsId.next()) {
+                    int editor = editorsId.getInt(1);
+                    editors.put(editor);
+                }
+
                 verifyViewers.setInt(1, fsoid);
                 ResultSet viewersId = verifyViewers.executeQuery();
 
-                while (editorsId.next()) {
-                    int editor = editorsId.getInt(1);
-                    editors.add(editor);
-                }
-                while (editorsId.next()) {
+                while (viewersId.next()) {
                     int viewer = viewersId.getInt(1);
-                    viewers.add(viewer);
+                    viewers.put(viewer);
                 }
                 JSONObject permissions = new JSONObject();
                 permissions.put("editors", editors);
@@ -870,6 +871,7 @@ public class SQL_Files {
                     connection.setAutoCommit(false);
                     addEditor.setInt(1, fsoid);
                     addEditor.setInt(2, newUid);
+                    addEditor.executeUpdate();
 
                     removeViewer.setInt(1, newUid);
                     removeViewer.executeUpdate();
@@ -883,6 +885,7 @@ public class SQL_Files {
                     createLog.setString(7, sourceIp);
                     createLog.setInt(8, newUid);
                     createLog.setString(9, null);
+                    createLog.executeUpdate();
 
                     shareFsoKey.setInt(1, fsoid);
                     shareFsoKey.setInt(2, uid);
