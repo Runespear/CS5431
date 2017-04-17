@@ -62,6 +62,13 @@ public class ConnectController implements Initializable {
     private void connect(Event e) {
         try {
             String serverName = serverDropdown.getValue();
+            if (serverName == null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("Please select a server to connect to.");
+                alert.showAndWait();
+                return;
+            }
             File configFile = new File("./user-config/" + serverName +
                     ".config");
             BufferedReader br = new BufferedReader(new FileReader(configFile));

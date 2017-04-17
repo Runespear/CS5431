@@ -648,7 +648,7 @@ public class FileController {
                             break;
                         case "REMOVE_VIEWER":
                             logMsg = username + " successfully removed " + newUser +
-                                    " as an viewer on " + lastModified;
+                                    " as a viewer on " + lastModified;
                             break;
                         default:
                             throw new FileControllerException("Received bad response " +
