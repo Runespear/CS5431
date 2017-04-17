@@ -107,12 +107,12 @@ public class SSLServer extends Thread {
                         response = addViewerKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "removeViewer":
-                        response = removeViewer(jsonObject, sql_files);
+                    case "removePrivKeys":
+                        response = removePrivKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
-                    case "removeEditor":
-                        response = removeEditor(jsonObject, sql_files);
+                    case "removePriv":
+                        response = removePriv(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "delete":
@@ -332,16 +332,30 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to overwrite file");
     }
 
-    private JSONObject removeViewer(JSONObject jsonObject, SQL_Files
+    private JSONObject removePrivKeys(JSONObject jsonObject, SQL_Files
             sql_files) {
         //TODO
         return null;
     }
 
-    private JSONObject removeEditor(JSONObject jsonObject, SQL_Files
+    private JSONObject removePriv(JSONObject jsonObject, SQL_Files
             sql_files) {
-        //TODO
-        return null;
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
+        int removeUid = jsonObject.getInt("removeUid");
+        //TODO rewrite the file + all the SKs
+        int removed;
+        if (jsonObject.getString("userType").equals("editor"))
+            removed = sql_files.removeEditPriv(fsoid, uid, removeUid, sourceIp);
+        else
+            removed = sql_files.removeViewPriv(fsoid, uid, removeUid, sourceIp);
+        if (removed != -1) {
+            JSONObject response = new JSONObject();
+            response.put("msgType","removePrivAck");
+            response.put("removeUid", removed);
+            return response;
+        }
+        return makeErrJson("Failed to remove user's privileges");
     }
 
     private JSONObject addEditor(JSONObject jsonObject, SQL_Files sql_files) {

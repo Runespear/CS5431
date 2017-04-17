@@ -600,7 +600,7 @@ public class FileController {
     public void rollback(int rollbackToThisfileId) {
         //TODO: how???
     }
-    
+
     public List<String> getFileLogs(int fsoid) throws IOException,
             ClassNotFoundException, FileControllerException {
         JSONObject request = new JSONObject();
