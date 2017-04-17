@@ -20,8 +20,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 class test_Encryption {
 
     public static PublicKey correctPublicKey;
+    public static PrivateKey correctPrivateKey;
+    public static PublicKey wrongPublicKeySize;
+    public static PublicKey wrongPublicKeyAlgoAndSize;
+    public static PrivateKey wrongPrivateKeySize;
+    public static PrivateKey wrongPrivateKeyAlgoAndSize;
 
-    protected String getRandomString(int Length, int seed) {
+
+    public static String getRandomString(int Length, int seed) {
         String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,./;'[]-=~!@#$%^&*()_+";
         StringBuilder rs = new StringBuilder();
         Random random = new Random(seed);
@@ -34,13 +40,28 @@ class test_Encryption {
         return randStr;
     }
 
-    public static PublicKey getCorrectPublicKey() throws Exception{
+    public static void getPrivPubKeyPair() throws Exception{
         SecureRandom random = new SecureRandom();//generating public key
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA" , "BC");
         keygen.initialize(4096,random);
         KeyPair keypair = keygen.generateKeyPair();
-        PublicKey pubKey = keypair.getPublic();
-        return pubKey;
+        correctPublicKey = keypair.getPublic();
+        correctPrivateKey = keypair.getPrivate();
+
+
+        SecureRandom random2 = new SecureRandom();//generating public key of wrong size
+        KeyPairGenerator keygen2 = KeyPairGenerator.getInstance("RSA", "BC");
+        keygen2.initialize(1024,random2);
+        KeyPair keypair2 = keygen2.generateKeyPair();
+        wrongPublicKeyAlgoAndSize = keypair2.getPublic();
+        wrongPrivateKeyAlgoAndSize = keypair2.getPrivate();
+
+        SecureRandom random3 = new SecureRandom();//generating public/private key of wrong algo and size
+        KeyPairGenerator keygen3 = KeyPairGenerator.getInstance("DSA");
+        keygen3.initialize(1024,random3);
+        KeyPair keypair3 = keygen3.generateKeyPair();
+        wrongPublicKeySize = keypair3.getPublic();
+        wrongPrivateKeySize = keypair3.getPrivate();
     }
 
     @BeforeAll
@@ -48,9 +69,10 @@ class test_Encryption {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
         PrintWriter pw = new PrintWriter(new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt"));
-        pw.println("TESTING");
+        Random random = new Random();
+        pw.println(getRandomString(10,random.nextInt()));
         pw.close();
-        correctPublicKey = getCorrectPublicKey();
+        getPrivPubKeyPair();
     }
 
 
@@ -265,32 +287,159 @@ class test_Encryption {
            decryptedTxt.append(thisLine2);
         }
 
+        File file_to_delete = new File("./Encryption_Test_Folder/Decrypted_Stuff/test.txt");
+        Boolean isittrue = file_to_delete.delete();
+        System.out.println(isittrue);
         assertEquals(originalTxt.toString().equals(decryptedTxt.toString()), true);
     }
 
     @Test
-    void test_decFileWithWrongKey(){ //Test to ensure that the file cannot be decrypted with wrong key
+    void test_decFileWithWrongKey()throws Exception{ //Test to ensure that the file cannot be decrypted with wrong key
+        File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFile = Encryption.encryptFile(file,key,iv);
 
+
+        //Generating a different key for decryption
+        SecretKey wrongKey = Encryption.generateSecretKey();
+        String filename = "test.txt";
+        File directory = new File("./Encryption_Test_Folder/Decrypted_Stuff/");
+        try {
+            boolean saved = Encryption.decryptFile(encryptedFile, filename, wrongKey, iv, directory);
+            assertEquals(saved,true);
+            fail("Error Message on Wrong key used should be displayed");
+        }catch(Exception e){
+        }
     }
 
     @Test
-    void test_decFileName(){ //Test to ensure that the file name is encrypted and decrypted correctly
+    void test_decFileWithWrongIV()throws Exception{ //Test to ensure that the file cannot be decrypted with wrong IV
+        File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFile = Encryption.encryptFile(file,key,iv);
 
+
+        //Generating a different IV for decryption
+        IvParameterSpec wrongIV = Encryption.generateIV();
+        String filename = "test.txt";
+        File directory = new File("./Encryption_Test_Folder/Decrypted_Stuff/");
+        try {
+            boolean saved = Encryption.decryptFile(encryptedFile, filename, key, wrongIV, directory);
+            assertEquals(saved,true);
+            fail("Error Message on wrong IV used should be displayed");
+        }catch(Exception e){
+    }
     }
 
     @Test
-    void test_decFileNameWithWrongKey(){ //Test to ensure that the file name cannot be decrypted with wrong key
+    void test_decFileWithWrongIVKEY()throws Exception{ //Test to ensure that the file cannot be decrypted with wrong IV and wrong key
+        File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFile = Encryption.encryptFile(file,key,iv);
 
+        //Generating a different IV for decryption
+        IvParameterSpec wrongIV = Encryption.generateIV();
+
+        //Generating a different key for decryption
+        SecretKey wrongKey = Encryption.generateSecretKey();
+
+        String filename = "test.txt";
+        File directory = new File("./Encryption_Test_Folder/Decrypted_Stuff/");
+        try {
+            boolean saved = Encryption.decryptFile(encryptedFile, filename, wrongKey, wrongIV, directory);
+            assertEquals(saved,true);
+            fail("Error Message on wrong IV or wrong key used should be displayed");
+        }catch(Exception e){
+        }
     }
 
     @Test
-    void test_decFileSecretKey(){ //Test to ensure that the file secret key is encrypted and decrypted correctly
-
+    void test_decFileName() throws Exception{ //Test to ensure that the file name is encrypted and decrypted correctly
+        String filename = "test.txt";
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFileName  = Encryption.encryptFileName(filename,key,iv);
+        String decryptedFileName = Encryption.decryptFileName(encryptedFileName, key, iv);
+        assertEquals(filename.equals(decryptedFileName),true);
     }
 
     @Test
-    void test_decFileSecretKeyWithWrongKey(){ //Test to ensure that the file secret key cannot be decrypted with wrong key
+    void test_decFileNameWithWrongKey()throws Exception{ //Test to ensure that the file name cannot be decrypted with wrong key
+        String filename = "test.txt";
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFileName  = Encryption.encryptFileName(filename,key,iv);
+        SecretKey wrongkey = Encryption.generateSecretKey();
+        try {
+            String decryptedFileName = Encryption.decryptFileName(encryptedFileName, wrongkey, iv);
+            assertEquals(filename.equals(decryptedFileName),true);
+            fail("Wrong key error should be displayed");
+        }catch (Exception e){
+        }
+    }
 
+    @Test
+    void test_decFileNameWithWrongIV()throws Exception{ //Test to ensure that the file name cannot be decrypted with wrong IV
+        String filename = "test.txt";
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFileName  = Encryption.encryptFileName(filename,key,iv);
+        IvParameterSpec wrongiv = Encryption.generateIV();
+        try {
+            String decryptedFileName = Encryption.decryptFileName(encryptedFileName, key, wrongiv);
+            assertEquals(filename.equals(decryptedFileName),true);
+            fail("Wrong IV error should be displayed");
+        }catch (Exception e){
+        }
+    }
+
+    @Test
+    void test_decFileNameWithWrongIVKEY()throws Exception{ //Test to ensure that the file name cannot be decrypted with wrong IV and key
+        String filename = "test.txt";
+        SecretKey key = Encryption.generateSecretKey();
+        IvParameterSpec iv = Encryption.generateIV();
+        byte[] encryptedFileName  = Encryption.encryptFileName(filename,key,iv);
+        IvParameterSpec wrongiv = Encryption.generateIV();
+        SecretKey wrongkey = Encryption.generateSecretKey();
+        try {
+            String decryptedFileName = Encryption.decryptFileName(encryptedFileName, wrongkey, wrongiv);
+            assertEquals(filename.equals(decryptedFileName),true);
+            fail("Wrong IV and Key error should be displayed");
+        }catch (Exception e){
+        }
+    }
+
+    @Test
+    void test_decFileSecretKey() throws Exception{ //Test to ensure that the file secret key is encrypted and decrypted correctly
+        KeyGenerator kg = KeyGenerator.getInstance("AES"); //generating secret key
+        kg.init(128, new SecureRandom());
+        SecretKey secretkey = kg.generateKey();
+        byte[] encSK = Encryption.encFileSecretKey(secretkey, correctPublicKey);
+        SecretKey decryptedkey = Encryption.decFileSecretKey(encSK,correctPrivateKey);
+        assertEquals(decryptedkey, secretkey);
+    }
+
+    @Test
+    void test_decFileSecretKeyWithWrongKey()throws Exception{ //Test to ensure that the file secret key cannot be decrypted with wrong key(different algo and different size)
+        KeyGenerator kg = KeyGenerator.getInstance("AES"); //generating secret key
+        kg.init(128, new SecureRandom());
+        SecretKey secretkey = kg.generateKey();
+
+        byte[] encSK = Encryption.encFileSecretKey(secretkey, correctPublicKey);
+        try {
+            SecretKey decryptedkey = Encryption.decFileSecretKey(encSK, wrongPrivateKeyAlgoAndSize);//testing with wrong algo and size
+            assertEquals(decryptedkey, wrongPrivateKeyAlgoAndSize);
+            fail("Wrong Key error message should be shown");
+        }catch(Exception e){
+        }
+        try{
+            SecretKey decryptedkey2 = Encryption.decFileSecretKey(encSK, wrongPrivateKeySize);//testing with wrong size but correct algo
+            assertEquals(decryptedkey2,wrongPrivateKeySize);
+        }catch (Exception e){
+        }
     }
 
     @Test
