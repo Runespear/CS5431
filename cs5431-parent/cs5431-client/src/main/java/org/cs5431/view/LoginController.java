@@ -20,6 +20,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.controller.SSLController.connect_SSLServerSocket;
 
 public class LoginController implements Initializable {
@@ -96,6 +97,8 @@ public class LoginController implements Initializable {
         });
         task.setOnSucceeded(t -> {
             try {
+                if (!DEBUG_MODE)
+                    txtPassword.setText("");
                 Node node = (Node) e.getSource();
                 Stage stage = (Stage) node.getScene().getWindow();
                 Scene scene = stage.getScene();
