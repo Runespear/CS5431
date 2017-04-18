@@ -1089,8 +1089,8 @@ public class SQL_Files {
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
             String deleteEditor = "DELETE FROM Editors WHERE uid = ?";
-            String rmEditorLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType)"
-                    + "values (?, ?, ?, ?, ?)";
+            String rmEditorLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
+                    "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertParent = "INSERT INTO FolderChildren (parentid, childid, uid) values (?, ?, ?);";
             String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
 
