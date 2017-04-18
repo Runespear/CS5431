@@ -20,6 +20,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static org.cs5431.Constants.CAN_KEYS_BE_DESTROYED;
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.*;
 import static org.cs5431.JSON.*;
@@ -196,10 +197,12 @@ public class FileController {
                 throw new FileControllerException("Received bad response " +
                         "from server");
             }
-            try {
-                fileSK.destroy();
-            } catch (DestroyFailedException e) {
-                e.printStackTrace();
+            if (CAN_KEYS_BE_DESTROYED) {
+                try {
+                    fileSK.destroy();
+                } catch (DestroyFailedException e) {
+                    e.printStackTrace();
+                }
             }
         } else if (keyResponse.getString("msgType").equals("error")) {
             throw new FileControllerException(keyResponse.getString("message"));
@@ -259,10 +262,12 @@ public class FileController {
                 throw new FileControllerException("Received bad response " +
                         "from server");
             }
-            try {
-                fileSK.destroy();
-            } catch (DestroyFailedException e) {
-                e.printStackTrace();
+            if (CAN_KEYS_BE_DESTROYED) {
+                try {
+                    fileSK.destroy();
+                } catch (DestroyFailedException e) {
+                    e.printStackTrace();
+                }
             }
         } else if (keyResponse.getString("msgType").equals("error")) {
             throw new FileControllerException(keyResponse.getString("message"));
@@ -307,10 +312,12 @@ public class FileController {
             if (!decryptFile(fsoBytes, fsoName, fileSK, iv, dir))
                 throw new FileControllerException("Failed to decrypt file " +
                         "that was downloaded");
-            try {
-                fileSK.destroy();
-            } catch (DestroyFailedException e) {
-                e.printStackTrace();
+            if (CAN_KEYS_BE_DESTROYED) {
+                try {
+                    fileSK.destroy();
+                } catch (DestroyFailedException e) {
+                    e.printStackTrace();
+                }
             }
         } else if (fileAck.getString("msgType").equals("error")) {
             throw new FileControllerException(fileAck.getString("message"));
@@ -368,10 +375,12 @@ public class FileController {
                     child = new File(id, name, longSize, lastModified, isEditor, isViewer);
                 }
                 children.add(child);
-                try {
-                    fileSK.destroy();
-                } catch (DestroyFailedException e) {
-                    e.printStackTrace();
+                if (CAN_KEYS_BE_DESTROYED) {
+                    try {
+                        fileSK.destroy();
+                    } catch (DestroyFailedException e) {
+                        e.printStackTrace();
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -488,10 +497,12 @@ public class FileController {
             byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
             addViewer(fsoid, uid, newUserId, Base64.getEncoder()
                     .encodeToString(encFileSK));
-            try {
-                fileSK.destroy();
-            } catch (DestroyFailedException e) {
-                e.printStackTrace();
+            if (CAN_KEYS_BE_DESTROYED) {
+                try {
+                    fileSK.destroy();
+                } catch (DestroyFailedException e) {
+                    e.printStackTrace();
+                }
             }
         } else if (responseKeys.getString("msgType").equals("error")) {
             throw new FileControllerException(responseKeys.getString

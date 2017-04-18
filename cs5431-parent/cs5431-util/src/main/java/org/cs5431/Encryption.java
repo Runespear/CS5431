@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 
+import static org.cs5431.Constants.CAN_KEYS_BE_DESTROYED;
 import static org.cs5431.Constants.DEBUG_MODE;
 
 public class Encryption {
@@ -203,10 +204,12 @@ public class Encryption {
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
         byte encryptedKey[] = cipher.doFinal(privKeyByte);
-        try {
-            secretKey.destroy();
-        } catch (DestroyFailedException e) {
-            e.printStackTrace();
+        if (CAN_KEYS_BE_DESTROYED) {
+            try {
+                secretKey.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         }
         return Base64.getEncoder().encodeToString(encryptedKey);
     }
@@ -244,10 +247,12 @@ public class Encryption {
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         byte privKey[] =  cipher.doFinal(Base64.getDecoder().decode(enc));
-        try {
-            secretKey.destroy();
-        } catch (DestroyFailedException e) {
-            e.printStackTrace();
+        if (CAN_KEYS_BE_DESTROYED) {
+            try {
+                secretKey.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         }
         return privKey;
     }
@@ -271,10 +276,12 @@ public class Encryption {
         ret[2] = Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, publicKey));
         ret[3] = Base64.getEncoder().encodeToString(fileIVSpec.getIV());
         ret[4] = Base64.getEncoder().encodeToString(fsoNameIVSpec.getIV());
-        try {
-            fileSK.destroy();
-        } catch (DestroyFailedException e) {
-            e.printStackTrace();
+        if (CAN_KEYS_BE_DESTROYED) {
+            try {
+                fileSK.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         }
         return ret;
     }
@@ -294,10 +301,12 @@ public class Encryption {
                 (encryptFileName(folderName,fileSK, ivSpec));
         ret[1] = Base64.getEncoder().encodeToString
                 (encFileSecretKey(fileSK, pubKey));
-        try {
-            fileSK.destroy();
-        } catch (DestroyFailedException e) {
-            e.printStackTrace();
+        if (CAN_KEYS_BE_DESTROYED) {
+            try {
+                fileSK.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         }
         return ret;
     }
