@@ -1,6 +1,5 @@
 package org.cs5431;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -131,6 +130,7 @@ public class SQL_Accounts {
                 createFolder.setString   (3, Integer.toString(0));
                 createFolder.setTimestamp (4, currDate);
                 createFolder.setBoolean    (5, false);
+
                 createFolder.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("created folder");
@@ -543,7 +543,6 @@ public class SQL_Accounts {
     public int deleteUser(int uid, String username, String password, String sourceIp) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", "username");
-        //allegedUser.put("pwd", password);
         String salt = getSalt(username, sourceIp, "DELETE_USER");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");

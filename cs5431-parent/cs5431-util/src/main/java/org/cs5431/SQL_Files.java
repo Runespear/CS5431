@@ -69,13 +69,13 @@ public class SQL_Files {
             PreparedStatement addParent = null;
 
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
-                    "lastModified, isFile, fsoNameIV, ownerid)"
-                    + " values (?, ?, ?, ?, ?, ?, ?)";
-            String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey, fileIV) values (?, ?, ?, ?)";
+                    "lastModified, isFile, fsoNameIV, ownerid, fileIV)"
+                    + " values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
-            String insertFilePath = "INSERT INTO FileContents (fsoid, path, fileIV) values (?, ?, ?)";
+            String insertFilePath = "INSERT INTO FileContents (fsoid, path) values (?, ?)";
             String insertParent = "INSERT INTO FolderChildren (parentid, childid, uid) values (?, ?, ?)";
 
             try {
@@ -99,6 +99,7 @@ public class SQL_Files {
                     createFso.setBoolean(5, isFile);
                     createFso.setString(6, fsoNameIV);
                     createFso.setInt(7, uid);
+                    createFso.setString(8, fileIV);
                     createFso.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("created folder");
@@ -117,7 +118,6 @@ public class SQL_Files {
                     addKey.setInt(1, fsoid);
                     addKey.setInt(2, uid);
                     addKey.setString(3, sk);
-                    addKey.setString(4, fileIV);
                     addKey.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("added added sk");
@@ -154,7 +154,6 @@ public class SQL_Files {
                         addFile = connection.prepareStatement(insertFilePath);
                         addFile.setInt(1, fsoid);
                         addFile.setString(2, "./files/" + uid + "/" + fsoid);
-                        addFile.setString(3, fileIV);
                         addFile.executeUpdate();
                         if (DEBUG_MODE) {
                             System.out.println("added file path");
@@ -261,15 +260,13 @@ public class SQL_Files {
             }
             PreparedStatement getFiles = null;
             PreparedStatement getKey = null;
-            PreparedStatement getIv = null;
             PreparedStatement createLog = null;
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV " +
+            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV, F.fileIV " +
                     "FROM FileSystemObjects F " +
                     "WHERE EXISTS (SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid);";
             String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
-            String selectIv = "SELECT F.fileIV FROM FileContents WHERE F.fsoid = ? AND F.uid = ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -277,7 +274,6 @@ public class SQL_Files {
                 if (hasPermission) {
                     getFiles = connection.prepareStatement(selectFiles);
                     getKey = connection.prepareStatement(selectKey);
-                    getIv = connection.prepareStatement(selectIv);
                     connection.setAutoCommit(false);
                     getFiles.setInt(1, parentFolderid);
                     ResultSet rs = getFiles.executeQuery();
@@ -291,6 +287,7 @@ public class SQL_Files {
                         fso.put("size", rs.getString(3));
                         fso.put("lastModified", rs.getTimestamp(4));
                         fso.put("fsoNameIV", rs.getString(6));
+                        fso.put("fileIV", rs.getString(7));
 
                         if (rs.getBoolean(5)) {
                             fso.put("FSOType", "FILE");
@@ -302,14 +299,8 @@ public class SQL_Files {
                         ResultSet encRS = getKey.executeQuery();
 
                         if (encRS.next()) {
+                            System.out.println("get enc key");
                             fso.put("encKey", encRS.getString(1));
-                        }
-                        getIv.setInt(1, fsoid);
-                        getIv.setInt(2, uid);
-                        ResultSet fileIV = getKey.executeQuery();
-
-                        if (fileIV.next()) {
-                            fso.put("fileIV", fileIV.getString(1));
                         }
 
                         files.put(fso);
@@ -357,9 +348,6 @@ public class SQL_Files {
                 if (getKey != null) {
                     getKey.close();
                 }
-                if (getIv != null) {
-                    getIv.close();
-                }
                 if (createLog != null) {
                     createLog.close();
                 }
@@ -383,7 +371,7 @@ public class SQL_Files {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
 
-        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -394,10 +382,12 @@ public class SQL_Files {
             }
             PreparedStatement getPath = null;
             PreparedStatement getKey = null;
+            PreparedStatement getIV = null;
             PreparedStatement createLog = null;
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            String selectPath = "SELECT F.path, F.fileIV FROM FileContents F WHERE F.fsoid = ?";
+            String selectIV = "SELECT F.fileIV FROM FileSystemObjects F WHERE F.fsoid = ?";
+            String selectPath = "SELECT F.path FROM FileContents F WHERE F.fsoid = ?";
             String selectSk = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -405,7 +395,9 @@ public class SQL_Files {
                 if (hasPermission) {
                     getPath = connection.prepareStatement(selectPath);
                     getKey = connection.prepareStatement(selectSk);
+                    getIV = connection.prepareStatement(selectIV);
                     connection.setAutoCommit(false);
+
                     getPath.setInt(1, fsoid);
                     ResultSet rs = getPath.executeQuery();
                     JSONObject fso = new JSONObject();
@@ -433,10 +425,12 @@ public class SQL_Files {
                                 (filebytes));
 
                         fso.put("fsoid", fsoid);
-                        if (DEBUG_MODE) {
-                            System.out.println("fileic" + rs.getString(2));
+
+                        getIV.setInt(1, fsoid);
+                        rs = getIV.executeQuery();
+                        if (rs.next()) {
+                            fso.put("fileIV", rs.getString(1));
                         }
-                        fso.put("fileIV", rs.getString(2));
                     }
                     return fso;
                 } else {
@@ -483,6 +477,9 @@ public class SQL_Files {
                 }
                 if (createLog != null) {
                     createLog.close();
+                }
+                if (getIV != null) {
+                    getIV.close();
                 }
                 connection.setAutoCommit(true);
             }
@@ -932,14 +929,13 @@ public class SQL_Files {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
         int newUid = json.getInt("newUid");
-        String encKey = json.getString("encSecretKey");
+        String encKey = json.getString("encSecretKey"); //TODO: remove?
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement addEditor = null;
         PreparedStatement createLog = null;
-        PreparedStatement shareFsoKey = null;
         PreparedStatement removeViewer = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -950,7 +946,6 @@ public class SQL_Files {
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            String insertFsoKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
             String deleteViewer = "DELETE FROM Viewers WHERE uid = ?";
 
             try {
@@ -970,7 +965,6 @@ public class SQL_Files {
                 }
                 if (hasPermission) {
                     addEditor = connection.prepareStatement(insertEditor);
-                    shareFsoKey = connection.prepareStatement(insertFsoKey);
                     removeViewer = connection.prepareStatement(deleteViewer);
                     connection.setAutoCommit(false);
                     addEditor.setInt(1, fsoid);
@@ -990,11 +984,6 @@ public class SQL_Files {
                     createLog.setInt(8, newUid);
                     createLog.setString(9, null);
                     createLog.executeUpdate();
-
-                    shareFsoKey.setInt(1, fsoid);
-                    shareFsoKey.setInt(2, uid);
-                    shareFsoKey.setString(3, encKey);
-                    shareFsoKey.executeUpdate();
 
                     connection.commit();
                     return newUid;
@@ -1038,9 +1027,6 @@ public class SQL_Files {
                 }
                 if (createLog != null) {
                     createLog.close();
-                }
-                if (shareFsoKey != null) {
-                    shareFsoKey.close();
                 }
                 if (removeViewer != null) {
                     removeViewer.close();
@@ -1387,7 +1373,7 @@ public class SQL_Files {
                     createLog.executeUpdate();
 
                     removeKey.setInt(1, fsoid);
-                    removeKey.setInt(2, uid);
+                    removeKey.setInt(2, rmUid);
                     removeKey.executeUpdate();
                     if (DEBUG_MODE)
                         System.out.println("removed key");
@@ -1549,7 +1535,7 @@ public class SQL_Files {
 
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            String updateFile = "UPDATE FileContents SET fileIV = ? WHERE fsoid = ?";
+            String updateFile = "UPDATE FileSystemObjects SET fileIV = ? WHERE fsoid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
