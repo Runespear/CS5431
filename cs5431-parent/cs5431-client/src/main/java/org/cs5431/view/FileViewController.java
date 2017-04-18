@@ -490,8 +490,8 @@ public class FileViewController implements Initializable {
         if (fileSelected) {
             imgDownload.setVisible(isFile);
             imgDownload.setDisable(!isFile);
-            imgEdit.setVisible(isFile);
-            imgEdit.setDisable(!isFile);
+            imgEdit.setVisible(isFile && editAllowed);
+            imgEdit.setDisable(!isFile && editAllowed);
         }
         imgViewLog.setVisible(fileSelected);
         imgViewLog.setDisable(!fileSelected);
