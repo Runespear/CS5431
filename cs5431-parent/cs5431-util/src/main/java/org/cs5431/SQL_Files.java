@@ -1570,7 +1570,6 @@ public class SQL_Files {
                     createLog.executeUpdate();
 
                     FileOutputStream fos = new FileOutputStream("./files/" + uid + "/" + fsoid, false);
-
                     fos.write(Base64.getDecoder().decode(encFile));
                     fos.close();
                     if (DEBUG_MODE) {
@@ -1811,10 +1810,6 @@ public class SQL_Files {
                 if (rs.next()) {
                     ownerid = rs.getInt(1);
                 }
-
-                if (DEBUG_MODE) {
-                    System.out.println("user is the only viewer left!");
-                }
                 deleteObject = connection.prepareStatement(removeFso);
                 deleteObject.setInt(1, fsoid);
                 deleteObject.executeUpdate();
@@ -1841,6 +1836,7 @@ public class SQL_Files {
                     logDeleteObject.execute();
                 }
                 connection.commit();
+                return fsoid;
             } catch (SQLException e) {
                 if (connection != null) {
                     try {

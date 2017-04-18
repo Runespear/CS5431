@@ -173,6 +173,7 @@ public class FileController {
             byte[] encFileSK = Base64.getDecoder().decode(keyResponse.getString
                     ("fileSK"));
             SecretKey fileSK = decFileSecretKey(encFileSK, user.getPrivKey());
+            System.out.println("FILE SK = " + fileSK.getEncoded().toString());
             JSONObject jsonFile = new JSONObject();
             jsonFile.put("msgType", "overwrite");
             jsonFile.put("fsoid", originalFile.getId());
