@@ -131,7 +131,7 @@ public class Encryption {
         return returnedValues;
     }
 
-    static String secondPwdHash(String pwd, byte[] salt) {
+    public static String secondPwdHash(String pwd, byte[] salt) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 10000);
@@ -150,7 +150,7 @@ public class Encryption {
         return hashedPwd;
     }
 
-    static byte[] signCert(byte[] message, PrivateKey key) throws
+    public static byte[] signCert(byte[] message, PrivateKey key) throws
             NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         //SHA-256 hashing algorithm with RSA, getting the signature object
         Signature dsa = Signature.getInstance("SHA256withRSA");
@@ -159,7 +159,7 @@ public class Encryption {
         return dsa.sign();
     }
 
-    static byte[] signJKS(byte[] message, PrivateKey key) throws
+    public static byte[] signJKS(byte[] message, PrivateKey key) throws
             NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         //SHA-256 hashing algorithm with RSA, getting the signature object
         Signature dsa = Signature.getInstance("SHA256withRSA");
