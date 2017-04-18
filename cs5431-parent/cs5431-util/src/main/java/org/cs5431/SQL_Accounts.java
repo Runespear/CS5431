@@ -240,6 +240,42 @@ public class SQL_Accounts {
         return null;
     }
 
+    public void logSessionLimit(String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement addLog = null;
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                addLog = connection.prepareStatement(insertLog);
+                addLog.setInt(1, 0);
+                addLog.setInt(2, 0);
+                addLog.setString(3, null);
+                addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                addLog.setString(5, "LOGIN");
+                addLog.setString(6, "FAILURE");
+                addLog.setString(7, sourceIp);
+                addLog.setString(8, "TOO MANY FAILED LOGINS");
+                addLog.executeQuery();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            } finally {
+                if (addLog != null) {
+                    addLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     /** Compares username and encrypted password with row of User table.
      * Creates a failure login log if the user's password and username does not match. (username is valid).
      * Creates a success login log upon success.
@@ -258,20 +294,75 @@ public class SQL_Accounts {
             }
             PreparedStatement verifyUser = null;
             PreparedStatement addLog = null;
+            PreparedStatement limitIp = null;
+            PreparedStatement limitUsername = null;
 
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String countIp = "SELECT COUNT(*) FROM UserLog U \n" +
+                    "WHERE U.lastModified > DATE_SUB(now(), INTERVAL 5 MINUTE) \n" +
+                    "AND U.actionType = \"LOGIN\" AND U.status = \"FAILURE\" \n" +
+                    "AND U.sourceIp = ?;";
+            String countUsername = "SELECT COUNT(*) FROM UserLog U \n" +
+                    "WHERE U.lastModified > DATE_SUB(now(), INTERVAL 5 MINUTE) \n" +
+                    "AND U.actionType = \"LOGIN\" AND U.status = \"FAILURE\" \n" +
+                    "AND U.simulatedUsername = ?;";
 
             String username = allegedUser.getString("username");
 
             try {
+                int numIp = 0;
+                int numUsername = 0;
                 addLog = connection.prepareStatement(insertLog);
                 verifyUser = connection.prepareStatement(checkPassword);
+                limitIp = connection.prepareStatement(countIp);
+                limitUsername = connection.prepareStatement(countUsername);
+
+                limitIp.setString(1, sourceIp);
+                ResultSet rs = limitIp.executeQuery();
+
+                if (rs.next()) {
+                    numIp = rs.getInt(1);
+                }
+
+                if (numIp >= 5) {
+                    addLog.setInt(1, 0);
+                    addLog.setInt(2, 0);
+                    addLog.setString(3, username);
+                    addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    addLog.setString(5, "LOGIN");
+                    addLog.setString(6, "FAILURE");
+                    addLog.setString(7, sourceIp);
+                    addLog.setString(8, "IP TOO MANY FAILED LOGINS");
+                    addLog.executeUpdate();
+                    return null; //TODO: what to return
+                }
+
+                limitUsername.setString(1, username);
+                rs = limitUsername.executeQuery();
+
+                if (rs.next()) {
+                    numUsername = rs.getInt(1);
+                }
+
+                if (numUsername >= 5) {
+                    addLog.setInt(1, 0);
+                    addLog.setInt(2, 0);
+                    addLog.setString(3, username);
+                    addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    addLog.setString(5, "LOGIN");
+                    addLog.setString(6, "FAILURE");
+                    addLog.setString(7, sourceIp);
+                    addLog.setString(8, "USERNAME TOO MANY FAILED LOGINS");
+                    addLog.executeUpdate();
+                    return null; //TODO: what to return
+                }
+
                 verifyUser.setString(1, username);
                 verifyUser.setString(2, encPwd);
-                ResultSet rs = verifyUser.executeQuery();
+                rs = verifyUser.executeQuery();
 
                 if (rs.next()) {
                     //user valid
@@ -330,6 +421,12 @@ public class SQL_Accounts {
                 }
                 if (addLog != null) {
                     addLog.close();
+                }
+                if (limitIp != null) {
+                    limitIp.close();
+                }
+                if (limitUsername != null) {
+                    limitUsername.close();
                 }
             }
         } catch (SQLException e) {

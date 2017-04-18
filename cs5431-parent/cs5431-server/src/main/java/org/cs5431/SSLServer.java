@@ -223,6 +223,7 @@ public class SSLServer extends Thread {
         Date now = new Date();
         if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
                 failedTime)) {
+            sql_accounts.logSessionLimit(sourceIp);
             return makeErrJson("Too many failed logins recently");
         }
 
