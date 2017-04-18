@@ -102,7 +102,7 @@ public class ServerView {
             SSLSocketThread sst = new SSLSocketThread(sql_accounts, sql_files, ss);
             new Thread(sst).start();
 
-            PromptAdminThread pat = new PromptAdminThread(sql_accounts);
+            PromptAdminThread pat = new PromptAdminThread(sql_accounts, sql_files);
             new Thread(pat).start();
 
         } catch(Exception e) {

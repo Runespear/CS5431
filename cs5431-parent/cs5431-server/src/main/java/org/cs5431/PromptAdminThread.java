@@ -6,11 +6,13 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class PromptAdminThread implements Runnable {
-    SQL_Accounts sql_accounts;
+    private SQL_Accounts sql_accounts;
+    private SQL_Files sql_files;
     private String sourceIP;
 
-    public PromptAdminThread(SQL_Accounts sql_accounts) {
+    PromptAdminThread(SQL_Accounts sql_accounts, SQL_Files sql_files) {
         this.sql_accounts = sql_accounts;
+        this.sql_files = sql_files;
         try {
             this.sourceIP = InetAddress.getLocalHost().toString();
         } catch (UnknownHostException e) {
@@ -21,7 +23,7 @@ public class PromptAdminThread implements Runnable {
     public void run() {
         try {
             while (true) {
-                prompt(sql_accounts);
+                prompt();
             }
         } catch (SQLException e) {
             System.out.println("Wrong password, please try again.");
@@ -29,7 +31,7 @@ public class PromptAdminThread implements Runnable {
         }
     }
 
-    private void prompt(SQL_Accounts sql_accounts) throws SQLException {
+    private void prompt() throws SQLException {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter 'u' to download user logs");
@@ -46,7 +48,7 @@ public class PromptAdminThread implements Runnable {
                     deleteUser(sql_accounts);
                     return;
                 case "f":
-                    downloadFileLogs(sql_accounts);
+                    downloadFileLogs(sql_files);
                     return;
                 default:
                     System.out.println("Sorry, your command was not " +
@@ -69,8 +71,47 @@ public class PromptAdminThread implements Runnable {
         sql_accounts.getUserLog();
     }
 
-    private void downloadFileLogs(SQL_Accounts sql_accounts) {
-        //TODO
+    private void downloadFileLogs(SQL_Files sql_files) {
+        System.out.println("Type 'a' to download all file logs");
+        System.out.println("Type 's' to download the file log of a specific " +
+                "file");
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String input = scanner.nextLine();
+            switch(input) {
+                case "a":
+                    sql_files.getAllFileLogs();
+                    System.out.println("Log has been downloaded.");
+                    return;
+                case "s":
+                    downloadOneFileLog(sql_files);
+                    return;
+                default:
+                    System.out.println("Sorry, that command was not " +
+                            "understood.");
+                    break;
+            }
+        }
+    }
+
+    private void downloadOneFileLog(SQL_Files sql_files) {
+        System.out.println("Type the file id of the file log to download");
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            try {
+                Integer input = Integer.parseInt(scanner.nextLine());
+                if (input <= 0)
+                    System.out.println("File ids are always positive integers" +
+                            ". Please try again.");
+                else {
+                    sql_files.getFileLog(input);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Sorry, that was not a valid number. " +
+                        "Please try again.");
+            }
+        }
     }
 
     private void deleteUser(SQL_Accounts sql_accounts) throws SQLException {
