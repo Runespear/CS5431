@@ -1,7 +1,10 @@
 package org.cs5431.controller;
 
 import org.cs5431.Validator;
-import org.cs5431.model.*;
+import org.cs5431.model.File;
+import org.cs5431.model.FileSystemObject;
+import org.cs5431.model.Folder;
+import org.cs5431.model.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +19,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -24,7 +26,6 @@ import static org.cs5431.Constants.CAN_KEYS_BE_DESTROYED;
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.*;
 import static org.cs5431.JSON.*;
-import static org.cs5431.model.FileActionType.DOWNLOAD;
 
 public class FileController {
     private org.cs5431.model.User user;

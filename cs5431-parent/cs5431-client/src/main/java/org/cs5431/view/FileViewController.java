@@ -280,7 +280,13 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
-            task.setOnSucceeded(t -> populateListView());
+            task.setOnSucceeded(t -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Download successful");
+                alert.setContentText("Successfully overwrote " + fso.getFileName() + "!");
+                alert.showAndWait();
+                populateListView();
+            });
             Thread th = new Thread(task);
             th.setDaemon(true);
             th.start();
