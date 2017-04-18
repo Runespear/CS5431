@@ -1632,6 +1632,9 @@ public class SQL_Files {
                 if (createLog != null) {
                     createLog.close();
                 }
+                if (getOwnerid != null) {
+                    createLog.close();
+                }
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
