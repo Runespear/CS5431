@@ -1779,8 +1779,124 @@ public class SQL_Files {
         return -1;
     }
 
-    public int deleteForAll(){
+    public int deleteForAll(int fsoid, int uid, String sourceIp){
         //TODO: Update SSLServer with the call in the comment
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            boolean isFile = isFile(fsoid);
+
+            PreparedStatement deleteObject = null;
+            PreparedStatement logDeleteObject = null;
+            PreparedStatement getUid = null;
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
+            String selectUid = "SELECT F.ownerid FROM FileSystemObjects F WHERE F.fsoid = ?";
+            String removeFso = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
+            String deleteLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                logDeleteObject = connection.prepareStatement(deleteLog);
+                int ownerid = -1;
+                getUid = connection.prepareStatement(selectUid);
+                connection.setAutoCommit(false);
+
+                getUid.setInt(1, fsoid);
+                ResultSet rs = getUid.executeQuery();
+
+                if (rs.next()) {
+                    ownerid = rs.getInt(1);
+                }
+
+                if (DEBUG_MODE) {
+                    System.out.println("user is the only viewer left!");
+                }
+                deleteObject = connection.prepareStatement(removeFso);
+                deleteObject.setInt(1, fsoid);
+                deleteObject.executeUpdate();
+
+                //delete actual file
+                if (isFile) {
+                    if (DEBUG_MODE) {
+                        System.out.println("trying to delete file!");
+                    }
+                    Path path = Paths.get("./files/" + ownerid + "/" + fsoid);
+                    Files.delete(path);
+                    if (DEBUG_MODE) {
+                        System.out.println("deleted actual file!");
+                    }
+                    logDeleteObject.setInt(1, 0);
+                    logDeleteObject.setInt(2, fsoid);
+                    logDeleteObject.setInt(3, uid);
+                    logDeleteObject.setTimestamp(4, lastModified);
+                    logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
+                    logDeleteObject.setString(6, "SUCCESS");
+                    logDeleteObject.setString(7, sourceIp);
+                    logDeleteObject.setInt(8, 0);
+                    logDeleteObject.setString(9, null);
+                    logDeleteObject.execute();
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                if (connection != null) {
+                    try {
+                        System.err.println("Transaction is being rolled back");
+                        connection.rollback();
+                        logDeleteObject.setInt(1, 0);
+                        logDeleteObject.setInt(2, fsoid);
+                        logDeleteObject.setInt(3, uid);
+                        logDeleteObject.setTimestamp(4, lastModified);
+                        logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
+                        logDeleteObject.setString(6, "FAILURE");
+                        logDeleteObject.setString(7, sourceIp);
+                        logDeleteObject.setInt(8, 0);
+                        logDeleteObject.setString(9, "DB ERROR");
+                        logDeleteObject.execute();
+                        if (DEBUG_MODE) {
+                            System.out.println("created failure log");
+                        }
+                    } catch (SQLException excep) {
+                        excep.printStackTrace();
+                    }
+                }
+            } catch (IOException e){
+                if (DEBUG_MODE) {
+                    System.out.println("io exception - cannot delete object!");
+                }
+                //never seems to reach the following
+                if (connection != null) {
+                    logDeleteObject = connection.prepareStatement(deleteLog);
+                    logDeleteObject.setInt(1, 0);
+                    logDeleteObject.setInt(2, fsoid);
+                    logDeleteObject.setInt(3, uid);
+                    logDeleteObject.setTimestamp(4, lastModified);
+                    logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
+                    logDeleteObject.setString(6, "FAILURE");
+                    logDeleteObject.setString(7, sourceIp);
+                    logDeleteObject.setInt(8, 0);
+                    logDeleteObject.setString(9, "IO ERROR");
+                    logDeleteObject.execute();
+                }
+            } finally {
+                if (deleteObject != null) {
+                    deleteObject.close();
+                }
+                if (logDeleteObject != null) {
+                    logDeleteObject.close();
+                }
+                if (getUid != null) {
+                    getUid.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return -1;
     }
 
@@ -1904,7 +2020,6 @@ public class SQL_Files {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 }
 
