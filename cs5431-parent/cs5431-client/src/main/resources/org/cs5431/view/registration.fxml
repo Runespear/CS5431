@@ -11,7 +11,7 @@
             fx:controller="org.cs5431.view.RegistrationController">
     <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0">
         <Text strokeType="OUTSIDE" strokeWidth="0.0"
-              text="Short writeup goes here. This secure file sharing system allows you to retrieve files securely from a server. Even the server admin does not know the content of your files. If there are any problems, email bcp39@cornell.edu to scold him."
+              text="This secure file sharing system allows you to retrieve files securely from a server. All files and folders are encrypted - even the admins don't know the contents of your files!"
               textAlignment="CENTER" wrappingWidth="400.0"/>
         <GridPane>
             <columnConstraints>
