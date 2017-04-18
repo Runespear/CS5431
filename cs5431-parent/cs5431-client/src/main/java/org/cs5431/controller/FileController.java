@@ -663,7 +663,7 @@ public class FileController {
                             logMsg = username + " overwrote this file on "
                                     + lastModified;
                             break;
-                        case "DELETE_FSO":
+                        case "REMOVE_FSO":
                             logMsg = username + " deleted this file on "
                                     + lastModified;
                             break;
@@ -694,7 +694,7 @@ public class FileController {
                                     "file on "
                                     + lastModified;
                             break;
-                        case "DELETE_FSO":
+                        case "REMOVE_FSO":
                             logMsg = username + " failed to delete this file on "
                                     + lastModified;
                             break;
