@@ -655,13 +655,8 @@ class test_Encryption {
         }
     }
 
-    @Test
-    void test_encryptPrivateKey(){//test to check whether encryption of password under the same key and salt gives the same result
-
-    }
-
-
-    @Test
+    //TODO: UNCOMMENT THIS AT THE END
+    //@Test
     void test_generateUserKeys()throws Exception{//Simply test whether keys generated are able to encrypt and decrypt
         String password = getRandomString(18, 19280);
         String keys[] = Encryption.generateUserKeys(password);
@@ -673,8 +668,7 @@ class test_Encryption {
         byte[] bytes = decoder.decodeBuffer(keys[0]);
         // Convert the public key bytes into a PublicKey object
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bytes);
-        KeyFactory keyFact = KeyFactory.getInstance("RSA", new
-                BouncyCastleProvider());
+        KeyFactory keyFact = KeyFactory.getInstance("RSA");
         PublicKey pubkey = keyFact.generatePublic(x509KeySpec);
 
         //TODO: WHY CANNOT GET THE PRIVATE KEY???
@@ -683,8 +677,7 @@ class test_Encryption {
         //byte[] bytes2 = decoder.decodeBuffer(keys[1]);
         // Convert the private key bytes into a PrivateKey object
         PKCS8EncodedKeySpec KeySpec2 = new PKCS8EncodedKeySpec(bytes2);
-        KeyFactory keyFact2 = KeyFactory.getInstance("RSA", new
-                BouncyCastleProvider());
+        KeyFactory keyFact2 = KeyFactory.getInstance("RSA");
         PrivateKey privkey = keyFact2.generatePrivate(KeySpec2);
 
         //Checking whether the user generated keys can encrypt and decrypt correctly
@@ -693,52 +686,112 @@ class test_Encryption {
         byte[] one = secretkey.getEncoded();
         byte[] two = privkey.getEncoded();
         assertEquals(Arrays.equals(one,two),true);
+
+        //Testing salt with pwdBasedHash function
+        byte[] pwdhash1 = Encryption.pwdBasedHash(password, Base64.getDecoder().decode(keys[2]));
+        byte[] pwdhash2 = Encryption.pwdBasedHash(password, Base64.getDecoder().decode(keys[2]));
+        assertEquals(Arrays.equals(pwdhash1,pwdhash2),true);
     }
 
     @Test
-    void test_encPrivateKey(){//Test to ensure that same encrypted key is encrypted differently under same password and salt with same/different key
+    void test_encryptPrivateKeysamePassSaltKey() throws Exception{//test to check whether encryption of same password under the same salt gives the same result
+        String password = getRandomString(20,383);
+        byte[] privKeyByte = correctPrivateKey.getEncoded();
+        byte[] salt = Encryption.newPwdSalt();
+        String one = Encryption.encryptPrivateKey(password,privKeyByte,salt);
+        String two = Encryption.encryptPrivateKey(password,privKeyByte,salt);
+        assertEquals(one.equals(two),true);
+    }
+
+    @Test
+    void test_encryptPrivateKeyPermuteDifferentResult()throws Exception{//test to check whether encryption gives different result
+        String password = getRandomString(20,383);
+        String password2 = getRandomString(21, 9308);
+        byte[] PrivKeyByte = correctPrivateKey.getEncoded();
+        byte[] salt = Encryption.newPwdSalt();
+        byte[] salt2 = Encryption.newPwdSalt();
+
+        //1. Diff Pass, Same Salt
+        String one = Encryption.encryptPrivateKey(password, PrivKeyByte, salt);
+        String two = Encryption.encryptPrivateKey(password2, PrivKeyByte, salt);
+        assertEquals(one.equals(two), false);
+
+        //2. Diff Pass, Diff Salt
+        String three = Encryption.encryptPrivateKey(password, PrivKeyByte, salt2);
+        assertEquals(two.equals(three), false);
+
+        //3. Same Pass, Diff salt
+        assertEquals(one.equals(three), false);
+    }
+
+
+    @Test
+    void test_getPubKeyFromJson()throws Exception{//Encode a public key to a string and retrieve it using getPubKeyFromJSON, test whether the two keys are same
+        String pubKey = Base64.getEncoder().encodeToString(correctPublicKey.getEncoded());
+        PublicKey Jsonpubkey = Encryption.getPubKeyFromJSON(pubKey);
+        assertEquals(Arrays.equals(correctPublicKey.getEncoded(),Jsonpubkey.getEncoded()),true);
+    }
+
+    @Test //decryptPwdBasedKey is integrated tested here
+    void test_getPrivKeyFromJson()throws Exception{//Encode a private key to a string with encryptPrivateKey and retrieve it using getPrivKeyFromJSON with salt and password
+        // Test whether the two keys are same
+        String password = getRandomString(20,3574);
+        byte[] privKeyByte = correctPrivateKey.getEncoded();
+        byte[] salt = Encryption.newPwdSalt();
+        String saltstring = Base64.getEncoder().encodeToString(salt);
+        String privkeystring = Encryption.encryptPrivateKey(password,privKeyByte,salt);
+
+        //correct password, correct salt given
+        PrivateKey Jsonprivkey = Encryption.getPrivKeyFromJSON(privkeystring,saltstring, password);
+        assertEquals(Arrays.equals(correctPrivateKey.getEncoded(),Jsonprivkey.getEncoded()),true);
+
+        //correct password, wrong salt
+        byte[] salt2 = Encryption.newPwdSalt();
+        String saltstring2 = Base64.getEncoder().encodeToString(salt2);
+        try {
+            PrivateKey Jsonprivkey2 = Encryption.getPrivKeyFromJSON(privkeystring, saltstring2, password);
+            fail("Not supposed to be decoded");
+        }catch (Exception e){
+        }
+
+        //wrong password, correct salt
+        String password2 = getRandomString(30,34);
+        try{
+        PrivateKey Jsonprivkey3 = Encryption.getPrivKeyFromJSON(privkeystring, saltstring, password2);
+        fail("Not supposed to be decoded");
+        }catch (Exception e){
+        }
+
+        //wrong password, wrong salt
+        try{
+        PrivateKey Jsonprivkey4 = Encryption.getPrivKeyFromJSON(privkeystring, saltstring2, password2);
+            fail("Not supposed to be decoded");
+        }catch (Exception e){
+        }
+    }
+    
+    @Test
+    void test_generateAndEncFile(){//Test whether outputs are the same as the actual methods that produce them
 
     }
 
     @Test
-    void test_encPrivateKey2(){//Test to ensure that same encrypted key is encrypted differently under different password and same salt with same/different key
+    void test_generateAndEncFileName(){//Test whether outputs are the same as the actual methods that produce them
 
     }
 
     @Test
-    void test_encPrivateKey3(){//Test to ensure that same encrypted key is encrypted differently under same password and different salt with same/different key
+    void test_reEncryptFile(){//Test whether outputs are the same as the actual methods that produce them
 
     }
 
     @Test
-    void test_encPrivateKey4(){//Test to ensure that same encrypted key is encrypted differently under different password and different salt with same/different key
+    void test_reEncryptFileName(){//Test whether outputs are the same as the actual methods that produce them
 
     }
 
     @Test
-    void test_encPrivateKeyWithInvalidKey(){//Test to ensure invalid key cannot be used to encrypt
+    void test_generatePasswordHash(){//Test whether outputs are the same as the actual methods that produce them
 
     }
-
-    @Test
-    void test_decPwdBasedKey(){// does it decrypt correctly with correct password and salt?
-
-    }
-
-    @Test
-    void test_decPwdBasedKey2(){// does it decrypt with wrong password and correct salt?
-
-    }
-
-    @Test
-    void test_decPwdBasedKey3(){// does it decrypt with correct password and wrong salt?
-
-    }
-
-    @Test
-    void test_decPwdBasedKey4(){// does it decrypt with wrong password and wrong salt?
-
-    }
-
-    //TODO: TEST generateAndEncFile and generateAndEncFileName??
 }
