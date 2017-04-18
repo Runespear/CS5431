@@ -1696,7 +1696,7 @@ public class SQL_Files {
         PreparedStatement createLog = null;
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
