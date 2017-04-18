@@ -112,7 +112,7 @@ public class SQL_Files {
                     addParent.setInt(1, parentFolderid);
                     addParent.setInt(2, fsoid);
                     addParent.setInt(3, uid);
-                   addParent.executeUpdate();
+                    addParent.executeUpdate();
 
                     addKey.setInt(1, fsoid);
                     addKey.setInt(2, uid);
@@ -877,7 +877,7 @@ public class SQL_Files {
                     createLog.setString(5, "GET_KEYS");
                     createLog.setString(6, "FAILURE");
                     createLog.setString(7, sourceIp);
-                    createLog.setInt(8, 0);
+                    createLog.setInt(8, newUid);
                     createLog.setString(9, "NO PERMISSION");
                     createLog.executeUpdate();
                 }
@@ -895,7 +895,7 @@ public class SQL_Files {
                         createLog.setString(5, "GET_KEYS");
                         createLog.setString(6, "FAILURE");
                         createLog.setString(7, sourceIp);
-                        createLog.setInt(8, 0);
+                        createLog.setInt(8, newUid);
                         createLog.setString(9, "DB ERROR");
                         createLog.executeUpdate();
                     } catch (SQLException excep) {
@@ -1280,7 +1280,7 @@ public class SQL_Files {
                         System.out.println("created log");
 
                     removeKey.setInt(1, fsoid);
-                    removeKey.setInt(2, uid);
+                    removeKey.setInt(2, rmUid);
                     removeKey.executeUpdate();
                     if (DEBUG_MODE)
                         System.out.println("removed key");
