@@ -406,6 +406,7 @@ public class FileViewController implements Initializable {
     private void tryLogout() {
         try {
             userController.logout(); //has to block the UI thread for correctness
+            user.getPrivKey().destroy();
             showAppropriateImages(false, false, false);
             Scene scene = stage.getScene();
             scene.setRoot(Client.loginNode);

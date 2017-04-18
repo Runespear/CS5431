@@ -256,6 +256,9 @@ public class PrivViewController implements Initializable{
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
+                    if (task.getValue() != null && tableViewPriv.getItems()
+                            .contains(task.getValue()))
+                        tableViewPriv.getItems().remove(task.getValue());
                 }
             });
         });

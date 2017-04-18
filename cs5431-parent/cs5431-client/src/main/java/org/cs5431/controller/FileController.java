@@ -11,6 +11,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.security.auth.DestroyFailedException;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
@@ -194,6 +195,11 @@ public class FileController {
                 throw new FileControllerException("Received bad response " +
                         "from server");
             }
+            try {
+                fileSK.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         } else if (keyResponse.getString("msgType").equals("error")) {
             throw new FileControllerException(keyResponse.getString("message"));
         } else {
@@ -252,6 +258,11 @@ public class FileController {
                 throw new FileControllerException("Received bad response " +
                         "from server");
             }
+            try {
+                fileSK.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         } else if (keyResponse.getString("msgType").equals("error")) {
             throw new FileControllerException(keyResponse.getString("message"));
         } else {
@@ -295,6 +306,11 @@ public class FileController {
             if (!decryptFile(fsoBytes, fsoName, fileSK, iv, dir))
                 throw new FileControllerException("Failed to decrypt file " +
                         "that was downloaded");
+            try {
+                fileSK.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         } else if (fileAck.getString("msgType").equals("error")) {
             throw new FileControllerException(fileAck.getString("message"));
         } else {
@@ -351,6 +367,11 @@ public class FileController {
                     child = new File(id, name, longSize, lastModified, isEditor, isViewer);
                 }
                 children.add(child);
+                try {
+                    fileSK.destroy();
+                } catch (DestroyFailedException e) {
+                    e.printStackTrace();
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -466,6 +487,11 @@ public class FileController {
             byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
             addViewer(fsoid, uid, newUserId, Base64.getEncoder()
                     .encodeToString(encFileSK));
+            try {
+                fileSK.destroy();
+            } catch (DestroyFailedException e) {
+                e.printStackTrace();
+            }
         } else if (responseKeys.getString("msgType").equals("error")) {
             throw new FileControllerException(responseKeys.getString
                     ("message"));

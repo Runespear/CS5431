@@ -134,14 +134,6 @@ public class RegistrationController implements Initializable {
                 alert.showAndWait();
                 exit();
             });
-            task.setOnFailed(t -> {
-                cancelButton.getScene().setCursor(Cursor.DEFAULT);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Registration failed");
-                alert.setContentText("Could not create new user. Please " +
-                        "try again.");
-                alert.showAndWait();
-            });
             cancelButton.getScene().setCursor(Cursor.WAIT);
             Thread th = new Thread(task);
             th.setDaemon(true);
@@ -150,6 +142,11 @@ public class RegistrationController implements Initializable {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
+                    cancelButton.getScene().setCursor(Cursor.DEFAULT);
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Registration failed");
+                    alert.setContentText(ex.getMessage());
+                    alert.showAndWait();
                 }
             });
         }

@@ -9,6 +9,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.security.auth.DestroyFailedException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -202,6 +203,11 @@ public class Encryption {
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
         byte encryptedKey[] = cipher.doFinal(privKeyByte);
+        try {
+            secretKey.destroy();
+        } catch (DestroyFailedException e) {
+            e.printStackTrace();
+        }
         return Base64.getEncoder().encodeToString(encryptedKey);
     }
 
@@ -237,7 +243,13 @@ public class Encryption {
         SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
         IvParameterSpec iv = new IvParameterSpec(new byte[16]);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-        return cipher.doFinal(Base64.getDecoder().decode(enc));
+        byte privKey[] =  cipher.doFinal(Base64.getDecoder().decode(enc));
+        try {
+            secretKey.destroy();
+        } catch (DestroyFailedException e) {
+            e.printStackTrace();
+        }
+        return privKey;
     }
 
     //[0] is encFile, [1] is encFileName, [2] is fileSK, [3] is fileIV, [4]
@@ -259,6 +271,11 @@ public class Encryption {
         ret[2] = Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, publicKey));
         ret[3] = Base64.getEncoder().encodeToString(fileIVSpec.getIV());
         ret[4] = Base64.getEncoder().encodeToString(fsoNameIVSpec.getIV());
+        try {
+            fileSK.destroy();
+        } catch (DestroyFailedException e) {
+            e.printStackTrace();
+        }
         return ret;
     }
 
@@ -277,6 +294,11 @@ public class Encryption {
                 (encryptFileName(folderName,fileSK, ivSpec));
         ret[1] = Base64.getEncoder().encodeToString
                 (encFileSecretKey(fileSK, pubKey));
+        try {
+            fileSK.destroy();
+        } catch (DestroyFailedException e) {
+            e.printStackTrace();
+        }
         return ret;
     }
 
