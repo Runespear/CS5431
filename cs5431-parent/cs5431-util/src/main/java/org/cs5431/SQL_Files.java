@@ -1542,21 +1542,32 @@ public class SQL_Files {
             boolean hasPermission = verifyEditPermission(fsoid, uid);
             PreparedStatement overwriteFso = null;
             PreparedStatement createLog = null;
+            PreparedStatement getOwnerid = null;
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String updateFile = "UPDATE FileSystemObjects SET fileIV = ? WHERE fsoid = ?";
+            String selectUid = "SELECT F.ownerid FROM FileSystemObjects F WHERE F.fsoid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
                 if (hasPermission) {
                     overwriteFso = connection.prepareStatement(updateFile);
                     connection.setAutoCommit(false);
+                    int ownerid = -1;
 
                     overwriteFso.setString(1, newFileIV);
                     overwriteFso.setInt(2, fsoid);
                     overwriteFso.executeUpdate();
+
+                    getOwnerid = connection.prepareStatement(selectUid);
+                    getOwnerid.setInt(1, fsoid);
+                    ResultSet rs = getOwnerid.executeQuery();
+
+                    if (rs.next()) {
+                        ownerid = rs.getInt(1);
+                    }
 
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
@@ -1569,7 +1580,7 @@ public class SQL_Files {
                     createLog.setString(9, null);
                     createLog.executeUpdate();
 
-                    FileOutputStream fos = new FileOutputStream("./files/" + uid + "/" + fsoid, false);
+                    FileOutputStream fos = new FileOutputStream("./files/" + ownerid + "/" + fsoid, false);
                     fos.write(Base64.getDecoder().decode(encFile));
                     fos.close();
                     if (DEBUG_MODE) {
