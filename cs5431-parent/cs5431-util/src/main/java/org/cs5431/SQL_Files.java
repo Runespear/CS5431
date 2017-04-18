@@ -1339,6 +1339,7 @@ public class SQL_Files {
         PreparedStatement rmEditor = null;
         PreparedStatement createLog = null;
         PreparedStatement removeKey = null;
+        PreparedStatement rmFso = null;
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1348,6 +1349,7 @@ public class SQL_Files {
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String deleteKey = "DELETE FROM FsoEncryption WHERE fsoid = ? AND uid = ?";
+            String deleteFso = "DELETE FROM FolderChildren WHERE childid = ? AND uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1356,6 +1358,7 @@ public class SQL_Files {
                         System.out.println("Can rename fso");
                     rmEditor = connection.prepareStatement(deleteEditor);
                     removeKey = connection.prepareStatement(deleteKey);
+                    rmFso = connection.prepareStatement(deleteFso);
                     connection.setAutoCommit(false);
                     rmEditor.setInt(1, fsoid);
                     rmEditor.setInt(2, rmUid);
@@ -1371,6 +1374,11 @@ public class SQL_Files {
                     createLog.setInt(8, rmUid);
                     createLog.setString(9, null);
                     createLog.executeUpdate();
+
+                    rmFso = connection.prepareStatement(deleteFso);
+                    rmFso.setInt(1, fsoid);
+                    rmFso.setInt(2, rmUid);
+                    rmFso.executeUpdate();
 
                     removeKey.setInt(1, fsoid);
                     removeKey.setInt(2, rmUid);
@@ -1423,6 +1431,9 @@ public class SQL_Files {
                 }
                 if (removeKey != null) {
                     removeKey.close();
+                }
+                if (rmFso != null) {
+                    rmFso.close();
                 }
                 connection.setAutoCommit(true);
             }
