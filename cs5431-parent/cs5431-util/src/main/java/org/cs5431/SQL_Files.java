@@ -13,6 +13,7 @@ import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 
@@ -2091,5 +2092,51 @@ public class SQL_Files {
             e.printStackTrace();
         }
     }
+
+    public boolean isFolder(int fsoid, int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement isFolder = null;
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+
+            String selectIsFile = "SELECT F.isFile FROM FileSystemObjects WHERE F.fsoid = ?";
+            try {
+                isFolder = connection.prepareStatement(selectIsFile);
+                isFolder.setInt(1, fsoid);
+                ResultSet rs = isFolder.executeQuery();
+                if (rs.next()) {
+                    return (rs.getInt(1) == 0) ? true : false;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (isFolder != null) {
+                    isFolder.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<Integer> getChildrenId (int fsoid) {
+        return null;
+    }
+
+    public String getPubKey(int fsoid) {
+        return null;
+    }
+
+    public String getEncFileSK(int fsoid, int uid) {
+        return null;
+    }
+
 }
 
