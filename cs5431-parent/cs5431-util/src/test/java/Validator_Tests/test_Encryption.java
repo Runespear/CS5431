@@ -1,16 +1,23 @@
 package Validator_Tests;
 
+import org.bouncycastle.jcajce.provider.symmetric.ARC4;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431.Encryption;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import sun.misc.BASE64Decoder;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.file.Files;
 import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +34,12 @@ class test_Encryption {
     public static PrivateKey wrongPrivateKeySize;
     public static PrivateKey wrongPrivateKeyAlgoAndSize;
 
-
+    public static byte[] getRandomBytes(int seed){
+        Random random = new Random(seed);
+        byte[] b = new byte[random.nextInt(100)+10];
+        new Random().nextBytes(b);
+        return b;
+    }
 
     public static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -68,15 +80,15 @@ class test_Encryption {
         KeyPairGenerator keygen2 = KeyPairGenerator.getInstance("RSA", "BC");
         keygen2.initialize(1024,random2);
         KeyPair keypair2 = keygen2.generateKeyPair();
-        wrongPublicKeyAlgoAndSize = keypair2.getPublic();
-        wrongPrivateKeyAlgoAndSize = keypair2.getPrivate();
+        wrongPublicKeySize = keypair2.getPublic();
+        wrongPrivateKeySize = keypair2.getPrivate();
 
         SecureRandom random3 = new SecureRandom();//generating public/private key of wrong algo and size
         KeyPairGenerator keygen3 = KeyPairGenerator.getInstance("DSA");
         keygen3.initialize(1024,random3);
         KeyPair keypair3 = keygen3.generateKeyPair();
-        wrongPublicKeySize = keypair3.getPublic();
-        wrongPrivateKeySize = keypair3.getPrivate();
+        wrongPublicKeyAlgoAndSize = keypair3.getPublic();
+        wrongPrivateKeyAlgoAndSize = keypair3.getPrivate();
     }
 
     @BeforeAll
@@ -505,35 +517,183 @@ class test_Encryption {
 
     @Test
     void test_samePasswordBasedKey(){//Check whether pwdBasedKey gives same result with same salt and password
-
+        byte[] randomsalt = Encryption.newPwdSalt();
+        String password = getRandomString(20, 688);
+        byte [][] one = Encryption.pwdBasedKey(password, randomsalt);
+        byte [][] two = Encryption.pwdBasedKey(password, randomsalt);
+        assertEquals(Arrays.equals(one[0],two[0]), true);
     }
 
     @Test
     void test_diffPasswordBasedKey(){//Check whether pwdBasedKey gives diff result with 3 diff cases: 1. same salt, diff password, 2. diff salt, same password, 3. diff salt, diff password
+        //testing with same salt and different password
+        String password = getRandomString(20, 688);
+        String password2 = getRandomString(18, 18);
+        byte[] randomsalt = Encryption.newPwdSalt();
+        byte[][] one = Encryption.pwdBasedKey(password,randomsalt);
+        byte[][] two = Encryption.pwdBasedKey(password2,randomsalt);
+        assertEquals(Arrays.equals(one,two),false);
 
+        //testing with different salt and same password
+        byte[] randomsalt2 = Encryption.newPwdSalt();
+        byte[][] three = Encryption.pwdBasedKey(password, randomsalt2);
+        assertEquals(Arrays.equals(one,three), false );
+
+        //testing with different salt and different password
+        assertEquals(Arrays.equals(two,three), false);
     }
 
     @Test
     void test_sameSecondHashedPassword(){//Check whether secondPwdHash gives same result with same salt and password
-
+        String password = getRandomString(30, 391);
+        byte[] randomsalt = Encryption.newPwdSalt();
+        String one = Encryption.secondPwdHash(password,randomsalt);
+        String two = Encryption.secondPwdHash(password, randomsalt);
+        assertEquals(one.equals(two),true);
     }
 
     @Test
     void test_diffSecondHashedPassword(){//Check whether secondPwdHash gives diff result with 3 diff cases: 1. same salt, diff password, 2. diff salt, same password, 3. diff salt, diff password
+        //Testing with same salt and different password
+        String password = getRandomString(30, 391);
+        String password2 = getRandomString(15, 184);
+        byte[] randomsalt = Encryption.newPwdSalt();
+        String one = Encryption.secondPwdHash(password,randomsalt);
+        String two = Encryption.secondPwdHash(password2, randomsalt);
+        assertEquals(one.equals(two), false);
 
+        //testing with different salt and same password
+        byte[] randomsalt2 = Encryption.newPwdSalt();
+        String three = Encryption.secondPwdHash(password, randomsalt2);
+        assertEquals(one.equals(three),false);
+
+        //testing with different salt and different password
+        assertEquals(two.equals(three), false);
     }
 
     @Test
     void test_SHA256Length(){//Checking if the length is correct
-
+        String message = getRandomString(100, 3920);
+        byte[] one = Encryption.SHA256(message);
+        //System.out.println(one.length);
+        assertEquals(one.length==32, true);
+    }
+    @Test
+    void test_sameSHA256(){//Checking if the results for the SHA256 of same messages are the same
+        String message = getRandomString(150, 2408);
+        byte[] one = Encryption.SHA256(message);
+        byte[] two = Encryption.SHA256(message);
+        assertEquals(Arrays.equals(one,two), true);
     }
 
     @Test
-    void test_diffSHA256(){//Checking if the results for different SHA256 are different
+    void test_diffSHA256(){//Checking if the results for the SHA256 of different messages are different
+        String message = getRandomString(150, 2408);
+        String message2 = getRandomString(100, 3920);
+        byte[] one = Encryption.SHA256(message);
+        byte[] two = Encryption.SHA256(message2);
+        assertEquals(Arrays.equals(one,two),false);
+    }
+
+    @Test
+    void test_signSameCert()throws Exception{//Check if signed cert is the same for the same cert
+        byte[] cert = getRandomBytes(1000);
+        byte[] one = Encryption.signCert(cert,correctPrivateKey);
+        byte[] two = Encryption.signCert(cert,correctPrivateKey);
+        assertEquals(Arrays.equals(one,two), true);
+    }
+
+    @Test
+    void test_signDiffCert()throws Exception{//Check if signed cert is different for different cert
+        byte[] cert = getRandomBytes(1000);
+        byte[] cert2 = getRandomBytes(2000);
+        byte[] one = Encryption.signCert(cert,correctPrivateKey);
+        byte[] two = Encryption.signCert(cert2,correctPrivateKey);
+        assertEquals(Arrays.equals(one,two), false);
+    }
+
+    @Test
+    void test_signCertWithDiffKey()throws Exception{//Check if signed cert is different when signed with different key algo and/or size
+        byte[] cert = getRandomBytes(1001);
+        byte[] one = Encryption.signCert(cert,correctPrivateKey);
+        byte[] two = Encryption.signCert(cert,wrongPrivateKeySize); //wrong key size
+        assertEquals(Arrays.equals(one,two), false);
+        try {
+            byte[] three = Encryption.signCert(cert, wrongPrivateKeyAlgoAndSize); //wrong algo and size
+            fail("Signing is supposed to fail with incorrect key algo and size");
+        }catch(Exception e){
+        }
+    }
+
+    @Test
+    void test_signSameJKS()throws Exception{//Check if signed JKS is the same for the same JKS
+        byte[] JKS = getRandomBytes(1005);
+        byte[] one = Encryption.signJKS(JKS,correctPrivateKey);
+        byte[] two = Encryption.signJKS(JKS,correctPrivateKey);
+        assertEquals(Arrays.equals(one,two), true);
+    }
+
+    @Test
+    void test_signDiffJKS()throws Exception{//Check if signed JKS is different for different JKS
+        byte[] JKS = getRandomBytes(1001);
+        byte[] JKS2 = getRandomBytes(2056);
+        byte[] one = Encryption.signJKS(JKS,correctPrivateKey);
+        byte[] two = Encryption.signJKS(JKS2,correctPrivateKey);
+        assertEquals(Arrays.equals(one,two), false);
+    }
+
+    @Test
+    void test_signJKSWithDiffKey()throws Exception{//Check if signed JKS is different when signed with different key algo and/or size
+        byte[] JKS = getRandomBytes(91008);
+        byte[] one = Encryption.signJKS(JKS,correctPrivateKey);
+        byte[] two = Encryption.signJKS(JKS,wrongPrivateKeySize); //wrong key size
+        assertEquals(Arrays.equals(one,two), false);
+        try {
+            byte[] three = Encryption.signJKS(JKS, wrongPrivateKeyAlgoAndSize); //wrong algo and size
+            fail("Signing is supposed to fail with incorrect key algo and size");
+        }catch(Exception e){
+        }
+    }
+
+    @Test
+    void test_encryptPrivateKey(){//test to check whether encryption of password under the same key and salt gives the same result
 
     }
 
-    //TODO: NO METHOD TO CHECK SIGNED CERT?
+
+    @Test
+    void test_generateUserKeys()throws Exception{//Simply test whether keys generated are able to encrypt and decrypt
+        String password = getRandomString(18, 19280);
+        String keys[] = Encryption.generateUserKeys(password);
+        String filename = "filename";
+        SecretKey secretkey = Encryption.generateSecretKey();
+
+        //convert base64 public key string to byte stream
+        BASE64Decoder decoder = new BASE64Decoder();
+        byte[] bytes = decoder.decodeBuffer(keys[0]);
+        // Convert the public key bytes into a PublicKey object
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bytes);
+        KeyFactory keyFact = KeyFactory.getInstance("RSA", new
+                BouncyCastleProvider());
+        PublicKey pubkey = keyFact.generatePublic(x509KeySpec);
+
+        //TODO: WHY CANNOT GET THE PRIVATE KEY???
+        //convert base64 private key string to byte stream
+        byte[] bytes2 = Base64.getDecoder().decode(keys[1]);
+        //byte[] bytes2 = decoder.decodeBuffer(keys[1]);
+        // Convert the private key bytes into a PrivateKey object
+        PKCS8EncodedKeySpec KeySpec2 = new PKCS8EncodedKeySpec(bytes2);
+        KeyFactory keyFact2 = KeyFactory.getInstance("RSA", new
+                BouncyCastleProvider());
+        PrivateKey privkey = keyFact2.generatePrivate(KeySpec2);
+
+        //Checking whether the user generated keys can encrypt and decrypt correctly
+        byte[] encrypted_Stuff = Encryption.encFileSecretKey(secretkey, pubkey);
+        SecretKey decrypted_secret_key = Encryption.decFileSecretKey(encrypted_Stuff, privkey);
+        byte[] one = secretkey.getEncoded();
+        byte[] two = privkey.getEncoded();
+        assertEquals(Arrays.equals(one,two),true);
+    }
 
     @Test
     void test_encPrivateKey(){//Test to ensure that same encrypted key is encrypted differently under same password and salt with same/different key
