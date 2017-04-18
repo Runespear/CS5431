@@ -1,20 +1,21 @@
 package org.cs5431;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class PromptAdminThread implements Runnable {
     SQL_Accounts sql_accounts;
+    private String sourceIP;
 
     public PromptAdminThread(SQL_Accounts sql_accounts) {
         this.sql_accounts = sql_accounts;
+        try {
+            this.sourceIP = InetAddress.getLocalHost().toString();
+        } catch (UnknownHostException e) {
+            this.sourceIP = "127.0.0.1";
+        }
     }
 
     public void run() {
@@ -54,7 +55,7 @@ public class PromptAdminThread implements Runnable {
         }
     }
 
-    private static void downloadUserLogs(SQL_Accounts sql_accounts) {
+    private void downloadUserLogs(SQL_Accounts sql_accounts) {
         /*
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the file name of the log that will be " +
@@ -68,11 +69,11 @@ public class PromptAdminThread implements Runnable {
         sql_accounts.getUserLog();
     }
 
-    private static void downloadFileLogs(SQL_Accounts sql_accounts) {
+    private void downloadFileLogs(SQL_Accounts sql_accounts) {
         //TODO
     }
 
-    private static void deleteUser(SQL_Accounts sql_accounts) throws SQLException {
+    private void deleteUser(SQL_Accounts sql_accounts) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         while(true) {
             System.out.println("Enter the username of the user to delete:");
@@ -87,8 +88,9 @@ public class PromptAdminThread implements Runnable {
                     System.out.println("There is no user associated with this" +
                             " username.");
                 else {
-                    if (sql_accounts.adminDeleteUser(uid, "") == uid) {
+                    if (sql_accounts.adminDeleteUser(uid, sourceIP) == uid) {
                         System.out.println("User successfully deleted.");
+                        return;
                     } else {
                         System.out.println("User found but could not be " +
                                 "deleted.");
