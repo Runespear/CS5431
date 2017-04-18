@@ -222,10 +222,21 @@ public class PrivViewController implements Initializable{
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(username -> {
+            for (PrivBundle bundle : tableViewPriv.getItems()) {
+                if (bundle.getUsername().equals(username)) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Sharing error");
+                    alert.setContentText("This file is already shared with " +
+                            "this user.");
+                    alert.showAndWait();
+                    return;
+                }
+            }
             Task<PrivBundle> task = new Task<PrivBundle>() {
                 @Override
                 protected PrivBundle call() throws Exception {
                     int userId = accountsController.getUserId(username);
+
                     fileController.addNewViewer(fso, userId);
                     return new PrivBundle(userId, retrieveUsername(userId), fso,
                             false,true);
