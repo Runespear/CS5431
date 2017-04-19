@@ -394,7 +394,7 @@ public class SSLServer extends Thread {
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
         for (Integer childid : allChildren.keySet()) {
             int newUidRes = sql_files.addEditPriv(uid, childid, newUid, sourceIp);
-            sql_files.removeDuplicates(uid);
+            sql_files.removeDuplicates(newUid);
             if (newUidRes == -1)
                 return makeErrJson("Failed to add this new editor - double check " +
                         "user id");

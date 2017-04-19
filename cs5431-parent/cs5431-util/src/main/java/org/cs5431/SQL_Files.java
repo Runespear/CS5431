@@ -933,7 +933,7 @@ public class SQL_Files {
             }
             String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
             String selectDuplicate = "SELECT F.childid FROM FolderChildren F WHERE EXISTS (SELECT * FROM FolderChildren C" +
-                    "WHERE C.uid = ? AND C.parentid != F.parentid AND C.childid = F.childid AND C.uid = F.uid)";
+                    "WHERE C.uid = ? AND C.parentid != F.parentid AND C.childid = F.childid AND C.uid = F.uid);";
             String deleteExisting = "DELETE FROM FolderChildren WHERE uid = ? AND childid = ? AND parentid = ?";
 
             try {
@@ -970,6 +970,9 @@ public class SQL_Files {
                 }
                 if (getParentFolder != null) {
                     getParentFolder.close();
+                }
+                if (getDuplicate != null) {
+                    getDuplicate.close();
                 }
                 connection.setAutoCommit(true);
             }
