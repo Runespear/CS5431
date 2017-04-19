@@ -418,6 +418,7 @@ public class SSLServer extends Thread {
         int newUid = jsonObject.getInt("newUid");
 
         List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        System.out.println("Children ids:" + allChildren);
         List<String> keys = new ArrayList<>();
         for (Integer childid : allChildren) {
             String encFileSK = sql_files.getEncFileSK(childid, uid, sourceIp);
@@ -534,6 +535,10 @@ public class SSLServer extends Thread {
 
     private JSONArray getChildren(JSONObject jsonObject, SQL_Files sql_files) {
         JSONArray arr = sql_files.getChildren(jsonObject, sourceIp);
+        if (arr == null) {
+            return new JSONArray(); //TODO handle this better: currently just
+            // preventing server stalling
+        }
         int uid = jsonObject.getInt("uid");
         for (int i = 0; i < arr.length(); i++) {
             JSONObject obj = arr.getJSONObject(i);
