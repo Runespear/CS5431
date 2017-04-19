@@ -2256,7 +2256,8 @@ public class SQL_Files {
             try {
                 if (hasPermission) {
                     getSecretKey = connection.prepareStatement(selectSecretKey);
-                    getSecretKey.setInt(1, fsoid);
+                    getSecretKey.setInt(1, uid);
+                    getSecretKey.setInt(2, fsoid);
                     ResultSet rs = getSecretKey.executeQuery();
                     if (rs.next()) {
                         return rs.getString(1);
