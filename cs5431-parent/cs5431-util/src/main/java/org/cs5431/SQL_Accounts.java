@@ -820,8 +820,8 @@ public class SQL_Accounts {
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             try {
+                createLog = connection.prepareStatement(insertLog);
                 if (user != null) {
-                    createLog = connection.prepareStatement(insertLog);
                     changePwd = connection.prepareStatement(updatePwd);
                     connection.setAutoCommit(false);
                     changePwd.setString(1, newEncPwd);
