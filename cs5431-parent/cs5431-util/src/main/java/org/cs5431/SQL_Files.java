@@ -248,7 +248,7 @@ public class SQL_Files {
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
 
-        boolean hasPermission = verifyEditPermission(parentFolderid, uid);
+        boolean hasPermission = verifyBothPermission(parentFolderid, uid);
         JSONArray files = new JSONArray();
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -944,7 +944,8 @@ public class SQL_Files {
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            String deleteViewer = "DELETE FROM Viewers WHERE uid = ?";
+            String deleteViewer = "DELETE FROM Viewers WHERE uid = ? AND " +
+                    "fsoid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -970,6 +971,7 @@ public class SQL_Files {
                     addEditor.executeUpdate();
 
                     removeViewer.setInt(1, newUid);
+                    removeViewer.setInt(2, fsoid);
                     removeViewer.executeUpdate();
 
                     createLog.setInt(1, 0);
