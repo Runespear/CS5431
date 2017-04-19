@@ -99,6 +99,10 @@ class test_Encryption {
         Random random = new Random();
         pw.println(getRandomString(10,random.nextInt()));
         pw.close();
+        PrintWriter pw2 = new PrintWriter(new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test2.txt"));
+        Random random2 = new Random();
+        pw2.println(getRandomString(20,random.nextInt()));
+        pw2.close();
         getPrivPubKeyPair();
     }
 
@@ -655,8 +659,8 @@ class test_Encryption {
         }
     }
 
-    //TODO: UNCOMMENT THIS AT THE END
-    //@Test
+    //TODO: I CAN'T GET THE PRIVATE KEY!! AM I DOING SOMETHING WRONG HERE??
+    @Test
     void test_generateUserKeys()throws Exception{//Simply test whether keys generated are able to encrypt and decrypt
         String password = getRandomString(18, 19280);
         String keys[] = Encryption.generateUserKeys(password);
@@ -671,7 +675,7 @@ class test_Encryption {
         KeyFactory keyFact = KeyFactory.getInstance("RSA");
         PublicKey pubkey = keyFact.generatePublic(x509KeySpec);
 
-        //TODO: WHY CANNOT GET THE PRIVATE KEY???
+        //TODO: WHY CANNOT GET THE PRIVATE KEY??? MASTERS, PLEASE TEACH ME!!!!!!!!!
         //convert base64 private key string to byte stream
         byte[] bytes2 = Base64.getDecoder().decode(keys[1]);
         //byte[] bytes2 = decoder.decodeBuffer(keys[1]);
@@ -769,29 +773,146 @@ class test_Encryption {
         }catch (Exception e){
         }
     }
-    
-    @Test
-    void test_generateAndEncFile(){//Test whether outputs are the same as the actual methods that produce them
 
+    @Test
+    void test_generateAndEncFile() throws Exception{//Test whether outputs are the same as the actual methods that produce them
+        File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
+        File file2 = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test2.txt");
+        String filename = "filename";
+        String filename2 = "filename2";
+
+        // same file, same name, same public key, all outputs should be different
+        String[] outputs = Encryption.generateAndEncFile(file, filename, correctPublicKey);
+        String[] outputs2 = Encryption.generateAndEncFile(file, filename, correctPublicKey);
+        assertEquals(outputs[0].equals(outputs2[0]), false);
+        assertEquals(outputs[1].equals(outputs2[1]), false);
+        assertEquals(outputs[2].equals(outputs2[2]), false);
+        assertEquals(outputs[3].equals(outputs2[3]), false);
+        assertEquals(outputs[4].equals(outputs2[4]), false);
+
+        //different file, same name, same public key, all outputs should be different
+        String[] outputs3 = Encryption.generateAndEncFile(file2, filename, correctPublicKey);
+        assertEquals(outputs[0].equals(outputs3[0]), false);
+        assertEquals(outputs[1].equals(outputs3[1]), false);
+        assertEquals(outputs[2].equals(outputs3[2]), false);
+        assertEquals(outputs[3].equals(outputs3[3]), false);
+        assertEquals(outputs[4].equals(outputs3[4]), false);
+
+        //same file, same name, diff public key, all outputs should be different
+        String[] outputs4 = Encryption.generateAndEncFile(file, filename, wrongPublicKeySize);
+        assertEquals(outputs[0].equals(outputs4[0]), false);
+        assertEquals(outputs[1].equals(outputs4[1]), false);
+        assertEquals(outputs[2].equals(outputs4[2]), false);
+        assertEquals(outputs[3].equals(outputs4[3]), false);
+        assertEquals(outputs[4].equals(outputs4[4]), false);
+
+        //different file, same name, different public key, all outputs should be different
+        String[] outputs5 = Encryption.generateAndEncFile(file2, filename, wrongPublicKeySize);
+        assertEquals(outputs[0].equals(outputs5[0]), false);
+        assertEquals(outputs[1].equals(outputs5[1]), false);
+        assertEquals(outputs[2].equals(outputs5[2]), false);
+        assertEquals(outputs[3].equals(outputs5[3]), false);
+        assertEquals(outputs[4].equals(outputs5[4]), false);
     }
 
     @Test
-    void test_generateAndEncFileName(){//Test whether outputs are the same as the actual methods that produce them
+    void test_generateAndEncFileName() throws Exception{//Test whether outputs are the same as the actual methods that produce them
+        String filename = getRandomString(5, 201);
+        String filename2 = getRandomString(12, 305);
+        String[] one = Encryption.generateAndEncFileName(filename, correctPublicKey);
+        String[] two = Encryption.generateAndEncFileName(filename, correctPublicKey);
+        String[] three = Encryption.generateAndEncFileName(filename, wrongPublicKeySize);
+        String[] four = Encryption.generateAndEncFileName(filename2, correctPublicKey);
+        String[] five = Encryption.generateAndEncFileName(filename2, wrongPublicKeySize);
 
+        //same name, same key, diff result obtained
+        assertEquals(one[0].equals(two[0]), false);
+        assertEquals(one[1].equals(two[1]), false);
+        assertEquals(one[2].equals(two[2]), false);
+
+        //same name, different key, diff result obtained
+        assertEquals(one[0].equals(three[0]), false);
+        assertEquals(one[1].equals(three[1]), false);
+        assertEquals(one[2].equals(three[2]), false);
+
+        //diff name, diff key, diff result obtained
+        assertEquals(one[0].equals(five[0]), false);
+        assertEquals(one[1].equals(five[1]), false);
+        assertEquals(one[2].equals(five[2]), false);
+
+        //diff name, same key, diff result obtained
+        assertEquals(one[0].equals(four[0]), false);
+        assertEquals(one[1].equals(four[1]), false);
+        assertEquals(one[2].equals(four[2]), false);
     }
 
     @Test
-    void test_reEncryptFile(){//Test whether outputs are the same as the actual methods that produce them
+    void test_reEncryptFile() throws Exception{//Test whether the outputs are different for different permutations of key and file
+        File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
+        File file2 = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test2.txt");
+        SecretKey sk = Encryption.generateSecretKey();
+        SecretKey sk2 = Encryption.generateSecretKey();
 
+        //same file, same key, must obtain different outputs
+        String[] one = Encryption.reEncryptFile(file,sk);
+        String[] two = Encryption.reEncryptFile(file,sk);
+        assertEquals(one[0].equals(two[0]), false);
+        assertEquals(one[1].equals(two[1]), false);
+
+        //same file, diff key, must obtain different outputs
+        String[] three = Encryption.reEncryptFile(file,sk2);
+        assertEquals(one[0].equals(three[0]), false);
+        assertEquals(one[1].equals(three[1]), false);
+
+        //diff file, same key, must obtain different outputs
+        String[] four = Encryption.reEncryptFile(file2,sk);
+        assertEquals(one[0].equals(four[0]), false);
+        assertEquals(one[1].equals(four[1]), false);
+
+        //diff file, diff key, must obtain different outputs
+        String[] five = Encryption.reEncryptFile(file2,sk2);
+        assertEquals(one[0].equals(five[0]), false);
+        assertEquals(one[1].equals(five[1]), false);
     }
 
     @Test
-    void test_reEncryptFileName(){//Test whether outputs are the same as the actual methods that produce them
+    void test_reEncryptFileName()throws Exception{//Test whether outputs are different for different permutation and combination
+        String file = getRandomString(22, 9302);
+        String file2 = getRandomString(12,392);
+        SecretKey sk = Encryption.generateSecretKey();
+        SecretKey sk2 = Encryption.generateSecretKey();
 
+        //same file, same key, must obtain different outputs
+        String[] one = Encryption.reEncryptFileName(file,sk);
+        String[] two = Encryption.reEncryptFileName(file,sk);
+        assertEquals(one[0].equals(two[0]), false);
+        assertEquals(one[1].equals(two[1]), false);
+
+        //same file, diff key, must obtain different outputs
+        String[] three = Encryption.reEncryptFileName(file,sk2);
+        assertEquals(one[0].equals(three[0]), false);
+        assertEquals(one[1].equals(three[1]), false);
+
+        //diff file, same key, must obtain different outputs
+        String[] four = Encryption.reEncryptFileName(file2,sk);
+        assertEquals(one[0].equals(four[0]), false);
+        assertEquals(one[1].equals(four[1]), false);
+
+        //diff file, diff key, must obtain different outputs
+        String[] five = Encryption.reEncryptFileName(file2,sk2);
+        assertEquals(one[0].equals(five[0]), false);
+        assertEquals(one[1].equals(five[1]), false);
     }
 
     @Test
-    void test_generatePasswordHash(){//Test whether outputs are the same as the actual methods that produce them
-
+    void test_generatePasswordHash(){//Just need to ensure that returned results are not the same
+        String password = getRandomString(93,1902);
+        String[] previous = Encryption.generatePasswordHash(password);
+        for (int i =0; i<100; i++) {
+            String[] new_results = Encryption.generatePasswordHash(password);
+            assertEquals(previous[0].equals(new_results[0]),false);
+            assertEquals(previous[1].equals(new_results[1]),false);
+            previous = new_results;
+        }
     }
 }
