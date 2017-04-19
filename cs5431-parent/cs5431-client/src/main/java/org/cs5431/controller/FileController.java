@@ -491,17 +491,19 @@ public class FileController {
         if (responseKeys.getString("msgType").equals("addViewerKeysAck")) {
             String pubKeyString = responseKeys.getString("pubKey");
             JSONArray fileSKArr = responseKeys.getJSONArray("secretKey");
-            JSONArray fsoidArr = responseKeys.getJSONArray("fsoid");
+            JSONObject hash = responseKeys.getJSONObject("fsoid");
+            //JSONArray fsoidArr = responseKeys.getJSONArray("fsoid");
             PublicKey pubKey = getPubKeyFromJSON(pubKeyString);
 
             List<String> encSKList = new ArrayList<>();
             List<Integer> fsoIdList = new ArrayList<>();
+            List<Integer> fsoParentList = new ArrayList<>();
             for (int i = 0; i < fileSKArr.length(); i++) {
                 SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
                         (fileSKArr.getString(i)), user.getPrivKey());
                 byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
                 encSKList.add(Base64.getEncoder().encodeToString(encFileSK));
-                fsoIdList.add(fsoidArr.getInt(i));
+
                 if (CAN_KEYS_BE_DESTROYED) {
                     try {
                         fileSK.destroy();
@@ -510,7 +512,15 @@ public class FileController {
                     }
                 }
             }
-            addViewer(fsoIdList, uid, newUserId, encSKList);
+            Iterator<?> keys = hash.keys();
+            System.out.print("LOOK HerE FOR HASH " + hash);
+
+            while (keys.hasNext()) {
+                String key = (String) keys.next();
+                fsoParentList.add(Integer.valueOf(key));
+                fsoIdList.add(hash.getInt(key));
+            }
+            addViewer(fsoIdList, fsoParentList, uid, newUserId, encSKList);
         } else if (responseKeys.getString("msgType").equals("error")) {
             throw new FileControllerException(responseKeys.getString
                     ("message"));
@@ -520,13 +530,14 @@ public class FileController {
         }
     }
 
-    private void addViewer(List<Integer> fsoid, int uid, int newUserId,
+    private void addViewer(List<Integer> fsoid, List<Integer> parentid, int uid,  int newUserId,
                            List<String> encSecretKey) throws IOException, ClassNotFoundException,
             FileControllerException {
         JSONObject jsonViewer = new JSONObject();
         jsonViewer.put("msgType", "addViewer");
         jsonViewer.put("encSecretKey", encSecretKey);
         jsonViewer.put("fsoid", fsoid);
+        jsonViewer.put("parentid", parentid);
         jsonViewer.put("uid", uid);
         jsonViewer.put("newUid", newUserId);
         sendJson(jsonViewer, sslSocket);

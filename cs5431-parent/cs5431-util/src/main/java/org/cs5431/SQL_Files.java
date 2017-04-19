@@ -1051,7 +1051,7 @@ public class SQL_Files {
      * @param encKey File secret key encrypted with the new user's public key
      * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    public int addViewPriv(int uid, int fsoid, int newUid, String encKey,
+    public int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
                            String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean wasEditor = verifyEditPermission(fsoid, newUid);
@@ -1144,7 +1144,11 @@ public class SQL_Files {
                         if (rs.next()) {
                             int parentFolderid = rs.getInt(1);
                             addParent = connection.prepareStatement(insertParent);
-                            addParent.setInt(1, parentFolderid);
+                            if (parentid == -1) {
+                                addParent.setInt(1, parentFolderid);
+                            } else {
+                                addParent.setInt(1, parentid);
+                            }
                             addParent.setInt(2, fsoid);
                             addParent.setInt(3, newUid);
                             addParent.executeUpdate();
