@@ -240,7 +240,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    public void logSessionLimit(String sourceIp) {
+    public boolean logSessionLimit(String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -264,8 +264,10 @@ public class SQL_Accounts {
                 addLog.setString(7, sourceIp);
                 addLog.setString(8, "TOO MANY FAILED LOGINS");
                 addLog.executeQuery();
+                return true;
             } catch (SQLException e1) {
                 e1.printStackTrace();
+                return false;
             } finally {
                 if (addLog != null) {
                     addLog.close();
@@ -274,6 +276,7 @@ public class SQL_Accounts {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     /** Compares username and encrypted password with row of User table.
@@ -900,7 +903,7 @@ public class SQL_Accounts {
      * Logs the change of password in the userlog.
      * Creates failure file log invalid password or db error (rollsback accordingly). */
     //TODO: how to verify admin?
-    public void getUserLog() {
+    public boolean getUserLog() {
         boolean hasPermission = true; //verifyBothPermission(fsoid, uid);
         if (hasPermission) {
             if (DEBUG_MODE) {
@@ -924,7 +927,7 @@ public class SQL_Accounts {
                 try {
                     getFileLog = connection.prepareStatement(selectLog);
                     getFileLog.executeQuery();
-
+                    return true;
                 } catch (SQLException e) {
                     e.printStackTrace();
                 } finally {
@@ -936,6 +939,7 @@ public class SQL_Accounts {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
     //TODO: dont need old email??

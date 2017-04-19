@@ -2033,7 +2033,7 @@ public class SQL_Files {
         }
     }
 
-    public void getAllFileLogs() {
+    public boolean getAllFileLogs() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         if (DEBUG_MODE) {
@@ -2052,6 +2052,7 @@ public class SQL_Files {
             try {
                 getFileLog = connection.prepareStatement(selectLog);
                 getFileLog.executeQuery();
+                return true;
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
@@ -2062,8 +2063,9 @@ public class SQL_Files {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
-    public void getFileLog(int fsoid) {
+    public boolean getFileLog(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         if (DEBUG_MODE) {
@@ -2083,6 +2085,7 @@ public class SQL_Files {
                 getFileLog = connection.prepareStatement(selectLog);
                 getFileLog.setInt(1, fsoid);
                 getFileLog.executeQuery();
+                return true;
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
@@ -2093,6 +2096,7 @@ public class SQL_Files {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     public boolean isFolder(int fsoid, int uid, String sourceIp) {

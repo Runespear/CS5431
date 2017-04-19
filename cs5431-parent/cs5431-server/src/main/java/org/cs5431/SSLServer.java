@@ -226,8 +226,7 @@ public class SSLServer extends Thread {
         Date now = new Date();
         if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
                 failedTime)) {
-            sql_accounts.logSessionLimit(sourceIp);
-            return makeErrJson("Too many failed logins recently");
+            return (sql_accounts.logSessionLimit(sourceIp)) ? makeErrJson("Too many failed logins recently"): null;
         }
 
         String pwdSalt = sql_accounts.getSalt(jsonObject.getString
@@ -446,10 +445,11 @@ public class SSLServer extends Thread {
         if (sql_files.isFolder(fsoid, uid, sourceIp)) {
             List<Integer> children = sql_files.getChildrenId(fsoid, uid,
                     sourceIp);
+            System.out.println("list here  " + list);
             for (Integer child : children) {
+                System.out.println("current list  " + list);
                 list.putAll(getAllChildren(child, fsoid, uid, sql_files));
-                System.out.println("children  " + list);
-
+                System.out.println("new child added  " + list);
             }
         }
         return list;
