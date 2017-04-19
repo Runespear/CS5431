@@ -1496,6 +1496,7 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
+                createLog = connection.prepareStatement(insertLog);
                 createLog.setInt(1, 0);
                 createLog.setInt(2, fsoid);
                 createLog.setInt(3, uid);

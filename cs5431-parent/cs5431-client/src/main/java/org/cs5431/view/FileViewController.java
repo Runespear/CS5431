@@ -476,6 +476,9 @@ public class FileViewController implements Initializable {
 
             fileList.setVisible(!children.isEmpty());
             fileList.setDisable(children.isEmpty());
+
+            imgUpload.setVisible(currParent.isEditor());
+            imgUpload.setDisable(!currParent.isEditor());
             });
         Thread th = new Thread(task);
         th.setDaemon(true);
