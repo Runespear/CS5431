@@ -2102,7 +2102,7 @@ public class SQL_Files {
             if (DEBUG_MODE) {
                 System.out.println("Database connected!");
             }
-            String selectIsFile = "SELECT F.isFile FROM FileSystemObjects WHERE F.fsoid = ?";
+            String selectIsFile = "SELECT F.isFile FROM FileSystemObjects F WHERE F.fsoid = ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
