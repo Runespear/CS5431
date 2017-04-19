@@ -642,7 +642,7 @@ public class SQL_Accounts {
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion. */
     public int deleteUser(int uid, String username, String password, String sourceIp) {
         JSONObject allegedUser = new JSONObject();
-        allegedUser.put("username", "username");
+        allegedUser.put("username", username);
         String salt = getSalt(username, sourceIp, "DELETE_USER");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");
@@ -663,7 +663,7 @@ public class SQL_Accounts {
             PreparedStatement createLog = null;
             PreparedStatement removeFolder = null;
 
-            String deleteUser = "DELETE FROM Users WHERE uid = ? username = ? AND pwd = ?";
+            String deleteUser = "DELETE FROM Users WHERE uid = ? AND username = ? AND pwd = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String deleteFolder = "DELETE FROM FileSystemObjects WHERE fsoid = ?";
