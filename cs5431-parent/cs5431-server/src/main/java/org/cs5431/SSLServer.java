@@ -5,10 +5,7 @@ import org.json.JSONObject;
 
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Constants.MAX_LOGINS_PER_MINUTE;
@@ -344,9 +341,9 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         int demoteUid = jsonObject.getInt("demoteUid");
-        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
-        for (Integer childid : allChildren) {
-            int newUidRes = sql_files.addViewPriv(uid, childid, demoteUid,
+        HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
+        for (Integer childid : allChildren.values()) {
+            int newUidRes = sql_files.addViewPriv(uid, childid, fsoid, demoteUid,
                     "", sourceIp);
             if (newUidRes == -1)
                 return makeErrJson("Failed to demote this user - double check" +
@@ -366,8 +363,8 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         int removeUid = jsonObject.getInt("removeUid");
-        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
-        for (Integer childid : allChildren) {
+        HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
+        for (Integer childid : allChildren.values()) {
             int removed;
             if (jsonObject.getString("userType").equals("editor")) {
                 removed = sql_files.removeEditPriv(childid, uid, removeUid, sourceIp);
@@ -395,8 +392,8 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int newUid = jsonObject.getInt("newUid");
 
-        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
-        for (Integer childid : allChildren) {
+        HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
+        for (Integer childid : allChildren.values()) {
             int newUidRes = sql_files.addEditPriv(uid, childid, newUid, sourceIp);
             if (newUidRes == -1)
                 return makeErrJson("Failed to add this new editor - double check " +
@@ -417,10 +414,10 @@ public class SSLServer extends Thread {
         int uid = jsonObject.getInt("uid");
         int newUid = jsonObject.getInt("newUid");
 
-        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
         System.out.println("Children ids:" + allChildren);
         List<String> keys = new ArrayList<>();
-        for (Integer childid : allChildren) {
+        for (Integer childid : allChildren.values()) {
             String encFileSK = sql_files.getEncFileSK(childid, uid, sourceIp);
             if (encFileSK == null)
                 return makeErrJson("Could not retrieve keys - check if you have " +
@@ -433,23 +430,26 @@ public class SSLServer extends Thread {
         JSONObject response = new JSONObject();
         response.put("msgType", "addViewerKeysAck");
         response.put("secretKey", keys);
-        response.put("fsoid", allChildren);
+        response.put("fsoid", new JSONObject(allChildren));
         response.put("pubKey", pubKey);
         return response;
     }
 
     /**
-     * Finds all children recursively
+     * Finds all children recursively, parent:child
      */
-    private List<Integer> getAllChildren(int fsoid, int uid, SQL_Files
+    private HashMap<Integer,Integer> getAllChildren(int fsoid, int parentid, int uid, SQL_Files
                                          sql_files) {
-        List<Integer> list = new ArrayList<>();
-        list.add(fsoid);
+        HashMap<Integer,Integer> list = new HashMap<>();
+        list.put(parentid, fsoid);
+        System.out.println("get all children Parentid " + parentid + " fsoid " + fsoid);
         if (sql_files.isFolder(fsoid, uid, sourceIp)) {
             List<Integer> children = sql_files.getChildrenId(fsoid, uid,
                     sourceIp);
             for (Integer child : children) {
-                list.addAll(getAllChildren(child, uid, sql_files));
+                list.putAll(getAllChildren(child, fsoid, uid, sql_files));
+                System.out.println("children  " + list);
+
             }
         }
         return list;
@@ -460,11 +460,15 @@ public class SSLServer extends Thread {
         int newUid = jsonObject.getInt("newUid");
         JSONArray encKeyArr = jsonObject.getJSONArray("encSecretKey");
         JSONArray fsoIdArr = jsonObject.getJSONArray("fsoid");
+        JSONArray parentIdArr = jsonObject.getJSONArray("parentid");
 
         for (int i = 0; i < encKeyArr.length(); i++) {
             int fsoid = fsoIdArr.getInt(i);
+            int parentid = parentIdArr.getInt(i);
             String encKey = encKeyArr.getString(i);
-            int newUidRes = sql_files.addViewPriv(uid, fsoid, newUid,
+            System.out.print("Parentid " + parentid);
+            System.out.print("fsoid " + fsoid);
+            int newUidRes = sql_files.addViewPriv(uid, fsoid, parentid, newUid,
                     encKey, sourceIp);
             if (newUidRes == -1)
                 return makeErrJson("Failed to add this new viewer - double check " +
@@ -484,8 +488,8 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
 
-        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
-        for (Integer childid : allChildren) {
+        HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
+        for (Integer childid : allChildren.values()) {
             int deletedId = sql_files.deleteForAll(childid, uid, sourceIp);
             if (deletedId == -1)
                 return makeErrJson("Could not delete file with id " + childid);
