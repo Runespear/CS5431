@@ -263,7 +263,7 @@ public class SQL_Accounts {
                 addLog.setString(6, "FAILURE");
                 addLog.setString(7, sourceIp);
                 addLog.setString(8, "TOO MANY FAILED LOGINS");
-                addLog.executeQuery();
+                addLog.executeUpdate();
                 return true;
             } catch (SQLException e1) {
                 e1.printStackTrace();

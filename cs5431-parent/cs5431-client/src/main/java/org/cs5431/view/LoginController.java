@@ -88,13 +88,6 @@ public class LoginController implements Initializable {
                 return accountsController.login(username, password);
             }
         };
-        task.setOnFailed(t -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Login error");
-            alert.setContentText("Could not login to server. Please " +
-                    "try again or register an account.");
-            alert.showAndWait();
-        });
         task.setOnSucceeded(t -> {
             try {
                 if (!DEBUG_MODE)
@@ -123,6 +116,10 @@ public class LoginController implements Initializable {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Login error");
+                alert.setContentText(ex.getMessage());
+                alert.showAndWait();
             }
         });
     }
