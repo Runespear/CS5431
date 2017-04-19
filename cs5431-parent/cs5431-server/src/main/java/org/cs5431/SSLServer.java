@@ -341,7 +341,7 @@ public class SSLServer extends Thread {
         int uid = jsonObject.getInt("uid");
         int demoteUid = jsonObject.getInt("demoteUid");
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
-        for (Integer childid : allChildren.values()) {
+        for (Integer childid : allChildren.keySet()) {
             int newUidRes = sql_files.addViewPriv(uid, childid, fsoid, demoteUid,
                     "", sourceIp);
             if (newUidRes == -1)
@@ -363,7 +363,7 @@ public class SSLServer extends Thread {
         int uid = jsonObject.getInt("uid");
         int removeUid = jsonObject.getInt("removeUid");
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
-        for (Integer childid : allChildren.values()) {
+        for (Integer childid : allChildren.keySet()) {
             int removed;
             if (jsonObject.getString("userType").equals("editor")) {
                 removed = sql_files.removeEditPriv(childid, uid, removeUid, sourceIp);
@@ -392,7 +392,7 @@ public class SSLServer extends Thread {
         int newUid = jsonObject.getInt("newUid");
 
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
-        for (Integer childid : allChildren.values()) {
+        for (Integer childid : allChildren.keySet()) {
             int newUidRes = sql_files.addEditPriv(uid, childid, newUid, sourceIp);
             if (newUidRes == -1)
                 return makeErrJson("Failed to add this new editor - double check " +
@@ -416,7 +416,7 @@ public class SSLServer extends Thread {
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
         System.out.println("Children ids:" + allChildren);
         List<String> keys = new ArrayList<>();
-        for (Integer childid : allChildren.values()) {
+        for (Integer childid : allChildren.keySet()) {
             String encFileSK = sql_files.getEncFileSK(childid, uid, sourceIp);
             if (encFileSK == null)
                 return makeErrJson("Could not retrieve keys - check if you have " +
@@ -435,12 +435,12 @@ public class SSLServer extends Thread {
     }
 
     /**
-     * Finds all children recursively, parent:child
+     * Finds all children recursively, child:parent
      */
     private HashMap<Integer,Integer> getAllChildren(int fsoid, int parentid, int uid, SQL_Files
                                          sql_files) {
         HashMap<Integer,Integer> list = new HashMap<>();
-        list.put(parentid, fsoid);
+        list.put(fsoid, parentid);
         System.out.println("get all children Parentid " + parentid + " fsoid " + fsoid);
         if (sql_files.isFolder(fsoid, uid, sourceIp)) {
             List<Integer> children = sql_files.getChildrenId(fsoid, uid,
@@ -489,7 +489,7 @@ public class SSLServer extends Thread {
         int uid = jsonObject.getInt("uid");
 
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
-        for (Integer childid : allChildren.values()) {
+        for (Integer childid : allChildren.keySet()) {
             int deletedId = sql_files.deleteForAll(childid, uid, sourceIp);
             if (deletedId == -1)
                 return makeErrJson("Could not delete file with id " + childid);

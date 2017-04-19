@@ -517,8 +517,8 @@ public class FileController {
 
             while (keys.hasNext()) {
                 String key = (String) keys.next();
-                fsoParentList.add(Integer.valueOf(key));
-                fsoIdList.add(hash.getInt(key));
+                fsoIdList.add(Integer.valueOf(key));
+                fsoParentList.add(hash.getInt(key));
             }
             addViewer(fsoIdList, fsoParentList, uid, newUserId, encSKList);
         } else if (responseKeys.getString("msgType").equals("error")) {
