@@ -2089,9 +2089,121 @@ public class SQL_Files {
         }
     }
 
-    public boolean isFolder(int fsoid, int uid) {
+    public boolean isFolder(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement isFolder = null;
+        PreparedStatement createLog = null;
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            String selectIsFile = "SELECT F.isFile FROM FileSystemObjects WHERE F.fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                if (hasPermission) {
+                    isFolder = connection.prepareStatement(selectIsFile);
+                    isFolder.setInt(1, fsoid);
+                    ResultSet rs = isFolder.executeQuery();
+                    if (rs.next()) {
+                        return (rs.getInt(1) == 0) ? true : false;
+                    }
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "CHECK_ISFOLDER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (isFolder != null) {
+                    isFolder.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<Integer> getChildrenId (int fsoid, int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement getSecretKey = null;
+        PreparedStatement createLog = null;
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            String selectSecretKey = "SELECT F.fsoid FROM FileSystemObjects F WHERE EXISTS (" +
+                    "SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid AND F.uid = ?)";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                if (hasPermission) {
+                    getSecretKey = connection.prepareStatement(selectSecretKey);
+                    getSecretKey.setInt(1, fsoid);
+                    getSecretKey.setInt(2, uid);
+                    ResultSet rs = getSecretKey.executeQuery();
+                    ArrayList<Integer> sk = new ArrayList<>();
+                    while (rs.next()) {
+                        sk.add(rs.getInt(1));
+                    }
+                    return sk;
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "GET_CHILDREN_ID");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                    return null;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (getSecretKey != null) {
+                    getSecretKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getPubKey(int fsoid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement getPubKey = null;
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -2101,38 +2213,82 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
 
-            String selectIsFile = "SELECT F.isFile FROM FileSystemObjects WHERE F.fsoid = ?";
+            String selectPubKey = "SELECT U.pubKey FROM Users U WHERE U" +
+                    ".uid = ?";
             try {
-                isFolder = connection.prepareStatement(selectIsFile);
-                isFolder.setInt(1, fsoid);
-                ResultSet rs = isFolder.executeQuery();
+                getPubKey = connection.prepareStatement(selectPubKey);
+                getPubKey.setInt(1, fsoid);
+                ResultSet rs = getPubKey.executeQuery();
                 if (rs.next()) {
-                    return (rs.getInt(1) == 0) ? true : false;
+                    return rs.getString(1);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                if (isFolder != null) {
-                    isFolder.close();
+                if (getPubKey != null) {
+                    getPubKey.close();
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
-    }
-
-    public List<Integer> getChildrenId (int fsoid) {
         return null;
     }
 
-    public String getPubKey(int fsoid) {
+    //THIS IS THE SAME AS GETFILESK
+    public String getEncFileSK(int fsoid, int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        PreparedStatement getSecretKey = null;
+        PreparedStatement createLog = null;
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            String selectSecretKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.uid = ? AND F.fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                if (hasPermission) {
+                    getSecretKey = connection.prepareStatement(selectSecretKey);
+                    getSecretKey.setInt(1, fsoid);
+                    ResultSet rs = getSecretKey.executeQuery();
+                    if (rs.next()) {
+                        return rs.getString(1);
+                    }
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "GET_SK");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                    return null;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (getSecretKey != null) {
+                    getSecretKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
-
-    public String getEncFileSK(int fsoid, int uid) {
-        return null;
-    }
-
 }
 

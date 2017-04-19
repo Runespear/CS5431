@@ -420,7 +420,7 @@ public class SSLServer extends Thread {
         List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
         List<String> keys = new ArrayList<>();
         for (Integer childid : allChildren) {
-            String encFileSK = sql_files.getEncFileSK(childid, uid);
+            String encFileSK = sql_files.getEncFileSK(childid, uid, sourceIp);
             if (encFileSK == null)
                 return makeErrJson("Could not retrieve keys - check if you have " +
                         "the permission to add privileges to this file");
@@ -444,8 +444,9 @@ public class SSLServer extends Thread {
                                          sql_files) {
         List<Integer> list = new ArrayList<>();
         list.add(fsoid);
-        if (sql_files.isFolder(fsoid, uid)) {
-            List<Integer> children = sql_files.getChildrenId(fsoid);
+        if (sql_files.isFolder(fsoid, uid, sourceIp)) {
+            List<Integer> children = sql_files.getChildrenId(fsoid, uid,
+                    sourceIp);
             for (Integer child : children) {
                 list.addAll(getAllChildren(child, uid, sql_files));
             }

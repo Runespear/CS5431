@@ -659,7 +659,6 @@ class test_Encryption {
         }
     }
 
-    //TODO: I CAN'T GET THE PRIVATE KEY!! AM I DOING SOMETHING WRONG HERE??
     @Test
     void test_generateUserKeys()throws Exception{//Simply test whether keys generated are able to encrypt and decrypt
         String password = getRandomString(18, 19280);
@@ -675,20 +674,14 @@ class test_Encryption {
         KeyFactory keyFact = KeyFactory.getInstance("RSA");
         PublicKey pubkey = keyFact.generatePublic(x509KeySpec);
 
-        //TODO: WHY CANNOT GET THE PRIVATE KEY??? MASTERS, PLEASE TEACH ME!!!!!!!!!
-        //convert base64 private key string to byte stream
-        byte[] bytes2 = Base64.getDecoder().decode(keys[1]);
-        //byte[] bytes2 = decoder.decodeBuffer(keys[1]);
         // Convert the private key bytes into a PrivateKey object
-        PKCS8EncodedKeySpec KeySpec2 = new PKCS8EncodedKeySpec(bytes2);
-        KeyFactory keyFact2 = KeyFactory.getInstance("RSA");
-        PrivateKey privkey = keyFact2.generatePrivate(KeySpec2);
+        PrivateKey privkey = Encryption.getPrivKeyFromJSON(keys[1],keys[2],password);
 
         //Checking whether the user generated keys can encrypt and decrypt correctly
         byte[] encrypted_Stuff = Encryption.encFileSecretKey(secretkey, pubkey);
         SecretKey decrypted_secret_key = Encryption.decFileSecretKey(encrypted_Stuff, privkey);
         byte[] one = secretkey.getEncoded();
-        byte[] two = privkey.getEncoded();
+        byte[] two = decrypted_secret_key.getEncoded();
         assertEquals(Arrays.equals(one,two),true);
 
         //Testing salt with pwdBasedHash function
