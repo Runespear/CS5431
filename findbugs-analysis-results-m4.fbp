@@ -1,0 +1,4 @@
+<Project projectName="cs5431-m4">
+  <Jar>.\cs5431-parent</Jar>
+  <SrcDir>.\cs5431-parent</SrcDir>
+</Project>
