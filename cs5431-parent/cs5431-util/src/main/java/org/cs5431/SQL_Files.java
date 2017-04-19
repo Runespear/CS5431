@@ -2156,7 +2156,7 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
             String selectSecretKey = "SELECT F.fsoid FROM FileSystemObjects F WHERE EXISTS (" +
-                    "SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid AND F.uid = ?)";
+                    "SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid AND C.uid = ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
