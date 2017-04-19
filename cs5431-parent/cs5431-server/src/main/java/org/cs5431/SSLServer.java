@@ -462,6 +462,7 @@ public class SSLServer extends Thread {
         JSONArray fsoIdArr = jsonObject.getJSONArray("fsoid");
         JSONArray parentIdArr = jsonObject.getJSONArray("parentid");
 
+        int sumUid = 0;
         for (int i = 0; i < encKeyArr.length(); i++) {
             int fsoid = fsoIdArr.getInt(i);
             int parentid = parentIdArr.getInt(i);
@@ -470,13 +471,13 @@ public class SSLServer extends Thread {
             System.out.print("fsoid " + fsoid);
             int newUidRes = sql_files.addViewPriv(uid, fsoid, parentid, newUid,
                     encKey, sourceIp);
-            if (newUidRes == -1)
-                return makeErrJson("Failed to add this new viewer - double check " +
-                        "user id");
-            else if (newUidRes != newUid)
+            if (newUidRes != newUid && newUidRes != -1)
                 return makeErrJson("Could not add viewer - added the wrong user with " +
                     "id " + newUidRes);
         }
+        if (sumUid == -1* encKeyArr.length())
+            return makeErrJson("Failed to add this new viewer - double check " +
+                    "user id");
         JSONObject response = new JSONObject();
         response.put("msgType", "addViewerAck");
         response.put("newUid", newUid);

@@ -96,7 +96,7 @@ public class PromptAdminThread implements Runnable {
                         System.out.println("Log has been downloaded in tmp folder.");
                     } else {
                         System.out.println("Failed to download file logs. Please try again.");
-                    }                     
+                    }
                     return;
                 default:
                     System.out.println("Sorry, that command was not " +
