@@ -50,6 +50,8 @@ public class EditDetailsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        txtOldPassword.requestFocus();
+
         txtOldPassword.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
                 txtNewPassword.requestFocus();
@@ -253,7 +255,11 @@ public class EditDetailsController implements Initializable {
                     };
                     task.setOnFailed(t -> showError("Failed to delete this account - please " +
                             "double check your password."));
-                    task.setOnSucceeded(t -> exit());
+                    task.setOnSucceeded(t -> {
+                        Scene scene = stage.getScene();
+                        scene.setRoot(Client.loginNode);
+                        stage.show();
+                    });
                     Thread th = new Thread(task);
                     th.setDaemon(true);
                     th.start();
