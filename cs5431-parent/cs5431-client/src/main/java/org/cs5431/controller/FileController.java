@@ -513,7 +513,6 @@ public class FileController {
                 }
             }
             Iterator<?> keys = hash.keys();
-            System.out.print("LOOK HerE FOR HASH " + hash);
 
             while (keys.hasNext()) {
                 String key = (String) keys.next();

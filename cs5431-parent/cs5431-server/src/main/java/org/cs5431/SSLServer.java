@@ -394,6 +394,7 @@ public class SSLServer extends Thread {
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
         for (Integer childid : allChildren.keySet()) {
             int newUidRes = sql_files.addEditPriv(uid, childid, newUid, sourceIp);
+            sql_files.removeDuplicates(newUid);
             if (newUidRes == -1)
                 return makeErrJson("Failed to add this new editor - double check " +
                         "user id");
@@ -414,7 +415,6 @@ public class SSLServer extends Thread {
         int newUid = jsonObject.getInt("newUid");
 
         HashMap<Integer, Integer> allChildren = getAllChildren(fsoid, -1, uid, sql_files);
-        System.out.println("Children ids:" + allChildren);
         List<String> keys = new ArrayList<>();
         for (Integer childid : allChildren.keySet()) {
             String encFileSK = sql_files.getEncFileSK(childid, uid, sourceIp);
@@ -441,15 +441,11 @@ public class SSLServer extends Thread {
                                          sql_files) {
         HashMap<Integer,Integer> list = new HashMap<>();
         list.put(fsoid, parentid);
-        System.out.println("get all children Parentid " + parentid + " fsoid " + fsoid);
         if (sql_files.isFolder(fsoid, uid, sourceIp)) {
             List<Integer> children = sql_files.getChildrenId(fsoid, uid,
                     sourceIp);
-            System.out.println("list here  " + list);
             for (Integer child : children) {
-                System.out.println("current list  " + list);
                 list.putAll(getAllChildren(child, fsoid, uid, sql_files));
-                System.out.println("new child added  " + list);
             }
         }
         return list;
@@ -462,21 +458,20 @@ public class SSLServer extends Thread {
         JSONArray fsoIdArr = jsonObject.getJSONArray("fsoid");
         JSONArray parentIdArr = jsonObject.getJSONArray("parentid");
 
+        int sumUid = 0;
         for (int i = 0; i < encKeyArr.length(); i++) {
             int fsoid = fsoIdArr.getInt(i);
             int parentid = parentIdArr.getInt(i);
             String encKey = encKeyArr.getString(i);
-            System.out.print("Parentid " + parentid);
-            System.out.print("fsoid " + fsoid);
             int newUidRes = sql_files.addViewPriv(uid, fsoid, parentid, newUid,
                     encKey, sourceIp);
-            if (newUidRes == -1)
-                return makeErrJson("Failed to add this new viewer - double check " +
-                        "user id");
-            else if (newUidRes != newUid)
+            if (newUidRes != newUid && newUidRes != -1)
                 return makeErrJson("Could not add viewer - added the wrong user with " +
                     "id " + newUidRes);
         }
+        if (sumUid == -1* encKeyArr.length())
+            return makeErrJson("Failed to add this new viewer - double check " +
+                    "user id");
         JSONObject response = new JSONObject();
         response.put("msgType", "addViewerAck");
         response.put("newUid", newUid);

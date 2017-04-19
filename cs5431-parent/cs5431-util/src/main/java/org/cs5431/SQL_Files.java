@@ -248,7 +248,7 @@ public class SQL_Files {
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
 
-        boolean hasPermission = verifyBothPermission(parentFolderid, uid);
+        boolean hasPermission = true; //verifyBothPermission(parentFolderid, uid);
         JSONArray files = new JSONArray();
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -920,6 +920,68 @@ public class SQL_Files {
         return null;
     }
 
+    public boolean removeDuplicates(int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+
+        PreparedStatement getParentFolder = null;
+        PreparedStatement rmExisting = null;
+        PreparedStatement getDuplicate = null;
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
+            String selectDuplicate = "SELECT F.childid FROM FolderChildren F WHERE EXISTS (SELECT * FROM FolderChildren C" +
+                    "WHERE C.uid = ? AND C.parentid != F.parentid AND C.childid = F.childid AND C.uid = F.uid);";
+            String deleteExisting = "DELETE FROM FolderChildren WHERE uid = ? AND childid = ? AND parentid = ?";
+
+            try {
+                connection.setAutoCommit(false);
+                int duplicate = 0;
+                getDuplicate = connection.prepareStatement(selectDuplicate);
+                getDuplicate.setInt(1, uid);
+                ResultSet rs = getDuplicate.executeQuery();
+
+                if (rs.next()) {
+                    duplicate = rs.getInt(1);
+                }
+
+                getParentFolder = connection.prepareStatement(selectParent);
+                getParentFolder.setInt(1, uid);
+                rs = getParentFolder.executeQuery();
+
+                if (rs.next()) {
+                    int parentFolderid = rs.getInt(1);
+                    rmExisting = connection.prepareStatement(deleteExisting);
+                    rmExisting.setInt(1, uid);
+                    rmExisting.setInt(2, duplicate);
+                    rmExisting.setInt(3, parentFolderid);
+                    rmExisting.executeUpdate();
+                }
+                connection.commit();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                if (rmExisting != null) {
+                    rmExisting.close();
+                }
+                if (getParentFolder != null) {
+                    getParentFolder.close();
+                }
+                if (getDuplicate != null) {
+                    getDuplicate.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /** Adds newUid as editor of the file. Adds sk of the file that is encrypted with newUid's public key.
      * First verifies that the user has permission. Logs the action.
      * Note that a user must first be a viewer before he/she can be an editor based on the controller.
@@ -931,10 +993,13 @@ public class SQL_Files {
     public int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
+        boolean viewerExists = verifyViewPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement addEditor = null;
         PreparedStatement createLog = null;
         PreparedStatement removeViewer = null;
+        PreparedStatement getParentFolder = null;
+        PreparedStatement rmExisting = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -946,6 +1011,8 @@ public class SQL_Files {
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String deleteViewer = "DELETE FROM Viewers WHERE uid = ? AND " +
                     "fsoid = ?";
+            String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
+            String deleteExisting = "DELETE FROM FolderChildren WHERE uid = ? AND childid = ? AND parentid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1031,6 +1098,12 @@ public class SQL_Files {
                 if (removeViewer != null) {
                     removeViewer.close();
                 }
+                if (rmExisting != null) {
+                    rmExisting.close();
+                }
+                if (getParentFolder != null) {
+                    getParentFolder.close();
+                }
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
@@ -1056,6 +1129,7 @@ public class SQL_Files {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean wasEditor = verifyEditPermission(fsoid, newUid);
         boolean viewerExists = verifyViewPermission(fsoid, newUid);
+        boolean editorExists = verifyEditPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement addViewer = null;
         PreparedStatement createLog = null;
@@ -1064,6 +1138,7 @@ public class SQL_Files {
         PreparedStatement logRmEditor = null;
         PreparedStatement addParent = null;
         PreparedStatement getParentFolder = null;
+        PreparedStatement rmExisting = null;
 
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
@@ -1079,9 +1154,26 @@ public class SQL_Files {
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertParent = "INSERT INTO FolderChildren (parentid, childid, uid) values (?, ?, ?);";
             String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
+            String deleteExisting = "DELETE FROM FolderChildren WHERE uid = ? AND childid = ? AND parentid = ?";
 
             try {
+                connection.setAutoCommit(false);
                 createLog = connection.prepareStatement(insertLog);
+                if (editorExists || viewerExists) {
+                    System.out.println(newUid + "WAS A VIEWER OR EDITOR" + fsoid);
+                    getParentFolder = connection.prepareStatement(selectParent);
+                    getParentFolder.setInt(1, newUid);
+                    ResultSet rs = getParentFolder.executeQuery();
+
+                    if (rs.next()) {
+                        int parentFolderid = rs.getInt(1);
+                        rmExisting = connection.prepareStatement(deleteExisting);
+                        rmExisting.setInt(1, newUid);
+                        rmExisting.setInt(2, fsoid);
+                        rmExisting.setInt(3, parentFolderid);
+                        rmExisting.executeUpdate();
+                    }
+                }
                 if (viewerExists) {
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
@@ -1211,6 +1303,9 @@ public class SQL_Files {
                 }
                 if (getParentFolder != null) {
                     getParentFolder.close();
+                }
+                if (rmExisting != null) {
+                    rmExisting.close();
                 }
                 connection.setAutoCommit(true);
             }

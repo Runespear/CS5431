@@ -389,20 +389,22 @@ public class FileViewController implements Initializable {
     private void viewFileLog(Event e) {
         FileSystemObject fso = fileList.getSelectionModel().getSelectedItem();
 
-        try {
-            Node node = (Node) e.getSource();
-            Stage stage = (Stage) node.getScene().getWindow();
-            Scene scene = stage.getScene();
+        if (fso != null) {
+            try {
+                Node node = (Node) e.getSource();
+                Stage stage = (Stage) node.getScene().getWindow();
+                Scene scene = stage.getScene();
 
-            final URL r = getClass().getResource("log_view.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(r);
-            Parent root = fxmlLoader.load();
-            LogViewController lvc = fxmlLoader.getController();
-            lvc.setStage(stage);
-            lvc.setDetails(fileController, fso.getId(), fso.getFileName());
-            scene.setRoot(root);
-        } catch (Exception e1) {
-            e1.printStackTrace();
+                final URL r = getClass().getResource("log_view.fxml");
+                FXMLLoader fxmlLoader = new FXMLLoader(r);
+                Parent root = fxmlLoader.load();
+                LogViewController lvc = fxmlLoader.getController();
+                lvc.setStage(stage);
+                lvc.setDetails(fileController, fso.getId(), fso.getFileName());
+                scene.setRoot(root);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
