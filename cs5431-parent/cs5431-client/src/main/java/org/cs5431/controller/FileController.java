@@ -490,20 +490,27 @@ public class FileController {
 
         if (responseKeys.getString("msgType").equals("addViewerKeysAck")) {
             String pubKeyString = responseKeys.getString("pubKey");
-            String fileSKString = responseKeys.getString("secretKey");
+            JSONArray fileSKArr = responseKeys.getJSONArray("secretKey");
+            JSONArray fsoidArr = responseKeys.getJSONArray("fsoid");
             PublicKey pubKey = getPubKeyFromJSON(pubKeyString);
-            SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
-                    (fileSKString), user.getPrivKey());
-            byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
-            addViewer(fsoid, uid, newUserId, Base64.getEncoder()
-                    .encodeToString(encFileSK));
-            if (CAN_KEYS_BE_DESTROYED) {
-                try {
-                    fileSK.destroy();
-                } catch (DestroyFailedException e) {
-                    e.printStackTrace();
+
+            List<String> encSKList = new ArrayList<>();
+            List<Integer> fsoIdList = new ArrayList<>();
+            for (int i = 0; i < fileSKArr.length(); i++) {
+                SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
+                        (fileSKArr.getString(i)), user.getPrivKey());
+                byte encFileSK[] = encFileSecretKey(fileSK, pubKey);
+                encSKList.add(Base64.getEncoder().encodeToString(encFileSK));
+                fsoIdList.add(fsoidArr.getInt(i));
+                if (CAN_KEYS_BE_DESTROYED) {
+                    try {
+                        fileSK.destroy();
+                    } catch (DestroyFailedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+            addViewer(fsoIdList, uid, newUserId, encSKList);
         } else if (responseKeys.getString("msgType").equals("error")) {
             throw new FileControllerException(responseKeys.getString
                     ("message"));
@@ -513,8 +520,8 @@ public class FileController {
         }
     }
 
-    private void addViewer(int fsoid, int uid, int newUserId, String
-            encSecretKey) throws IOException, ClassNotFoundException,
+    private void addViewer(List<Integer> fsoid, int uid, int newUserId,
+                           List<String> encSecretKey) throws IOException, ClassNotFoundException,
             FileControllerException {
         JSONObject jsonViewer = new JSONObject();
         jsonViewer.put("msgType", "addViewer");
@@ -543,7 +550,25 @@ public class FileController {
         FileControllerException {
         int fsoid = systemObject.getId();
         int uid = user.getId();
-        addViewer(fsoid, uid, newUserId, "");
+        JSONObject jsonDemote = new JSONObject();
+        jsonDemote.put("msgType", "demoteEditor");
+        jsonDemote.put("fsoid", fsoid);
+        jsonDemote.put("uid", uid);
+        jsonDemote.put("demoteUid", newUserId);
+        sendJson(jsonDemote, sslSocket);
+
+        JSONObject responseDemote = receiveJson(sslSocket);
+        if (responseDemote.getString("msgType").equals("demoteEditorAck")) {
+            if (responseDemote.getInt("newUid") != newUserId)
+                throw new FileControllerException("User that was demoted to " +
+                        "viewer was not the user requested");
+        } else if (responseDemote.getString("msgType").equals("error")) {
+            throw new FileControllerException(responseDemote.getString
+                    ("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     public void removeEditor(FileSystemObject systemObject, int removeUid) throws IOException,

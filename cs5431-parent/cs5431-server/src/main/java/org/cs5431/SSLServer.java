@@ -5,8 +5,10 @@ import org.json.JSONObject;
 
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Constants.MAX_LOGINS_PER_MINUTE;
@@ -105,6 +107,10 @@ public class SSLServer extends Thread {
                         break;
                     case "addViewerKeys":
                         response = addViewerKeys(jsonObject, sql_files);
+                        sendJson(response, s);
+                        break;
+                    case "demoteEditor":
+                        response = demoteEditor(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "removePriv":
@@ -333,39 +339,76 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to overwrite file");
     }
 
+    private JSONObject demoteEditor(JSONObject jsonObject, SQL_Files
+            sql_files) {
+        int fsoid = jsonObject.getInt("fsoid");
+        int uid = jsonObject.getInt("uid");
+        int demoteUid = jsonObject.getInt("demoteUid");
+        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        for (Integer childid : allChildren) {
+            int newUidRes = sql_files.addViewPriv(uid, childid, demoteUid,
+                    "", sourceIp);
+            if (newUidRes == -1)
+                return makeErrJson("Failed to demote this user - double check" +
+                        " user id");
+            else if (newUidRes != demoteUid)
+                return makeErrJson("Could not demote user - demoted the wrong" +
+                        " user with id " + newUidRes);
+        }
+        JSONObject response = new JSONObject();
+        response.put("msgType", "demoteEditorAck");
+        response.put("newUid", demoteUid);
+        return response;
+    }
 
     private JSONObject removePriv(JSONObject jsonObject, SQL_Files
             sql_files) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         int removeUid = jsonObject.getInt("removeUid");
-        int removed;
-        if (jsonObject.getString("userType").equals("editor"))
-            removed = sql_files.removeEditPriv(fsoid, uid, removeUid, sourceIp);
-        else
-            removed = sql_files.removeViewPriv(fsoid, uid, removeUid, sourceIp);
-        if (removed != -1) {
-            JSONObject response = new JSONObject();
-            response.put("msgType","removePrivAck");
-            response.put("removeUid", removed);
-            return response;
+        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        for (Integer childid : allChildren) {
+            int removed;
+            if (jsonObject.getString("userType").equals("editor")) {
+                removed = sql_files.removeEditPriv(childid, uid, removeUid, sourceIp);
+            }
+            else {
+                removed = sql_files.removeViewPriv(childid, uid, removeUid, sourceIp);
+            }
+            if (removed == -1)
+                return makeErrJson("Failed to remove this user - double check" +
+                        " user id");
+            else if (removed != removeUid)
+                return makeErrJson("Could not add editor - remove the wrong " +
+                        "user with id " + removed);
         }
-        return makeErrJson("Failed to remove user's privileges");
+
+        JSONObject response = new JSONObject();
+        response.put("msgType","removePrivAck");
+        response.put("removeUid", removeUid);
+        return response;
     }
 
     private JSONObject addEditor(JSONObject jsonObject, SQL_Files sql_files) {
         jsonObject.put("encSecretKey","");
-        int newUid = sql_files.addEditPriv(jsonObject, sourceIp);
-        if (newUid == jsonObject.getInt("newUid")) {
-            JSONObject response = new JSONObject();
-            response.put("msgType", "addEditorAck");
-            response.put("newUid", newUid);
-            return response;
-        } else if (newUid == -1)
-            return makeErrJson("Failed to add this new editor - double check " +
-                    "user id");
-        return makeErrJson("Could not add editor - added the wrong user with " +
-                "id " + newUid);
+        int uid = jsonObject.getInt("uid");
+        int fsoid = jsonObject.getInt("fsoid");
+        int newUid = jsonObject.getInt("newUid");
+
+        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        for (Integer childid : allChildren) {
+            int newUidRes = sql_files.addEditPriv(uid, childid, newUid, sourceIp);
+            if (newUidRes == -1)
+                return makeErrJson("Failed to add this new editor - double check " +
+                        "user id");
+            else if (newUidRes != newUid)
+                return makeErrJson("Could not add editor - added the wrong user with " +
+                    "id " + newUidRes);
+        }
+        JSONObject response = new JSONObject();
+        response.put("msgType", "addEditorAck");
+        response.put("newUid", newUid);
+        return response;
     }
 
     private JSONObject addViewerKeys(JSONObject jsonObject, SQL_Files
@@ -373,26 +416,65 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         int newUid = jsonObject.getInt("newUid");
-        JSONObject response = sql_files.getKeys(fsoid, uid, newUid, sourceIp);
-        if (response != null)
-            return response;
-        else
-            return makeErrJson("Could not retrieve keys - check if you have " +
-                    "the permission to add privileges to this file");
+
+        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        List<String> keys = new ArrayList<>();
+        for (Integer childid : allChildren) {
+            String encFileSK = sql_files.getEncFileSK(childid, uid);
+            if (encFileSK == null)
+                return makeErrJson("Could not retrieve keys - check if you have " +
+                        "the permission to add privileges to this file");
+            keys.add(encFileSK);
+        }
+
+        String pubKey = sql_files.getPubKey(newUid);
+
+        JSONObject response = new JSONObject();
+        response.put("msgType", "addViewerKeysAck");
+        response.put("secretKey", keys);
+        response.put("fsoid", allChildren);
+        response.put("pubKey", pubKey);
+        return response;
+    }
+
+    /**
+     * Finds all children recursively
+     */
+    private List<Integer> getAllChildren(int fsoid, int uid, SQL_Files
+                                         sql_files) {
+        List<Integer> list = new ArrayList<>();
+        list.add(fsoid);
+        if (sql_files.isFolder(fsoid, uid)) {
+            List<Integer> children = sql_files.getChildrenId(fsoid);
+            for (Integer child : children) {
+                list.addAll(getAllChildren(child, uid, sql_files));
+            }
+        }
+        return list;
     }
 
     private JSONObject addViewer(JSONObject jsonObject, SQL_Files sql_files) {
-        int newUid = sql_files.addViewPriv(jsonObject, sourceIp);
-        if (newUid == jsonObject.getInt("newUid")) {
-            JSONObject response = new JSONObject();
-            response.put("msgType", "addViewerAck");
-            response.put("newUid", newUid);
-            return response;
-        } else if (newUid == -1)
-            return makeErrJson("Failed to add this new viewer - double check " +
-                    "user id");
-        return makeErrJson("Could not add viewer - added the wrong user with " +
-                "id " + newUid);
+        int uid = jsonObject.getInt("uid");
+        int newUid = jsonObject.getInt("newUid");
+        JSONArray encKeyArr = jsonObject.getJSONArray("encSecretKey");
+        JSONArray fsoIdArr = jsonObject.getJSONArray("fsoid");
+
+        for (int i = 0; i < encKeyArr.length(); i++) {
+            int fsoid = fsoIdArr.getInt(i);
+            String encKey = encKeyArr.getString(i);
+            int newUidRes = sql_files.addViewPriv(uid, fsoid, newUid,
+                    encKey, sourceIp);
+            if (newUidRes == -1)
+                return makeErrJson("Failed to add this new viewer - double check " +
+                        "user id");
+            else if (newUidRes != newUid)
+                return makeErrJson("Could not add viewer - added the wrong user with " +
+                    "id " + newUidRes);
+        }
+        JSONObject response = new JSONObject();
+        response.put("msgType", "addViewerAck");
+        response.put("newUid", newUid);
+        return response;
     }
 
     private JSONObject deleteForAll(JSONObject jsonObject, SQL_Files
@@ -400,15 +482,20 @@ public class SSLServer extends Thread {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
 
-        if (sql_files.deleteForAll(fsoid, uid, sourceIp) == fsoid) {
-            sql_files.deleteIfOrphanFile(fsoid, uid, sourceIp);
-            JSONObject response = new JSONObject();
-            response.put("msgType","deleteForAllAck");
-            response.put("fsoid", fsoid);
-            response.put("uid", uid);
-            return response;
+        List<Integer> allChildren = getAllChildren(fsoid, uid, sql_files);
+        for (Integer childid : allChildren) {
+            int deletedId = sql_files.deleteForAll(childid, uid, sourceIp);
+            if (deletedId == -1)
+                return makeErrJson("Could not delete file with id " + childid);
+            else if (deletedId != childid)
+                return makeErrJson("Deleted wrong file with id " + deletedId);
+            sql_files.deleteIfOrphanFile(childid, uid, sourceIp);
         }
-        return makeErrJson("Unable to delete file");
+        JSONObject response = new JSONObject();
+        response.put("msgType","deleteForAllAck");
+        response.put("fsoid", fsoid);
+        response.put("uid", uid);
+        return response;
     }
 
     private JSONObject deleteForUser(JSONObject jsonObject, SQL_Files sql_files) {

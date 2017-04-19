@@ -923,15 +923,12 @@ public class SQL_Files {
     /** Adds newUid as editor of the file. Adds sk of the file that is encrypted with newUid's public key.
      * First verifies that the user has permission. Logs the action.
      * Note that a user must first be a viewer before he/she can be an editor based on the controller.
-     * @param json with fsoid, newUid, and uid (user performing the add priv function).
+     * @param uid User id of the user making the request
+     * @param fsoid file id of the file to change privileges on
+     * @param newUid User id of the new editor
+     * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    public int addEditPriv(JSONObject json, String sourceIp) {
-
-        int uid = json.getInt("uid");
-        int fsoid = json.getInt("fsoid");
-        int newUid = json.getInt("newUid");
-        String encKey = json.getString("encSecretKey"); //TODO: remove?
-
+    public int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
@@ -1046,15 +1043,14 @@ public class SQL_Files {
     /** Adds newUid as viewer of the file. Adds sk of the file that is encrypted with newUid's public key.
      * First verifies that the user has permission. Logs the action.
      * If newUid was editor previously, he/she is removed from the editors list, logged, and a new sk is not added.
-     * @param json with fsoid, newUid, and uid (user performing the add priv function).
+     * @param uid User id of the user making the request
+     * @param fsoid file id of the file to change privileges on
+     * @param newUid User id of the new viewer
+     * @param encKey File secret key encrypted with the new user's public key
+     * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    public int addViewPriv(JSONObject json, String sourceIp) {
-
-        int uid = json.getInt("uid");
-        int fsoid = json.getInt("fsoid");
-        int newUid = json.getInt("newUid");
-        String encKey = json.getString("encSecretKey");
-
+    public int addViewPriv(int uid, int fsoid, int newUid, String encKey,
+                           String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean wasEditor = verifyEditPermission(fsoid, newUid);
         boolean viewerExists = verifyViewPermission(fsoid, newUid);
