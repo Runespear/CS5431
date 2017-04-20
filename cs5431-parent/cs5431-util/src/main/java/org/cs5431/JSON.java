@@ -15,10 +15,9 @@ public class JSON {
     }
 
     public static JSONObject receiveJson(Socket sslSocket) throws IOException, ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
+        ObjectInputStream objectInputStream = new ObjectInputStream(sslSocket.getInputStream());
+        TransmittedJSON received = (TransmittedJSON) objectInputStream.readObject();
+        String str = received.jsonString;
         if (DEBUG_MODE) {
             System.out.println(str);
             System.out.flush();
@@ -35,22 +34,21 @@ public class JSON {
         if (DEBUG_MODE) {
             System.out.println("sending json");
         }
-        BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(s.getOutputStream()));
         String str = o.toString();
         if (DEBUG_MODE) {
             System.out.println(str);
         }
-        w.write(str + '\n');
-        w.flush();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(s.getOutputStream());
+        TransmittedJSON transmittedJSON = new TransmittedJSON();
+        transmittedJSON.jsonString = str;
+        objectOutputStream.writeObject(transmittedJSON);
     }
 
     public static JSONArray receiveJsonArray(Socket sslSocket) throws
             IOException, ClassNotFoundException {
-        BufferedReader r = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream()));
-        String str;
-        str = r.readLine();
+        ObjectInputStream objectInputStream = new ObjectInputStream(sslSocket.getInputStream());
+        TransmittedJSON received = (TransmittedJSON) objectInputStream.readObject();
+        String str = received.jsonString;
         if (DEBUG_MODE) {
             System.out.println(str);
             System.out.flush();
