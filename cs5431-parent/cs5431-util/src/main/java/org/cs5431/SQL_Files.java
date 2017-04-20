@@ -2173,7 +2173,7 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
 
-            String selectLog = "SELECT * FROM FileLog WHERE F.fsoid = ? INTO OUTFILE \"/tmp/fso"+ fsoid +"logs.csv\" " +
+            String selectLog = "SELECT * FROM FileLog F WHERE F.fsoid = ? INTO OUTFILE \"/tmp/fso"+ fsoid +"logs.csv\" " +
                     "FIELDS TERMINATED BY ','\n" +
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
