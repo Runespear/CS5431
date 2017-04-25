@@ -2307,7 +2307,7 @@ public class SQL_Files {
         return null;
     }
 
-    public String getPubKey(int fsoid) {
+    public String getPubKey(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
         PreparedStatement getPubKey = null;
         if (DEBUG_MODE) {
@@ -2323,7 +2323,7 @@ public class SQL_Files {
                     ".uid = ?";
             try {
                 getPubKey = connection.prepareStatement(selectPubKey);
-                getPubKey.setInt(1, fsoid);
+                getPubKey.setInt(1, uid);
                 ResultSet rs = getPubKey.executeQuery();
                 if (rs.next()) {
                     return rs.getString(1);
