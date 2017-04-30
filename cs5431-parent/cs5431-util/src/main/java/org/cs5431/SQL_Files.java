@@ -32,6 +32,95 @@ public class SQL_Files {
         this.DB_PASSWORD = password;
     }
 
+    JSONObject uploadKeys(JSONObject json, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        int fsoid = json.getInt("fsoid");
+        int uid = json.getInt("uid");
+        boolean hasPermission = verifyBothPermission(fsoid, uid);
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement verifyEditors = null;
+            PreparedStatement verifyViewers = null;
+            PreparedStatement getPub = null;
+
+            String selectEditors = "SELECT E.uid FROM Editors E WHERE E.fsoid = ?";
+            String selectViewers = "SELECT V.uid FROM Viewers V WHERE V.fsoid = ?";
+            String selectPub = "SELECT U.pubKey FROM Users U WHERE U.uid = ?";
+
+            JSONArray editors = new JSONArray();
+            JSONArray viewers = new JSONArray();
+            JSONArray editorsKeys = new JSONArray();
+            JSONArray viewersKeys = new JSONArray();
+
+            try {
+                if (hasPermission) {
+                    verifyEditors = connection.prepareStatement(selectEditors);
+                    verifyViewers = connection.prepareStatement(selectViewers);
+
+                    verifyEditors.setInt(1, fsoid);
+                    ResultSet editorsId = verifyEditors.executeQuery();
+
+                    while (editorsId.next()) {
+                        int editor = editorsId.getInt(1);
+                        editors.put(editor);
+                        getPub = connection.prepareStatement(selectPub);
+                        getPub.setInt(0, editor);
+                        ResultSet ePub = getPub.executeQuery();
+                        if (ePub.next()) {
+                            editorsKeys.put(ePub.getString(0));
+                        }
+                    }
+
+                    verifyViewers.setInt(1, fsoid);
+                    ResultSet viewersId = verifyViewers.executeQuery();
+
+                    while (viewersId.next()) {
+                        int viewer = viewersId.getInt(1);
+                        viewers.put(viewer);
+                        getPub = connection.prepareStatement(selectPub);
+                        getPub.setInt(0, viewer);
+                        ResultSet ePub = getPub.executeQuery();
+                        if (ePub.next()) {
+                            viewersKeys.put(ePub.getString(0));
+                        }
+                    }
+                    JSONObject uploadKeys = new JSONObject();
+                    uploadKeys.put("editors", editors);
+                    uploadKeys.put("viewers", viewers);
+                    uploadKeys.put("editorsKeys", editorsKeys);
+                    uploadKeys.put("viewersKeys", viewersKeys);
+                    return uploadKeys;
+
+                } else {
+                    //create log
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (verifyEditors != null) {
+                    verifyEditors.close();
+                }
+                if (verifyViewers != null) {
+                    verifyViewers.close();
+                }
+                if (getPub != null) {
+                    getPub.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     /** Adds fso to the db with sk = enc(secret key of fso). Adds owner as editor.
      * Verifies that the user has permission.
      * Creates file log of failure if the user doesnt have permission or if there is a db error (rolls back transaction).
@@ -266,7 +355,7 @@ public class SQL_Files {
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
 
-        boolean hasPermission = true; //verifyBothPermission(parentFolderid, uid);
+        boolean hasPermission = verifyBothPermission(parentFolderid, uid); //true;
         JSONArray files = new JSONArray();
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
