@@ -19,7 +19,7 @@ public class SQL_Accounts {
     private String DB_USER;
     private String DB_PASSWORD;
 
-    public SQL_Accounts(String ip, int dbPort, String username, String
+    SQL_Accounts(String ip, int dbPort, String username, String
             password) {
         this.ip = ip;
         this.port = dbPort;
@@ -30,7 +30,7 @@ public class SQL_Accounts {
     /** Determines if the username already exists in the database.
      * @param username is the username to be checked in the database.
      * @return true if the username does not exist; false otherwise. */
-    public boolean isUniqueUsername(String username) {
+    boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -81,7 +81,7 @@ public class SQL_Accounts {
      * @param pwdSalt salt of the password that was used
      * @return json containing registrationAck and details of the user added (refer to protocols doc)
      * */
-    public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt, String sourceIp) {
+    JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -240,7 +240,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    public boolean logSessionLimit(String sourceIp) {
+    boolean logSessionLimit(String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -283,7 +283,7 @@ public class SQL_Accounts {
      * Creates a failure login log if the user's password and username does not match. (username is valid).
      * Creates a success login log upon success.
      * @return h(privKey) of the user if the authentication is valid. **/
-    public JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action) {
+    JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -441,7 +441,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    public String getPrivKeySalt(String username) {
+    String getPrivKeySalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
 
         System.out.println("Connecting to database...");
@@ -478,7 +478,7 @@ public class SQL_Accounts {
     /** Gets pwdSalt of pwd associated with username.
      * Creates a failed login log if the username does not exist.
      * @return salt of password associated with username */
-    public String getSalt(String username, String sourceIp, String action) {
+    String getSalt(String username, String sourceIp, String action) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -537,7 +537,7 @@ public class SQL_Accounts {
      * This can only be done by the admin.
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion.
      */
-    public int adminDeleteUser(int uid, String sourceIp) {
+    int adminDeleteUser(int uid, String sourceIp) {
         int parentFolderid = getParentFolderid(uid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -600,22 +600,20 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
-                        createLog.setString(3, null);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "ADMIN_DELETE_USER");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setString(8, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADMIN_DELETE_USER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return -1;
             } finally {
@@ -640,7 +638,7 @@ public class SQL_Accounts {
     /** Deletes the user with uid. To be first authenticated using username and password.
      * Creates a log entry of the deletion of user.
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion. */
-    public int deleteUser(int uid, String username, String password, String sourceIp) {
+    int deleteUser(int uid, String username, String password, String sourceIp) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", username);
         String salt = getSalt(username, sourceIp, "DELETE_USER");
@@ -712,22 +710,20 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, uid);
-                        createLog.setString(3, username);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "DELETE_USER");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setString(8, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, username);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DELETE_USER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return -1;
             } finally {
@@ -796,7 +792,7 @@ public class SQL_Accounts {
      * @param allegedUser json with the credentials of the user to be modified along
      *                    a new privKey.
      * @return json with changePwdAck and the uid; if user is not authenticated, return null. */
-    public JSONObject changePassword(JSONObject allegedUser, String newEncPwd, String sourceIp) {
+    JSONObject changePassword(JSONObject allegedUser, String newEncPwd, String sourceIp) {
         int uid = allegedUser.getInt("uid");
         String username = allegedUser.getString("username");
         String password = allegedUser.getString("hashedPwd");
@@ -865,23 +861,21 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, uid);
-                        createLog.setString(3, username);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "CHANGE_PWD");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setString(8, "DB ERROR");
-                        createLog.executeUpdate();
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, username);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "CHANGE_PWD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return null;
             } finally {
@@ -903,43 +897,40 @@ public class SQL_Accounts {
      * Logs the change of password in the userlog.
      * Creates failure file log invalid password or db error (rollsback accordingly). */
     //TODO: how to verify admin?
-    public boolean getUserLog() {
-        boolean hasPermission = true; //verifyBothPermission(fsoid, uid);
-        if (hasPermission) {
+    boolean getUserLog() {
+        if (DEBUG_MODE) {
+            System.out.println("Can view file logs");
+        }
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        PreparedStatement getFileLog = null;
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
-                System.out.println("Can view file logs");
-            }
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-            PreparedStatement getFileLog = null;
-            if (DEBUG_MODE) {
-                System.out.println("Connecting to database...");
+                System.out.println("Database connected!");
             }
 
-            try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-                if (DEBUG_MODE) {
-                    System.out.println("Database connected!");
-                }
+            String selectLog = "SELECT 'userLogid', 'uid', 'simulatedUsername', 'lastModified', 'actionType', " +
+                    "'status', 'sourceIp', 'failureType' UNION ALL " +
+                    "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\" FIELDS TERMINATED BY ','\n" +
+                    "ENCLOSED BY '\"'\n" +
+                    "LINES TERMINATED BY '\\n'; ";
 
-                String selectLog = "SELECT 'userLogid', 'uid', 'simulatedUsername', 'lastModified', 'actionType', " +
-                        "'status', 'sourceIp', 'failureType' UNION ALL " +
-                        "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\" FIELDS TERMINATED BY ','\n" +
-                        "ENCLOSED BY '\"'\n" +
-                        "LINES TERMINATED BY '\\n'; ";
-
-                try {
-                    getFileLog = connection.prepareStatement(selectLog);
-                    getFileLog.executeQuery();
-                    return true;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (getFileLog != null) {
-                        getFileLog.close();
-                    }
-                }
+            try {
+                getFileLog = connection.prepareStatement(selectLog);
+                getFileLog.executeQuery();
+                return true;
             } catch (SQLException e) {
                 e.printStackTrace();
+            } finally {
+                if (getFileLog != null) {
+                    getFileLog.close();
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -951,7 +942,7 @@ public class SQL_Accounts {
      * @param newEmail The email address to change to
      * @return true if the change of email is successful, false otherwise.
      */
-    public boolean changeEmail(int uid, String oldEmail, String newEmail, String sourceIp) {
+    boolean changeEmail(int uid, String oldEmail, String newEmail, String sourceIp) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -998,22 +989,20 @@ public class SQL_Accounts {
                 return true;
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, uid);
-                        createLog.setString(3, null);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "CHANGE_EMAIL");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setString(8, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "CHANGE_EMAIL");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return false;
             } finally {
@@ -1037,7 +1026,7 @@ public class SQL_Accounts {
      * @return true if the username and password combination can be used to
      * connect to the database, false otherwise
      */
-    public boolean checkCredentials() {
+    boolean checkCredentials() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1061,7 +1050,7 @@ public class SQL_Accounts {
      * @param userId The userid of the user
      * @return The username of the user
      */
-    public String getUsername(int userId) {
+    String getUsername(int userId) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1101,7 +1090,7 @@ public class SQL_Accounts {
      * @param username The userid of the user
      * @return The userid of the user
      */
-    public int getUserId(String username) {
+    int getUserId(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
