@@ -920,7 +920,9 @@ public class SQL_Accounts {
                     System.out.println("Database connected!");
                 }
 
-                String selectLog = "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\" FIELDS TERMINATED BY ','\n" +
+                String selectLog = "SELECT 'userLogid', 'uid', 'simulatedUsername', 'lastModified', 'actionType', " +
+                        "'status', 'sourceIp', 'failureType' UNION ALL " +
+                        "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\" FIELDS TERMINATED BY ','\n" +
                         "ENCLOSED BY '\"'\n" +
                         "LINES TERMINATED BY '\\n'; ";
 
@@ -942,7 +944,6 @@ public class SQL_Accounts {
         return false;
     }
 
-    //TODO: dont need old email??
     /**
      * Changes the email associated with a certain user.
      * @param uid The user id of the user

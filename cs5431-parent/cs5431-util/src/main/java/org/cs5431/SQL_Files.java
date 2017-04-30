@@ -2141,7 +2141,9 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
 
-            String selectLog = "SELECT * FROM FileLog INTO OUTFILE \"/tmp/filelogs.csv\" FIELDS TERMINATED BY ','\n" +
+            String selectLog = "SELECT 'fileLogid', 'fsoid', 'uid', 'lastModified', 'actionType', " +
+                    "'status', 'sourceIp', 'newUid', 'failureType' UNION ALL " +
+                    "SELECT * FROM FileLog INTO OUTFILE \"/tmp/filelogs.csv\" FIELDS TERMINATED BY ','\n" +
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
 
@@ -2173,7 +2175,9 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
 
-            String selectLog = "SELECT * FROM FileLog F WHERE F.fsoid = ? INTO OUTFILE \"/tmp/fso"+ fsoid +"logs.csv\" " +
+            String selectLog = "SELECT 'fileLogid', 'fsoid', 'uid', 'lastModified', 'actionType', " +
+                    "'status', 'sourceIp', 'newUid', 'failureType' UNION ALL " +
+                    "SELECT * FROM FileLog F WHERE F.fsoid = ? INTO OUTFILE \"/tmp/fso"+ fsoid +"logs.csv\" " +
                     "FIELDS TERMINATED BY ','\n" +
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
