@@ -36,9 +36,9 @@ public class SQL_Files {
      * Verifies that the user has permission.
      * Creates file log of failure if the user doesnt have permission or if there is a db error (rolls back transaction).
      * @return fsoid of created fso; if no permission, return -1. **/
-    public int createFso (JSONObject fso, String sourceIp) throws IOException {
+    int createFso (JSONObject fso, String sourceIp) throws IOException {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -49,6 +49,11 @@ public class SQL_Files {
         Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
         boolean isFile = fso.getBoolean("isFile");
         String sk = fso.getString("encSK");
+        JSONArray editors = fso.getJSONArray("editors");
+        JSONArray viewers = fso.getJSONArray("viewers");
+        JSONArray editorsKeys = fso.getJSONArray("editorsKeys");
+        JSONArray viewersKeys = fso.getJSONArray("viewersKeys");
+
         String fileIV = null;
         if (isFile) {
             fileIV = fso.getString("fileIV");
@@ -143,6 +148,19 @@ public class SQL_Files {
                     addPermission.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("added owner as editor");
+                    }
+
+                    for (int i=0; i<editors.length(); i++) {
+                        int editor = (int) editors.get(i);
+                        String editorKey = (String) editorsKeys.get(i);
+                        addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp);
+                        addEditPriv(uid, fsoid, rs.getInt(0), sourceIp);
+                    }
+
+                    for (int i=0; i<viewers.length(); i++) {
+                        int viewer = (int) viewers.get(i);
+                        String viewerKey = (String) viewersKeys.get(i);
+                        addViewPriv(uid, fsoid, parentFolderid, viewer, viewerKey, sourceIp);
                     }
 
                     if (isFile) {
@@ -243,14 +261,14 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with uid and fsoid details.
      * @return An JsonArray of all children. */
-    public JSONArray getChildren(JSONObject json, String sourceIp) {
+    JSONArray getChildren(JSONObject json, String sourceIp) {
 
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
 
         boolean hasPermission = true; //verifyBothPermission(parentFolderid, uid);
         JSONArray files = new JSONArray();
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -373,7 +391,7 @@ public class SQL_Files {
         int fsoid = json.getInt("fsoid");
 
         boolean hasPermission = verifyBothPermission(fsoid, uid);
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -496,8 +514,8 @@ public class SQL_Files {
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
      * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value;
      * returns null otherwise  **/
-    public JSONObject getPermissions(int fsoid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+    JSONObject getPermissions(int fsoid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -557,7 +575,7 @@ public class SQL_Files {
         return null;
     }
 
-    public boolean verifyEditPermission(int fsoid, int uid) {
+    boolean verifyEditPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         if (permissions != null) {
             try {
@@ -577,7 +595,7 @@ public class SQL_Files {
         return false;
     }
 
-    public boolean verifyViewPermission(int fsoid, int uid) {
+    boolean verifyViewPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         if (permissions != null) {
             try {
@@ -626,14 +644,14 @@ public class SQL_Files {
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @Return A JsonArray of filelog entries; returns null otherwise  **/
-    public JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
+    JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
         if (DEBUG_MODE) {
             System.out.println("Can view file logs");
         }
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         PreparedStatement createLog = null;
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -718,12 +736,12 @@ public class SQL_Files {
         }
     }
 
-    public int renameFso(int fsoid, int uid, String newName, String
+    int renameFso(int fsoid, int uid, String newName, String
             newFSONameIV, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement renameFso = null;
         PreparedStatement createLog = null;
 
@@ -817,111 +835,8 @@ public class SQL_Files {
         return -1;
     }
 
-    /** Gets the public key of newUid (user to be granted permission) and the sk of the file
-     * that is enc with the uid's pubKey. First verifies if uid has permission to add priv.
-     * @param fsoid the file that is to be added permissions.
-     * @param newUid the user to be granted permission,
-     * @param uid the user that is performing the addition of priv.*/
-    public JSONObject getKeys(int fsoid, int uid, int newUid, String sourceIp) {
-
-        boolean hasPermission = verifyEditPermission(fsoid, uid);
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getSecretKey = null;
-        PreparedStatement getPubKey = null;
-        PreparedStatement createLog = null;
-        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-
-        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE) {
-                System.out.println("Database connected!");
-            }
-            String selectPubKey = "SELECT U.pubKey FROM Users U WHERE U" +
-                    ".uid = ?";
-            String selectSecretKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.uid = ? AND F.fsoid = ?";
-            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, " +
-                    "sourceIp, newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-            JSONObject output = new JSONObject();
-
-            try {
-                if (hasPermission) {
-                    getPubKey = connection.prepareStatement(selectPubKey);
-                    getSecretKey = connection.prepareStatement(selectSecretKey);
-                    connection.setAutoCommit(false);
-                    getPubKey.setInt(1, newUid);
-                    ResultSet rs = getPubKey.executeQuery();
-
-                    if (rs.next()) {
-                        String pubKey = rs.getString(1);
-                        output.put("pubKey", pubKey);
-                        output.put("msgType", "addViewerKeysAck");
-                    }
-
-                    getSecretKey.setInt(1, uid);
-                    getSecretKey.setInt(2, fsoid);
-                    rs = getSecretKey.executeQuery();
-
-                    if (rs.next()) {
-                        String secretKey = rs.getString(1);
-                        output.put("secretKey", secretKey);
-                    }
-                    connection.commit();
-                    return output;
-                } else {
-                    createLog = connection.prepareStatement(insertLog);
-                    createLog.setInt(1, 0);
-                    createLog.setInt(2, fsoid);
-                    createLog.setInt(3, uid);
-                    createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, "GET_KEYS");
-                    createLog.setString(6, "FAILURE");
-                    createLog.setString(7, sourceIp);
-                    createLog.setInt(8, newUid);
-                    createLog.setString(9, "NO PERMISSION");
-                    createLog.executeUpdate();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog = connection.prepareStatement(insertLog);
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, fsoid);
-                        createLog.setInt(3, uid);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "GET_KEYS");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setInt(8, newUid);
-                        createLog.setString(9, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
-                }
-                return null;
-            } finally {
-                if (getSecretKey != null) {
-                    getSecretKey.close();
-                }
-                if (getPubKey != null) {
-                    getPubKey.close();
-                }
-                if (createLog != null) {
-                    createLog.close();
-                }
-                connection.setAutoCommit(true);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public boolean removeDuplicates(int uid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+    boolean removeDuplicates(int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         PreparedStatement getParentFolder = null;
         PreparedStatement rmExisting = null;
@@ -993,8 +908,7 @@ public class SQL_Files {
     public int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
-        boolean viewerExists = verifyViewPermission(fsoid, newUid);
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement addEditor = null;
         PreparedStatement createLog = null;
         PreparedStatement removeViewer = null;
@@ -1011,8 +925,6 @@ public class SQL_Files {
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String deleteViewer = "DELETE FROM Viewers WHERE uid = ? AND " +
                     "fsoid = ?";
-            String selectParent = "SELECT U.parentFolderid FROM Users U WHERE U.uid = ?";
-            String deleteExisting = "DELETE FROM FolderChildren WHERE uid = ? AND childid = ? AND parentid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1130,7 +1042,7 @@ public class SQL_Files {
         boolean wasEditor = verifyEditPermission(fsoid, newUid);
         boolean viewerExists = verifyViewPermission(fsoid, newUid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement addViewer = null;
         PreparedStatement createLog = null;
         PreparedStatement shareFsoKey = null;
@@ -1320,7 +1232,7 @@ public class SQL_Files {
     public int removeViewPriv(int fsoid, int uid, int rmUid, String sourceIp) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement rmViewer = null;
         PreparedStatement createLog = null;
         PreparedStatement removeKey = null;
@@ -1433,7 +1345,7 @@ public class SQL_Files {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement rmEditor = null;
         PreparedStatement createLog = null;
         PreparedStatement removeKey = null;
@@ -1551,7 +1463,7 @@ public class SQL_Files {
      * @return The file secret key associated with this fso and user
      */
     public String getFileSK(int fsoid, int uid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1628,7 +1540,7 @@ public class SQL_Files {
      * @return the fsoid if successful, -1 otherwise
      */
     public int overwrite(int fsoid, int uid, String newFileIV, String encFile, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1755,7 +1667,7 @@ public class SQL_Files {
     }
 
     public boolean isFile(int fsoid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1798,7 +1710,7 @@ public class SQL_Files {
      * @return The fsoid if successful, -1 otherwise
      */
     public int deleteForUser(int fsoid, int uid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1891,7 +1803,7 @@ public class SQL_Files {
 
     public int deleteForAll(int fsoid, int uid, String sourceIp){
         //TODO: Update SSLServer with the call in the comment
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -2008,7 +1920,7 @@ public class SQL_Files {
     }
 
     public void deleteIfOrphanFile(int fsoid, int uid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -2130,7 +2042,7 @@ public class SQL_Files {
     }
 
     public boolean getAllFileLogs() {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -2164,7 +2076,7 @@ public class SQL_Files {
         return false;
     }
     public boolean getFileLog(int fsoid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -2200,7 +2112,7 @@ public class SQL_Files {
     }
 
     public boolean isFolder(int fsoid, int uid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement isFolder = null;
         PreparedStatement createLog = null;
         boolean hasPermission = verifyBothPermission(fsoid, uid);
@@ -2254,7 +2166,7 @@ public class SQL_Files {
     }
 
     public List<Integer> getChildrenId (int fsoid, int uid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getSecretKey = null;
         PreparedStatement createLog = null;
         boolean hasPermission = verifyBothPermission(fsoid, uid);
@@ -2312,7 +2224,7 @@ public class SQL_Files {
     }
 
     public String getPubKey(int uid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getPubKey = null;
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -2347,7 +2259,7 @@ public class SQL_Files {
 
     //THIS IS THE SAME AS GETFILESK
     public String getEncFileSK(int fsoid, int uid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getSecretKey = null;
         PreparedStatement createLog = null;
         boolean hasPermission = verifyBothPermission(fsoid, uid);

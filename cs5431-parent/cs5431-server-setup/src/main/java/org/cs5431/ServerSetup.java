@@ -133,9 +133,9 @@ public class ServerSetup {
         }
 
         String url = "jdbc:mysql://" + ip + ":" + dbPort;
-        String createDB = "CREATE DATABASE IF NOT EXISTS cs5431";
+        String createDB = "CREATE DATABASE IF NOT EXISTS PSFS5431";
         String createUser = "CREATE USER ?@? IDENTIFIED BY ?;";
-        String grantPermissions = "GRANT ALL ON cs5431.* TO ?@? IDENTIFIED BY ?;";
+        String grantPermissions = "GRANT ALL ON PSFS5431.* TO ?@? IDENTIFIED BY ?;";
         String grantFile = "GRANT FILE ON *.* TO ?@?;";
         String flushPriv = "FLUSH PRIVILEGES;";
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
@@ -206,7 +206,7 @@ public class ServerSetup {
             statement.execute();
             connection.close();
 
-            connection = DriverManager.getConnection(url+"/cs5431?autoReconnect=true&useSSL=false",
+            connection = DriverManager.getConnection(url+"/PSFS5431?autoReconnect=true&useSSL=false",
                     serverUser, serverPwd);
 
 

@@ -31,7 +31,7 @@ public class SQL_Accounts {
      * @param username is the username to be checked in the database.
      * @return true if the username does not exist; false otherwise. */
     public boolean isUniqueUsername(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -82,7 +82,7 @@ public class SQL_Accounts {
      * @return json containing registrationAck and details of the user added (refer to protocols doc)
      * */
     public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -241,7 +241,7 @@ public class SQL_Accounts {
     }
 
     public boolean logSessionLimit(String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -285,7 +285,7 @@ public class SQL_Accounts {
      * @return h(privKey) of the user if the authentication is valid. **/
     public JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action) {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -442,7 +442,7 @@ public class SQL_Accounts {
     }
 
     public String getPrivKeySalt(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
 
         System.out.println("Connecting to database...");
 
@@ -479,7 +479,7 @@ public class SQL_Accounts {
      * Creates a failed login log if the username does not exist.
      * @return salt of password associated with username */
     public String getSalt(String username, String sourceIp, String action) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -539,7 +539,7 @@ public class SQL_Accounts {
      */
     public int adminDeleteUser(int uid, String sourceIp) {
         int parentFolderid = getParentFolderid(uid);
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -650,7 +650,7 @@ public class SQL_Accounts {
         if (user != null) {
             parentFolderid = getParentFolderid(uid);
         }
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -752,7 +752,7 @@ public class SQL_Accounts {
 
 
     getParentFolderid (int uid) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -805,7 +805,7 @@ public class SQL_Accounts {
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -909,7 +909,7 @@ public class SQL_Accounts {
             if (DEBUG_MODE) {
                 System.out.println("Can view file logs");
             }
-            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+            String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
             PreparedStatement getFileLog = null;
             if (DEBUG_MODE) {
                 System.out.println("Connecting to database...");
@@ -953,7 +953,7 @@ public class SQL_Accounts {
      */
     public boolean changeEmail(int uid, String oldEmail, String newEmail, String sourceIp) {
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1038,7 +1038,7 @@ public class SQL_Accounts {
      * connect to the database, false otherwise
      */
     public boolean checkCredentials() {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1062,7 +1062,7 @@ public class SQL_Accounts {
      * @return The username of the user
      */
     public String getUsername(int userId) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1102,7 +1102,7 @@ public class SQL_Accounts {
      * @return The userid of the user
      */
     public int getUserId(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/cs5431?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
