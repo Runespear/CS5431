@@ -283,7 +283,7 @@ public class SQL_Accounts {
      * Creates a failure login log if the user's password and username does not match. (username is valid).
      * Creates a success login log upon success.
      * @return h(privKey) of the user if the authentication is valid. **/
-    JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action) {
+    JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action, Email adminEmail) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -299,6 +299,7 @@ public class SQL_Accounts {
             PreparedStatement addLog = null;
             PreparedStatement limitIp = null;
             PreparedStatement limitUsername = null;
+            PreparedStatement getEmail = null;
 
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
@@ -312,6 +313,7 @@ public class SQL_Accounts {
                     "WHERE U.lastModified > DATE_SUB(now(), INTERVAL 5 MINUTE) \n" +
                     "AND U.actionType = \"LOGIN\" AND U.status = \"FAILURE\" \n" +
                     "AND U.simulatedUsername = ?;";
+            String selectEmail = "SELECT U.email FROM Users U WHERE U.username = ?";
 
             String username = allegedUser.getString("username");
 
@@ -323,6 +325,7 @@ public class SQL_Accounts {
                 limitIp = connection.prepareStatement(countIp);
                 limitUsername = connection.prepareStatement(countUsername);
 
+                connection.setAutoCommit(false);
                 limitIp.setString(1, sourceIp);
                 ResultSet rs = limitIp.executeQuery();
 
@@ -335,11 +338,12 @@ public class SQL_Accounts {
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
                     addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    addLog.setString(5, "LOGIN");
+                    addLog.setString(5, action);
                     addLog.setString(6, "FAILURE");
                     addLog.setString(7, sourceIp);
                     addLog.setString(8, "IP TOO MANY FAILED LOGINS");
                     addLog.executeUpdate();
+                    connection.commit();
                     return null; //TODO: what to return
                 }
 
@@ -355,11 +359,12 @@ public class SQL_Accounts {
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
                     addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    addLog.setString(5, "LOGIN");
+                    addLog.setString(5, action);
                     addLog.setString(6, "FAILURE");
                     addLog.setString(7, sourceIp);
                     addLog.setString(8, "USERNAME TOO MANY FAILED LOGINS");
                     addLog.executeUpdate();
+                    connection.commit();
                     return null; //TODO: what to return
                 }
 
@@ -390,23 +395,20 @@ public class SQL_Accounts {
                     addLog.setInt(2, uid);
                     addLog.setString(3, username);
                     addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    if (action.equals("login")) {
-                        addLog.setString(5, "LOGIN");
-                    } else {
-                        addLog.setString(5, "AUTHENTICATE");
-                    }
+                    addLog.setString(5, action);
                     addLog.setString(6, "SUCCESS");
                     addLog.setString(7, sourceIp);
                     addLog.setString(8, null);
                     addLog.execute();
+
+                    connection.commit();
                     return user;
                 } else {
-                    //TODO: log the number of failed authentications? send email directly?
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
                     addLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                    addLog.setString(5, "LOGIN");
+                    addLog.setString(5, action);
                     addLog.setString(6, "FAILURE");
                     addLog.setString(7, sourceIp);
                     addLog.setString(8, "INVALID PASSWORD");
@@ -414,6 +416,14 @@ public class SQL_Accounts {
                         System.out.println("invalid login");
                     }
                     addLog.execute();
+
+                    getEmail = connection.prepareStatement(selectEmail);
+                    getEmail.setString(0, username);
+                    ResultSet userEmail = getEmail.executeQuery();
+                    if (userEmail.next()) {
+                        adminEmail.send(userEmail.getString(0),"Failed Login Attempt", "");
+                    }
+                    connection.commit();
                     return null;
                 }
             } catch (JSONException e) {
@@ -431,6 +441,7 @@ public class SQL_Accounts {
                 if (limitUsername != null) {
                     limitUsername.close();
                 }
+                connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -643,7 +654,7 @@ public class SQL_Accounts {
         allegedUser.put("username", username);
         String salt = getSalt(username, sourceIp, "DELETE_USER");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
-        JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");
+        JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "AUTHENTICATE", null);
         int parentFolderid = -1;
         if (user != null) {
             parentFolderid = getParentFolderid(uid);
@@ -799,7 +810,7 @@ public class SQL_Accounts {
         String newPrivKey = allegedUser.getString("newPrivKey");
         String salt = getSalt(username, sourceIp, "CHANGE_PWD");
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
-        JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "authenticate");
+        JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "AUTHENTICATE", null);
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {

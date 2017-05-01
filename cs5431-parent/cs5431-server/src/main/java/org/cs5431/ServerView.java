@@ -4,9 +4,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.security.PrivateKey;
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ServerView {
@@ -93,13 +91,20 @@ public class ServerView {
         }
         SQL_Files sql_files = new SQL_Files(server, dbPort, username, password);
 
+        System.out.println("Enter the username you use to login to the admin email:");
+        username = scanner.nextLine();
+        System.out.println("Enter the password you use to login to the admin email:");
+        password = scanner.nextLine();
+
+        Email email = new Email(username, password);
+
         try {
             CertSocketThread cst = new CertSocketThread(serverName,
                     outPort, serverPrivKey);
             new Thread(cst).start();
 
             ServerSocket ss = setup_SSLServerSocket(serverName, sslPort);
-            SSLSocketThread sst = new SSLSocketThread(sql_accounts, sql_files, ss);
+            SSLSocketThread sst = new SSLSocketThread(sql_accounts, sql_files, ss, email);
             new Thread(sst).start();
 
             PromptAdminThread pat = new PromptAdminThread(sql_accounts, sql_files);

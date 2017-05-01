@@ -21,12 +21,14 @@ public class SSLServer extends Thread {
     private String sourceIp;
     private SQL_Accounts sql_accounts;
     private SQL_Files sql_files;
+    private Email email;
 
-    SSLServer(Socket socket, SQL_Accounts sql_accounts, SQL_Files sql_files){
+    SSLServer(Socket socket, SQL_Accounts sql_accounts, SQL_Files sql_files, Email email){
         this.s = socket;
         this.sql_accounts = sql_accounts;
         this.sql_files = sql_files;
         this.sourceIp = s.getRemoteSocketAddress().toString();
+        this.email = email;
     }
 
     public void run(){
@@ -234,7 +236,7 @@ public class SSLServer extends Thread {
         String hashedPwd = jsonObject.getString("hashedPwd");
         if (pwdSalt != null) {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
-            JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "login");
+            JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "LOGIN", email);
             if (auth != null) {
                 loggedInUid = auth.getInt("uid");
                 return auth;
@@ -247,6 +249,7 @@ public class SSLServer extends Thread {
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Login failed");
         //Rate limiting: keep track of failed logins
+
         if (withinOneMinute(now,failedTime))
             failedLogins++;
         else {

@@ -1,8 +1,7 @@
 package org.cs5431;
 import javax.mail.*;
-import javax.mail.internet.*;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 /**
@@ -13,8 +12,16 @@ import java.util.Properties;
 //TODO: GO TO https://myaccount.google.com/lesssecureapps AND MAKE IT LESS SECURE
 
 public class Email {
+
+    private String adminEmail;
+    private String adminPwd;
+
+    Email(String adminEmail, String adminPwd) {
+        this.adminEmail = adminEmail;
+        this.adminPwd = adminPwd;
+    }
     //Adapted from https://www.javatpoint.com/example-of-sending-email-using-java-mail-api-through-gmail-server
-    public static void send(String from,String password,String to,String subject,String msg){
+    void send(String to,String subject,String msg){
         //Get properties object
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
@@ -26,7 +33,7 @@ public class Email {
         //get Session
         Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(from,password);}
+                        return new PasswordAuthentication(adminEmail,adminPwd);}
         });
 
         //compose message
@@ -34,6 +41,12 @@ public class Email {
             MimeMessage message = new MimeMessage(session);
             message.addRecipient(Message.RecipientType.TO,new InternetAddress(to));
             message.setSubject(subject);
+
+            switch(subject) {
+                case "Failed Login Attempt": msg = "An attempt to log into your Pretty Secure File Sharing account failed" +
+                        "on " + System.currentTimeMillis() + ". Do contact us at ___ if you require further assistance.";
+            }
+
             message.setText(msg);
             //send message
             Transport.send(message);
@@ -42,6 +55,6 @@ public class Email {
     }
 
     public static void main(String[] args){
-        Email.send("psfs5431@gmail.com","theroadtoA+","zl245@cornell.edu","GG","YOUR ACCOUNT HAS BEEN HACKED BY ZILONG!! HE CAN BE FOUND IN THURSTON RIGHT NOW");
+        //Email.send("psfs5431@gmail.com","theroadtoA+","zl245@cornell.edu","GG","YOUR ACCOUNT HAS BEEN HACKED BY ZILONG!! HE CAN BE FOUND IN THURSTON RIGHT NOW");
     }
 }
