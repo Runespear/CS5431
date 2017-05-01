@@ -1136,5 +1136,42 @@ public class SQL_Accounts {
         }
         return -1;
     }
+
+    int userEmailExists(String username) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement verifyUniqueness = null;
+
+            String checkUsername = "SELECT U.uid FROM Users U WHERE U.username = ? AND U.email != \"\"";
+
+            try {
+                verifyUniqueness = connection.prepareStatement(checkUsername);
+                verifyUniqueness.setString(1, username);
+                ResultSet rs = verifyUniqueness.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(0);
+                } else {
+                    return -1;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return -1;
+            } finally {
+                if (verifyUniqueness != null) {
+                    verifyUniqueness.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 }
 
