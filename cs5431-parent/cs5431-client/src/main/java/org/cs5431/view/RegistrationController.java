@@ -127,6 +127,7 @@ public class RegistrationController implements Initializable {
             };
             task.setOnSucceeded(t -> {
                 cancelButton.getScene().setCursor(Cursor.DEFAULT);
+                registerButton.setDisable(false);
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Registration successful");
                 alert.setContentText("Registration successful! Bringing you " +
@@ -135,6 +136,7 @@ public class RegistrationController implements Initializable {
                 exit();
             });
             cancelButton.getScene().setCursor(Cursor.WAIT);
+            registerButton.setDisable(true);
             Thread th = new Thread(task);
             th.setDaemon(true);
             th.start();
@@ -143,6 +145,7 @@ public class RegistrationController implements Initializable {
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
                     cancelButton.getScene().setCursor(Cursor.DEFAULT);
+                    registerButton.setDisable(false);
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Registration failed");
                     alert.setContentText(ex.getMessage());
