@@ -1169,5 +1169,48 @@ public class SQL_Accounts {
         }
         return -1;
     }
+
+    /** Adds log to userlog when the uid of the json object received is not the same as
+     * the session uid
+     * @return true if log is successfully created; false otherwise
+     */
+    boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        if (DEBUG_MODE) {
+            System.out.println("Connecting to database...");
+        }
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            if (DEBUG_MODE) {
+                System.out.println("Database connected!");
+            }
+            PreparedStatement createLog = null;
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "ATTEMPTED_UID");
+                createLog.setString(6, "FAILURE");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, "ATTEMPTED UID DIFFERENT FROM SESSION UID (" + sessionUid + " )");
+                createLog.executeUpdate();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
 
