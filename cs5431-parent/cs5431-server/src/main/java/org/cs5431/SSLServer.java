@@ -53,7 +53,8 @@ public class SSLServer extends Thread {
                         ("overwriteKeys") || type.equals("editEmail") || type
                         .equals("getFileLogs") || type.equals("getChildren")
                         || type.equals("logout") || type.equals
-                        ("getEditorViewerList") || type.equals("deleteUser")) {
+                        ("getEditorViewerList") || type.equals("deleteUser")
+                        || type.equals("uploadKeys")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         response = makeErrJson("Requesting user does not match " +
@@ -78,6 +79,10 @@ public class SSLServer extends Thread {
                         break;
                     case "changePwd":
                         response = changePwd(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "uploadKeys":
+                        response = uploadKeys(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     case "upload":
@@ -285,6 +290,13 @@ public class SSLServer extends Thread {
         jsonErr.put("msgType", "error");
         jsonErr.put("message", "Change password failed");
         return jsonErr;
+    }
+
+    private JSONObject uploadKeys(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
+        JSONObject ack = sql_files.uploadKeys(jsonObject, sourceIp);
+        if (ack != null)
+            return ack;
+        return makeErrJson("Unable to retrieve keys to create this object with all privileges");
     }
 
     private JSONObject upload(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
