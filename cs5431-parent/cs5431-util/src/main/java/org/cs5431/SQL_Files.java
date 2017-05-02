@@ -75,10 +75,10 @@ public class SQL_Files {
                         int editor = editorsId.getInt(1);
                         editors.put(editor);
                         getPub = connection.prepareStatement(selectPub);
-                        getPub.setInt(0, editor);
+                        getPub.setInt(1, editor);
                         ResultSet ePub = getPub.executeQuery();
                         if (ePub.next()) {
-                            editorsKeys.put(ePub.getString(0));
+                            editorsKeys.put(ePub.getString(1));
                         }
                     }
 
@@ -89,13 +89,14 @@ public class SQL_Files {
                         int viewer = viewersId.getInt(1);
                         viewers.put(viewer);
                         getPub = connection.prepareStatement(selectPub);
-                        getPub.setInt(0, viewer);
+                        getPub.setInt(1, viewer);
                         ResultSet ePub = getPub.executeQuery();
                         if (ePub.next()) {
-                            viewersKeys.put(ePub.getString(0));
+                            viewersKeys.put(ePub.getString(1));
                         }
                     }
                     JSONObject uploadKeys = new JSONObject();
+                    uploadKeys.put("msgType", "uploadKeysAck");
                     uploadKeys.put("editors", editors);
                     uploadKeys.put("viewers", viewers);
                     uploadKeys.put("editorsKeys", editorsKeys);
@@ -175,7 +176,6 @@ public class SQL_Files {
         String size = fso.getString("size");
         Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
         boolean isFile = fso.getBoolean("isFile");
-        String sk = fso.getString("encSK");
         JSONArray editors = fso.getJSONArray("editors");
         JSONArray viewers = fso.getJSONArray("viewers");
         JSONArray editorsKeys = fso.getJSONArray("editorsKeys");
@@ -204,7 +204,7 @@ public class SQL_Files {
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
                     "lastModified, isFile, fsoNameIV, ownerid, fileIV)"
                     + " values (?, ?, ?, ?, ?, ?, ?, ?)";
-            String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+            //String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
@@ -223,7 +223,7 @@ public class SQL_Files {
                     connection.setAutoCommit(false);
                     createFso = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
                     addPermission = connection.prepareStatement(insertEditor);
-                    addKey = connection.prepareStatement(insertKey);
+                    //addKey = connection.prepareStatement(insertKey);
 
                     createFso.setInt(1, 0);
                     createFso.setString(2, fsoName);
@@ -248,13 +248,13 @@ public class SQL_Files {
                     addParent.setInt(3, uid);
                     addParent.executeUpdate();
 
-                    addKey.setInt(1, fsoid);
+                    /*addKey.setInt(1, fsoid);
                     addKey.setInt(2, uid);
                     addKey.setString(3, sk);
                     addKey.executeUpdate();
                     if (DEBUG_MODE) {
                         System.out.println("added added sk");
-                    }
+                    }*/
 
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
@@ -281,7 +281,7 @@ public class SQL_Files {
                         int editor = (int) editors.get(i);
                         String editorKey = (String) editorsKeys.get(i);
                         addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp);
-                        addEditPriv(uid, fsoid, rs.getInt(0), sourceIp);
+                        addEditPriv(uid, fsoid, rs.getInt(1), sourceIp);
                     }
 
                     for (int i=0; i<viewers.length(); i++) {
@@ -1751,7 +1751,7 @@ public class SQL_Files {
                     createLog.close();
                 }
                 if (getOwnerid != null) {
-                    createLog.close();
+                    getOwnerid.close();
                 }
                 connection.setAutoCommit(true);
             }
@@ -1962,26 +1962,24 @@ public class SQL_Files {
                 connection.commit();
                 return fsoid;
             } catch (SQLException e) {
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        logDeleteObject.setInt(1, 0);
-                        logDeleteObject.setInt(2, fsoid);
-                        logDeleteObject.setInt(3, uid);
-                        logDeleteObject.setTimestamp(4, lastModified);
-                        logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
-                        logDeleteObject.setString(6, "FAILURE");
-                        logDeleteObject.setString(7, sourceIp);
-                        logDeleteObject.setInt(8, 0);
-                        logDeleteObject.setString(9, "DB ERROR");
-                        logDeleteObject.execute();
-                        if (DEBUG_MODE) {
-                            System.out.println("created failure log");
-                        }
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    logDeleteObject.setInt(1, 0);
+                    logDeleteObject.setInt(2, fsoid);
+                    logDeleteObject.setInt(3, uid);
+                    logDeleteObject.setTimestamp(4, lastModified);
+                    logDeleteObject.setString(5, "DELETE_FSO_OBJECT");
+                    logDeleteObject.setString(6, "FAILURE");
+                    logDeleteObject.setString(7, sourceIp);
+                    logDeleteObject.setInt(8, 0);
+                    logDeleteObject.setString(9, "DB ERROR");
+                    logDeleteObject.execute();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
                     }
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
             } catch (IOException e){
                 if (DEBUG_MODE) {

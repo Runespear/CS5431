@@ -1,7 +1,5 @@
 package Validator_Tests;
 
-import org.bouncycastle.jcajce.provider.symmetric.ARC4;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431.Encryption;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,18 +8,14 @@ import sun.misc.BASE64Decoder;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
-import java.nio.file.Files;
 import java.security.*;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 //TODO: Use method generateUserKeys to test public keys, private keys and salt for password encryption
@@ -767,7 +761,7 @@ class test_Encryption {
         }
     }
 
-    @Test
+     /*@Test
     void test_generateAndEncFile() throws Exception{//Test whether outputs are the same as the actual methods that produce them
         File file = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt");
         File file2 = new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test2.txt");
@@ -837,7 +831,7 @@ class test_Encryption {
         assertEquals(one[0].equals(four[0]), false);
         assertEquals(one[1].equals(four[1]), false);
         assertEquals(one[2].equals(four[2]), false);
-    }
+    }*/
 
     @Test
     void test_reEncryptFile() throws Exception{//Test whether the outputs are different for different permutations of key and file

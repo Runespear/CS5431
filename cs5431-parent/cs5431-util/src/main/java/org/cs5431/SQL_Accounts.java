@@ -1155,11 +1155,7 @@ public class SQL_Accounts {
                 verifyUniqueness = connection.prepareStatement(checkUsername);
                 verifyUniqueness.setString(1, username);
                 ResultSet rs = verifyUniqueness.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt(0);
-                } else {
-                    return -1;
-                }
+                return (rs.next()) ? rs.getInt(0) : -1;
             } catch (SQLException e) {
                 e.printStackTrace();
                 return -1;
