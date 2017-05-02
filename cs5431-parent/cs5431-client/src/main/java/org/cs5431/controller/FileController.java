@@ -1,5 +1,6 @@
 package org.cs5431.controller;
 
+import org.cs5431.EncFilePacket;
 import org.cs5431.Validator;
 import org.cs5431.model.File;
 import org.cs5431.model.FileSystemObject;
@@ -41,9 +42,10 @@ public class FileController {
         return fso.isEditor();
     }
 
+    /*unused
     public boolean isViewer(FileSystemObject fso) {
         return fso.isViewer();
-    }
+    }*/
 
     /**
      * Sends java.io.file object to the server. Adds the file as a child
@@ -58,47 +60,74 @@ public class FileController {
             IOException, JSONException, NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException, ClassNotFoundException, FileControllerException {
-        String name = file.getName();
-        long size = file.length();
-        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+            BadPaddingException, ClassNotFoundException, FileControllerException,
+            InvalidKeySpecException {
+        JSONObject keys = new JSONObject();
+        keys.put("msgType","uploadKeys");
+        keys.put("fsoid", parentFolder.getId());
+        keys.put("uid", user.getId());
 
-        JSONObject fso = new JSONObject();
-        fso.put("msgType","upload");
-        fso.put("uid", user.getId());
-        fso.put("parentFolderid", parentFolder.getId());
+        sendJson(keys, sslSocket);
+        JSONObject keysAck = receiveJson(sslSocket);
+        if (keysAck.get("msgType").equals("uploadKeysAck")) {
+            String name = file.getName();
+            long size = file.length();
+            Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-        fso.put("size", String.valueOf(size));
-        fso.put("lastModified", lastModified);
-        fso.put("isFile", true);
+            JSONObject fso = new JSONObject();
+            fso.put("msgType","upload");
+            fso.put("uid", user.getId());
+            fso.put("parentFolderid", parentFolder.getId());
 
-        String fileDetails[] = generateAndEncFile(file, name, user.getPubKey());
-        fso.put("file", fileDetails[0]);
-        fso.put("fsoName", fileDetails[1]);
-        fso.put("encSK", fileDetails[2]);
-        fso.put("fileIV", fileDetails[3]);
-        fso.put("fsoNameIV", fileDetails[4]);
-        sendJson(fso, sslSocket);
-        JSONObject fsoAck = receiveJson(sslSocket);
-        if (fsoAck.get("msgType").equals("uploadAck")) {
-            int fileSentid = fsoAck.getInt("fsoid");
-            if (DEBUG_MODE) {
-                System.out.println(fileSentid);
+            fso.put("size", String.valueOf(size));
+            fso.put("lastModified", lastModified);
+            fso.put("isFile", true);
+
+            JSONArray editors = keysAck.getJSONArray("editors");
+            JSONArray viewers = keysAck.getJSONArray("viewers");
+            JSONArray editorsKeyStrings = keysAck.getJSONArray("editorsKeys");
+            JSONArray viewersKeyStrings = keysAck.getJSONArray("viewersKeys");
+            PublicKey editorsKeys[] = new PublicKey[editorsKeyStrings.length()];
+            PublicKey viewersKeys[] = new PublicKey[viewersKeyStrings.length()];
+            for (int i = 0; i < editorsKeyStrings.length(); i++) {
+                editorsKeys[i] = getPubKeyFromJSON(editorsKeyStrings.getString(i));
             }
-            if (fileSentid != -1) {
-                File fileSent = new File(fileSentid, name, size,
-                        lastModified, true, true);
+            for (int i = 0; i < viewersKeyStrings.length(); i++) {
+                viewersKeys[i] = getPubKeyFromJSON(viewersKeyStrings.getString(i));
+            }
+            EncFilePacket efp = generateAndEncFile(file, name, editorsKeys, viewersKeys);
+            fso.put("file", efp.encFile);
+            fso.put("fsoName", efp.encFileName);
+            fso.put("editors", editors);
+            fso.put("editorsKeys", efp.editorsFileSK);
+            fso.put("viewers", viewers);
+            fso.put("viewersKeys", efp.viewersFileSK);
+            fso.put("fileIV", efp.fileIV);
+            fso.put("fsoNameIV", efp.fsoNameIV);
+
+            sendJson(fso, sslSocket);
+            JSONObject fsoAck = receiveJson(sslSocket);
+            if (fsoAck.get("msgType").equals("uploadAck")) {
+                int fileSentid = fsoAck.getInt("fsoid");
+                if (DEBUG_MODE) {
+                    System.out.println(fileSentid);
+                }
+                if (fileSentid == -1) {
+                    throw new FileControllerException("Failed to add file");
+                }
+            } else if (fsoAck.getString("msgType").equals("error")) {
+                throw new FileControllerException(fsoAck.getString("message"));
             } else {
-                throw new FileControllerException("Failed to add file");
+                throw new FileControllerException("Received bad response " +
+                        "from server");
             }
-        } else if (fsoAck.getString("msgType").equals("error")) {
-            throw new FileControllerException(fsoAck.getString("message"));
+        } else if (keysAck.getString("msgType").equals("error")) {
+            throw new FileControllerException(keysAck.getString("message"));
         } else {
             throw new FileControllerException("Received bad response " +
                     "from server");
         }
     }
-
     /**
      * Creates a new folder and uploads it to the server along with its log entry. Adds the new folder as a
      * child of the parent folder.
@@ -111,39 +140,69 @@ public class FileController {
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException, IOException, ClassNotFoundException,
-            FileControllerException {
+            FileControllerException, InvalidKeySpecException {
+
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         if (Validator.validFileName(folderName)) {
-            JSONObject fso = new JSONObject();
-            fso.put("msgType","upload");
-            fso.put("uid", user.getId());
-            fso.put("parentFolderid", parentFolder.getId());
+            JSONObject keys = new JSONObject();
+            keys.put("msgType","uploadKeys");
+            keys.put("fsoid", parentFolder.getId());
+            keys.put("uid", user.getId());
 
-            fso.put("size", "0");
-            fso.put("lastModified", lastModified);
-            fso.put("isFile", false);
+            sendJson(keys, sslSocket);
+            JSONObject keysAck = receiveJson(sslSocket);
+            if (keysAck.get("msgType").equals("uploadKeysAck")) {
+                JSONObject fso = new JSONObject();
+                fso.put("msgType","upload");
+                fso.put("uid", user.getId());
+                fso.put("parentFolderid", parentFolder.getId());
 
-            String fsoNameDetails[] = generateAndEncFileName(folderName, user
-                    .getPubKey());
-            fso.put("fsoName", fsoNameDetails[0]);
-            fso.put("encSK", fsoNameDetails[1]);
-            fso.put("fsoNameIV", fsoNameDetails[2]);
+                fso.put("size", "0");
+                fso.put("lastModified", lastModified);
+                fso.put("isFile", false);
 
-            sendJson(fso, sslSocket);
-            JSONObject fsoAck = receiveJson(sslSocket);
-
-            if (fsoAck.get("msgType").equals("uploadAck")) {
-                int folderSentId = fsoAck.getInt("fsoid");
-
-                if (folderSentId != -1) {
-                    Folder folderSent = new Folder(folderSentId, folderName,
-                            lastModified, true, true);
-                    parentFolder.addChild(folderSent);
-                } else {
-                    throw new FileControllerException("Failed to create folder");
+                JSONArray editors = keysAck.getJSONArray("editors");
+                JSONArray viewers = keysAck.getJSONArray("viewers");
+                JSONArray editorsKeyStrings = keysAck.getJSONArray("editorsKeys");
+                JSONArray viewersKeyStrings = keysAck.getJSONArray("viewersKeys");
+                PublicKey editorsKeys[] = new PublicKey[editorsKeyStrings.length()];
+                PublicKey viewersKeys[] = new PublicKey[viewersKeyStrings.length()];
+                for (int i = 0; i < editorsKeyStrings.length(); i++) {
+                    editorsKeys[i] = getPubKeyFromJSON(editorsKeyStrings.getString(i));
                 }
-            } else if (fsoAck.getString("msgType").equals("error")) {
-                throw new FileControllerException(fsoAck.getString("message"));
+                for (int i = 0; i < viewersKeyStrings.length(); i++) {
+                    viewersKeys[i] = getPubKeyFromJSON(viewersKeyStrings.getString(i));
+                }
+
+                EncFilePacket efp = generateAndEncFileName(folderName, editorsKeys, viewersKeys);
+                fso.put("fsoName", efp.encFileName);
+                fso.put("editors", editors);
+                fso.put("editorsKeys", efp.editorsFileSK);
+                fso.put("viewers", viewers);
+                fso.put("viewersKeys", efp.viewersFileSK);
+                fso.put("fsoNameIV", efp.fsoNameIV);
+
+                sendJson(fso, sslSocket);
+                JSONObject fsoAck = receiveJson(sslSocket);
+
+                if (fsoAck.get("msgType").equals("uploadAck")) {
+                    int folderSentId = fsoAck.getInt("fsoid");
+
+                    if (folderSentId != -1) {
+                        Folder folderSent = new Folder(folderSentId, folderName,
+                                lastModified, true, true);
+                        parentFolder.addChild(folderSent);
+                    } else {
+                        throw new FileControllerException("Failed to create folder");
+                    }
+                } else if (fsoAck.getString("msgType").equals("error")) {
+                    throw new FileControllerException(fsoAck.getString("message"));
+                } else {
+                    throw new FileControllerException("Received bad response " +
+                            "from server");
+                }
+            } else if (keysAck.getString("msgType").equals("error")) {
+                throw new FileControllerException(keysAck.getString("message"));
             } else {
                 throw new FileControllerException("Received bad response " +
                         "from server");
@@ -222,7 +281,7 @@ public class FileController {
      * modified due to communication failure with server or bad server response
      */
     public void rename(FileSystemObject systemObject, String newName)
-            throws IOException, ClassNotFoundException,
+            throws ClassNotFoundException,
             FileControllerException, NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException,
@@ -339,7 +398,7 @@ public class FileController {
         return getChildrenWithId(parentFolderid, uid, sslSocket, user.getPrivKey());
     }
 
-    public static List<FileSystemObject> getChildrenWithId(int folderid, int
+    static List<FileSystemObject> getChildrenWithId(int folderid, int
             uid, Socket s, PrivateKey userPrivKey) throws Exception {
         ArrayList<FileSystemObject> children = new ArrayList<>();
         JSONObject json = new JSONObject();
@@ -634,10 +693,6 @@ public class FileController {
         }
     }
 
-    public void rollback(int rollbackToThisfileId) {
-        //TODO: how???
-    }
-
     public List<String> getFileLogs(int fsoid) throws IOException,
             ClassNotFoundException, FileControllerException {
         JSONObject request = new JSONObject();
@@ -669,53 +724,56 @@ public class FileController {
                 int newUid = logEntry.getInt("newUid");
                 String newUser = checkUsername(newUid);
 
-                if (status.equals("SUCCESS")) {
-                    switch (actionType) {
-                        case "ADD_EDITOR":
-                            logMsg = username + " successfully added " + newUser +
-                                    " as an editor on " + lastModified;
-                            break;
-                        case "ADD_VIEWER":
-                            logMsg = username + " successfully added " + newUser +
-                                    " as an viewer on " + lastModified;
-                            break;
-                        case "REMOVE_EDITOR":
-                            logMsg = username + " successfully removed " + newUser +
-                                    " as an editor on " + lastModified;
-                            break;
-                        case "REMOVE_VIEWER":
-                            logMsg = username + " successfully removed " + newUser +
-                                    " as a viewer on " + lastModified;
-                            break;
-                        default:
-                            throw new FileControllerException("Received bad response " +
-                                    "from server: action type = " + actionType);
-                    }
-                } else if (status.equals("FAILURE")) {
-                    switch (actionType) {
-                        case "ADD_EDITOR":
-                            logMsg = username + " failed to add " + newUser +
-                                    " as an editor on " + lastModified;
-                            break;
-                        case "ADD_VIEWER":
-                            logMsg = username + " failed to add " + newUser +
-                                    " as an viewer on " + lastModified;
-                            break;
-                        case "REMOVE_EDITOR":
-                            logMsg = username + " failed to remove " + newUser +
-                                    " as an editor on " + lastModified;
-                            break;
-                        case "REMOVE_VIEWER":
-                            logMsg = username + " failed to remove " + newUser +
-                                    " as an viewer on " + lastModified;
-                            break;
-                        default:
-                            throw new FileControllerException("Received bad response " +
-                                    "from server: action type = " + actionType);
-                    }
-                } else {
-                    throw new FileControllerException("Received bad response " +
-                            "from server");
+                switch (status) {
+                    case "SUCCESS":
+                        switch (actionType) {
+                            case "ADD_EDITOR":
+                                logMsg = username + " successfully added " + newUser +
+                                        " as an editor on " + lastModified;
+                                break;
+                            case "ADD_VIEWER":
+                                logMsg = username + " successfully added " + newUser +
+                                        " as an viewer on " + lastModified;
+                                break;
+                            case "REMOVE_EDITOR":
+                                logMsg = username + " successfully removed " + newUser +
+                                        " as an editor on " + lastModified;
+                                break;
+                            case "REMOVE_VIEWER":
+                                logMsg = username + " successfully removed " + newUser +
+                                        " as a viewer on " + lastModified;
+                                break;
+                            default:
+                                throw new FileControllerException("Received bad response " +
+                                        "from server: action type = " + actionType);
+                        }
+                        break;
+                    case "FAILURE":
+                        switch (actionType) {
+                            case "ADD_EDITOR":
+                                logMsg = username + " failed to add " + newUser +
+                                        " as an editor on " + lastModified;
+                                break;
+                            case "ADD_VIEWER":
+                                logMsg = username + " failed to add " + newUser +
+                                        " as an viewer on " + lastModified;
+                                break;
+                            case "REMOVE_EDITOR":
+                                logMsg = username + " failed to remove " + newUser +
+                                        " as an editor on " + lastModified;
+                                break;
+                            case "REMOVE_VIEWER":
+                                logMsg = username + " failed to remove " + newUser +
+                                        " as an viewer on " + lastModified;
+                                break;
+                            default:
+                                throw new FileControllerException("Received bad response " +
+                                        "from server: action type = " + actionType);
+                        }
+                        break;
+                    default:
+                        throw new FileControllerException("Received bad response " +
+                                "from server");
                 }
             } else {
                 if (status.equals("SUCCESS")) {
@@ -805,7 +863,7 @@ public class FileController {
      * @param uid User id of user
      * @return Username of the corresponding user
      */
-    public String getUsername(int uid) throws IOException,
+    private String getUsername(int uid) throws IOException,
             ClassNotFoundException, FileControllerException {
         JSONObject json = new JSONObject();
         json.put("msgType","username");

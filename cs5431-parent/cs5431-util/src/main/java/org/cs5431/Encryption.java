@@ -18,9 +18,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Random;
+import java.util.*;
 
 import static org.cs5431.Constants.CAN_KEYS_BE_DESTROYED;
 import static org.cs5431.Constants.DEBUG_MODE;
@@ -257,25 +255,29 @@ public class Encryption {
         return privKey;
     }
 
-    //[0] is encFile, [1] is encFileName, [2] is fileSK, [3] is fileIV, [4]
-    // is fsoNameIV
-    public static String[] generateAndEncFile(File file, String name, PublicKey
-            publicKey) throws NoSuchAlgorithmException,
+    public static EncFilePacket generateAndEncFile(File file, String name, PublicKey
+            editorsKeys[], PublicKey viewersKeys[]) throws NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException, IOException {
-        String ret[] = new String[5];
+        EncFilePacket efp = new EncFilePacket();
         SecretKey fileSK = generateSecretKey();
         IvParameterSpec fileIVSpec = generateIV();
         IvParameterSpec fsoNameIVSpec = generateIV();
 
         byte[] encFile = encryptFile(file, fileSK, fileIVSpec);
-        //TODO change to more appropriate format?
-        ret[0] = Base64.getEncoder().encodeToString(encFile);
-        ret[1] = Base64.getEncoder().encodeToString(encryptFileName(name,fileSK, fsoNameIVSpec));
-        ret[2] = Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, publicKey));
-        ret[3] = Base64.getEncoder().encodeToString(fileIVSpec.getIV());
-        ret[4] = Base64.getEncoder().encodeToString(fsoNameIVSpec.getIV());
+        efp.encFile = Base64.getEncoder().encodeToString(encFile);
+        efp.encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,fileSK, fsoNameIVSpec));
+        List<String> editorsSK = new ArrayList<>();
+        for (PublicKey editorsKey : editorsKeys)
+            editorsSK.add(Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, editorsKey)));
+        efp.editorsFileSK = editorsSK;
+        List<String> viewersSK = new ArrayList<>();
+        for (PublicKey viewersKey : viewersKeys)
+            viewersSK.add(Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, viewersKey)));
+        efp.viewersFileSK = viewersSK;
+        efp.fileIV = Base64.getEncoder().encodeToString(fileIVSpec.getIV());
+        efp.fsoNameIV = Base64.getEncoder().encodeToString(fsoNameIVSpec.getIV());
         if (CAN_KEYS_BE_DESTROYED) {
             try {
                 fileSK.destroy();
@@ -283,24 +285,30 @@ public class Encryption {
                 e.printStackTrace();
             }
         }
-        return ret;
+        return efp;
     }
 
-    //[0] is encFileName, [1] is fileSK, [2] is fsoNameIV
-    public static String[] generateAndEncFileName(String folderName, PublicKey
-            pubKey) throws NoSuchAlgorithmException,
+    public static EncFilePacket generateAndEncFileName(String folderName, PublicKey
+            editorsKeys[], PublicKey viewersKeys[]) throws NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException {
-        String ret[] = new String[3];
+        EncFilePacket efp = new EncFilePacket();
 
         SecretKey fileSK = generateSecretKey();
         IvParameterSpec ivSpec = generateIV();
-        ret[2] = Base64.getEncoder().encodeToString(ivSpec.getIV());
-        ret[0] = Base64.getEncoder().encodeToString
+        efp.fsoNameIV = Base64.getEncoder().encodeToString(ivSpec.getIV());
+        efp.encFileName = Base64.getEncoder().encodeToString
                 (encryptFileName(folderName,fileSK, ivSpec));
-        ret[1] = Base64.getEncoder().encodeToString
-                (encFileSecretKey(fileSK, pubKey));
+        List<String> editorsSK = new ArrayList<>();
+        for (PublicKey editorsKey : editorsKeys)
+            editorsSK.add(Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, editorsKey)));
+        efp.editorsFileSK = editorsSK;
+        List<String> viewersSK = new ArrayList<>();
+        for (PublicKey viewersKey : viewersKeys)
+            viewersSK.add(Base64.getEncoder().encodeToString(encFileSecretKey(fileSK, viewersKey)));
+        efp.viewersFileSK = viewersSK;
+
         if (CAN_KEYS_BE_DESTROYED) {
             try {
                 fileSK.destroy();
@@ -308,7 +316,7 @@ public class Encryption {
                 e.printStackTrace();
             }
         }
-        return ret;
+        return efp;
     }
 
     public static SecretKey generateSecretKey() throws
