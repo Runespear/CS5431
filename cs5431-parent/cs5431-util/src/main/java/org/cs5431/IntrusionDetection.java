@@ -24,13 +24,14 @@ public class IntrusionDetection {
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
-            String selectUL = "SELECT L.sourceIp FROM FileLog L WHERE L.failureType = \"NO PERMISSION\"";
+            String selectUL = "SELECT L.sourceIp FROM FileLog L WHERE L.failureType = \"NO PERMISSION\"" +
+                    "AND time_to_sec(timediff(NOW(), L.lastModified )) / 3600 < 24";
 
             try {
                 getNoPermission = connection.prepareStatement(selectUL);
                 ResultSet rs = getNoPermission.executeQuery();
                 ArrayList<String> attackIp = new ArrayList<>();
-                if (rs.next()) {
+                while (rs.next()) {
                     attackIp.add(rs.getString(1));
                 }
                 return attackIp;
@@ -64,7 +65,7 @@ public class IntrusionDetection {
                 getFailure = connection.prepareStatement(selectFailure);
                 ResultSet rs = getFailure.executeQuery();
                 ArrayList<String> attackIp = new ArrayList<>();
-                if (rs.next()) {
+                while (rs.next()) {
                     attackIp.add(rs.getString(1));
                 }
                 return attackIp;
@@ -98,7 +99,7 @@ public class IntrusionDetection {
                 getFailure = connection.prepareStatement(selectFailure);
                 ResultSet rs = getFailure.executeQuery();
                 ArrayList<Integer> attackedUid = new ArrayList<>();
-                if (rs.next()) {
+                while (rs.next()) {
                     attackedUid.add(rs.getInt(1));
                 }
                 return attackedUid;
@@ -141,5 +142,35 @@ public class IntrusionDetection {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    List<Integer> getAttemptedUidFailure() {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        PreparedStatement getNoPermission = null;
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            String selectUL = "SELECT L.uid FROM UserLog L WHERE L.actionType = \"ATTEMPTED_UID\" " +
+                    "AND time_to_sec(timediff(NOW(), L.lastModified )) / 3600 < 24";
+
+            try {
+                getNoPermission = connection.prepareStatement(selectUL);
+                ResultSet rs = getNoPermission.executeQuery();
+                ArrayList<Integer> attackedUid = new ArrayList<>();
+                while (rs.next()) {
+                    attackedUid.add(rs.getInt(1));
+                }
+                return attackedUid;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (getNoPermission != null) {
+                    getNoPermission.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
