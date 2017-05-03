@@ -204,6 +204,11 @@ public class ServerSetup {
             statement.setString(2, ip);
             statement.execute();
 
+            statement = connection.prepareStatement(setIsolationLevel);
+            statement.execute();
+            statement = connection.prepareStatement(setSessionIsolation);
+            statement.execute();
+
             statement = connection.prepareStatement(flushPriv);
             statement.execute();
             connection.close();
@@ -229,10 +234,6 @@ public class ServerSetup {
             statement = connection.prepareStatement(createFileContents);
             statement.execute();
             statement = connection.prepareStatement(createParentChild);
-            statement.execute();
-            statement = connection.prepareStatement(setIsolationLevel);
-            statement.execute();
-            statement = connection.prepareStatement(setSessionIsolation);
             statement.execute();
 
             connection.close();
