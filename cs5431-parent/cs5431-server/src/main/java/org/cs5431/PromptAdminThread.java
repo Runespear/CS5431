@@ -68,8 +68,9 @@ public class PromptAdminThread implements Runnable {
             logFileName = scanner.nextLine();
         }
         */
-        if (sql_accounts.getUserLog())
-            System.out.println("User logs downloaded in tmp folder");
+        String location = sql_accounts.getUserLog();
+        if (location != null)
+            System.out.println("User logs downloaded into " + location);
         else {
             System.out.println("Failed to download user logs. Please try again.");
         }
@@ -85,15 +86,17 @@ public class PromptAdminThread implements Runnable {
             String input = scanner.nextLine();
             switch(input) {
                 case "a":
-                    if (sql_files.getAllFileLogs()) {
-                        System.out.println("Log has been downloaded in tmp folder.");
+                    String location = sql_files.getAllFileLogs();
+                    if (location != null) {
+                        System.out.println("Log has been downloaded into " + location);
                     } else {
                         System.out.println("Failed to download file logs. Please try again.");
                     }
                     return;
                 case "s":
-                    if (downloadOneFileLog(sql_files)) {
-                        System.out.println("Log has been downloaded in tmp folder.");
+                    location = downloadOneFileLog(sql_files);
+                    if (location != null) {
+                        System.out.println("Log has been downloaded into " + location);
                     } else {
                         System.out.println("Failed to download file logs. Please try again.");
                     }
@@ -106,7 +109,7 @@ public class PromptAdminThread implements Runnable {
         }
     }
 
-    private boolean downloadOneFileLog(SQL_Files sql_files) {
+    private String downloadOneFileLog(SQL_Files sql_files) {
         System.out.println("Type the file id of the file log to download");
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -116,7 +119,7 @@ public class PromptAdminThread implements Runnable {
                     System.out.println("File ids are always positive integers" +
                             ". Please try again.");
                 else {
-                    return sql_files.getFileLog(input);
+                    return sql_files.adminGetFileLog(input);
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Sorry, that was not a valid number. " +

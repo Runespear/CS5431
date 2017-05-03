@@ -2145,43 +2145,55 @@ public class SQL_Files {
         }
     }
 
-    boolean getAllFileLogs() {
+    String getAllFileLogs() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
+        PreparedStatement getSecureFilePriv = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE) {
-                System.out.println("Database connected!");
-            }
 
+            String selectSecureFilePriv = "SELECT @@GLOBAL.secure_file_priv;";
             String selectLog = "SELECT 'fileLogid', 'fsoid', 'uid', 'lastModified', 'actionType', " +
                     "'status', 'sourceIp', 'newUid', 'failureType' UNION ALL " +
-                    "SELECT * FROM FileLog INTO OUTFILE \"/tmp/filelogs.csv\" FIELDS TERMINATED BY ','\n" +
+                    "SELECT * FROM FileLog INTO OUTFILE ? FIELDS TERMINATED BY ','\n" +
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
 
             try {
+                getSecureFilePriv = connection.prepareStatement(selectSecureFilePriv);
+                ResultSet rs = getSecureFilePriv.executeQuery();
+                String location = null;
+                if (rs.next()) {
+                    if (!rs.getString(1).equals("")){
+                        location = rs.getString(1) + "/userlogs.csv";
+                    } else {
+                        location = "/tmp/userlogs.csv";
+                    }
+                }
+
                 getFileLog = connection.prepareStatement(selectLog);
+                getFileLog.setString(1, location);
                 getFileLog.executeQuery();
-                return true;
+                return location;
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
                 if (getFileLog != null) {
                     getFileLog.close();
                 }
+                if (getSecureFilePriv != null) {
+                    getSecureFilePriv.close();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
-    boolean getFileLog(int fsoid) {
+    String adminGetFileLog(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
+        PreparedStatement getSecureFilePriv = null;
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -2191,6 +2203,7 @@ public class SQL_Files {
                 System.out.println("Database connected!");
             }
 
+            String selectSecureFilePriv = "SELECT @@GLOBAL.secure_file_priv;";
             String selectLog = "SELECT 'fileLogid', 'fsoid', 'uid', 'lastModified', 'actionType', " +
                     "'status', 'sourceIp', 'newUid', 'failureType' UNION ALL " +
                     "SELECT * FROM FileLog F WHERE F.fsoid = ? INTO OUTFILE \"/tmp/fso"+ fsoid +"logs.csv\" " +
@@ -2198,21 +2211,34 @@ public class SQL_Files {
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
             try {
+                getSecureFilePriv = connection.prepareStatement(selectSecureFilePriv);
+                ResultSet rs = getSecureFilePriv.executeQuery();
+                String location = null;
+                if (rs.next()) {
+                    if (!rs.getString(1).equals("")){
+                        location = rs.getString(1) + "/fso"+ fsoid + "logs.csv";
+                    } else {
+                        location = "/tmp/fso"+ fsoid +"logs.csv";
+                    }
+                }
                 getFileLog = connection.prepareStatement(selectLog);
-                getFileLog.setInt(1, fsoid);
+                getFileLog.setString(1, location);
                 getFileLog.executeQuery();
-                return true;
+                return location;
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
                 if (getFileLog != null) {
                     getFileLog.close();
                 }
+                if (getSecureFilePriv != null) {
+                    getSecureFilePriv.close();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     boolean isFolder(int fsoid, int uid, String sourceIp) {

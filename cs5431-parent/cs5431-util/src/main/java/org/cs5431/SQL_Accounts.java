@@ -908,12 +908,13 @@ public class SQL_Accounts {
      * Logs the change of password in the userlog.
      * Creates failure file log invalid password or db error (rollsback accordingly). */
     //TODO: how to verify admin?
-    boolean getUserLog() {
+    String getUserLog() {
         if (DEBUG_MODE) {
             System.out.println("Can view file logs");
         }
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
+        PreparedStatement getSecureFilePriv = null;
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -923,27 +924,43 @@ public class SQL_Accounts {
                 System.out.println("Database connected!");
             }
 
+            String selectSecureFilePriv = "SELECT @@GLOBAL.secure_file_priv;";
             String selectLog = "SELECT 'userLogid', 'uid', 'simulatedUsername', 'lastModified', 'actionType', " +
                     "'status', 'sourceIp', 'failureType' UNION ALL " +
-                    "SELECT * FROM UserLog INTO OUTFILE \"/tmp/userlogs.csv\" FIELDS TERMINATED BY ','\n" +
+                    "SELECT * FROM UserLog INTO OUTFILE ? FIELDS TERMINATED BY ','\n" +
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
 
             try {
+                getSecureFilePriv = connection.prepareStatement(selectSecureFilePriv);
+                ResultSet rs = getSecureFilePriv.executeQuery();
+                String location = null;
+                if (rs.next()) {
+                    if (!rs.getString(1).equals("")){
+                        location = rs.getString(1) + "/userlogs.csv";
+                    } else {
+                        location = "/tmp/userlogs.csv";
+                    }
+                }
+
                 getFileLog = connection.prepareStatement(selectLog);
-                getFileLog.executeQuery();
-                return true;
+                getFileLog.setString(1, location);
+                getFileLog.execute();
+                return location;
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
                 if (getFileLog != null) {
                     getFileLog.close();
                 }
+                if (getSecureFilePriv != null) {
+                    getSecureFilePriv.close();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     /**
