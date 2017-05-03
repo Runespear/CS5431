@@ -7,9 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
-import org.cs5431.controller.UserController;
 import org.cs5431.Validator;
-import org.json.JSONObject;
+import org.cs5431.controller.UserController;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -256,6 +255,11 @@ public class EditDetailsController implements Initializable {
                     task.setOnFailed(t -> showError("Failed to delete this account - please " +
                             "double check your password."));
                     task.setOnSucceeded(t -> {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Deleted successfully");
+                        alert.setContentText("Account deleted successfully. " +
+                                "Taking you back to the login page...");
+                        alert.showAndWait();
                         Scene scene = stage.getScene();
                         scene.setRoot(Client.loginNode);
                         stage.show();

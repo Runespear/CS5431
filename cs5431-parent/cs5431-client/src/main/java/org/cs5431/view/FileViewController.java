@@ -88,24 +88,54 @@ public class FileViewController implements Initializable {
         txtLogout.setPadding(new Insets(0,0,0,4));
 
         imgBack.setOnMouseClicked(e -> gotoParentFolder());
+        Tooltip backTooltip = new Tooltip("Go back to previous folder");
+        imgBack.getProperties().put("Go back to previous folder", backTooltip);
+        Tooltip.install(imgBack, backTooltip);
 
         imgRefresh.setOnMouseClicked(e -> populateListView());
+        Tooltip refreshTooltip = new Tooltip("Refresh list of files");
+        imgRefresh.getProperties().put("Refresh list of files", refreshTooltip);
+        Tooltip.install(imgRefresh, refreshTooltip);
 
         imgCreateFolder.setOnMouseClicked(e -> createFolder());
+        Tooltip createFolderTooltip = new Tooltip("Create new folder");
+        imgCreateFolder.getProperties().put("Create new folder", createFolderTooltip);
+        Tooltip.install(imgCreateFolder, createFolderTooltip);
 
         imgUpload.setOnMouseClicked(e -> uploadFile());
+        Tooltip uploadTooltip = new Tooltip("Upload new file");
+        imgUpload.getProperties().put("Upload new file", uploadTooltip);
+        Tooltip.install(imgUpload, uploadTooltip);
 
         imgDownload.setOnMouseClicked(e -> downloadFile());
+        Tooltip downloadTooltip = new Tooltip("Download this file");
+        imgDownload.getProperties().put("Download this file", downloadTooltip);
+        Tooltip.install(imgDownload, downloadTooltip);
 
         imgViewLog.setOnMouseClicked(this::viewFileLog);
+        Tooltip viewLogTooltip = new Tooltip("View log of this file");
+        imgViewLog.getProperties().put("View log of this file", viewLogTooltip);
+        Tooltip.install(imgViewLog, viewLogTooltip);
 
         imgEdit.setOnMouseClicked(e -> overwriteFile());
+        Tooltip editTooltip = new Tooltip("Overwrite this file");
+        imgEdit.getProperties().put("Overwrite this file", editTooltip);
+        Tooltip.install(imgEdit, editTooltip);
 
         imgShare.setOnMouseClicked(this::tryChangePrivileges);
+        Tooltip shareTooltip = new Tooltip("Share this file");
+        imgShare.getProperties().put("Share this file", shareTooltip);
+        Tooltip.install(imgShare, shareTooltip);
 
         imgDelete.setOnMouseClicked(e -> deleteFile());
-
+        Tooltip deleteTooltip = new Tooltip("Delete this file");
+        imgDelete.getProperties().put("Delete this file", deleteTooltip);
+        Tooltip.install(imgDelete, deleteTooltip);
+        
         imgUserPicture.setOnMouseClicked(this::tryEditDetails);
+        Tooltip userPictureTooltip = new Tooltip("Edit account details");
+        imgUserPicture.getProperties().put("Edit account details", userPictureTooltip);
+        Tooltip.install(imgUserPicture, userPictureTooltip);
 
         txtUsername.setOnMouseClicked(this::tryEditDetails);
 

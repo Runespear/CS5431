@@ -661,6 +661,7 @@ public class SSLServer extends Thread {
             JSONObject response = new JSONObject();
             response.put("msgType", "deleteUserAck");
             response.put("uid", uid);
+            loggedInUid = -1;
             return response;
         }
         return makeErrJson("The user could not be deleted.");
