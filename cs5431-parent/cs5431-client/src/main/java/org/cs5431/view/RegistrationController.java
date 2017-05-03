@@ -5,15 +5,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import org.cs5431.Validator;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.model.User;
-import org.cs5431.Validator;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,11 +38,11 @@ public class RegistrationController implements Initializable {
     @FXML
     public Button cancelButton;
 
+    @FXML
+    public Circle passwordCircle;
+
     private Stage stage;
     private AccountsController accountsController;
-
-    private String server;
-    private String port;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -51,6 +50,13 @@ public class RegistrationController implements Initializable {
             if (key.getCode().equals(KeyCode.ENTER)) {
                 txtPassword.requestFocus();
             }
+        });
+
+        txtPassword.textProperty().addListener((ov, oldS, newS) -> {
+            if (newS.length() < 16)
+                passwordCircle.setFill(Color.RED);
+            else
+                passwordCircle.setFill(Color.GREEN);
         });
 
         txtPassword.setOnKeyPressed(key -> {
@@ -74,6 +80,11 @@ public class RegistrationController implements Initializable {
         registerButton.setOnAction(e -> tryRegister());
 
         cancelButton.setOnAction(e -> exit());
+
+        passwordCircle.setFill(Color.RED);
+        Tooltip pwdTooltip = new Tooltip("Minimum 16 characters");
+        passwordCircle.getProperties().put("Minimum 16 characters", pwdTooltip);
+        Tooltip.install(passwordCircle, pwdTooltip);
     }
 
     /**
@@ -181,10 +192,5 @@ public class RegistrationController implements Initializable {
      */
     void setAccountsController(AccountsController accountsController) {
         this.accountsController = accountsController;
-    }
-
-    void setConnectionDetails(String server, String port) {
-        this.server = server;
-        this.port = port;
     }
 }
