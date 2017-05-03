@@ -180,6 +180,8 @@ public class ServerSetup {
                 "FOREIGN KEY (parentid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE;";
+        String setSessionIsolation ="SET SESSION tx_isolation='SERIALIZABLE';";
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
@@ -227,6 +229,10 @@ public class ServerSetup {
             statement = connection.prepareStatement(createFileContents);
             statement.execute();
             statement = connection.prepareStatement(createParentChild);
+            statement.execute();
+            statement = connection.prepareStatement(setIsolationLevel);
+            statement.execute();
+            statement = connection.prepareStatement(setSessionIsolation);
             statement.execute();
 
             connection.close();
