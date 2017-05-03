@@ -6,6 +6,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import org.cs5431.Validator;
 import org.cs5431.controller.UserController;
@@ -44,16 +46,30 @@ public class EditDetailsController implements Initializable {
     @FXML
     public Button deleteButton;
 
+    @FXML
+    public Circle passwordCircle;
+
     private Stage stage;
     private UserController userController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        txtOldPassword.requestFocus();
-
         txtOldPassword.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
                 txtNewPassword.requestFocus();
+            }
+        });
+
+        txtNewPassword.textProperty().addListener((ov, oldS, newS) -> {
+            if (newS.length() == 0) {
+                passwordCircle.setVisible(false);
+            } if (newS.length() < 16) {
+                passwordCircle.setVisible(true);
+                passwordCircle.setFill(Color.RED);
+            }
+            else {
+                passwordCircle.setVisible(true);
+                passwordCircle.setFill(Color.GREEN);
             }
         });
 
@@ -87,11 +103,19 @@ public class EditDetailsController implements Initializable {
             }
         });
 
+        passwordCircle.setVisible(false);
+        passwordCircle.setFill(Color.RED);
+        Tooltip pwdTooltip = new Tooltip("Minimum 16 characters");
+        passwordCircle.getProperties().put("Minimum 16 characters", pwdTooltip);
+        Tooltip.install(passwordCircle, pwdTooltip);
+
         saveButton.setOnAction(e -> trySaveDetails());
 
         exitButton.setOnAction(e -> exit());
 
         deleteButton.setOnAction(e -> delete());
+
+        txtOldPassword.requestFocus();
     }
 
     /**

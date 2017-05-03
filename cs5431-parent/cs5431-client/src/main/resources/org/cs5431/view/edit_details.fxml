@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import javafx.scene.shape.Circle?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/8"
@@ -71,6 +72,10 @@
             <PasswordField fx:id="txtOldPassword"
                            promptText="old password"
                            GridPane.columnIndex="2"/>
+            <HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                <Label text="  "/>
+                <Circle fx:id="passwordCircle" radius="6.0"/>
+            </HBox>
         </GridPane>
         <Button fx:id="deleteButton" mnemonicParsing="false"
                 text="Delete this account"/>
