@@ -2165,7 +2165,7 @@ public class SQL_Files {
                 String location = null;
                 if (rs.next()) {
                     if (!rs.getString(1).equals("")){
-                        location = rs.getString(1) + "/userlogs.csv";
+                        location = rs.getString(1) + "filelogs.csv";
                     } else {
                         location = "/tmp/userlogs.csv";
                     }
@@ -2206,7 +2206,7 @@ public class SQL_Files {
             String selectSecureFilePriv = "SELECT @@GLOBAL.secure_file_priv;";
             String selectLog = "SELECT 'fileLogid', 'fsoid', 'uid', 'lastModified', 'actionType', " +
                     "'status', 'sourceIp', 'newUid', 'failureType' UNION ALL " +
-                    "SELECT * FROM FileLog F WHERE F.fsoid = ? INTO OUTFILE \"/tmp/fso"+ fsoid +"logs.csv\" " +
+                    "SELECT * FROM FileLog F WHERE F.fsoid = ? INTO OUTFILE ? " +
                     "FIELDS TERMINATED BY ','\n" +
                     "ENCLOSED BY '\"'\n" +
                     "LINES TERMINATED BY '\\n'; ";
@@ -2216,13 +2216,14 @@ public class SQL_Files {
                 String location = null;
                 if (rs.next()) {
                     if (!rs.getString(1).equals("")){
-                        location = rs.getString(1) + "/fso"+ fsoid + "logs.csv";
+                        location = rs.getString(1) + "fso"+ fsoid + "logs.csv";
                     } else {
                         location = "/tmp/fso"+ fsoid +"logs.csv";
                     }
                 }
                 getFileLog = connection.prepareStatement(selectLog);
-                getFileLog.setString(1, location);
+                getFileLog.setInt(1, fsoid);
+                getFileLog.setString(2, location);
                 getFileLog.executeQuery();
                 return location;
             } catch (SQLException e) {

@@ -937,7 +937,7 @@ public class SQL_Accounts {
                 String location = null;
                 if (rs.next()) {
                     if (!rs.getString(1).equals("")){
-                        location = rs.getString(1) + "/userlogs.csv";
+                        location = rs.getString(1) + "userlogs.csv";
                     } else {
                         location = "/tmp/userlogs.csv";
                     }
