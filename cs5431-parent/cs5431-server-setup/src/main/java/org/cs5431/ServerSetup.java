@@ -180,7 +180,7 @@ public class ServerSetup {
                 "FOREIGN KEY (parentid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
-        String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE;";
+        String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE';";
         String setSessionIsolation ="SET SESSION tx_isolation='SERIALIZABLE';";
 
         try {
