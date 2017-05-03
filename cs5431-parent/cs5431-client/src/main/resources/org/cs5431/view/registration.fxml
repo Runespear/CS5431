@@ -56,7 +56,10 @@
                            GridPane.rowIndex="2"/>
             <TextField fx:id="txtEmail" promptText="email"
                        GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-            <Circle fx:id="passwordCircle" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+            <HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                <Label text="  "/>
+                <Circle fx:id="passwordCircle" radius="6.0"/>
+            </HBox>
         </GridPane>
         <Text strokeType="OUTSIDE" strokeWidth="0.0"
               text="* indicates compulsory fields" textAlignment="CENTER"
