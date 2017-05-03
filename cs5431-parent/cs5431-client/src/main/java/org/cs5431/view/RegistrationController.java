@@ -41,6 +41,12 @@ public class RegistrationController implements Initializable {
     @FXML
     public Circle passwordCircle;
 
+    @FXML
+    public Hyperlink email2faLink;
+
+    @FXML
+    public CheckBox email2faCheck;
+
     private Stage stage;
     private AccountsController accountsController;
 
