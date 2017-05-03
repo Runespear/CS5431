@@ -167,9 +167,7 @@ public class SQL_Files {
     int createFso (JSONObject fso, String sourceIp) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
+
         int uid = fso.getInt("uid");
         int parentFolderid = fso.getInt("parentFolderid");
         String fsoName = fso.getString("fsoName");
@@ -188,9 +186,6 @@ public class SQL_Files {
         String fsoNameIV = fso.getString("fsoNameIV");
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE) {
-                System.out.println("Database connected!");
-            }
 
             boolean hasPermission = verifyEditPermission(parentFolderid, uid);
             PreparedStatement createFso = null;
@@ -204,7 +199,7 @@ public class SQL_Files {
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
                     "lastModified, isFile, fsoNameIV, ownerid, fileIV)"
                     + " values (?, ?, ?, ?, ?, ?, ?, ?)";
-            //String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
+            String insertKey = "INSERT INTO FsoEncryption (fsoid, uid, encKey) values (?, ?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertEditor = "INSERT INTO Editors (fsoid, uid) values (?, ?)";
@@ -223,7 +218,7 @@ public class SQL_Files {
                     connection.setAutoCommit(false);
                     createFso = connection.prepareStatement(insertFolder, Statement.RETURN_GENERATED_KEYS);
                     addPermission = connection.prepareStatement(insertEditor);
-                    //addKey = connection.prepareStatement(insertKey);
+                    addKey = connection.prepareStatement(insertKey);
 
                     createFso.setInt(1, 0);
                     createFso.setString(2, fsoName);
@@ -248,14 +243,6 @@ public class SQL_Files {
                     addParent.setInt(3, uid);
                     addParent.executeUpdate();
 
-                    /*addKey.setInt(1, fsoid);
-                    addKey.setInt(2, uid);
-                    addKey.setString(3, sk);
-                    addKey.executeUpdate();
-                    if (DEBUG_MODE) {
-                        System.out.println("added added sk");
-                    }*/
-
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -276,18 +263,18 @@ public class SQL_Files {
                     if (DEBUG_MODE) {
                         System.out.println("added owner as editor");
                     }
+                    System.out.println(" editors " + editors);
+                    System.out.println(" viewers " + viewers);
 
                     for (int i=0; i<editors.length(); i++) {
                         int editor = (int) editors.get(i);
-                        String editorKey = (String) editorsKeys.get(i);
-                        addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp);
-                        addEditPriv(uid, fsoid, rs.getInt(1), sourceIp);
-                    }
-
-                    for (int i=0; i<viewers.length(); i++) {
-                        int viewer = (int) viewers.get(i);
-                        String viewerKey = (String) viewersKeys.get(i);
-                        addViewPriv(uid, fsoid, parentFolderid, viewer, viewerKey, sourceIp);
+                        if (editor == uid) {
+                            System.out.println("editor is owner " + uid);
+                            addKey.setInt(1, fsoid);
+                            addKey.setInt(2, uid);
+                            addKey.setString(3, (String) editorsKeys.get(i));
+                            addKey.executeUpdate();
+                        }
                     }
 
                     if (isFile) {
@@ -306,6 +293,7 @@ public class SQL_Files {
                         }
                     }
                     connection.commit();
+                    addParentPermissions(uid, fsoid, parentFolderid, sourceIp, editors, viewers, editorsKeys, viewersKeys);
                     return fsoid;
                 } else {
                     createLog.setInt(1, 0);
@@ -383,6 +371,24 @@ public class SQL_Files {
         return -1;
     }
 
+    void addParentPermissions(int uid, int fsoid, int parentFolderid, String sourceIp,
+                                 JSONArray editors, JSONArray viewers, JSONArray editorsKeys, JSONArray viewersKeys) {
+        for (int i=0; i<editors.length(); i++) {
+            int editor = (int) editors.get(i);
+            if (editor != uid) {
+                String editorKey = (String) editorsKeys.get(i);
+                addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp);
+                addEditPriv(uid, fsoid, editor, sourceIp);
+            }
+        }
+
+        for (int i=0; i<viewers.length(); i++) {
+            int viewer = (int) viewers.get(i);
+            String viewerKey = (String) viewersKeys.get(i);
+            addViewPriv(uid, fsoid, parentFolderid, viewer, viewerKey, sourceIp);
+        }
+    }
+
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
      * Verifies that the user has permission.
      * Transaction rolls back if db error.
@@ -451,6 +457,7 @@ public class SQL_Files {
 
                         files.put(fso);
                     }
+                    connection.commit();
                     return files;
                 } else {
                     createLog = connection.prepareStatement(insertLog);
@@ -708,6 +715,7 @@ public class SQL_Files {
         if (permissions != null) {
             try {
                 JSONArray editors = permissions.getJSONArray("editors");
+                System.out.println("editors retrieved:"+ editors);
                 for (int i = 0; i < editors.length(); i++) {
                     int editorid = (int) editors.get(i);
                     if (editorid == uid) {
@@ -1152,6 +1160,7 @@ public class SQL_Files {
     int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
                            String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
+        System.out.println("has permssion to add viewer: " + hasPermission);
         boolean wasEditor = verifyEditPermission(fsoid, newUid);
         boolean viewerExists = verifyViewPermission(fsoid, newUid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
@@ -1168,8 +1177,7 @@ public class SQL_Files {
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE)
-                System.out.println("Database connected!");
+
             String insertViewer = "INSERT INTO Viewers (fsoid, uid) values (?, ?)";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
