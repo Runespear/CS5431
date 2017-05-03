@@ -293,7 +293,11 @@ public class SQL_Files {
                         }
                     }
                     connection.commit();
-                    addParentPermissions(uid, fsoid, parentFolderid, sourceIp, editors, viewers, editorsKeys, viewersKeys);
+                    if (!addParentPermissions(uid, fsoid, parentFolderid, sourceIp, editors,
+                            viewers, editorsKeys, viewersKeys)) {
+                        //TODO: DO SOMETHING THROW EXCEPTION?
+                        System.out.println("failed somewhere should delete and reupload the object");
+                    }
                     return fsoid;
                 } else {
                     createLog.setInt(1, 0);
@@ -371,22 +375,23 @@ public class SQL_Files {
         return -1;
     }
 
-    void addParentPermissions(int uid, int fsoid, int parentFolderid, String sourceIp,
+    boolean addParentPermissions(int uid, int fsoid, int parentFolderid, String sourceIp,
                                  JSONArray editors, JSONArray viewers, JSONArray editorsKeys, JSONArray viewersKeys) {
         for (int i=0; i<editors.length(); i++) {
             int editor = (int) editors.get(i);
             if (editor != uid) {
                 String editorKey = (String) editorsKeys.get(i);
-                addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp);
-                addEditPriv(uid, fsoid, editor, sourceIp);
+                if (addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp) == -1) return false;
+                if (addEditPriv(uid, fsoid, editor, sourceIp) == -1) return false;
             }
         }
 
         for (int i=0; i<viewers.length(); i++) {
             int viewer = (int) viewers.get(i);
             String viewerKey = (String) viewersKeys.get(i);
-            addViewPriv(uid, fsoid, parentFolderid, viewer, viewerKey, sourceIp);
+            if (addViewPriv(uid, fsoid, parentFolderid, viewer, viewerKey, sourceIp) == -1) return false;
         }
+        return true;
     }
 
     /** Gets the id, enc(name), size, last modified and isFile that has parentFolderid as a parent.
