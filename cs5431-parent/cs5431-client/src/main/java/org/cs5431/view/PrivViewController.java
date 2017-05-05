@@ -186,10 +186,7 @@ public class PrivViewController implements Initializable{
         };
         task.setOnFailed(t -> showError("Failed to change sharing " +
                 "permissions of user: " + bundle.getUsername()));
-        task.setOnSucceeded(t -> {
-            bundle.canEdit = false;
-
-        });
+        task.setOnSucceeded(t -> bundle.canEdit = false);
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();

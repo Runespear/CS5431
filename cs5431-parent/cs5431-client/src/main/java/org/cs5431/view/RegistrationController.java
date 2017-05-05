@@ -47,8 +47,15 @@ public class RegistrationController implements Initializable {
     @FXML
     public CheckBox email2faCheck;
 
+    @FXML
+    public Button pwdRecoveryButton;
+
     private Stage stage;
     private AccountsController accountsController;
+
+    private boolean hasRecovery = false;
+    private List<Integer> nominatedUids = new ArrayList<>();
+    private Integer neededUsers = 0;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -100,6 +107,19 @@ public class RegistrationController implements Initializable {
         Tooltip pwdTooltip = new Tooltip("Minimum 16 characters");
         passwordCircle.getProperties().put("Minimum 16 characters", pwdTooltip);
         Tooltip.install(passwordCircle, pwdTooltip);
+
+        pwdRecoveryButton.setOnAction(e -> trySetRecovery());
+    }
+
+    private void trySetRecovery(){
+        //todo call pwd_recovery.fxml
+        //todo call pwdRecoveryController.setUpFromRegistration
+    }
+
+    void setRecoveryInfo(boolean hasRecovery, List<Integer> nominatedUids, int neededUsers) {
+        this.hasRecovery = hasRecovery;
+        this.nominatedUids = nominatedUids;
+        this.neededUsers = neededUsers;
     }
 
     /**
@@ -113,6 +133,7 @@ public class RegistrationController implements Initializable {
         String password = txtPassword.getCharacters().toString();
         String confirmPwd = txtConfirmPassword.getCharacters().toString();
         String email = txtEmail.getCharacters().toString();
+        boolean has2fa = email2faCheck.isSelected();
         //Client side validation
 
         List<String> errMessages = new ArrayList<>();
@@ -148,7 +169,7 @@ public class RegistrationController implements Initializable {
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
-                    return accountsController.createUser(username, password, email);
+                    return accountsController.createUser(username, password, email, has2fa);
                 }
             };
             task.setOnSucceeded(t -> {

@@ -69,6 +69,7 @@
             <Hyperlink fx:id="email2faLink" text="(?)"/>
             <CheckBox fx:id="email2faCheck"/>
         </HBox>
+        <Button fx:id="pwdRecoveryButton" text="Enable password recovery"/>
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
             <Button fx:id="registerButton" mnemonicParsing="false"
                     text="Register"/>

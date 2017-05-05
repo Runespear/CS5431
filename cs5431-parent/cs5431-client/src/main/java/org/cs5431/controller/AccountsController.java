@@ -41,7 +41,7 @@ public class AccountsController {
     * Creates user with the username, password, and email provided.
     * @return user if successful
     */
-    public User createUser(String username, String password, String email)
+    public User createUser(String username, String password, String email, boolean has2fa)
         throws Exception {
 
         JSONObject user = new JSONObject();
@@ -55,6 +55,7 @@ public class AccountsController {
         user.put("pubKey", keys[0]);
         user.put("privKey", keys[1]);
         user.put("privKeySalt", keys[2]);
+        user.put("has2fa", has2fa);
 
         sendJson(user,sslSocket);
         JSONObject newUser = receiveJson(sslSocket);
@@ -171,6 +172,22 @@ public class AccountsController {
         sendJson(json, sslSocket);
         JSONObject response = receiveJson(sslSocket);
         if (response.getString("msgType").equals("useridAck"))
+            return response.getInt("uid");
+        else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+    }
+
+    public int getUserForPwdRecovery(String username)  throws IOException,
+            ClassNotFoundException, UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","pwdNominate");
+        json.put("username", username);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("pwdNominateAck"))
             return response.getInt("uid");
         else if (response.getString("msgType").equals("error"))
             throw new UserRetrieveException(response.getString("message"));

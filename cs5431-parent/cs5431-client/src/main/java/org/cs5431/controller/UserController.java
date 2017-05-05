@@ -14,6 +14,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Base64;
+import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.SHA256;
@@ -191,6 +192,31 @@ public class UserController {
         }
     }
 
+    public void saveRecoveryInfo(boolean hasRecovery,
+                                 int neededUsers, List<Integer> nominatedUids)
+            throws IOException, ClassNotFoundException, PwdRecoveryException {
+        JSONObject recover = new JSONObject();
+        recover.put("msgType", "pwdGroup");
+        recover.put("uid", user.getId());
+        recover.put("hasRecovery", hasRecovery);
+        recover.put("neededUsers", neededUsers);
+        recover.put("groupId", nominatedUids);
+
+        sendJson(recover, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("pwdGroupAck")) {
+            if (response.getInt("uid") != user.getId())
+                throw new PwdRecoveryException("Password recovery info was set for wrong user!");
+        } else if (response.getString("msgType").equals("error")) {
+            throw new PwdRecoveryException(response.getString
+                    ("message"));
+        } else {
+            throw new PwdRecoveryException("Received bad response " +
+                    "from server");
+        }
+    }
+
     public class ChangePwdFailException extends Exception {
         ChangePwdFailException(String message) {
             super(message);
@@ -211,6 +237,12 @@ public class UserController {
 
     public class LogoutException extends Exception {
         LogoutException(String message) {
+            super(message);
+        }
+    }
+
+    public class PwdRecoveryException extends Exception {
+        PwdRecoveryException(String message) {
             super(message);
         }
     }
