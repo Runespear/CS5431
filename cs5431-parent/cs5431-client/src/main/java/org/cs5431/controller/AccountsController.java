@@ -87,9 +87,9 @@ public class AccountsController {
      * Creates a connection with serverIP and logs in with the username and password.
      * @param username Username to be used for this server
      * @param password Password associated with username
-     * @return userId if successful
+     * @return The received JSONObject if successful
      */
-    public User login(String username, String password) throws Exception {
+    public JSONObject login(String username, String password) throws Exception {
         JSONObject allegedUser = new JSONObject();
         try {
             allegedUser.put("msgType", "login");
@@ -103,20 +103,7 @@ public class AccountsController {
             JSONObject user = receiveJson(sslSocket);
 
             if (user.getString("msgType").equals("loginAck")) {
-                int uid = user.getInt("uid");
-                int parentFolderid = user.getInt("parentFolderid");
-                String email = user.getString("email");
-
-                String encodedPrivKey = user.getString("privKey");
-                String privKeySalt = user.getString("privKeySalt");
-                PrivateKey privKey = getPrivKeyFromJSON(encodedPrivKey, privKeySalt,
-                        password);
-                PublicKey pubKey = getPubKeyFromJSON(user.getString("pubKey"));
-
-                Folder parentFolder = getFolderFromId(parentFolderid, uid,
-                        privKey);
-                return new User(uid, username, email, parentFolder,
-                        privKey, pubKey);
+                return user;
             } else if (user.getString("msgType").equals("error")) {
                 throw new LoginFailException(user.getString
                         ("message"));
@@ -124,10 +111,57 @@ public class AccountsController {
                 throw new LoginFailException("Received bad response " +
                         "from server");
             }
-        } catch (JSONException | NoSuchAlgorithmException |
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public JSONObject do2fa(String otp, JSONObject login)
+            throws IOException, ClassNotFoundException, LoginFailException {
+        int uid = login.getInt("uid");
+
+        JSONObject json = new JSONObject();
+        json.put("msgType", "login2fa");
+        json.put("uid", uid);
+        json.put("otp", otp);
+
+        sendJson(json, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+
+        if (response.getString("msgType").equals("login2faAck")) {
+            return response;
+        } else if (response.getString("msgType").equals("error")) {
+            throw new LoginFailException(response.getString
+                    ("message"));
+        } else {
+            throw new LoginFailException("Received bad response " +
+                    "from server");
+        }
+    }
+
+    public User parseLogin(String username, String password, JSONObject user) {
+        try {
+            int uid = user.getInt("uid");
+            int parentFolderid = user.getInt("parentFolderid");
+            String email = user.getString("email");
+
+            String encodedPrivKey = user.getString("privKey");
+            String privKeySalt = user.getString("privKeySalt");
+            PrivateKey privKey = getPrivKeyFromJSON(encodedPrivKey, privKeySalt,
+                    password);
+            PublicKey pubKey = getPubKeyFromJSON(user.getString("pubKey"));
+
+            Folder parentFolder = getFolderFromId(parentFolderid, uid,
+                    privKey);
+            return new User(uid, username, email, parentFolder,
+                    privKey, pubKey);
+        } catch (NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
                 IllegalBlockSizeException | BadPaddingException |
-                NoSuchProviderException | InvalidKeySpecException e) {
+                NoSuchProviderException | InvalidKeySpecException |
+                InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
         return null;
