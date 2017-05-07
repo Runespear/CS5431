@@ -22,6 +22,8 @@ public class SSLServer extends Thread {
     private SQL_Accounts sql_accounts;
     private SQL_Files sql_files;
     private Email email;
+    private Date otpGenTime;
+    private String otp;
 
     SSLServer(Socket socket, SQL_Accounts sql_accounts, SQL_Files sql_files, Email email){
         this.s = socket;
@@ -71,6 +73,10 @@ public class SSLServer extends Thread {
                         break;
                     case "login":
                         response = login(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "login2fa":
+                        response = login2fa(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "getPrivKeySalt":
@@ -243,7 +249,12 @@ public class SSLServer extends Thread {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "LOGIN", email);
             if (auth != null) {
-                loggedInUid = auth.getInt("uid");
+                if (auth.getBoolean("has2fa")) {
+                    otp = TwoFactorAuth.generateAndSend2fa(""); //TODO
+                    otpGenTime = new Date();
+                } else {
+                    loggedInUid = auth.getInt("uid");
+                }
                 return auth;
             }
         }
@@ -266,6 +277,15 @@ public class SSLServer extends Thread {
 
     private boolean withinOneMinute(Date now, Date then) {
         return (now.getTime() - then.getTime() <= 60*1000);
+    }
+
+    private JSONObject login2fa(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        if (TwoFactorAuth.checkOtpValid(otp, jsonObject.getString("otp"), new Date())) {
+            //TODO: hook up to backend and return value
+            //TODO: need to change protocol?
+            //loggedInUid = auth.getInt("uid");
+        }
+        return null;
     }
 
     private JSONObject changePwd(JSONObject jsonObject, SQL_Accounts sql_accounts) {
