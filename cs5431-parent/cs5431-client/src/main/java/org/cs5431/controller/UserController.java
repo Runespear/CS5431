@@ -217,6 +217,29 @@ public class UserController {
         }
     }
 
+    public void save2fa(boolean has2fa) throws IOException,
+            ClassNotFoundException, TwoFactorException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","2faToggle");
+        json.put("uid", user.getId());
+        json.put("enabled", has2fa);
+
+        sendJson(json, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("2faToggleAck")) {
+            if (response.getInt("uid") != user.getId())
+                throw new TwoFactorException("Two factor authentication info" +
+                        " was set for wrong user!");
+        } else if (response.getString("msgType").equals("error")) {
+            throw new TwoFactorException(response.getString
+                    ("message"));
+        } else {
+            throw new TwoFactorException("Received bad response " +
+                    "from server");
+        }
+    }
+
     public class ChangePwdFailException extends Exception {
         ChangePwdFailException(String message) {
             super(message);
@@ -243,6 +266,12 @@ public class UserController {
 
     public class PwdRecoveryException extends Exception {
         PwdRecoveryException(String message) {
+            super(message);
+        }
+    }
+
+    public class TwoFactorException extends Exception {
+        TwoFactorException(String message) {
             super(message);
         }
     }

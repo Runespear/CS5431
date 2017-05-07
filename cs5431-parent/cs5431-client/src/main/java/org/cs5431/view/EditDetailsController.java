@@ -49,6 +49,15 @@ public class EditDetailsController implements Initializable {
     @FXML
     public Circle passwordCircle;
 
+    @FXML
+    public Hyperlink email2faLink;
+
+    @FXML
+    public CheckBox email2faCheck;
+
+    @FXML
+    public Button pwdRecoveryButton;
+
     private Stage stage;
     private UserController userController;
 
@@ -116,6 +125,16 @@ public class EditDetailsController implements Initializable {
         deleteButton.setOnAction(e -> delete());
 
         txtOldPassword.requestFocus();
+
+        email2faLink.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Email two-factor authentication");
+            alert.setContentText("By activating two factor authentication," +
+                    " the system will email you a code every time you login.\n" +
+                    "You will need to enter the code into this app.\n" +
+                    "If you check this box, you will need to provide us with a valid email.");
+            alert.showAndWait();
+        });
     }
 
     /**
@@ -216,6 +235,32 @@ public class EditDetailsController implements Initializable {
                 });
             }
         }
+
+        //to make things simpler, always attempt to save 2fa
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                userController.save2fa(email2faCheck.isSelected());
+                return null;
+            }
+        };
+        task.setOnFailed(t -> {
+            emailMessages.add("Saving two factor authentication information failed.");
+            showMessages(emailMessages);
+        });
+        task.setOnSucceeded(t -> {
+            emailMessages.add("Two factor authentication information saved.");
+            showMessages(emailMessages);
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
 
         //prints all success+failure messages if not shown in a task
         if (!pwdTaskRunning)

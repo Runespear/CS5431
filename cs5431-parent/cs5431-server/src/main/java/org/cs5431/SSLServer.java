@@ -56,7 +56,8 @@ public class SSLServer extends Thread {
                         .equals("getFileLogs") || type.equals("getChildren")
                         || type.equals("logout") || type.equals
                         ("getEditorViewerList") || type.equals("deleteUser")
-                        || type.equals("uploadKeys")) {
+                        || type.equals("uploadKeys") || type.equals("2faToggle") ||
+                        type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         response = makeErrJson("Requesting user does not match " +
@@ -176,6 +177,30 @@ public class SSLServer extends Thread {
                         response = deleteUser(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
+                    case "2faToggle":
+                        response = twoFactorToggle(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "pwdNominate":
+                        response = findUserPwdRec(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "setPwdGroup":
+                        response = setPwdRecovery(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "pwdRecoveryInfo":
+                        response = getPwdRecovery(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "recoverPwd":
+                        response = recoverPwd(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "recoverPwdFound":
+                        response = recoverPwdFound(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
@@ -280,7 +305,7 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject login2fa(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        if (TwoFactorAuth.checkOtpValid(otp, jsonObject.getString("otp"), new Date())) {
+        if (TwoFactorAuth.checkOtpValid(otp, jsonObject.getString("otp"), otpGenTime)) {
             //TODO: hook up to backend and return value
             //TODO: need to change protocol?
             //loggedInUid = auth.getInt("uid");
@@ -685,6 +710,36 @@ public class SSLServer extends Thread {
             return response;
         }
         return makeErrJson("The user could not be deleted.");
+    }
+
+    private JSONObject twoFactorToggle(JSONObject json, SQL_Accounts sql_accounts) {
+        //TODO: link to ruixin's code
+        return null;
+    }
+
+    private JSONObject findUserPwdRec(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO: link to ruixin's code
+        return null;
+    }
+
+    private JSONObject setPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO: link to ruixin's code
+        return null;
+    }
+
+    private JSONObject getPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO: link to ruixin's code
+        return null;
+    }
+
+    private JSONObject recoverPwd(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO: link to ruixin's code
+        return null;
+    }
+
+    private JSONObject recoverPwdFound(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO: link to ruixin's code
+        return null;
     }
 
     private JSONObject makeErrJson(String message) {

@@ -77,6 +77,12 @@
                 <Circle fx:id="passwordCircle" radius="6.0"/>
             </HBox>
         </GridPane>
+        <HBox alignment="TOP_CENTER" prefWidth="200.0">
+            <Label text="Enable email two-factor authentication"/>
+            <Hyperlink fx:id="email2faLink" text="(?)"/>
+            <CheckBox fx:id="email2faCheck"/>
+        </HBox>
+        <Button fx:id="pwdRecoveryButton" text="Change password recovery settings"/>
         <Button fx:id="deleteButton" mnemonicParsing="false"
                 text="Delete this account"/>
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
