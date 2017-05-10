@@ -105,10 +105,10 @@ public class ServerView {
 
         System.out.println("Enter the username you use to login to the admin email:");
         username = scanner.nextLine();
-        username = "psfs5431@gmail.com";
+        username = "psfs5431@gmail.com"; //TODO: to be removed
         System.out.println("Enter the password you use to login to the admin email:");
         password = scanner.nextLine();
-        password = "theroadtoA+";
+        password = "theroadtoA+";//TODO: to be removed
 
         Email email = new Email(username, password);
 

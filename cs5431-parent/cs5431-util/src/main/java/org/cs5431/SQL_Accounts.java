@@ -1135,8 +1135,7 @@ public class SQL_Accounts {
                 ResultSet rs = getUid.executeQuery();
 
                 if (rs.next()) {
-                    int uid = rs.getInt(1);
-                    return uid;
+                    return rs.getInt(1);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -1419,7 +1418,7 @@ public class SQL_Accounts {
                 if (getNominated != null) {
                     getNominated.close();
                 }
-                if (getPwdRec != null) {
+                if (hasPwdRec != null) {
                     hasPwdRec.close();
                 }
                 if (getUsername != null) {
@@ -1476,7 +1475,7 @@ public class SQL_Accounts {
                 if (getNominated != null) {
                     getNominated.close();
                 }
-                if (getPwdRec != null) {
+                if (hasPwdRec != null) {
                     hasPwdRec.close();
                 }
             }
