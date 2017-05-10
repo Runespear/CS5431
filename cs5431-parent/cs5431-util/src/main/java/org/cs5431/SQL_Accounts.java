@@ -1365,7 +1365,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject getPasRecInfo(int uid, String sourceIp) {
+    JSONObject getPasRecInfo(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1424,6 +1424,144 @@ public class SQL_Accounts {
                 }
                 if (getUsername != null) {
                     getUsername.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    JSONObject getSecrets(int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement hasPwdRec = null;
+            PreparedStatement getNominated = null;
+
+            String getPwdRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+            String selectGroup = "SELECT U.nominatedUid, U.secret FROM PwdGroup U WHERE U.uid = ?";
+
+            try {
+                hasPwdRec = connection.prepareStatement(getPwdRec);
+
+                hasPwdRec.setInt(1, uid);
+                ResultSet rs = hasPwdRec.executeQuery();
+
+                JSONObject json = new JSONObject();
+                json.put("uid", uid);
+
+                if (rs.next() && rs.getInt(1) == 1) {
+                    getNominated = connection.prepareStatement(selectGroup);
+                    getNominated.setInt(1, uid);
+                    ResultSet nominated = getNominated.executeQuery();
+
+                    JSONArray groupUid = new JSONArray();
+                    JSONArray secrets = new JSONArray();
+                    while (nominated.next()) {
+                        int nominatedUid = nominated.getInt(1);
+                        groupUid.put(nominatedUid);
+                        secrets.put(nominated.getString(2));
+                    }
+                    json.put("groupUid", groupUid);
+                    json.put("secrets", secrets);
+                    return json;
+                }
+                json.put("hasPwdRec", false);
+                return json;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getNominated != null) {
+                    getNominated.close();
+                }
+                if (getPwdRec != null) {
+                    hasPwdRec.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //returns null if password recovery is not activated
+    JSONObject recoverPwd(int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement createLog = null;
+            PreparedStatement getPrivKey = null;
+
+            String selectKey = "SELECT U.privKey FROM Users U WHERE U.uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                getPrivKey = connection.prepareStatement(selectKey);
+                connection.setAutoCommit(false);
+
+                getPrivKey.setInt(1, uid);
+                ResultSet rs = getPrivKey.executeQuery();
+                JSONObject json = new JSONObject();
+                json.put("msgType", "recoverPwdAck");
+                json.put("uid", uid);
+
+                if (rs.next()) {
+                    json.put("encPK", rs.getString(1));
+
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RECOVER_PWD");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
+                    createLog.executeUpdate();
+
+                    connection.commit();
+                    return json;
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RECOVER_PWD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "INVALID PWD RECOVERY");
+                    createLog.executeUpdate();
+                    connection.commit();
+                    return null;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RECOVER_PWD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return null;
+            } finally {
+                if (getPrivKey != null) {
+                    getPrivKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
                 }
                 connection.setAutoCommit(true);
             }
