@@ -110,6 +110,7 @@ keystorefilename.jks
 truststorefilename.jks
 
 files/*
+intrusion-log.txt
 
 #===============
 # Maven target

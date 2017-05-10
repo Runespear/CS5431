@@ -77,7 +77,7 @@ public class IntrusionDetection {
         }
 
         FileWriter fw;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             fw = new FileWriter(intrusionLog, true);
             BufferedWriter bw = new BufferedWriter(fw);

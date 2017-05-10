@@ -90,7 +90,18 @@ public class ServerView {
             return;
         }
         SQL_Files sql_files = new SQL_Files(server, dbPort, username, password);
-        IntrusionDetection intrusionDetection = new IntrusionDetection(server, dbPort, username, password);
+
+        String finalUsername = username;
+        String finalPassword = password;
+        Thread t = new Thread(() -> {
+            while(true) try {
+                new IntrusionDetection(server, dbPort, finalUsername, finalPassword);
+                Thread.sleep(1000 * 60 * 60 * 24);
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+        });
+        t.start();
 
         System.out.println("Enter the username you use to login to the admin email:");
         username = scanner.nextLine();
