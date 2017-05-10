@@ -568,9 +568,6 @@ public class SQL_Files {
 
                     if (rs.next()) {
                         fso.put("msgType","downloadAck");
-                        if (DEBUG_MODE) {
-                            System.out.println("THE PATH IS: " + rs.getString(1));
-                        }
                         File reqFile = new File(rs.getString(1));
                         FileInputStream inputStream = new FileInputStream
                                 (reqFile);
