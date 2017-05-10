@@ -11,15 +11,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import org.cs5431.Validator;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.model.User;
-import org.cs5431.Validator;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static org.cs5431.Constants.DEBUG_MODE;
@@ -92,14 +91,14 @@ public class LoginController implements Initializable {
                     final String[] otp = new String[1];
                     otp[0] = null;
 
-                    TextInputDialog dialog = new TextInputDialog("otp");
+                    /*TextInputDialog dialog = new TextInputDialog("otp");
                     dialog.setTitle("Email Two Factor Authentication");
                     dialog.setContentText("Please enter the code that has been sent to your email:");
 
                     while (otp[0] == null) {    //TODO: is this too harsh?
                         Optional<String> result = dialog.showAndWait();
                         result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
-                    }
+                    }*/
                     JSONObject response2fa = accountsController.do2fa(otp[0], login);
                     return accountsController.parseLogin(username, password, response2fa);
                 } else {
