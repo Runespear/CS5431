@@ -156,6 +156,7 @@ public class LoginController implements Initializable {
             final URL r = getClass().getResource("registration.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(r);
             Parent root = fxmlLoader.load();
+            Client.registrationNode = root;
             RegistrationController rc = fxmlLoader.getController();
             rc.setStage(stage);
             rc.setAccountsController(accountsController);

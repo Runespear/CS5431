@@ -1,8 +1,12 @@
 package org.cs5431.view;
 
 import javafx.concurrent.Task;
+import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -10,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import org.cs5431.Validator;
+import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.UserController;
 
 import java.net.URL;
@@ -59,6 +64,7 @@ public class EditDetailsController implements Initializable {
     public Button pwdRecoveryButton;
 
     private Stage stage;
+    private AccountsController accountsController;
     private UserController userController;
 
     @Override
@@ -135,6 +141,8 @@ public class EditDetailsController implements Initializable {
                     "If you check this box, you will need to provide us with a valid email.");
             alert.showAndWait();
         });
+
+        pwdRecoveryButton.setOnAction(this::goToRecovery);
     }
 
     /**
@@ -299,6 +307,24 @@ public class EditDetailsController implements Initializable {
         stage.show();
     }
 
+    private void goToRecovery(Event e) {
+        try {
+            Node node = (Node) e.getSource();
+            Stage stage = (Stage) node.getScene().getWindow();
+            Scene scene = stage.getScene();
+
+            final URL r = getClass().getResource("pwd_recovery.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(r);
+            Parent root = fxmlLoader.load();
+            PwdRecoveryController prc = fxmlLoader.getController();
+            prc.setUpFromEditDetails(stage, Client.editDetailsNode, accountsController, userController);
+            scene.setRoot(root);
+
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
+
     private void delete() {
         TextInputDialog dialog = new TextInputDialog("username");
         dialog.setTitle("Delete this account");
@@ -362,7 +388,8 @@ public class EditDetailsController implements Initializable {
      * UserController that will perform the password and email changes.
      * @param userController UserController associated with this user
      */
-    void setUserController(UserController userController) {
+    void setControllers(UserController userController, AccountsController accountsController) {
         this.userController = userController;
+        this.accountsController = accountsController;
     }
 }

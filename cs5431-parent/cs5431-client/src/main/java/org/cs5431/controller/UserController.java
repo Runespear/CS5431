@@ -240,6 +240,31 @@ public class UserController {
         }
     }
 
+    public JSONObject getRecoveryInfo() throws IOException, ClassNotFoundException,
+            PwdRecoveryException {
+        //todo
+        JSONObject recover = new JSONObject();
+        recover.put("msgType", "???");  //TODO
+        recover.put("uid", user.getId());
+
+        sendJson(recover, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("???Ack")) {   //TODO
+            if (response.getInt("uid") == user.getId()) {
+                return response;
+            } else {
+                throw new PwdRecoveryException("Got password recovery information" +
+                        "for wrong user!");
+            }
+        } else if (response.getString("msgType").equals("error")) {
+            throw new PwdRecoveryException(response.getString
+                    ("message"));
+        } else {
+            throw new PwdRecoveryException("Received bad response " +
+                    "from server");
+        }
+    }
+
     public class ChangePwdFailException extends Exception {
         ChangePwdFailException(String message) {
             super(message);

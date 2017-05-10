@@ -14,6 +14,8 @@ public class Client extends Application {
     static Parent connectNode;
     static Parent loginNode;
     static Parent fileViewNode;
+    static Parent registrationNode;
+    static Parent editDetailsNode;
 
     public static void main(String[] args) {
         launch(args);
