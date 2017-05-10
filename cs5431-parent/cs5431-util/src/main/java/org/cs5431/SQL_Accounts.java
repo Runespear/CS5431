@@ -418,10 +418,10 @@ public class SQL_Accounts {
                     addLog.execute();
 
                     getEmail = connection.prepareStatement(selectEmail);
-                    getEmail.setString(0, username);
+                    getEmail.setString(1, username);
                     ResultSet userEmail = getEmail.executeQuery();
                     if (userEmail.next()) {
-                        adminEmail.send(userEmail.getString(0),"Failed Login Attempt", "");
+                        adminEmail.send(userEmail.getString(1),"Failed Login Attempt", "");
                     }
                     connection.commit();
                     return null;

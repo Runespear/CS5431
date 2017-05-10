@@ -105,8 +105,10 @@ public class ServerView {
 
         System.out.println("Enter the username you use to login to the admin email:");
         username = scanner.nextLine();
+        username = "psfs5431@gmail.com";
         System.out.println("Enter the password you use to login to the admin email:");
         password = scanner.nextLine();
+        password = "theroadtoA+";
 
         Email email = new Email(username, password);
 
