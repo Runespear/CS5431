@@ -197,8 +197,8 @@ public class PwdRecoveryController implements Initializable {
         task.setOnSucceeded(t -> {
             JSONObject response = task.getValue();
             //TODO check names of fields
-            pwdRecoveryCheck.setSelected(response.getBoolean("hasRecovery"));
-            if (response.getBoolean("hasRecovery")) {
+            pwdRecoveryCheck.setSelected(response.getBoolean("hasPwdRec"));
+            if (response.getBoolean("hasPwdRec")) {
                 neededUsersField.setText(Integer.toString(response.getInt("neededUsers")));
                 JSONArray uidArray = response.getJSONArray("nominatedUids");
                 List<Integer> uidList = new ArrayList<>();

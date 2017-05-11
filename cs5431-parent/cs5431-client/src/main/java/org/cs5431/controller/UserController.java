@@ -244,12 +244,12 @@ public class UserController {
             PwdRecoveryException {
         //todo
         JSONObject recover = new JSONObject();
-        recover.put("msgType", "???");  //TODO
+        recover.put("msgType", "pwdRecoveryInfo");
         recover.put("uid", user.getId());
 
         sendJson(recover, sslSocket);
         JSONObject response = receiveJson(sslSocket);
-        if (response.getString("msgType").equals("???Ack")) {   //TODO
+        if (response.getString("msgType").equals("pwdRecoveryInfoAck")) {
             if (response.getInt("uid") == user.getId()) {
                 return response;
             } else {
