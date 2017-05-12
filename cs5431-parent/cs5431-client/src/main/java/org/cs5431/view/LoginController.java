@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static org.cs5431.Constants.DEBUG_MODE;
@@ -88,43 +89,26 @@ public class LoginController implements Initializable {
             protected User call() throws Exception {
                 JSONObject login = accountsController.login(username, password);
                 if (login.getBoolean("has2fa")) {
-                    final String[] otp = new String[1];
-                    otp[0] = null;
-
-                    /*TextInputDialog dialog = new TextInputDialog("otp");
-                    dialog.setTitle("Email Two Factor Authentication");
-                    dialog.setContentText("Please enter the code that has been sent to your email:");
-
-                    while (otp[0] == null) {    //TODO: is this too harsh?
-                        Optional<String> result = dialog.showAndWait();
-                        result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
-                    }*/
-                    JSONObject response2fa = accountsController.do2fa(otp[0], login);
-                    return accountsController.parseLogin(username, password, response2fa);
+                    return new User(login.getInt("uid"), null, null, null, null, null, false);
                 } else {
-                    return accountsController.parseLogin(username, password, login);
+                    return accountsController.parseLogin(username, password, login, false);
                 }
             }
         };
         task.setOnSucceeded(t -> {
-            try {
-                if (!DEBUG_MODE)
-                    txtPassword.setText("");
-                Node node = (Node) e.getSource();
-                Stage stage = (Stage) node.getScene().getWindow();
-                Scene scene = stage.getScene();
+            if(task.getValue().getHas2fa()) {
+                TextInputDialog dialog = new TextInputDialog("otp");
+                dialog.setTitle("Email Two Factor Authentication");
+                dialog.setContentText("Please enter the code that has been sent to your email:");
 
-                final URL r = getClass().getResource("file_view.fxml");
-                FXMLLoader fxmlLoader = new FXMLLoader(r);
-                Parent root = fxmlLoader.load();
-                Client.fileViewNode = root;
-                FileViewController fvc = fxmlLoader.getController();
-
-                fvc.setUserDetails(task.getValue(), sslSocket, accountsController);
-                fvc.setStage(stage);
-                scene.setRoot(root);
-            } catch (IOException ex) {
-                System.err.println("Failed to change to file view!");
+                final String[] otp = {null};
+                while (otp[0] == null) {    //TODO: is this too harsh?
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
+                }
+                do2fa(e, otp[0], task.getValue().getId(), username, password);
+            } else {
+                changeToFileView(e, task.getValue());
             }
         });
         Thread th = new Thread(task);
@@ -138,6 +122,48 @@ public class LoginController implements Initializable {
                 alert.setTitle("Login error");
                 alert.setContentText(ex.getMessage());
                 alert.showAndWait();
+            }
+        });
+    }
+
+    private void changeToFileView(Event e, User currUser) {
+        try {
+            if (!DEBUG_MODE)
+                txtPassword.setText("");
+            Node node = (Node) e.getSource();
+            Stage stage = (Stage) node.getScene().getWindow();
+            Scene scene = stage.getScene();
+
+            final URL r = getClass().getResource("file_view.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(r);
+            Parent root = fxmlLoader.load();
+            Client.fileViewNode = root;
+            FileViewController fvc = fxmlLoader.getController();
+
+            fvc.setUserDetails(currUser, sslSocket, accountsController);
+            fvc.setStage(stage);
+            scene.setRoot(root);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void do2fa(Event e, String otp, int userId, String username, String password) {
+        Task<User> task = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                JSONObject response2fa = accountsController.do2fa(otp, userId);
+                return accountsController.parseLogin(username, password, response2fa, true);
+            }
+        };
+        task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
             }
         });
     }

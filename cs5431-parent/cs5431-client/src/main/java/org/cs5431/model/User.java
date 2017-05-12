@@ -8,15 +8,17 @@ public class User extends Account {
     private String email;
     private PrivateKey privKey;
     private PublicKey pubKey;
+    private boolean has2fa;
 
     public User(int id, String username, String email, Folder
-            userParentFolder, PrivateKey privKey, PublicKey pubKey) {
+            userParentFolder, PrivateKey privKey, PublicKey pubKey, boolean has2fa) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.userParentFolder = userParentFolder;
         this.privKey = privKey;
         this.pubKey = pubKey;
+        this.has2fa = has2fa;
     }
 
     public Folder getUserParentFolder() {
@@ -34,4 +36,6 @@ public class User extends Account {
     public PublicKey getPubKey() {
         return pubKey;
     }
+
+    public boolean getHas2fa() {return has2fa;}
 }

@@ -80,7 +80,7 @@ public class AccountsController {
             Folder parentFolder = new Folder(parentFolderid, username,
                     lastModified, true, true);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey);
+                    privKey, pubKey, has2fa);
         } else if (newUser.getString("msgType").equals("error")) {
             throw new RegistrationFailException(newUser.getString
                     ("message"));
@@ -124,10 +124,8 @@ public class AccountsController {
         return null;
     }
 
-    public JSONObject do2fa(String otp, JSONObject login)
+    public JSONObject do2fa(String otp, int uid)
             throws IOException, ClassNotFoundException, LoginFailException {
-        int uid = login.getInt("uid");
-
         JSONObject json = new JSONObject();
         json.put("msgType", "login2fa");
         json.put("uid", uid);
@@ -148,7 +146,7 @@ public class AccountsController {
         }
     }
 
-    public User parseLogin(String username, String password, JSONObject user) {
+    public User parseLogin(String username, String password, JSONObject user, boolean has2fa) {
         try {
             int uid = user.getInt("uid");
             int parentFolderid = user.getInt("parentFolderid");
@@ -163,7 +161,7 @@ public class AccountsController {
             Folder parentFolder = getFolderFromId(parentFolderid, uid,
                     privKey);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey);
+                    privKey, pubKey, has2fa);
         } catch (NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
                 IllegalBlockSizeException | BadPaddingException |
