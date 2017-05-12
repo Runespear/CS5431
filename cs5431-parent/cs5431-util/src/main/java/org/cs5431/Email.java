@@ -2,6 +2,8 @@ package org.cs5431;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -41,10 +43,11 @@ public class Email {
             MimeMessage message = new MimeMessage(session);
             message.addRecipient(Message.RecipientType.TO,new InternetAddress(to));
             message.setSubject(subject);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             switch(subject) {
                 case "Failed Login Attempt": msg = "An attempt to log into your Pretty Secure File Sharing account failed" +
-                        "on " + System.currentTimeMillis() + ". Do contact us at ___ if you require further assistance.";
+                        " on " + sdf.format(new Date()) + ". Do contact us at psfs5431@gmail.com if you require further assistance.";
             }
 
             message.setText(msg);

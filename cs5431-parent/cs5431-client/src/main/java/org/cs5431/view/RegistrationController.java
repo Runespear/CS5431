@@ -1,9 +1,13 @@
 package org.cs5431.view;
 
 import javafx.concurrent.Task;
+import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -108,12 +112,26 @@ public class RegistrationController implements Initializable {
         passwordCircle.getProperties().put("Minimum 16 characters", pwdTooltip);
         Tooltip.install(passwordCircle, pwdTooltip);
 
-        pwdRecoveryButton.setOnAction(e -> trySetRecovery());
+        pwdRecoveryButton.setOnAction(this::trySetRecovery);
     }
 
-    private void trySetRecovery(){
-        //todo call pwd_recovery.fxml
-        //todo call pwdRecoveryController.setUpFromRegistration
+    private void trySetRecovery(Event e){
+        try {
+            Node node = (Node) e.getSource();
+            Stage stage = (Stage) node.getScene().getWindow();
+            Scene scene = stage.getScene();
+
+            final URL r = getClass().getResource("pwd_recovery.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(r);
+            Parent root = fxmlLoader.load();
+            PwdRecoveryController prc = fxmlLoader.getController();
+            prc.setUpFromRegistration(stage, Client.registrationNode, accountsController, this,
+                    hasRecovery, nominatedUids, neededUsers);
+            scene.setRoot(root);
+
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
     }
 
     void setRecoveryInfo(boolean hasRecovery, List<Integer> nominatedUids, int neededUsers) {
@@ -169,7 +187,8 @@ public class RegistrationController implements Initializable {
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
-                    return accountsController.createUser(username, password, email, has2fa);
+                    return accountsController.createUser(username, password, email, has2fa,
+                            hasRecovery, nominatedUids, neededUsers);
                 }
             };
             task.setOnSucceeded(t -> {

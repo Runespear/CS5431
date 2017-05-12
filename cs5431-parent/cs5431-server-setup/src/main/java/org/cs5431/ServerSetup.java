@@ -144,7 +144,8 @@ public class ServerSetup {
                 "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV CHAR(255), fileIV CHAR(32));";
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
-                "privKey BLOB NOT NULL, pubKey BLOB NOT NULL, pwdSalt CHAR(255) NOT NULL, privKeySalt CHAR(255) NOT NULL, \n" +
+                "privKey BLOB NOT NULL, pubKey BLOB NOT NULL, pwdSalt CHAR(255) NOT NULL, privKeySalt CHAR(255) NOT NULL," +
+                "has2fa BOOLEAN NOT NULL, hasPwdRec BOOLEAN NOT NULL, \n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,\n" +
                 "uid INT UNSIGNED NOT NULL,\n" +
@@ -180,6 +181,10 @@ public class ServerSetup {
                 "FOREIGN KEY (parentid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
+        String createPwdRecovery = "CREATE TABLE PwdGroup (uid INT UNSIGNED NOT NULL, nominatedUid INT UNSIGNED NOT NULL,\n" +
+                "secret CHAR(255) NOT NULL," +
+                "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
+                "FOREIGN KEY (nominatedUid) REFERENCES Users(uid) ON DELETE CASCADE);";
         String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE';";
         String setSessionIsolation ="SET SESSION tx_isolation='SERIALIZABLE';";
 
@@ -234,6 +239,8 @@ public class ServerSetup {
             statement = connection.prepareStatement(createFileContents);
             statement.execute();
             statement = connection.prepareStatement(createParentChild);
+            statement.execute();
+            statement = connection.prepareStatement(createPwdRecovery);
             statement.execute();
 
             connection.close();

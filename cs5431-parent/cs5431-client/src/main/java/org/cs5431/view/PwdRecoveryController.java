@@ -1,5 +1,7 @@
 package org.cs5431.view;
 
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -7,10 +9,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.UserController;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,15 +41,14 @@ public class PwdRecoveryController implements Initializable {
     public TextField neededUsersField;
 
     @FXML
-    public TableView<String> nominatedUsersTable;
+    public TableView<PwdRecoveryBundle> nominatedUsersTable;
 
     @FXML
-    public TableColumn<String, String> usernameColumn;
+    public TableColumn<PwdRecoveryBundle, String> usernameColumn;
 
     @FXML
-    public TableColumn<String, String> deleteColumn;
+    public TableColumn<PwdRecoveryBundle, PwdRecoveryBundle> deleteColumn;
 
-    private List<Integer> nominatedUids;
     private Stage stage;
     private Parent parentNode;
     private AccountsController ac;
@@ -81,16 +85,43 @@ public class PwdRecoveryController implements Initializable {
             }
         });
 
-        nominatedUids = new ArrayList<>();
+        usernameColumn.setCellValueFactory(
+                new PropertyValueFactory<>("username")
+        );
+
+        deleteColumn.setCellValueFactory(
+                param -> new ReadOnlyObjectWrapper<>(param.getValue())
+        );
+        deleteColumn.setCellFactory(param -> new TableCell<PwdRecoveryBundle,
+                PwdRecoveryBundle>() {
+            private final Button deleteButton = new Button("Delete");
+
+            @Override
+            protected void updateItem(PwdRecoveryBundle bundle, boolean empty) {
+                super.updateItem(bundle, empty);
+
+                if (bundle == null) {
+                    setGraphic(null);
+                    return;
+                }
+
+                setGraphic(deleteButton);
+                deleteButton.setOnAction(event -> nominatedUsersTable.getItems().remove(bundle));
+            }
+        });
     }
 
-    public void setUpFromRegistration(Stage stage, Parent parentNode, AccountsController ac,
-                      RegistrationController rc) {
+    void setUpFromRegistration(Stage stage, Parent parentNode, AccountsController ac,
+                               RegistrationController rc, boolean hasRecovery,
+                               List<Integer> nominatedUids, int neededUsers) {
         this.stage = stage;
         this.parentNode = parentNode;
         this.ac = ac;
         this.rc = rc;
-        //todo load if the user changes his mind?
+        //in case user changes his mind
+        pwdRecoveryCheck.setSelected(hasRecovery);
+        loadUsernames(nominatedUids);
+        neededUsersField.setText(Integer.toString(neededUsers));
     }
 
     public void setUpFromEditDetails(Stage stage, Parent parentNode, AccountsController ac,
@@ -109,8 +140,8 @@ public class PwdRecoveryController implements Initializable {
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(username -> {
-            for (String currUser : nominatedUsersTable.getItems()) {
-                if (currUser.equals(username)) {
+            for (PwdRecoveryBundle bundle : nominatedUsersTable.getItems()) {
+                if (bundle.username.toString().equals(username)) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Sharing error");
                     alert.setContentText("This user is already nominated");
@@ -127,10 +158,9 @@ public class PwdRecoveryController implements Initializable {
             task.setOnFailed(t -> showError("Failed to share with this " +
                     "user - they might not exist."));
             task.setOnSucceeded(t -> {
-                ObservableList<String> observableList = nominatedUsersTable.getItems();
-                observableList.add(username);
+                ObservableList<PwdRecoveryBundle> observableList = nominatedUsersTable.getItems();
+                observableList.add(new PwdRecoveryBundle(task.getValue(), username));
                 nominatedUsersTable.setItems(observableList);
-                nominatedUids.add(task.getValue());
                 changed = true;
             });
             Thread th = new Thread(task);
@@ -140,23 +170,93 @@ public class PwdRecoveryController implements Initializable {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
-                    if (task.getValue() != null && nominatedUsersTable.getItems()
-                            .contains(username)) {
-                        nominatedUsersTable.getItems().remove(username);
-                        nominatedUids.remove(task.getValue());
+                    if (task.getValue() != null) {
+                        PwdRecoveryBundle bundle = new PwdRecoveryBundle(task.getValue(), username);
+                        if (nominatedUsersTable.getItems().contains(bundle)) {
+                            nominatedUsersTable.getItems().remove(bundle);
+                        }
                     }
                 }
             });
         });
-
-        //TODO columns
     }
 
     private void loadRecoveryInfo() {
-        //TODO
+        Task<JSONObject> task = new Task<JSONObject>() {
+            @Override
+            protected JSONObject call() throws Exception {
+                return uc.getRecoveryInfo();
+            }
+        };
+        task.setOnFailed(t -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sharing error");
+            alert.setContentText("Could not retrieve password recovery information of this user!");
+            alert.showAndWait();
+        });
+        task.setOnSucceeded(t -> {
+            JSONObject response = task.getValue();
+            //TODO check names of fields
+            pwdRecoveryCheck.setSelected(response.getBoolean("hasPwdRec"));
+            if (response.getBoolean("hasPwdRec")) {
+                neededUsersField.setText(Integer.toString(response.getInt("neededUsers")));
+                JSONArray uidArray = response.getJSONArray("nominatedUids");
+                List<Integer> uidList = new ArrayList<>();
+                for (int i = 0; i < uidArray.length(); i++) {
+                    uidList.add(uidArray.getInt(i));
+                }
+                loadUsernames(uidList);
+            }
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
     }
 
-    private void updateRecoveryInfo(boolean hasRecovery, int neededUsers) throws Exception {
+    private void loadUsernames(List<Integer> nominatedUids) {
+        ObservableList<PwdRecoveryBundle> observableList =
+                FXCollections.observableArrayList();
+
+        Task<List<PwdRecoveryBundle>> task = new Task<List<PwdRecoveryBundle>>() {
+            @Override
+            protected List<PwdRecoveryBundle> call() throws Exception {
+                List<PwdRecoveryBundle> bundleList = new ArrayList<>();
+                for (int uid : nominatedUids) {
+                    String username = ac.getUsername(uid);
+                    bundleList.add(new PwdRecoveryBundle(uid, username));
+                }
+                return bundleList;
+            }
+        };
+        task.setOnFailed(t -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sharing error");
+            alert.setContentText("Could not retrieve usernames of nominated users");
+            alert.showAndWait();
+        });
+        task.setOnSucceeded(t -> {
+            observableList.addAll(task.getValue());
+            nominatedUsersTable.setItems(observableList);
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void updateRecoveryInfo(boolean hasRecovery, int neededUsers,
+                                    List<Integer> nominatedUids) throws Exception {
         uc.saveRecoveryInfo(hasRecovery, neededUsers, nominatedUids);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setContentText("Successfully saved password nomination information");
@@ -177,7 +277,7 @@ public class PwdRecoveryController implements Initializable {
                 return;
             }
 
-            if (neededUsers < 0 || neededUsers > nominatedUids.size()) {
+            if (neededUsers < 0 || neededUsers > nominatedUsersTable.getItems().size()) {
                 showError("Please nominate a valid number of users.");
                 return;
             }
@@ -189,9 +289,13 @@ public class PwdRecoveryController implements Initializable {
             }
         }
         //save
+        List<Integer> nominatedUids = new ArrayList<>();
+        for (PwdRecoveryBundle bundle : nominatedUsersTable.getItems()) {
+            nominatedUids.add(bundle.userId);
+        }
         if (uc != null && changed) {
             try {
-                updateRecoveryInfo(hasRecovery, neededUsers);
+                updateRecoveryInfo(hasRecovery, neededUsers, nominatedUids);
             } catch (Exception e) {
                 showError("Failed to save password recovery information...");
                 return; //TODO: to exit or not to exit?

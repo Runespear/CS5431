@@ -91,10 +91,24 @@ public class ServerView {
         }
         SQL_Files sql_files = new SQL_Files(server, dbPort, username, password);
 
+        String finalUsername = username;
+        String finalPassword = password;
+        Thread t = new Thread(() -> {
+            while(true) try {
+                new IntrusionDetection(server, dbPort, finalUsername, finalPassword);
+                Thread.sleep(1000 * 60 * 60 * 24);
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+        });
+        t.start();
+
         System.out.println("Enter the username you use to login to the admin email:");
         username = scanner.nextLine();
+        username = "psfs5431@gmail.com"; //TODO: to be removed
         System.out.println("Enter the password you use to login to the admin email:");
         password = scanner.nextLine();
+        password = "theroadtoA+";//TODO: to be removed
 
         Email email = new Email(username, password);
 

@@ -1,5 +1,6 @@
 package org.cs5431;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -99,7 +100,7 @@ public class SQL_Accounts {
             PreparedStatement addPermission = null;
 
             String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, " +
-                    "pubKey, pwdSalt, privKeySalt) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "pubKey, pwdSalt, privKeySalt, has2fa) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?)";
@@ -111,6 +112,7 @@ public class SQL_Accounts {
             String pubKey = user.getString("pubKey");
             String privKey = user.getString("privKey");
             String privKeySalt = user.getString("privKeySalt");
+            Boolean has2fa = user.getBoolean("has2fa");
 
             String email = null;
             if (user.has("email")) {
@@ -148,6 +150,7 @@ public class SQL_Accounts {
                 createUser.setString    (7, pubKey);
                 createUser.setString    (8, pwdSalt);
                 createUser.setString    (9, privKeySalt);
+                createUser.setBoolean(10, has2fa);
                 createUser.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("created user");
@@ -286,22 +289,18 @@ public class SQL_Accounts {
     JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action, Email adminEmail) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
+
         JSONObject user = new JSONObject();
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE) {
-                System.out.println("Database connected!");
-            }
+
             PreparedStatement verifyUser = null;
             PreparedStatement addLog = null;
             PreparedStatement limitIp = null;
             PreparedStatement limitUsername = null;
             PreparedStatement getEmail = null;
 
-            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt" +
+            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt, U.has2fa" +
                     " FROM Users U WHERE U.username = ? AND U.pwd = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -383,6 +382,7 @@ public class SQL_Accounts {
                     String privKey = rs.getString(4);
                     String pubKey = rs.getString(5);
                     String privKeySalt = rs.getString(6);
+                    Boolean has2fa = rs.getBoolean(7);
                     user.put("msgType", "loginAck");
                     user.put("uid", uid);
                     user.put("parentFolderid", parentFolderid);
@@ -390,7 +390,7 @@ public class SQL_Accounts {
                     user.put("privKey", privKey);
                     user.put("pubKey", pubKey);
                     user.put("privKeySalt", privKeySalt);
-
+                    user.put("has2fa", has2fa);
                     addLog.setInt(1, 0);
                     addLog.setInt(2, uid);
                     addLog.setString(3, username);
@@ -418,10 +418,10 @@ public class SQL_Accounts {
                     addLog.execute();
 
                     getEmail = connection.prepareStatement(selectEmail);
-                    getEmail.setString(0, username);
+                    getEmail.setString(1, username);
                     ResultSet userEmail = getEmail.executeQuery();
                     if (userEmail.next()) {
-                        adminEmail.send(userEmail.getString(0),"Failed Login Attempt", "");
+                        adminEmail.send(userEmail.getString(1),"Failed Login Attempt", "");
                     }
                     connection.commit();
                     return null;
@@ -440,6 +440,9 @@ public class SQL_Accounts {
                 }
                 if (limitUsername != null) {
                     limitUsername.close();
+                }
+                if (getEmail != null) {
+                    getEmail.close();
                 }
                 connection.setAutoCommit(true);
             }
@@ -974,13 +977,8 @@ public class SQL_Accounts {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE) {
-                System.out.println("Database connected!");
-            }
+
             PreparedStatement changeEmail = null;
             PreparedStatement createLog = null;
 
@@ -1137,8 +1135,7 @@ public class SQL_Accounts {
                 ResultSet rs = getUid.executeQuery();
 
                 if (rs.next()) {
-                    int uid = rs.getInt(1);
-                    return uid;
+                    return rs.getInt(1);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -1156,9 +1153,6 @@ public class SQL_Accounts {
 
     int userEmailExists(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             if (DEBUG_MODE) {
@@ -1193,13 +1187,9 @@ public class SQL_Accounts {
      */
     boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
+
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE) {
-                System.out.println("Database connected!");
-            }
+
             PreparedStatement createLog = null;
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -1228,6 +1218,356 @@ public class SQL_Accounts {
             e.printStackTrace();
         }
         return false;
+    }
+
+    boolean createRecoveryGroup(JSONObject json, String sourceIp) {
+        JSONArray groupUid = json.getJSONArray("groupUid");
+        JSONArray secrets = json.getJSONArray("secrets");
+        int uid = json.getInt("uid");
+
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement addRecovery = null;
+            PreparedStatement createLog = null;
+
+            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets) + values (?, ?, ?)";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                addRecovery = connection.prepareStatement(insertRecovery);
+                connection.setAutoCommit(false);
+                for (int i=0; i<groupUid.length(); i++) {
+                    addRecovery.setInt(1, uid);
+                    addRecovery.setInt(2, (int) groupUid.get(i));
+                    addRecovery.setString(3, (String) secrets.get(i));
+                    addRecovery.executeUpdate();
+                }
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "CREATED_RECOVERY_GROUP");
+                createLog.setString(6, "SUCCESS");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, null);
+                createLog.executeUpdate();
+                if (DEBUG_MODE) {
+                    System.out.println("created log");
+                }
+
+                connection.commit();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "CREATED_RECOVERY_GROUP");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return false;
+            } finally {
+                if (addRecovery != null) {
+                    addRecovery.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    boolean toggle2fa(int uid, String action, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement createLog = null;
+            PreparedStatement update2fa = null;
+
+            String change2fa = "UPDATE Users SET has2fa = ? WHERE uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                update2fa = connection.prepareStatement(change2fa);
+                connection.setAutoCommit(false);
+
+                if (action.equals("ENABLE")) {
+                    update2fa.setBoolean(1, true);
+                } else {
+                    update2fa.setBoolean(1, false);
+                }
+                update2fa.setInt(2, uid);
+                update2fa.executeUpdate();
+
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, action + "2fa");
+                createLog.setString(6, "SUCCESS");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, null);
+                createLog.executeUpdate();
+
+                connection.commit();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, action + "2fa");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return false;
+            } finally {
+                if (update2fa != null) {
+                    update2fa.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    JSONObject getPasRecInfo(int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement hasPwdRec = null;
+            PreparedStatement getNominated = null;
+            PreparedStatement getUsername = null;
+
+            String getPwdRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+            String selectGroup = "SELECT U.nominatedUid FROM PwdGroup U WHERE U.uid = ?";
+            String selectUsername = "SELECT U.username FROM Users U WHERE U.uid = ?";
+
+            try {
+                hasPwdRec = connection.prepareStatement(getPwdRec);
+
+                hasPwdRec.setInt(1, uid);
+                ResultSet rs = hasPwdRec.executeQuery();
+
+                JSONObject json = new JSONObject();
+                json.put("msgType", "pwdRecoveryInfoAck");
+                json.put("uid", uid);
+
+                if (rs.next() && rs.getInt(1) == 1) {
+                    getNominated = connection.prepareStatement(selectGroup);
+                    getUsername = connection.prepareStatement(selectUsername);
+                    getNominated.setInt(1, uid);
+                    ResultSet nominated = getNominated.executeQuery();
+
+                    JSONArray groupUid = new JSONArray();
+                    JSONArray usernames = new JSONArray();
+                    while (nominated.next()) {
+                        int nominatedUid = nominated.getInt(1);
+                        groupUid.put(nominatedUid);
+
+                        getUsername.setInt(1, nominatedUid);
+                        ResultSet usernameRS = getUsername.executeQuery();
+                        if (usernameRS.next()) {
+                            usernames.put(usernameRS.getString(1));
+                        }
+                    }
+                    json.put("hasPwdRec", true);
+                    json.put("groupUid", groupUid);
+                    json.put("usernames", usernames);
+                    return json;
+                }
+                json.put("hasPwdRec", false);
+                return json;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getNominated != null) {
+                    getNominated.close();
+                }
+                if (hasPwdRec != null) {
+                    hasPwdRec.close();
+                }
+                if (getUsername != null) {
+                    getUsername.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    JSONObject getSecrets(int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement hasPwdRec = null;
+            PreparedStatement getNominated = null;
+
+            String getPwdRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+            String selectGroup = "SELECT U.nominatedUid, U.secret FROM PwdGroup U WHERE U.uid = ?";
+
+            try {
+                hasPwdRec = connection.prepareStatement(getPwdRec);
+
+                hasPwdRec.setInt(1, uid);
+                ResultSet rs = hasPwdRec.executeQuery();
+
+                JSONObject json = new JSONObject();
+                json.put("uid", uid);
+
+                if (rs.next() && rs.getInt(1) == 1) {
+                    getNominated = connection.prepareStatement(selectGroup);
+                    getNominated.setInt(1, uid);
+                    ResultSet nominated = getNominated.executeQuery();
+
+                    JSONArray groupUid = new JSONArray();
+                    JSONArray secrets = new JSONArray();
+                    while (nominated.next()) {
+                        int nominatedUid = nominated.getInt(1);
+                        groupUid.put(nominatedUid);
+                        secrets.put(nominated.getString(2));
+                    }
+                    json.put("groupUid", groupUid);
+                    json.put("secrets", secrets);
+                    return json;
+                }
+                json.put("hasPwdRec", false);
+                return json;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getNominated != null) {
+                    getNominated.close();
+                }
+                if (hasPwdRec != null) {
+                    hasPwdRec.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //returns null if password recovery is not activated
+    JSONObject recoverPwd(int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement createLog = null;
+            PreparedStatement getPrivKey = null;
+
+            String selectKey = "SELECT U.privKey FROM Users U WHERE U.uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                getPrivKey = connection.prepareStatement(selectKey);
+                connection.setAutoCommit(false);
+
+                getPrivKey.setInt(1, uid);
+                ResultSet rs = getPrivKey.executeQuery();
+                JSONObject json = new JSONObject();
+                json.put("msgType", "recoverPwdAck");
+                json.put("uid", uid);
+
+                if (rs.next()) {
+                    json.put("encPK", rs.getString(1));
+
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RECOVER_PWD");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
+                    createLog.executeUpdate();
+
+                    connection.commit();
+                    return json;
+                } else {
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RECOVER_PWD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "INVALID PWD RECOVERY");
+                    createLog.executeUpdate();
+                    connection.commit();
+                    return null;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "RECOVER_PWD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return null;
+            } finally {
+                if (getPrivKey != null) {
+                    getPrivKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

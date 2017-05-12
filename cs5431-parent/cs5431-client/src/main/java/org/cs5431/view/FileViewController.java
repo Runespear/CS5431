@@ -403,9 +403,10 @@ public class FileViewController implements Initializable {
             final URL r = getClass().getResource("edit_details.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(r);
             Parent root = fxmlLoader.load();
+            Client.editDetailsNode = root;
             EditDetailsController edc = fxmlLoader.getController();
             edc.setStage(stage);
-            edc.setUserController(userController);
+            edc.setControllers(userController, accountsController);
             scene.setRoot(root);
         } catch (Exception e1) {
             e1.printStackTrace();
