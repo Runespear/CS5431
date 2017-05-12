@@ -54,7 +54,7 @@ public class Email {
         } catch (MessagingException e) {throw new RuntimeException(e);}
     }
 
-    public static void main(String[] args){
+    //public static void main(String[] args){
         //Email.send("psfs5431@gmail.com","theroadtoA+","zl245@cornell.edu","GG","YOUR ACCOUNT HAS BEEN HACKED BY ZILONG!! HE CAN BE FOUND IN THURSTON RIGHT NOW");
-    }
+   // }
 }
