@@ -420,7 +420,7 @@ public class SQL_Accounts {
                     getEmail = connection.prepareStatement(selectEmail);
                     getEmail.setString(1, username);
                     ResultSet userEmail = getEmail.executeQuery();
-                    if (userEmail.next()) {
+                    if (userEmail.next() && adminEmail != null) {
                         adminEmail.send(userEmail.getString(1),"Failed Login Attempt", "");
                     }
                     connection.commit();
@@ -1151,7 +1151,7 @@ public class SQL_Accounts {
         return -1;
     }
 
-    int userEmailExists(String username) {
+    JSONObject userEmailExists(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1160,16 +1160,24 @@ public class SQL_Accounts {
             }
             PreparedStatement verifyUniqueness = null;
 
-            String checkUsername = "SELECT U.uid FROM Users U WHERE U.username = ? AND U.email != \"\"";
+            String checkUsername = "SELECT U.uid, U.pubKey FROM Users U WHERE U.username = ? AND U.email != \"\"";
 
             try {
                 verifyUniqueness = connection.prepareStatement(checkUsername);
                 verifyUniqueness.setString(1, username);
                 ResultSet rs = verifyUniqueness.executeQuery();
-                return (rs.next()) ? rs.getInt(0) : -1;
+                if (rs.next()) {
+                    JSONObject json = new JSONObject();
+                    int uid = rs.getInt(1);
+                    String pubKey = rs.getString(2);
+                    json.put("uid", uid);
+                    json.put("pubKey", pubKey);
+                    return json;
+                }
+                return null;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
+                return null;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
@@ -1178,7 +1186,7 @@ public class SQL_Accounts {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1;
+        return null;
     }
 
     /** Adds log to userlog when the uid of the json object received is not the same as
@@ -1294,7 +1302,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean toggle2fa(int uid, String action, String sourceIp) {
+    boolean toggle2fa(int uid, int newToggle, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1311,11 +1319,7 @@ public class SQL_Accounts {
                 update2fa = connection.prepareStatement(change2fa);
                 connection.setAutoCommit(false);
 
-                if (action.equals("ENABLE")) {
-                    update2fa.setBoolean(1, true);
-                } else {
-                    update2fa.setBoolean(1, false);
-                }
+                update2fa.setInt(1, newToggle);
                 update2fa.setInt(2, uid);
                 update2fa.executeUpdate();
 
@@ -1323,7 +1327,11 @@ public class SQL_Accounts {
                 createLog.setInt(2, uid);
                 createLog.setString(3, null);
                 createLog.setTimestamp(4, lastModified);
-                createLog.setString(5, action + "2fa");
+                switch (newToggle) {
+                    case 0: createLog.setString(5,  "DISABLED 2FA");
+                    case 1: createLog.setString(5,  "ENABLED EMAIL 2FA");
+                    case 2: createLog.setString(5,  "ENABLED PHONE 2FA");
+                }
                 createLog.setString(6, "SUCCESS");
                 createLog.setString(7, sourceIp);
                 createLog.setString(8, null);
@@ -1340,7 +1348,11 @@ public class SQL_Accounts {
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
                     createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, action + "2fa");
+                    switch (newToggle) {
+                        case 0: createLog.setString(5,  "DISABLED 2FA");
+                        case 1: createLog.setString(5,  "ENABLED EMAIL 2FA");
+                        case 2: createLog.setString(5,  "ENABLED PHONE 2FA");
+                    }
                     createLog.setString(6, "FAILURE");
                     createLog.setString(7, sourceIp);
                     createLog.setString(8, "DB ERROR");
@@ -1437,33 +1449,43 @@ public class SQL_Accounts {
 
             PreparedStatement hasPwdRec = null;
             PreparedStatement getNominated = null;
+            PreparedStatement getEmail = null;
 
             String getPwdRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
             String selectGroup = "SELECT U.nominatedUid, U.secret FROM PwdGroup U WHERE U.uid = ?";
+            String selectEmail = "SELECT U.email FROM Users U WHERE U.uid = ?";
 
             try {
                 hasPwdRec = connection.prepareStatement(getPwdRec);
-
                 hasPwdRec.setInt(1, uid);
                 ResultSet rs = hasPwdRec.executeQuery();
 
                 JSONObject json = new JSONObject();
                 json.put("uid", uid);
 
-                if (rs.next() && rs.getInt(1) == 1) {
+                if (rs.next() && rs.getBoolean(1)) {
                     getNominated = connection.prepareStatement(selectGroup);
                     getNominated.setInt(1, uid);
                     ResultSet nominated = getNominated.executeQuery();
 
                     JSONArray groupUid = new JSONArray();
                     JSONArray secrets = new JSONArray();
+                    JSONArray emails = new JSONArray();
                     while (nominated.next()) {
                         int nominatedUid = nominated.getInt(1);
                         groupUid.put(nominatedUid);
                         secrets.put(nominated.getString(2));
+
+                        getEmail = connection.prepareStatement(selectEmail);
+                        getEmail.setInt(1, nominatedUid);
+                        ResultSet email = getEmail.executeQuery();
+                        if (email.next()) {
+                            emails.put(email.getString(1));
+                        }
                     }
                     json.put("groupUid", groupUid);
                     json.put("secrets", secrets);
+                    json.put("emails", emails);
                     return json;
                 }
                 json.put("hasPwdRec", false);
@@ -1477,6 +1499,9 @@ public class SQL_Accounts {
                 }
                 if (hasPwdRec != null) {
                     hasPwdRec.close();
+                }
+                if (getEmail != null) {
+                    getEmail.close();
                 }
             }
         } catch (SQLException e) {

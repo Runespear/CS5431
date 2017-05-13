@@ -145,7 +145,7 @@ public class ServerSetup {
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
                 "privKey BLOB NOT NULL, pubKey BLOB NOT NULL, pwdSalt CHAR(255) NOT NULL, privKeySalt CHAR(255) NOT NULL," +
-                "has2fa BOOLEAN NOT NULL, hasPwdRec BOOLEAN NOT NULL, \n" +
+                "has2fa TINYINT UNSIGNED NOT NULL, hasPwdRec BOOLEAN NOT NULL, phoneNo CHAR(20),\n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,\n" +
                 "uid INT UNSIGNED NOT NULL,\n" +
