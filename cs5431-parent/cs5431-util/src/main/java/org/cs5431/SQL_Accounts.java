@@ -100,7 +100,7 @@ public class SQL_Accounts {
             PreparedStatement addPermission = null;
 
             String insertUser =  "INSERT INTO Users (uid, username, pwd, parentFolderid, email, privKey, " +
-                    "pubKey, pwdSalt, privKeySalt, has2fa) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "pubKey, pwdSalt, privKeySalt, has2fa, hasPwdRec, phoneNo) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
                     "lastModified, isFile)"
                     + " values (?, ?, ?, ?, ?)";
@@ -112,11 +112,16 @@ public class SQL_Accounts {
             String pubKey = user.getString("pubKey");
             String privKey = user.getString("privKey");
             String privKeySalt = user.getString("privKeySalt");
-            Boolean has2fa = user.getBoolean("has2fa");
+            int has2fa = user.getInt("has2fa");
+            Boolean hasPwdRec = user.getBoolean("hasPwdRec");
 
+            String phoneNo = null;
+            if (user.has("phoneNo")) {
+                phoneNo = user.getString("phoneNo");
+            }
             String email = null;
             if (user.has("email")) {
-                email = (String) user.get("email");
+                email = user.getString("email");
             }
 
             try {
@@ -150,7 +155,9 @@ public class SQL_Accounts {
                 createUser.setString    (7, pubKey);
                 createUser.setString    (8, pwdSalt);
                 createUser.setString    (9, privKeySalt);
-                createUser.setBoolean(10, has2fa);
+                createUser.setInt(10, has2fa);
+                createUser.setBoolean(11, hasPwdRec);
+                createUser.setString(12, phoneNo);
                 createUser.executeUpdate();
                 if (DEBUG_MODE) {
                     System.out.println("created user");
@@ -300,8 +307,8 @@ public class SQL_Accounts {
             PreparedStatement limitUsername = null;
             PreparedStatement getEmail = null;
 
-            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt, U.has2fa" +
-                    " FROM Users U WHERE U.username = ? AND U.pwd = ?";
+            String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt, U.has2fa, " +
+                    "U.hasPwdRec, U.phoneNo FROM Users U WHERE U.username = ? AND U.pwd = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String countIp = "SELECT COUNT(*) FROM UserLog U \n" +
@@ -382,7 +389,9 @@ public class SQL_Accounts {
                     String privKey = rs.getString(4);
                     String pubKey = rs.getString(5);
                     String privKeySalt = rs.getString(6);
-                    Boolean has2fa = rs.getBoolean(7);
+                    int has2fa = rs.getInt(7);
+                    boolean hasPwdRec = rs.getBoolean(8);
+                    String phoneNo = rs.getString(9);
                     user.put("msgType", "loginAck");
                     user.put("uid", uid);
                     user.put("parentFolderid", parentFolderid);
@@ -391,6 +400,8 @@ public class SQL_Accounts {
                     user.put("pubKey", pubKey);
                     user.put("privKeySalt", privKeySalt);
                     user.put("has2fa", has2fa);
+                    user.put("hasPwdRec", hasPwdRec);
+                    user.put("phoneNo", phoneNo);
                     addLog.setInt(1, 0);
                     addLog.setInt(2, uid);
                     addLog.setString(3, username);
