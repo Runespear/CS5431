@@ -57,6 +57,7 @@ public class RegistrationController implements Initializable {
 
     @FXML
     public RadioButton email2faRadio;
+
     @FXML
     public RadioButton phone2faRadio;
 
@@ -72,8 +73,7 @@ public class RegistrationController implements Initializable {
     private boolean hasRecovery = false;
     private List<Integer> nominatedUids = new ArrayList<>();
     private Integer neededUsers = 0;
-
-    final ToggleGroup group2fa = new ToggleGroup();
+    private final ToggleGroup group2fa = new ToggleGroup();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
