@@ -17,12 +17,15 @@ import org.cs5431.model.User;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static org.cs5431.Constants.DEBUG_MODE;
+import static org.cs5431.Constants.EMAIL_2FA;
+import static org.cs5431.Constants.NO_2FA;
 import static org.cs5431.controller.SSLController.connect_SSLServerSocket;
 
 public class LoginController implements Initializable {
@@ -40,6 +43,9 @@ public class LoginController implements Initializable {
 
     @FXML
     public Hyperlink txtNoAcct;
+
+    @FXML
+    private Button recoverButton;
 
     private AccountsController accountsController;
     private Stage stage;
@@ -65,6 +71,8 @@ public class LoginController implements Initializable {
         });
 
         txtNoAcct.setOnAction(this::goToRegistration);
+
+        recoverButton.setOnAction(e -> recoverPwd());
     }
 
     /**
@@ -88,25 +96,28 @@ public class LoginController implements Initializable {
             @Override
             protected User call() throws Exception {
                 JSONObject login = accountsController.login(username, password);
-                if (login.getBoolean("has2fa")) {
-                    return new User(login.getInt("uid"), null, null, null, null, null, false);
+                if (login.getInt("has2fa") != NO_2FA) {
+                    return new User(login.getInt("uid"), null, null, null, null, null, login.getInt("has2fa"));
                 } else {
-                    return accountsController.parseLogin(username, password, login, false);
+                    return accountsController.parseLogin(username, password, login, NO_2FA);
                 }
             }
         };
         task.setOnSucceeded(t -> {
-            if(task.getValue().getHas2fa()) {
+            if(task.getValue().getHas2fa() != NO_2FA) {
                 TextInputDialog dialog = new TextInputDialog("otp");
-                dialog.setTitle("Email Two Factor Authentication");
-                dialog.setContentText("Please enter the code that has been sent to your email:");
+                dialog.setTitle("Two Factor Authentication");
+                if (task.getValue().getHas2fa() == EMAIL_2FA)
+                    dialog.setContentText("Please enter the code that has been sent to your email:");
+                else
+                    dialog.setContentText("Please enter the code that has been sent to your phone:");
 
                 final String[] otp = {null};
                 while (otp[0] == null) {    //TODO: is this too harsh?
                     Optional<String> result = dialog.showAndWait();
                     result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
                 }
-                do2fa(e, otp[0], task.getValue().getId(), username, password);
+                do2fa(e, otp[0], task.getValue().getId(), username, password, task.getValue().getHas2fa());
             } else {
                 changeToFileView(e, task.getValue());
             }
@@ -148,12 +159,12 @@ public class LoginController implements Initializable {
         }
     }
 
-    private void do2fa(Event e, String otp, int userId, String username, String password) {
+    private void do2fa(Event e, String otp, int userId, String username, String password, int twofa) {
         Task<User> task = new Task<User>() {
             @Override
             protected User call() throws Exception {
                 JSONObject response2fa = accountsController.do2fa(otp, userId);
-                return accountsController.parseLogin(username, password, response2fa, true);
+                return accountsController.parseLogin(username, password, response2fa, twofa);
             }
         };
         task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
@@ -192,6 +203,28 @@ public class LoginController implements Initializable {
         }
     }
 
+    private void recoverPwd() {
+        TextInputDialog dialog = new TextInputDialog("Code");
+        dialog.setTitle("Recover your password");
+        dialog.setContentText("If you have set up password recovery, you can recover your password by entering your username here:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(username -> {
+            try {
+                int uid = accountsController.recoverPassword(username);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Secret");
+                alert.setContentText("Please get your friends to send you the codes after decrypting them, and enter them here:");
+                //TODO: SHOULD NOT BE AN ALERT BOX, etc.
+                alert.showAndWait();
+            } catch (AccountsController.UserRetrieveException e) {
+                showError(e.getMessage());
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     /**
      * When changing to registration, it is necessary to pass along the
@@ -214,5 +247,12 @@ public class LoginController implements Initializable {
         Socket s = connect_SSLServerSocket(server,Integer.parseInt(sslPort), "./user-config/"+serverName+".jks");
         accountsController.setSocket(s);
         sslSocket = s;
+    }
+
+    private void showError(String error) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(error);
+        alert.showAndWait();
     }
 }

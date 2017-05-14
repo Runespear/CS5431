@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -370,5 +371,15 @@ public class Encryption {
         returnedValues[0] = hashedPW;
         returnedValues[1] = Base64.getEncoder().encodeToString(salt);
         return returnedValues;
+    }
+
+    public static List<String> encryptSecrets(List<PublicKey> publicKeys, BigInteger[] secrets) {
+        //TODO: encrypt
+        return null;
+    }
+
+    public static BigInteger decryptSecret(PrivateKey privateKey, String code) {
+        //TODO decrypt what's sent in the email
+        return null;
     }
 }

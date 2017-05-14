@@ -1,5 +1,6 @@
 package org.cs5431.controller;
 
+import org.cs5431.Encryption;
 import org.cs5431.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +9,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -129,6 +131,26 @@ public class UserController {
         }
     }
 
+    public void changePhoneNumber(String oldPhone, String newPhone) throws
+            IOException, ClassNotFoundException, ChangeEmailFailException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","changePhoneNo");
+        json.put("uid", user.getId());
+        json.put("oldPhone", oldPhone);
+        json.put("newPhone", newPhone);
+        sendJson(json, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("changePhoneAck")) {
+            if (response.getInt("uid") != user.getId())
+                throw new ChangeEmailFailException("Bad response from server " +
+                        "- user id does not match up");
+        } else if (response.getString("msgType").equals("error")) {
+            throw new ChangeEmailFailException(response.getString
+                    ("message"));
+        }
+    }
+
     /**
      * Deletes user with the userId and logs it.
      * @param password Password of the logged in user
@@ -217,12 +239,12 @@ public class UserController {
         }
     }
 
-    public void save2fa(boolean has2fa) throws IOException,
+    public void save2fa(int has2fa) throws IOException,
             ClassNotFoundException, TwoFactorException {
         JSONObject json = new JSONObject();
         json.put("msgType","2faToggle");
         json.put("uid", user.getId());
-        json.put("enabled", has2fa);
+        json.put("newToggle", has2fa);
 
         sendJson(json, sslSocket);
 
@@ -263,6 +285,10 @@ public class UserController {
             throw new PwdRecoveryException("Received bad response " +
                     "from server");
         }
+    }
+
+    public BigInteger decryptSecret(String code) {
+        return Encryption.decryptSecret(user.getPrivKey(), code);
     }
 
     public class ChangePwdFailException extends Exception {

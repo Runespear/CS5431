@@ -57,7 +57,8 @@ public class SSLServer extends Thread {
                         || type.equals("logout") || type.equals
                         ("getEditorViewerList") || type.equals("deleteUser")
                         || type.equals("uploadKeys") || type.equals("2faToggle") ||
-                        type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo")) {
+                        type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo") ||
+                        type.equals("changePhoneNo")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         sql_accounts.attemptedUidFailLog(jsonObject.getInt("uid"), loggedInUid, sourceIp);
@@ -198,8 +199,8 @@ public class SSLServer extends Thread {
                         response = recoverPwd(jsonObject, sql_accounts, email);
                         sendJson(response, s);
                         break;
-                    case "recoverPwdFound":
-                        response = recoverPwdFound(jsonObject, sql_accounts);
+                    case "changePhoneNo":
+                        response = changePhoneNo(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     default:
@@ -332,10 +333,7 @@ public class SSLServer extends Thread {
         if (DEBUG_MODE) {
             System.out.println("Sending error -- unable to authenticate");
         }
-        JSONObject jsonErr = new JSONObject();
-        jsonErr.put("msgType", "error");
-        jsonErr.put("message", "Change password failed");
-        return jsonErr;
+        return makeErrJson("Change password failed");
     }
 
     private JSONObject uploadKeys(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
@@ -736,12 +734,21 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject setPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
-        if (setGroup) {
-            JSONObject response = new JSONObject();
-            response.put("msgType", "setPwdGroupAck");
-            response.put("uid", jsonObject.getInt("uid"));
-            return response;
+        boolean hasRec = jsonObject.getBoolean("hasPwdRec");
+        int uid = jsonObject.getInt("uid");
+        boolean removedOldSecrets = sql_accounts.removeSecrets(uid, sourceIp);
+        if (removedOldSecrets) {
+            if (hasRec) {
+                //TODO: generate secrets and put into json
+                boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
+                if (setGroup) {
+                    JSONObject response = new JSONObject();
+                    response.put("msgType", "setPwdGroupAck");
+                    response.put("uid", jsonObject.getInt("uid"));
+                    response.put("hasPwdRec", hasRec);
+                    return response;
+                }
+            }
         }
         return makeErrJson("Failed to create recovery group.");
     }
@@ -780,16 +787,12 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to recover password. Please try again.");
     }
 
-    private JSONObject recoverPwdFound(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        JSONObject response = sql_accounts.changePassword(jsonObject, jsonObject.getString("newEncPwd"), sourceIp);
-        if (response != null) {
-            return response;
-        }
-        return makeErrJson("Unable to recover password. Please try again.");
+    private JSONObject changePhoneNo(JSONObject json, SQL_Accounts sql_accounts) {
+        //TODO hi ruixin
+        return null;
     }
 
     private JSONObject makeErrJson(String message) {
-        //TODO
         JSONObject response = new JSONObject();
         response.put("msgType","error");
         response.put("message", message);

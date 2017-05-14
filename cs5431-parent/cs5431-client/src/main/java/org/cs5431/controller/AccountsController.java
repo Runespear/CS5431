@@ -41,16 +41,17 @@ public class AccountsController {
     * Creates user with the username, password, and email provided.
     * @return user if successful
     */
-    public User createUser(String username, String password, String email, boolean has2fa,
-                           boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
+    public User createUser(String username, String password, String email, String phoneNumber,
+                           int twoFa, boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
         throws Exception {
 
         JSONObject user = new JSONObject();
         user.put("msgType", "registration");
         user.put("username", username);
         user.put("email", email);
-        user.put("has2fa", has2fa);
-        user.put("hasRecovery", hasRecovery);
+        user.put("phoneNo", phoneNumber);
+        user.put("has2fa", twoFa);
+        user.put("hasPwdRec", hasRecovery);
         if (hasRecovery) {
             user.put("nominatedUids", nominatedUids);
             user.put("neededUsers", neededUsers);
@@ -62,7 +63,6 @@ public class AccountsController {
         user.put("pubKey", keys[0]);
         user.put("privKey", keys[1]);
         user.put("privKeySalt", keys[2]);
-        user.put("has2fa", has2fa);
 
         sendJson(user,sslSocket);
         JSONObject newUser = receiveJson(sslSocket);
@@ -80,7 +80,7 @@ public class AccountsController {
             Folder parentFolder = new Folder(parentFolderid, username,
                     lastModified, true, true);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey, has2fa);
+                    privKey, pubKey, twoFa);
         } else if (newUser.getString("msgType").equals("error")) {
             throw new RegistrationFailException(newUser.getString
                     ("message"));
@@ -146,7 +146,7 @@ public class AccountsController {
         }
     }
 
-    public User parseLogin(String username, String password, JSONObject user, boolean has2fa) {
+    public User parseLogin(String username, String password, JSONObject user, int has2fa) {
         try {
             int uid = user.getInt("uid");
             int parentFolderid = user.getInt("parentFolderid");
@@ -233,6 +233,23 @@ public class AccountsController {
         else
             throw new UserRetrieveException("Received bad response from " +
                     "server");
+    }
+
+    public int recoverPassword(String username) throws IOException,
+            ClassNotFoundException, UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","recoverPwd");
+        json.put("username", username);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("recoverPwdAck"))
+            return response.getInt("uid");
+        else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+
     }
 
     public class RegistrationFailException extends Exception {

@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import static org.cs5431.Constants.EMAIL_2FA;
+import static org.cs5431.Constants.NO_2FA;
+import static org.cs5431.Constants.PHONE_2FA;
+
 public class RegistrationController implements Initializable {
     @FXML
     public TextField txtUsername;
@@ -49,10 +53,19 @@ public class RegistrationController implements Initializable {
     public Hyperlink email2faLink;
 
     @FXML
-    public CheckBox email2faCheck;
+    public RadioButton noneRadio;
+
+    @FXML
+    public RadioButton email2faRadio;
+
+    @FXML
+    public RadioButton phone2faRadio;
 
     @FXML
     public Button pwdRecoveryButton;
+
+    @FXML
+    public TextField txtPhoneNumber;
 
     private Stage stage;
     private AccountsController accountsController;
@@ -60,6 +73,7 @@ public class RegistrationController implements Initializable {
     private boolean hasRecovery = false;
     private List<Integer> nominatedUids = new ArrayList<>();
     private Integer neededUsers = 0;
+    private final ToggleGroup group2fa = new ToggleGroup();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -90,6 +104,12 @@ public class RegistrationController implements Initializable {
 
         txtEmail.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
+                txtPhoneNumber.requestFocus();
+            }
+        });
+
+        txtPhoneNumber.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
                 registerButton.fire();
             }
         });
@@ -101,9 +121,9 @@ public class RegistrationController implements Initializable {
         email2faLink.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Email two-factor authentication");
-            alert.setContentText("By activating 2fa, the system will email you a code every time you login.\n" +
+            alert.setContentText("By activating 2fa, the system will email or sms you with a code every time you login.\n" +
                     "You will need to enter the code into this app.\n" +
-                    "If you check this box, you will need to provide us with a valid email.");
+                    "If you check this box, you will need to provide us with a valid email or phone number.");
             alert.showAndWait();
         });
 
@@ -113,6 +133,11 @@ public class RegistrationController implements Initializable {
         Tooltip.install(passwordCircle, pwdTooltip);
 
         pwdRecoveryButton.setOnAction(this::trySetRecovery);
+
+        noneRadio.setToggleGroup(group2fa);
+        email2faRadio.setToggleGroup(group2fa);
+        phone2faRadio.setToggleGroup(group2fa);
+        noneRadio.setSelected(true);
     }
 
     private void trySetRecovery(Event e){
@@ -151,7 +176,19 @@ public class RegistrationController implements Initializable {
         String password = txtPassword.getCharacters().toString();
         String confirmPwd = txtConfirmPassword.getCharacters().toString();
         String email = txtEmail.getCharacters().toString();
-        boolean has2fa = email2faCheck.isSelected();
+        String phoneNumber = txtPhoneNumber.getCharacters().toString();
+        int twoFa = 0;
+        RadioButton selectedRadioButton = (RadioButton) group2fa.getSelectedToggle();
+        String value = selectedRadioButton.getText();
+        if (value.equals("None"))
+            twoFa = NO_2FA;
+        else if (value.equals("Email"))
+            twoFa = EMAIL_2FA;
+        else if (value.equals("Phone"))
+            twoFa = PHONE_2FA;
+        else {
+            System.err.println("Ack, value of selected radio button is weird: " + value);
+        }
         //Client side validation
 
         List<String> errMessages = new ArrayList<>();
@@ -184,10 +221,11 @@ public class RegistrationController implements Initializable {
             alert.setContentText(content.toString());
             alert.showAndWait();
         } else {
+            int finalTwoFa = twoFa;
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
-                    return accountsController.createUser(username, password, email, has2fa,
+                    return accountsController.createUser(username, password, email, phoneNumber, finalTwoFa,
                             hasRecovery, nominatedUids, neededUsers);
                 }
             };
@@ -195,6 +233,7 @@ public class RegistrationController implements Initializable {
                 cancelButton.getScene().setCursor(Cursor.DEFAULT);
                 registerButton.setDisable(false);
                 cancelButton.setDisable(false);
+                pwdRecoveryButton.setDisable(false);
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Registration successful");
                 alert.setContentText("Registration successful! Bringing you " +
@@ -205,6 +244,7 @@ public class RegistrationController implements Initializable {
             cancelButton.getScene().setCursor(Cursor.WAIT);
             registerButton.setDisable(true);
             cancelButton.setDisable(true);
+            pwdRecoveryButton.setDisable(true);
             Thread th = new Thread(task);
             th.setDaemon(true);
             th.start();
@@ -215,6 +255,7 @@ public class RegistrationController implements Initializable {
                     cancelButton.getScene().setCursor(Cursor.DEFAULT);
                     registerButton.setDisable(false);
                     cancelButton.setDisable(false);
+                    pwdRecoveryButton.setDisable(false);
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Registration failed");
                     alert.setContentText(ex.getMessage());

@@ -100,7 +100,7 @@ public class SSS {
         //TODO checkSubsets
         return true;
     }
-
+    
     private BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
 
         //Need precheck to ensure that they are unique
@@ -122,6 +122,7 @@ public class SSS {
             L0 = L0.add(outside.multiply(inside));
         }
         return L0;
+
     }
 
 

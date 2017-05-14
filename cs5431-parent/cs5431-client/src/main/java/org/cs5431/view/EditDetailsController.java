@@ -13,15 +13,21 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import org.cs5431.Encryption;
 import org.cs5431.Validator;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.UserController;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static org.cs5431.Constants.EMAIL_2FA;
+import static org.cs5431.Constants.NO_2FA;
+import static org.cs5431.Constants.PHONE_2FA;
 
 public class EditDetailsController implements Initializable {
     @FXML
@@ -58,14 +64,33 @@ public class EditDetailsController implements Initializable {
     public Hyperlink email2faLink;
 
     @FXML
-    public CheckBox email2faCheck;
+    public Button pwdRecoveryButton;
+    
+    @FXML
+    public TextField txtOldPhoneNo;
+    
+    @FXML
+    public TextField txtNewPhoneNo;
+    
+    @FXML
+    public TextField txtConfirmNewPhoneNo;
 
     @FXML
-    public Button pwdRecoveryButton;
+    public Button helpRecoveryButton;
+
+    @FXML
+    public RadioButton noneRadio;
+
+    @FXML
+    public RadioButton email2faRadio;
+
+    @FXML
+    public RadioButton phone2faRadio;
 
     private Stage stage;
     private AccountsController accountsController;
     private UserController userController;
+    private final ToggleGroup group2fa = new ToggleGroup();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -114,6 +139,24 @@ public class EditDetailsController implements Initializable {
 
         txtConfirmNewEmail.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
+                txtOldPhoneNo.requestFocus();
+            }
+        });
+
+        txtOldPhoneNo.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtNewPhoneNo.requestFocus();
+            }
+        });
+
+        txtNewPhoneNo.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtConfirmNewPhoneNo.requestFocus();
+            }
+        });
+
+        txtConfirmNewPhoneNo.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
                 saveButton.fire();
             }
         });
@@ -130,8 +173,6 @@ public class EditDetailsController implements Initializable {
 
         deleteButton.setOnAction(e -> delete());
 
-        txtOldPassword.requestFocus();
-
         email2faLink.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Email two-factor authentication");
@@ -143,6 +184,15 @@ public class EditDetailsController implements Initializable {
         });
 
         pwdRecoveryButton.setOnAction(this::goToRecovery);
+
+        helpRecoveryButton.setOnAction(e -> helpRecover());
+
+        txtOldPassword.requestFocus();
+
+        noneRadio.setToggleGroup(group2fa);
+        email2faRadio.setToggleGroup(group2fa);
+        phone2faRadio.setToggleGroup(group2fa);
+        noneRadio.setSelected(true);
     }
 
     /**
@@ -160,12 +210,18 @@ public class EditDetailsController implements Initializable {
         String newEmail = txtNewEmail.getCharacters().toString();
         String confirmNewEmail = txtConfirmNewEmail.getCharacters()
                 .toString();
+        String oldPhone = txtOldPhoneNo.getCharacters().toString();
+        String newPhone = txtNewPhoneNo.getCharacters().toString();
+        String confirmNewPhone = txtConfirmNewPhoneNo.getCharacters()
+                .toString();
         
         List<String> pwdMessages = new ArrayList<>();
         List<String> emailMessages = new ArrayList<>();
+        List<String> phoneMessages = new ArrayList<>();
 
         boolean pwdTaskRunning = false;
         boolean emailTaskRunning = false;
+        boolean phoneTaskRunning = false;
         //Tries to change the password if the password fields are not blank.
         if (!oldPassword.isEmpty() || !newPassword.isEmpty() ||
             !confirmNewPassword.isEmpty()) {
@@ -244,11 +300,65 @@ public class EditDetailsController implements Initializable {
             }
         }
 
+        //Tries to change the phone number if the phone number fields are not blank.
+        if (!oldPhone.isEmpty() || !newPhone.isEmpty() ||
+                !confirmNewPhone.isEmpty()) {
+            if (oldPhone.isEmpty() || newPhone.isEmpty() ||
+                    confirmNewPhone.isEmpty()) {
+                phoneMessages.add("At least one phone number field is empty.");
+            } else if (!newPhone.equals(confirmNewPhone)){
+                phoneMessages.add("New phone numbers don't match.");
+            } /*else if (!Validator.validPassword(newPhone)) {
+                phoneMessages.add("Passwords should be at least 16 characters " +
+                        "long.");
+            }*/
+             else {
+                phoneTaskRunning = true;
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        userController.changePhoneNumber(oldPhone, newPhone);
+                        return null;
+                    }
+                };
+                task.setOnFailed(t -> {
+                    phoneMessages.add("Wrong phone number.");
+                    showMessages(phoneMessages);
+                });
+                task.setOnSucceeded(t -> {
+                    phoneMessages.add("Phone number successfully changed.");
+                    showMessages(phoneMessages);
+                });
+                Thread th = new Thread(task);
+                th.setDaemon(true);
+                th.start();
+                task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                    if(newValue != null) {
+                        Exception ex = (Exception) newValue;
+                        ex.printStackTrace();
+                    }
+                });
+            }
+        }
+
         //to make things simpler, always attempt to save 2fa
+        int twoFa = 0;
+        RadioButton selectedRadioButton = (RadioButton) group2fa.getSelectedToggle();
+        String value = selectedRadioButton.getText();
+        if (value.equals("None"))
+            twoFa = NO_2FA;
+        else if (value.equals("Email"))
+            twoFa = EMAIL_2FA;
+        else if (value.equals("Phone"))
+            twoFa = PHONE_2FA;
+        else {
+            System.err.println("Ack, value of selected radio button is weird: " + value);
+        }
+        int finalTwoFa = twoFa;
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                userController.save2fa(email2faCheck.isSelected());
+                userController.save2fa(finalTwoFa);
                 return null;
             }
         };
@@ -276,6 +386,8 @@ public class EditDetailsController implements Initializable {
         if (!emailTaskRunning) {
             showMessages(emailMessages);
         }
+        if (!phoneTaskRunning)
+            showMessages(phoneMessages);
     }
 
     private void showMessages(List<String> messages) {
@@ -373,6 +485,23 @@ public class EditDetailsController implements Initializable {
                 showError("Failed to delete this account - please " +
                         "double check your username.");
             }
+        });
+    }
+
+    private void helpRecover() {
+        TextInputDialog dialog = new TextInputDialog("Code");
+        dialog.setTitle("Help someone else recover their password");
+        dialog.setContentText("You should have received a code from someone else." +
+                "Please enter it here:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(code -> {
+            BigInteger secret = userController.decryptSecret(code);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Secret");
+            alert.setContentText("Please share this new code with the person you got this from: "
+                    + secret.toString()); //todo make this copiable?
+            alert.showAndWait();
         });
     }
 
