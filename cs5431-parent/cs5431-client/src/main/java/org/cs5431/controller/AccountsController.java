@@ -42,7 +42,7 @@ public class AccountsController {
     * @return user if successful
     */
     public User createUser(String username, String password, String email, String phoneNumber,
-                           boolean has2fa, boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
+                           int twoFa, boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
         throws Exception {
 
         JSONObject user = new JSONObject();
@@ -50,8 +50,8 @@ public class AccountsController {
         user.put("username", username);
         user.put("email", email);
         user.put("phoneNo", phoneNumber);
-        user.put("has2fa", has2fa);
-        user.put("hasRecovery", hasRecovery);
+        user.put("has2fa", twoFa);
+        user.put("hasPwdRec", hasRecovery);
         if (hasRecovery) {
             user.put("nominatedUids", nominatedUids);
             user.put("neededUsers", neededUsers);
@@ -63,7 +63,6 @@ public class AccountsController {
         user.put("pubKey", keys[0]);
         user.put("privKey", keys[1]);
         user.put("privKeySalt", keys[2]);
-        user.put("has2fa", has2fa);
 
         sendJson(user,sslSocket);
         JSONObject newUser = receiveJson(sslSocket);
@@ -81,7 +80,7 @@ public class AccountsController {
             Folder parentFolder = new Folder(parentFolderid, username,
                     lastModified, true, true);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey, has2fa);
+                    privKey, pubKey, twoFa);
         } else if (newUser.getString("msgType").equals("error")) {
             throw new RegistrationFailException(newUser.getString
                     ("message"));
@@ -147,7 +146,7 @@ public class AccountsController {
         }
     }
 
-    public User parseLogin(String username, String password, JSONObject user, boolean has2fa) {
+    public User parseLogin(String username, String password, JSONObject user, int has2fa) {
         try {
             int uid = user.getInt("uid");
             int parentFolderid = user.getInt("parentFolderid");

@@ -8,10 +8,10 @@ public class User extends Account {
     private String email;
     private PrivateKey privKey;
     private PublicKey pubKey;
-    private boolean has2fa;
+    private int has2fa;
 
     public User(int id, String username, String email, Folder
-            userParentFolder, PrivateKey privKey, PublicKey pubKey, boolean has2fa) {
+            userParentFolder, PrivateKey privKey, PublicKey pubKey, int has2fa) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -37,5 +37,5 @@ public class User extends Account {
         return pubKey;
     }
 
-    public boolean getHas2fa() {return has2fa;}
+    public int getHas2fa() {return has2fa;}
 }

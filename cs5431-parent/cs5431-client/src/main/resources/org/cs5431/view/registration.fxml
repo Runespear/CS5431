@@ -71,9 +71,12 @@
               text="* indicates compulsory fields" textAlignment="CENTER"
               wrappingWidth="400.0"/>
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
-            <Label text="Enable email two-factor authentication"/>
+            <Label text="Enable two-factor authentication"/>
             <Hyperlink fx:id="email2faLink" text="(?)"/>
-            <CheckBox fx:id="email2faCheck"/>
+            <Label text=": "/>
+            <RadioButton fx:id="noneRadio" text="None"/>
+            <RadioButton fx:id="email2faRadio" text="Email"/>
+            <RadioButton fx:id="phone2faRadio" text="Phone"/>
         </HBox>
         <Button fx:id="pwdRecoveryButton" text="Enable password recovery"/>
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
