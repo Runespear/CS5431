@@ -198,10 +198,6 @@ public class SSLServer extends Thread {
                         response = recoverPwd(jsonObject, sql_accounts, email);
                         sendJson(response, s);
                         break;
-                    case "recoverPwdFound":
-                        response = recoverPwdFound(jsonObject, sql_accounts);
-                        sendJson(response, s);
-                        break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
@@ -332,10 +328,7 @@ public class SSLServer extends Thread {
         if (DEBUG_MODE) {
             System.out.println("Sending error -- unable to authenticate");
         }
-        JSONObject jsonErr = new JSONObject();
-        jsonErr.put("msgType", "error");
-        jsonErr.put("message", "Change password failed");
-        return jsonErr;
+        return makeErrJson("Change password failed");
     }
 
     private JSONObject uploadKeys(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
@@ -784,14 +777,6 @@ public class SSLServer extends Thread {
             if (response != null) {
                 return response;
             }
-        }
-        return makeErrJson("Unable to recover password. Please try again.");
-    }
-
-    private JSONObject recoverPwdFound(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        JSONObject response = sql_accounts.changePassword(jsonObject, jsonObject.getString("newHashedPwd"), sourceIp);
-        if (response != null) {
-            return response;
         }
         return makeErrJson("Unable to recover password. Please try again.");
     }
