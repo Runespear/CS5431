@@ -64,7 +64,8 @@ public class TwoFactorAuth {
         //Generate a random password
         String otp = getRandomPassword(20);
 
-        adminEmailAcc.send(userEmail, "Your OTP", otp);
+        adminEmailAcc.send(userEmail, "2FA for PSFS Account", "The following is the second factor " +
+                "authentication into your Pretty Secure File Sharing Account:" + otp);
         return otp;
     }
 
