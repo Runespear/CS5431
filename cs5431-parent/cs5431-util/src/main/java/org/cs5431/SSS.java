@@ -90,11 +90,38 @@ public class SSS {
         }
     }
 
-    private BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
+    private boolean checkSubsets(BigInteger[][] coordinateSubsets){
+        //Ensure that there are enough UNIQUE subsets
+        //Need == numSubsets
+        //Use dictionary
+        //Check length first
         assert(coordinateSubsets.length >= this.numSubsets - 1):"Not enough subsets";
+        //Check uniqueness
+        //TODO checkSubsets
+        return true;
+    }
 
-        //TODO: Check how to reconstruct
+    private BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
 
+        //Need precheck to ensure that they are unique
+        
+        //What we want
+        BigInteger L0 = BigInteger.ZERO;
+        //Summation Term
+        for (int i = 0; i < this.numSubsets;i++){
+            BigInteger outside = (coordinateSubsets[i][1]);
+            //Compute inside
+            BigInteger inside = BigInteger.ONE;
+            //The product term
+            for (int m = 0; m<this.numSubsets;m++){
+                if(m != i){
+                    inside = inside.multiply(coordinateSubsets[m][0]);
+                    inside = inside.divide(coordinateSubsets[m][0].subtract(coordinateSubsets[i][0]));
+                }
+            }
+            L0 = L0.add(outside.multiply(inside));
+        }
+        return L0;
     }
 
 
