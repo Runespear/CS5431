@@ -303,7 +303,7 @@ public class PwdRecoveryController implements Initializable {
                 showError("Failed to save password recovery information...");
                 return; //TODO: to exit or not to exit?
             }
-        } else {
+        } else if (rc != null) {
             rc.setRecoveryInfo(hasRecovery, nominatedUids, neededUsers); //TODO: add encSecrets
         }
 
