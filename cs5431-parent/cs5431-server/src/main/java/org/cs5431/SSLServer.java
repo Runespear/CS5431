@@ -199,6 +199,10 @@ public class SSLServer extends Thread {
                         response = recoverPwd(jsonObject, sql_accounts, email);
                         sendJson(response, s);
                         break;
+                    case "changePhoneNo":
+                        response = changePhoneNo(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
@@ -782,8 +786,12 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to recover password. Please try again.");
     }
 
+    private JSONObject changePhoneNo(JSONObject json, SQL_Accounts sql_accounts) {
+        //TODO hi ruixin
+        return null;
+    }
+
     private JSONObject makeErrJson(String message) {
-        //TODO
         JSONObject response = new JSONObject();
         response.put("msgType","error");
         response.put("message", message);
