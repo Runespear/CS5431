@@ -76,12 +76,18 @@ public class PwdRecoveryController implements Initializable {
             }
             if (newS) {
                 imgAdd.setDisable(false);
+                imgAdd.setOpacity(1.0);
                 nominatedUsersTable.setDisable(false);
                 nominatedUsersTable.setOpacity(1.0);
+                neededUsersField.setDisable(false);
+                neededUsersField.setOpacity(1.0);
             } else {
                 imgAdd.setDisable(true);
+                imgAdd.setOpacity(0.7);
                 nominatedUsersTable.setDisable(true);
                 nominatedUsersTable.setOpacity(0.7);
+                neededUsersField.setDisable(true);
+                neededUsersField.setOpacity(0.7);
             }
         });
 
