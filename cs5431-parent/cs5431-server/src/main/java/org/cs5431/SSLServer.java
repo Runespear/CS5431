@@ -745,14 +745,15 @@ public class SSLServer extends Thread {
             if (hasRec) {
                 //TODO: generate secrets and put into json
                 boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
-                if (setGroup) {
-                    JSONObject response = new JSONObject();
-                    response.put("msgType", "setPwdGroupAck");
-                    response.put("uid", jsonObject.getInt("uid"));
-                    response.put("hasPwdRec", hasRec);
-                    return response;
+                if (!setGroup) {
+                    return makeErrJson("Failed to create recovery group.");
                 }
             }
+            JSONObject response = new JSONObject();
+            response.put("msgType", "setPwdGroupAck");
+            response.put("uid", jsonObject.getInt("uid"));
+            response.put("hasPwdRec", hasRec);
+            return response;
         }
         return makeErrJson("Failed to create recovery group.");
     }
