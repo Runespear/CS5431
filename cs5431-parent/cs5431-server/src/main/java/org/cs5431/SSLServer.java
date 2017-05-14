@@ -781,7 +781,7 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject recoverPwdFound(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        JSONObject response = sql_accounts.changePassword(jsonObject, jsonObject.getString("newEncPwd"), sourceIp);
+        JSONObject response = sql_accounts.changePassword(jsonObject, jsonObject.getString("newHashedPwd"), sourceIp);
         if (response != null) {
             return response;
         }
