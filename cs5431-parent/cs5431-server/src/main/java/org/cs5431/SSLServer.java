@@ -279,7 +279,8 @@ public class SSLServer extends Thread {
                 switch (auth.getInt("has2fa")) {
                     case 0: loggedInUid = auth.getInt("uid");
                         break;
-                    case 1: otp = TwoFactorAuth.generateAndSend2fa(auth.getString("email")); //TODO
+                    case 1: TwoFactorAuth twoFactorAuth = new TwoFactorAuth(email);
+                        otp = twoFactorAuth.generateAndSend2fa(auth.getString("email")); 
                         otpGenTime = System.nanoTime();
                         break;
                     case 2: //TODO

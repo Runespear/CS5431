@@ -4,8 +4,6 @@ import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.security.SecureRandom;
 
 public class TwoFactorAuth {
@@ -16,6 +14,11 @@ public class TwoFactorAuth {
     public static final String ACCOUNT_SID = "AC3933f4f181f6a36ef0f1484cd9316e48";
     public static final String AUTH_TOKEN = "8c29f7034b30c0decae9da4f147bb215";
 
+    private Email adminEmail;
+
+    TwoFactorAuth(Email adminEmail) {
+        this.adminEmail = adminEmail;
+    }
 
     //Using securerandom to generate a random string of a specified length
     public static String getRandomPassword(int Length) {
@@ -56,15 +59,13 @@ public class TwoFactorAuth {
      * @param userEmail The email to send the OTP to
      * @return The generated OTP
      */
-    public static String generateAndSend2fa(String userEmail) {
+    public String generateAndSend2fa(String userEmail) {
 
         //TODO: Hardcode admin mail for now?
-        Email adminEmailAcc = new Email("psfs5431@gmail.com","theroadtoA+");
-
         //Generate a random password
         String otp = getRandomPassword(20);
 
-        adminEmailAcc.send(userEmail, "2FA for PSFS Account", "The following is the second factor " +
+        adminEmail.send(userEmail, "2FA for PSFS Account", "The following is the second factor " +
                 "authentication into your Pretty Secure File Sharing Account:" + otp);
         return otp;
     }
@@ -108,7 +109,7 @@ public class TwoFactorAuth {
     }
 
     //example on using the functions
-    public static void main(String[] args) throws Exception{
+    /*public static void main(String[] args) throws Exception{
 
         long start_time = System.nanoTime();
         String otp = generateAndSend2fa("brandon18031993@hotmail.com");
@@ -122,5 +123,5 @@ public class TwoFactorAuth {
 
         boolean otp_valid = checkOtpValid(user_otp,otp,start_time);
         System.out.println("Is OTP valid? " + otp_valid);
-    }
+    }*/
 }
