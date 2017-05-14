@@ -176,10 +176,9 @@ public class EditDetailsController implements Initializable {
         email2faLink.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Email two-factor authentication");
-            alert.setContentText("By activating two factor authentication," +
-                    " the system will email you a code every time you login.\n" +
+            alert.setContentText("By activating 2fa, the system will email or sms you with a code every time you login.\n" +
                     "You will need to enter the code into this app.\n" +
-                    "If you check this box, you will need to provide us with a valid email.");
+                    "If you check this box, you will need to provide us with a valid email or phone number.");
             alert.showAndWait();
         });
 

@@ -45,7 +45,7 @@ public class LoginController implements Initializable {
     public Hyperlink txtNoAcct;
 
     @FXML
-    private Button recoverButton;
+    private Hyperlink recoverLink;
 
     private AccountsController accountsController;
     private Stage stage;
@@ -72,7 +72,7 @@ public class LoginController implements Initializable {
 
         txtNoAcct.setOnAction(this::goToRegistration);
 
-        recoverButton.setOnAction(e -> recoverPwd());
+        recoverLink.setOnAction(e -> recoverPwd());
     }
 
     /**
