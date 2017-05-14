@@ -129,6 +129,26 @@ public class UserController {
         }
     }
 
+    public void changePhoneNumber(String oldPhone, String newPhone) throws
+            IOException, ClassNotFoundException, ChangeEmailFailException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","changePhoneNo");
+        json.put("uid", user.getId());
+        json.put("oldPhone", oldPhone);
+        json.put("newPhone", newPhone);
+        sendJson(json, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("changePhoneAck")) {
+            if (response.getInt("uid") != user.getId())
+                throw new ChangeEmailFailException("Bad response from server " +
+                        "- user id does not match up");
+        } else if (response.getString("msgType").equals("error")) {
+            throw new ChangeEmailFailException(response.getString
+                    ("message"));
+        }
+    }
+
     /**
      * Deletes user with the userId and logs it.
      * @param password Password of the logged in user

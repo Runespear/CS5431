@@ -57,7 +57,8 @@ public class SSLServer extends Thread {
                         || type.equals("logout") || type.equals
                         ("getEditorViewerList") || type.equals("deleteUser")
                         || type.equals("uploadKeys") || type.equals("2faToggle") ||
-                        type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo")) {
+                        type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo") ||
+                        type.equals("changePhoneNo")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         sql_accounts.attemptedUidFailLog(jsonObject.getInt("uid"), loggedInUid, sourceIp);
@@ -196,6 +197,10 @@ public class SSLServer extends Thread {
                         break;
                     case "recoverPwd":
                         response = recoverPwd(jsonObject, sql_accounts, email);
+                        sendJson(response, s);
+                        break;
+                    case "changePhoneNo":
+                        response = changePhoneNo(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     default:
@@ -782,8 +787,12 @@ public class SSLServer extends Thread {
         return makeErrJson("Unable to recover password. Please try again.");
     }
 
+    private JSONObject changePhoneNo(JSONObject json, SQL_Accounts sql_accounts) {
+        //TODO hi ruixin
+        return null;
+    }
+
     private JSONObject makeErrJson(String message) {
-        //TODO
         JSONObject response = new JSONObject();
         response.put("msgType","error");
         response.put("message", message);
