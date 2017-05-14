@@ -113,7 +113,7 @@ public class LoginController implements Initializable {
                     dialog.setContentText("Please enter the code that has been sent to your phone:");
 
                 final String[] otp = {null};
-                while (otp[0] == null) {    //TODO: is this too harsh?
+                if (otp[0] != null) {
                     Optional<String> result = dialog.showAndWait();
                     result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
                 }

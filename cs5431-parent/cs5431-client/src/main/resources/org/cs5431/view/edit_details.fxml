@@ -88,7 +88,7 @@
                   text="New Phone Number" GridPane.columnIndex="1"
                   GridPane.rowIndex="7"/>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                  text="Confirm New Phone Number" GridPane.columnIndex="1"
+                  text="Confirm Phone Number" GridPane.columnIndex="1"
                   GridPane.rowIndex="8"/>
             <TextField fx:id="txtOldPhoneNo" promptText="old phone number"
                        GridPane.columnIndex="2" GridPane.rowIndex="6"/>
