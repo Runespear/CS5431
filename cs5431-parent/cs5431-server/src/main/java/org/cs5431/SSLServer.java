@@ -736,12 +736,20 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject setPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
-        if (setGroup) {
-            JSONObject response = new JSONObject();
-            response.put("msgType", "setPwdGroupAck");
-            response.put("uid", jsonObject.getInt("uid"));
-            return response;
+        boolean hasRec = jsonObject.getBoolean("hasPwdRec");
+        int uid = jsonObject.getInt("uid");
+        boolean removedOldSecrets = sql_accounts.removeSecrets(uid, sourceIp);
+        if (removedOldSecrets) {
+            if (hasRec) {
+                //TODO: generate secrets and put into json
+                boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
+                if (setGroup) {
+                    JSONObject response = new JSONObject();
+                    response.put("msgType", "setPwdGroupAck");
+                    response.put("uid", jsonObject.getInt("uid"));
+                    return response;
+                }
+            }
         }
         return makeErrJson("Failed to create recovery group.");
     }

@@ -467,7 +467,7 @@ public class SQL_Accounts {
     }
 
     String getPrivKeySalt(String username) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         System.out.println("Connecting to database...");
 
@@ -504,7 +504,7 @@ public class SQL_Accounts {
      * Creates a failed login log if the username does not exist.
      * @return salt of password associated with username */
     String getSalt(String username, String sourceIp, String action) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -826,7 +826,7 @@ public class SQL_Accounts {
         String encPwd = secondPwdHash(password, Base64.getDecoder().decode(salt));
         JSONObject user = authenticate(allegedUser, encPwd, sourceIp, "AUTHENTICATE", null);
 
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
         }
@@ -1205,7 +1205,7 @@ public class SQL_Accounts {
      * @return true if log is successfully created; false otherwise
      */
     boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
-        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false?autoReconnect=true&useSSL=false";
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1240,18 +1240,16 @@ public class SQL_Accounts {
     }
 
     boolean createRecoveryGroup(JSONObject json, String sourceIp) {
-        JSONArray groupUid = json.getJSONArray("groupUid");
-        JSONArray secrets = json.getJSONArray("secrets");
         int uid = json.getInt("uid");
-
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
             PreparedStatement addRecovery = null;
             PreparedStatement createLog = null;
 
-            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets) + values (?, ?, ?)";
+            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets, neededUsers) + values (?, ?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -1259,10 +1257,14 @@ public class SQL_Accounts {
                 createLog = connection.prepareStatement(insertLog);
                 addRecovery = connection.prepareStatement(insertRecovery);
                 connection.setAutoCommit(false);
+                JSONArray groupUid = json.getJSONArray("groupUid");
+                JSONArray secrets = json.getJSONArray("secrets");
+                int neededUsers = json.getInt("neededUsers");
                 for (int i=0; i<groupUid.length(); i++) {
                     addRecovery.setInt(1, uid);
-                    addRecovery.setInt(2, (int) groupUid.get(i));
-                    addRecovery.setString(3, (String) secrets.get(i));
+                    addRecovery.setInt(2, groupUid.getInt(i));
+                    addRecovery.setString(3, secrets.getString(i));
+                    addRecovery.setInt(4, neededUsers);
                     addRecovery.executeUpdate();
                 }
                 createLog.setInt(1, 0);
@@ -1301,6 +1303,72 @@ public class SQL_Accounts {
             } finally {
                 if (addRecovery != null) {
                     addRecovery.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    boolean removeSecrets(int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement rmRecovery = null;
+            PreparedStatement createLog = null;
+
+            String deleteRecovery = "DELETE FROM PwdGroup WHERE uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                rmRecovery = connection.prepareStatement(deleteRecovery);
+                connection.setAutoCommit(false);
+
+                rmRecovery.setInt(1, uid);
+                rmRecovery.executeUpdate();
+
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "REMOVED_PWD_RECOVERY");
+                createLog.setString(6, "SUCCESS");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, null);
+                createLog.executeUpdate();
+
+                connection.commit();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "REMOVED_PWD_RECOVERY");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return false;
+            } finally {
+                if (rmRecovery != null) {
+                    rmRecovery.close();
                 }
                 if (createLog != null) {
                     createLog.close();
