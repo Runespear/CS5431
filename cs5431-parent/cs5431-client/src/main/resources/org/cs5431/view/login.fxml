@@ -48,10 +48,10 @@
                            GridPane.columnIndex="2"
                            GridPane.rowIndex="1"/>
         </GridPane>
-        <Button fx:id="recoverButton" mnemonicParsing="false" text="Recover password"/>
         <Button fx:id="loginButton" mnemonicParsing="false" text="Login"/>
         <Button fx:id="disconnectButton" mnemonicParsing="false"
                 text="Disconnect"/>
+        <Hyperlink fx:id="recoverLink" text="Recover password"/>
         <Hyperlink fx:id="txtNoAcct" text="Don't have an account?"/>
     </VBox>
 </AnchorPane>
