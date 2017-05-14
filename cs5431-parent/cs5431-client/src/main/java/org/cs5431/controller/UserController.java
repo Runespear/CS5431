@@ -219,9 +219,9 @@ public class UserController {
                                  List<String> encSecrets)
             throws IOException, ClassNotFoundException, PwdRecoveryException {
         JSONObject recover = new JSONObject();
-        recover.put("msgType", "pwdGroup");
+        recover.put("msgType", "setPwdGroup");
         recover.put("uid", user.getId());
-        recover.put("hasRecovery", hasRecovery);
+        recover.put("hasPwdRec", hasRecovery);
         recover.put("neededUsers", neededUsers);
         recover.put("groupId", nominatedUids);
         recover.put("secrets", encSecrets);
@@ -229,7 +229,7 @@ public class UserController {
         sendJson(recover, sslSocket);
 
         JSONObject response = receiveJson(sslSocket);
-        if (response.getString("msgType").equals("pwdGroupAck")) {
+        if (response.getString("msgType").equals("setPwdGroupAck")) {
             if (response.getInt("uid") != user.getId())
                 throw new PwdRecoveryException("Password recovery info was set for wrong user!");
         } else if (response.getString("msgType").equals("error")) {

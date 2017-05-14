@@ -200,7 +200,7 @@ public class PwdRecoveryController implements Initializable {
             pwdRecoveryCheck.setSelected(response.getBoolean("hasPwdRec"));
             if (response.getBoolean("hasPwdRec")) {
                 neededUsersField.setText(Integer.toString(response.getInt("neededUsers")));
-                JSONArray uidArray = response.getJSONArray("nominatedUids");
+                JSONArray uidArray = response.getJSONArray("groupUid");
                 List<Integer> uidList = new ArrayList<>();
                 for (int i = 0; i < uidArray.length(); i++) {
                     uidList.add(uidArray.getInt(i));
