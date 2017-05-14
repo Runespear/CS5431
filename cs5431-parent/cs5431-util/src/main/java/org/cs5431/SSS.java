@@ -130,4 +130,14 @@ public class SSS {
         return this.coordinates;
     }
 
+    public List<String> generateSecrets() {
+        //TODO
+        return null;
+    }
+
+    public BigInteger recreateSecret(List<String> secrets) {
+        //TODO
+        return null;
+    }
+
 }
