@@ -276,11 +276,14 @@ public class SSLServer extends Thread {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "LOGIN", email);
             if (auth != null) {
-                if (auth.getBoolean("has2fa")) {
-                    otp = TwoFactorAuth.generateAndSend2fa(""); //TODO
-                    otpGenTime = System.nanoTime();
-                } else {
-                    loggedInUid = auth.getInt("uid");
+                switch (auth.getInt("has2fa")) {
+                    case 0: loggedInUid = auth.getInt("uid");
+                        break;
+                    case 1: otp = TwoFactorAuth.generateAndSend2fa(auth.getString("email")); //TODO
+                        otpGenTime = System.nanoTime();
+                        break;
+                    case 2: //TODO
+                        break;
                 }
                 return auth;
             }

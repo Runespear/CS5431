@@ -1,14 +1,12 @@
 package org.cs5431;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Random;
-
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.security.SecureRandom;
 
 public class TwoFactorAuth {
 
