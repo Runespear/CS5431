@@ -17,6 +17,7 @@ import org.cs5431.model.User;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Optional;
@@ -43,6 +44,9 @@ public class LoginController implements Initializable {
     @FXML
     public Hyperlink txtNoAcct;
 
+    @FXML
+    private Button recoverButton;
+
     private AccountsController accountsController;
     private Stage stage;
     private Socket sslSocket;
@@ -67,6 +71,8 @@ public class LoginController implements Initializable {
         });
 
         txtNoAcct.setOnAction(this::goToRegistration);
+
+        recoverButton.setOnAction(e -> recoverPwd());
     }
 
     /**
@@ -197,6 +203,28 @@ public class LoginController implements Initializable {
         }
     }
 
+    private void recoverPwd() {
+        TextInputDialog dialog = new TextInputDialog("Code");
+        dialog.setTitle("Recover your password");
+        dialog.setContentText("If you have set up password recovery, you can recover your password by entering your username here:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(username -> {
+            try {
+                int uid = accountsController.recoverPassword(username);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Secret");
+                alert.setContentText("Please get your friends to send you the codes after decrypting them, and enter them here:");
+                //TODO: SHOULD NOT BE AN ALERT BOX, etc.
+                alert.showAndWait();
+            } catch (AccountsController.UserRetrieveException e) {
+                showError(e.getMessage());
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     /**
      * When changing to registration, it is necessary to pass along the
@@ -219,5 +247,12 @@ public class LoginController implements Initializable {
         Socket s = connect_SSLServerSocket(server,Integer.parseInt(sslPort), "./user-config/"+serverName+".jks");
         accountsController.setSocket(s);
         sslSocket = s;
+    }
+
+    private void showError(String error) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(error);
+        alert.showAndWait();
     }
 }

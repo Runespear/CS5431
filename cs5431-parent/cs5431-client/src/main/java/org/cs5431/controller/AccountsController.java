@@ -235,6 +235,23 @@ public class AccountsController {
                     "server");
     }
 
+    public int recoverPassword(String username) throws IOException,
+            ClassNotFoundException, UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","recoverPwd");
+        json.put("username", username);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("recoverPwdAck"))
+            return response.getInt("uid");
+        else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+
+    }
+
     public class RegistrationFailException extends Exception {
         RegistrationFailException(String message) {
             super(message);

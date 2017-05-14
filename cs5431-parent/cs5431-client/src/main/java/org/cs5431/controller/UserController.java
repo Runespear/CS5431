@@ -239,12 +239,12 @@ public class UserController {
         }
     }
 
-    public void save2fa(boolean has2fa) throws IOException,
+    public void save2fa(int has2fa) throws IOException,
             ClassNotFoundException, TwoFactorException {
         JSONObject json = new JSONObject();
         json.put("msgType","2faToggle");
         json.put("uid", user.getId());
-        json.put("enabled", has2fa);
+        json.put("newToggle", has2fa);
 
         sendJson(json, sslSocket);
 

@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static org.cs5431.Constants.EMAIL_2FA;
+import static org.cs5431.Constants.NO_2FA;
+import static org.cs5431.Constants.PHONE_2FA;
+
 public class EditDetailsController implements Initializable {
     @FXML
     public PasswordField txtOldPassword;
@@ -60,9 +64,6 @@ public class EditDetailsController implements Initializable {
     public Hyperlink email2faLink;
 
     @FXML
-    public CheckBox email2faCheck;
-
-    @FXML
     public Button pwdRecoveryButton;
     
     @FXML
@@ -77,9 +78,19 @@ public class EditDetailsController implements Initializable {
     @FXML
     public Button helpRecoveryButton;
 
+    @FXML
+    public RadioButton noneRadio;
+
+    @FXML
+    public RadioButton email2faRadio;
+
+    @FXML
+    public RadioButton phone2faRadio;
+
     private Stage stage;
     private AccountsController accountsController;
     private UserController userController;
+    private final ToggleGroup group2fa = new ToggleGroup();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -177,6 +188,11 @@ public class EditDetailsController implements Initializable {
         helpRecoveryButton.setOnAction(e -> helpRecover());
 
         txtOldPassword.requestFocus();
+
+        noneRadio.setToggleGroup(group2fa);
+        email2faRadio.setToggleGroup(group2fa);
+        phone2faRadio.setToggleGroup(group2fa);
+        noneRadio.setSelected(true);
     }
 
     /**
@@ -326,10 +342,23 @@ public class EditDetailsController implements Initializable {
         }
 
         //to make things simpler, always attempt to save 2fa
+        int twoFa = 0;
+        RadioButton selectedRadioButton = (RadioButton) group2fa.getSelectedToggle();
+        String value = selectedRadioButton.getText();
+        if (value.equals("None"))
+            twoFa = NO_2FA;
+        else if (value.equals("Email"))
+            twoFa = EMAIL_2FA;
+        else if (value.equals("Phone"))
+            twoFa = PHONE_2FA;
+        else {
+            System.err.println("Ack, value of selected radio button is weird: " + value);
+        }
+        int finalTwoFa = twoFa;
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                userController.save2fa(email2faCheck.isSelected());
+                userController.save2fa(finalTwoFa);
                 return null;
             }
         };
