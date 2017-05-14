@@ -145,7 +145,7 @@ public class ServerSetup {
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
                 "privKey BLOB NOT NULL, pubKey BLOB NOT NULL, pwdSalt CHAR(255) NOT NULL, privKeySalt CHAR(255) NOT NULL," +
-                "has2fa TINYINT UNSIGNED NOT NULL, hasPwdRec BOOLEAN NOT NULL, phoneNo CHAR(20),\n" +
+                "has2fa TINYINT UNSIGNED NOT NULL, hasPwdRec BOOLEAN NOT NULL, phoneNo CHAR(20), neededUsers INT UNSIGNED,\n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,\n" +
                 "uid INT UNSIGNED NOT NULL,\n" +
@@ -182,7 +182,7 @@ public class ServerSetup {
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createPwdRecovery = "CREATE TABLE PwdGroup (uid INT UNSIGNED NOT NULL, nominatedUid INT UNSIGNED NOT NULL,\n" +
-                "secret CHAR(255) NOT NULL, neededUsers INT UNSIGNED NOT NULL," +
+                "secret CHAR(255) NOT NULL," +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (nominatedUid) REFERENCES Users(uid) ON DELETE CASCADE);";
         String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE';";
