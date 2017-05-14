@@ -215,7 +215,8 @@ public class UserController {
     }
 
     public void saveRecoveryInfo(boolean hasRecovery,
-                                 int neededUsers, List<Integer> nominatedUids)
+                                 int neededUsers, List<Integer> nominatedUids,
+                                 List<String> encSecrets)
             throws IOException, ClassNotFoundException, PwdRecoveryException {
         JSONObject recover = new JSONObject();
         recover.put("msgType", "pwdGroup");
@@ -223,6 +224,7 @@ public class UserController {
         recover.put("hasRecovery", hasRecovery);
         recover.put("neededUsers", neededUsers);
         recover.put("groupId", nominatedUids);
+        recover.put("secrets", encSecrets);
 
         sendJson(recover, sslSocket);
 

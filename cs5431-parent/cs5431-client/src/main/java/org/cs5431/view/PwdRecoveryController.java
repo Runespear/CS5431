@@ -149,9 +149,9 @@ public class PwdRecoveryController implements Initializable {
                     return;
                 }
             }
-            Task<Integer> task = new Task<Integer>() {
+            Task<PwdRecoveryBundle> task = new Task<PwdRecoveryBundle>() {
                 @Override
-                protected Integer call() throws Exception {
+                protected PwdRecoveryBundle call() throws Exception {
                     return ac.getUserForPwdRecovery(username);
                 }
             };
@@ -159,7 +159,7 @@ public class PwdRecoveryController implements Initializable {
                     "user - they might not exist."));
             task.setOnSucceeded(t -> {
                 ObservableList<PwdRecoveryBundle> observableList = nominatedUsersTable.getItems();
-                observableList.add(new PwdRecoveryBundle(task.getValue(), username));
+                observableList.add(task.getValue());
                 nominatedUsersTable.setItems(observableList);
                 changed = true;
             });
@@ -171,7 +171,7 @@ public class PwdRecoveryController implements Initializable {
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
                     if (task.getValue() != null) {
-                        PwdRecoveryBundle bundle = new PwdRecoveryBundle(task.getValue(), username);
+                        PwdRecoveryBundle bundle = task.getValue();
                         if (nominatedUsersTable.getItems().contains(bundle)) {
                             nominatedUsersTable.getItems().remove(bundle);
                         }
@@ -229,7 +229,7 @@ public class PwdRecoveryController implements Initializable {
                 List<PwdRecoveryBundle> bundleList = new ArrayList<>();
                 for (int uid : nominatedUids) {
                     String username = ac.getUsername(uid);
-                    bundleList.add(new PwdRecoveryBundle(uid, username));
+                    bundleList.add(ac.getUserForPwdRecovery(username));
                 }
                 return bundleList;
             }
@@ -256,8 +256,8 @@ public class PwdRecoveryController implements Initializable {
     }
 
     private void updateRecoveryInfo(boolean hasRecovery, int neededUsers,
-                                    List<Integer> nominatedUids) throws Exception {
-        uc.saveRecoveryInfo(hasRecovery, neededUsers, nominatedUids);
+                                    List<Integer> nominatedUids, List<String> encSecrets) throws Exception {
+        uc.saveRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setContentText("Successfully saved password nomination information");
         alert.showAndWait();
@@ -289,19 +289,22 @@ public class PwdRecoveryController implements Initializable {
             }
         }
         //save
+        //TODO: gen secrets here
         List<Integer> nominatedUids = new ArrayList<>();
+        List<String> encSecrets = new ArrayList<>();
         for (PwdRecoveryBundle bundle : nominatedUsersTable.getItems()) {
             nominatedUids.add(bundle.userId);
+            //TODO: encrypt secret here
         }
         if (uc != null && changed) {
             try {
-                updateRecoveryInfo(hasRecovery, neededUsers, nominatedUids);
+                updateRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
             } catch (Exception e) {
                 showError("Failed to save password recovery information...");
                 return; //TODO: to exit or not to exit?
             }
         } else {
-            rc.setRecoveryInfo(hasRecovery, nominatedUids, neededUsers);
+            rc.setRecoveryInfo(hasRecovery, nominatedUids, neededUsers); //TODO: add encSecrets
         }
 
         //exit

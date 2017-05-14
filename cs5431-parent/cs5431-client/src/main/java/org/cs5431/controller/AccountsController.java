@@ -4,6 +4,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.Folder;
 import org.cs5431.model.User;
+import org.cs5431.view.PwdRecoveryBundle;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -219,15 +220,17 @@ public class AccountsController {
                     "server");
     }
 
-    public int getUserForPwdRecovery(String username)  throws IOException,
-            ClassNotFoundException, UserRetrieveException {
+    public PwdRecoveryBundle getUserForPwdRecovery(String username)  throws IOException,
+            ClassNotFoundException, UserRetrieveException, NoSuchAlgorithmException,
+            InvalidKeySpecException {
         JSONObject json = new JSONObject();
         json.put("msgType","pwdNominate");
         json.put("username", username);
         sendJson(json, sslSocket);
         JSONObject response = receiveJson(sslSocket);
         if (response.getString("msgType").equals("pwdNominateAck"))
-            return response.getInt("uid");
+            return new PwdRecoveryBundle(response.getInt("uid"), username,
+                    getPubKeyFromJSON(response.getString("pubKey")));
         else if (response.getString("msgType").equals("error"))
             throw new UserRetrieveException(response.getString("message"));
         else
