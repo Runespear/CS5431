@@ -8,6 +8,7 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Base64;
 
 import static org.cs5431.Constants.DEBUG_MODE;
@@ -1667,6 +1668,40 @@ public class SQL_Accounts {
                     createLog.close();
                 }
                 connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    ArrayList<String> getPubKeys(JSONArray groupUid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement getPub = null;
+
+            String selectPub = "SELECT U.pubKey FROM Users U WHERE U.uid = ?";
+
+            try {
+                ArrayList<String> pubKeys = new ArrayList<>();
+                for (Object userId : groupUid) {
+                    int uid = (int) userId;
+                    getPub = connection.prepareStatement(selectPub);
+                    getPub.setInt(1, uid);
+                    ResultSet pKey = getPub.executeQuery();
+                    if (pKey.next()) {
+                        pubKeys.add(pKey.getString(1));
+                    }
+                }
+                return pubKeys;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (getPub != null) {
+                    getPub.close();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
