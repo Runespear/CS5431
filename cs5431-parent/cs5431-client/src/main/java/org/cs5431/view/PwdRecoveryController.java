@@ -74,21 +74,7 @@ public class PwdRecoveryController implements Initializable {
             if (oldS != newS) {
                 changed = true;
             }
-            if (newS) {
-                imgAdd.setDisable(false);
-                imgAdd.setOpacity(1.0);
-                nominatedUsersTable.setDisable(false);
-                nominatedUsersTable.setOpacity(1.0);
-                neededUsersField.setDisable(false);
-                neededUsersField.setOpacity(1.0);
-            } else {
-                imgAdd.setDisable(true);
-                imgAdd.setOpacity(0.7);
-                nominatedUsersTable.setDisable(true);
-                nominatedUsersTable.setOpacity(0.7);
-                neededUsersField.setDisable(true);
-                neededUsersField.setOpacity(0.7);
-            }
+            setGraphics(newS);
         });
 
         usernameColumn.setCellValueFactory(
@@ -128,12 +114,13 @@ public class PwdRecoveryController implements Initializable {
         this.rc = rc;
         //in case user changes his mind
         pwdRecoveryCheck.setSelected(hasRecovery);
+        setGraphics(hasRecovery);
         loadUsernames(nominatedUids);
         neededUsersField.setText(Integer.toString(neededUsers));
     }
 
-    public void setUpFromEditDetails(Stage stage, Parent parentNode, AccountsController ac,
-                                     UserController uc) {
+    void setUpFromEditDetails(Stage stage, Parent parentNode, AccountsController ac,
+                              UserController uc) {
         this.stage = stage;
         this.parentNode = parentNode;
         this.ac = ac;
@@ -215,6 +202,7 @@ public class PwdRecoveryController implements Initializable {
                 }
                 loadUsernames(uidList);
             }
+            setGraphics(response.getBoolean("hasPwdRec"));
         });
         Thread th = new Thread(task);
         th.setDaemon(true);
@@ -329,6 +317,24 @@ public class PwdRecoveryController implements Initializable {
         alert.setContentText("If you activate password recovery, on the event of a password loss," +
                 " we will email your friends a code that is needed to reconstruct your password.");
         alert.showAndWait();
+    }
+
+    private void setGraphics(boolean hasRecovered) {
+        if (hasRecovered) {
+            imgAdd.setDisable(false);
+            imgAdd.setOpacity(1.0);
+            nominatedUsersTable.setDisable(false);
+            nominatedUsersTable.setOpacity(1.0);
+            neededUsersField.setDisable(false);
+            neededUsersField.setOpacity(1.0);
+        } else {
+            imgAdd.setDisable(true);
+            imgAdd.setOpacity(0.7);
+            nominatedUsersTable.setDisable(true);
+            nominatedUsersTable.setOpacity(0.7);
+            neededUsersField.setDisable(true);
+            neededUsersField.setOpacity(0.7);
+        }
     }
 
     private void showError(String error) {
