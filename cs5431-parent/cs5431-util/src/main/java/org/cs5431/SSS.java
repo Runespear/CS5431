@@ -94,7 +94,7 @@ public class SSS {
         assert(coordinateSubsets.length >= this.numSubsets - 1):"Not enough subsets";
 
         //TODO: Check how to reconstruct
-
+        return null;
     }
 
 
