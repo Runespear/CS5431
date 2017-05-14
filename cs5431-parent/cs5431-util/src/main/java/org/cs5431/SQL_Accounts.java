@@ -1417,9 +1417,9 @@ public class SQL_Accounts {
                 createLog.setString(3, null);
                 createLog.setTimestamp(4, lastModified);
                 switch (newToggle) {
-                    case 0: createLog.setString(5,  "DISABLED 2FA");
-                    case 1: createLog.setString(5,  "ENABLED EMAIL 2FA");
-                    case 2: createLog.setString(5,  "ENABLED PHONE 2FA");
+                    case 0: createLog.setString(5,  "DISABLED_2FA");
+                    case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
+                    case 2: createLog.setString(5,  "ENABLED_PHONE_2FA");
                 }
                 createLog.setString(6, "SUCCESS");
                 createLog.setString(7, sourceIp);
@@ -1438,9 +1438,9 @@ public class SQL_Accounts {
                     createLog.setString(3, null);
                     createLog.setTimestamp(4, lastModified);
                     switch (newToggle) {
-                        case 0: createLog.setString(5,  "DISABLED 2FA");
-                        case 1: createLog.setString(5,  "ENABLED EMAIL 2FA");
-                        case 2: createLog.setString(5,  "ENABLED PHONE 2FA");
+                        case 0: createLog.setString(5,  "DISABLED_2FA");
+                        case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
+                        case 2: createLog.setString(5,  "ENABLED_PHONE_2FA");
                     }
                     createLog.setString(6, "FAILURE");
                     createLog.setString(7, sourceIp);
@@ -1739,6 +1739,82 @@ public class SQL_Accounts {
             e.printStackTrace();
         }
         return null;
+    }
+
+    int changePwd(JSONObject json, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            int uid = json.getInt("uid");
+            String oldPhone = json.getString("oldPhone");
+            String newPhone = json.getString("newPhone");
+
+            PreparedStatement changePhone = null;
+            PreparedStatement createLog = null;
+
+            String updatePhone = "UPDATE Users SET phoneNo = ? WHERE uid = ? AND phoneNo = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                changePhone = connection.prepareStatement(updatePhone);
+                connection.setAutoCommit(false);
+                changePhone.setString(1, newPhone);
+                changePhone.setInt(2, uid);
+                changePhone.setString(3, oldPhone);
+                changePhone.executeUpdate();
+                if (DEBUG_MODE) {
+                    System.out.println("changed phoneNo");
+                }
+
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "CHANGE_PHONE_NO");
+                createLog.setString(6, "SUCCESS");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, null);
+                createLog.executeUpdate();
+                if (DEBUG_MODE) {
+                    System.out.println("created log");
+                }
+
+                connection.commit();
+                return uid;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "CHANGE_PHONE_NO");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return -1;
+            } finally {
+                if (changePhone != null) {
+                    changePhone.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }
 
