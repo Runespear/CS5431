@@ -115,6 +115,8 @@ public class PwdRecoveryController implements Initializable {
                 deleteButton.setOnAction(event -> nominatedUsersTable.getItems().remove(bundle));
             }
         });
+
+        helpLink.setOnAction(e -> showHelp());
     }
 
     void setUpFromRegistration(Stage stage, Parent parentNode, AccountsController ac,
@@ -319,6 +321,14 @@ public class PwdRecoveryController implements Initializable {
         stage.show();
 
         //todo wipe information? (esp. for registration)
+    }
+
+    private void showHelp() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Password recovery");
+        alert.setContentText("If you activate password recovery, on the event of a password loss," +
+                " we will email your friends a code that is needed to reconstruct your password.");
+        alert.showAndWait();
     }
 
     private void showError(String error) {
