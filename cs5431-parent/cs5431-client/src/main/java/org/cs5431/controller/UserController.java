@@ -223,7 +223,7 @@ public class UserController {
         recover.put("uid", user.getId());
         recover.put("hasPwdRec", hasRecovery);
         recover.put("neededUsers", neededUsers);
-        recover.put("groupId", nominatedUids);
+        recover.put("groupUid", nominatedUids);
         recover.put("secrets", encSecrets);
 
         sendJson(recover, sslSocket);
