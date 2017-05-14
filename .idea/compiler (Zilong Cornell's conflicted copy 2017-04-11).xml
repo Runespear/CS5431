@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="1.8">
+      <module name="cs5431" target="1.8" />
+      <module name="CS5431" target="1.8" />
+      <module name="cs5431-client" target="1.8" />
+      <module name="cs5431-parent" target="1.8" />
+      <module name="cs5431-server" target="1.8" />
+      <module name="cs5431-server-setup" target="1.8" />
+      <module name="cs5431-util" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

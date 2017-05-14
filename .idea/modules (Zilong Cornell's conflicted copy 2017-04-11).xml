@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/CS5431.iml" filepath="$PROJECT_DIR$/CS5431.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-client/cs5431-client.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-client/cs5431-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-parent.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-server/cs5431-server.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-server/cs5431-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-server-setup/cs5431-server-setup.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-server-setup/cs5431-server-setup.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-util/cs5431-util.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-util/cs5431-util.iml" />
+    </modules>
+  </component>
+</project>

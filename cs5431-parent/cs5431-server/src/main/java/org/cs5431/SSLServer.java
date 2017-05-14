@@ -22,7 +22,7 @@ public class SSLServer extends Thread {
     private SQL_Accounts sql_accounts;
     private SQL_Files sql_files;
     private Email email;
-    private Date otpGenTime;
+    private long otpGenTime;
     private String otp;
 
     SSLServer(Socket socket, SQL_Accounts sql_accounts, SQL_Files sql_files, Email email){
@@ -61,6 +61,7 @@ public class SSLServer extends Thread {
                         type.equals("changePhoneNo")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
+                        sql_accounts.attemptedUidFailLog(jsonObject.getInt("uid"), loggedInUid, sourceIp);
                         response = makeErrJson("Requesting user does not match " +
                                 "logged in user");
                         sendJson(response, s);
@@ -195,11 +196,7 @@ public class SSLServer extends Thread {
                         sendJson(response, s);
                         break;
                     case "recoverPwd":
-                        response = recoverPwd(jsonObject, sql_accounts);
-                        sendJson(response, s);
-                        break;
-                    case "recoverPwdFound":
-                        response = recoverPwdFound(jsonObject, sql_accounts);
+                        response = recoverPwd(jsonObject, sql_accounts, email);
                         sendJson(response, s);
                         break;
                     default:
@@ -277,7 +274,7 @@ public class SSLServer extends Thread {
             if (auth != null) {
                 if (auth.getBoolean("has2fa")) {
                     otp = TwoFactorAuth.generateAndSend2fa(""); //TODO
-                    otpGenTime = new Date();
+                    otpGenTime = System.nanoTime();
                 } else {
                     loggedInUid = auth.getInt("uid");
                 }
@@ -332,10 +329,7 @@ public class SSLServer extends Thread {
         if (DEBUG_MODE) {
             System.out.println("Sending error -- unable to authenticate");
         }
-        JSONObject jsonErr = new JSONObject();
-        jsonErr.put("msgType", "error");
-        jsonErr.put("message", "Change password failed");
-        return jsonErr;
+        return makeErrJson("Change password failed");
     }
 
     private JSONObject uploadKeys(JSONObject jsonObject, SQL_Files sql_files) throws Exception {
@@ -714,33 +708,78 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject twoFactorToggle(JSONObject json, SQL_Accounts sql_accounts) {
-        //TODO: link to ruixin's code
-        return null;
+        int uid = json.getInt("uid");
+        int newToggle = json.getInt("newToggle");
+        boolean isToggled = sql_accounts.toggle2fa(uid, newToggle, sourceIp);
+        if (isToggled) {
+            JSONObject response = new JSONObject();
+            response.put("msgType", "2faToggleAck");
+            response.put("uid", uid);
+            return response;
+        }
+        return makeErrJson("The user's 2FA status could not be changed.");
     }
 
     private JSONObject findUserPwdRec(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO: link to ruixin's code
-        return null;
+        String username = jsonObject.getString("username");
+        JSONObject response = sql_accounts.userEmailExists(username);
+        if (response != null) {
+            return response;
+        }
+        return makeErrJson("The user does not support 2FA.");
     }
 
     private JSONObject setPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO: link to ruixin's code
-        return null;
+        boolean hasRec = jsonObject.getBoolean("hasPwdRec");
+        int uid = jsonObject.getInt("uid");
+        boolean removedOldSecrets = sql_accounts.removeSecrets(uid, sourceIp);
+        if (removedOldSecrets) {
+            if (hasRec) {
+                //TODO: generate secrets and put into json
+                boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
+                if (setGroup) {
+                    JSONObject response = new JSONObject();
+                    response.put("msgType", "setPwdGroupAck");
+                    response.put("uid", jsonObject.getInt("uid"));
+                    return response;
+                }
+            }
+        }
+        return makeErrJson("Failed to create recovery group.");
     }
 
     private JSONObject getPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO: link to ruixin's code
-        return null;
+        int uid = jsonObject.getInt("uid");
+        JSONObject response = sql_accounts.getPasRecInfo(uid);
+        if (response != null) {
+            return response;
+        }
+        return makeErrJson("Error occurred while fetching the information. Please try again.");
     }
 
-    private JSONObject recoverPwd(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO: link to ruixin's code
-        return null;
-    }
+    private JSONObject recoverPwd(JSONObject jsonObject, SQL_Accounts sql_accounts, Email adminEmail) {
+        String username = jsonObject.getString("username");
+        int uid = sql_accounts.getUserId(username);
+        if (uid == -1) {
+            return makeErrJson("The username does not exist.");
+        }
+        JSONObject json = sql_accounts.getSecrets(uid);
+        if (json != null) {
+            JSONArray groupUid = json.getJSONArray("groupUid");
+            JSONArray secrets = json.getJSONArray("secrets");
+            JSONArray emails = json.getJSONArray("emails");
 
-    private JSONObject recoverPwdFound(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO: link to ruixin's code
-        return null;
+            for (int i=0; i<groupUid.length(); i++) {
+                adminEmail.send(emails.getString(i),"Password Recovery", "The user " + username + " has " +
+                        "requested to recover the password to his/her Pretty Secure File Sharing account. Please inform " +
+                        username + " of the following secret: " + secrets.getString(i));
+            }
+            JSONObject response = sql_accounts.recoverPwd(uid, sourceIp);
+            if (response != null) {
+                return response;
+            }
+        }
+        return makeErrJson("Unable to recover password. Please try again.");
     }
 
     private JSONObject makeErrJson(String message) {
