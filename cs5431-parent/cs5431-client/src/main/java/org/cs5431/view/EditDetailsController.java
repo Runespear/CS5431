@@ -13,10 +13,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import org.cs5431.Encryption;
 import org.cs5431.Validator;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.UserController;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +73,9 @@ public class EditDetailsController implements Initializable {
     
     @FXML
     public TextField txtConfirmNewPhoneNo;
+
+    @FXML
+    public Button helpRecoveryButton;
 
     private Stage stage;
     private AccountsController accountsController;
@@ -168,6 +173,8 @@ public class EditDetailsController implements Initializable {
         });
 
         pwdRecoveryButton.setOnAction(this::goToRecovery);
+
+        helpRecoveryButton.setOnAction(e -> helpRecover());
 
         txtOldPassword.requestFocus();
     }
@@ -449,6 +456,23 @@ public class EditDetailsController implements Initializable {
                 showError("Failed to delete this account - please " +
                         "double check your username.");
             }
+        });
+    }
+
+    private void helpRecover() {
+        TextInputDialog dialog = new TextInputDialog("Code");
+        dialog.setTitle("Help someone else recover their password");
+        dialog.setContentText("You should have received a code from someone else." +
+                "Please enter it here:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(code -> {
+            BigInteger secret = userController.decryptSecret(code);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Secret");
+            alert.setContentText("Please share this new code with the person you got this from: "
+                    + secret.toString()); //todo make this copiable?
+            alert.showAndWait();
         });
     }
 

@@ -102,6 +102,7 @@
             <Hyperlink fx:id="email2faLink" text="(?)"/>
             <CheckBox fx:id="email2faCheck"/>
         </HBox>
+        <Button fx:id="helpRecoveryButton" text="Help someone else recover their password"/>
         <Button fx:id="pwdRecoveryButton" text="Change password recovery settings"/>
         <Button fx:id="deleteButton" mnemonicParsing="false"
                 text="Delete this account"/>

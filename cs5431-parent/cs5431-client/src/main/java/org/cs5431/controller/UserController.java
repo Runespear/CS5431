@@ -1,5 +1,6 @@
 package org.cs5431.controller;
 
+import org.cs5431.Encryption;
 import org.cs5431.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +9,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -283,6 +285,10 @@ public class UserController {
             throw new PwdRecoveryException("Received bad response " +
                     "from server");
         }
+    }
+
+    public BigInteger decryptSecret(String code) {
+        return Encryption.decryptSecret(user.getPrivKey(), code);
     }
 
     public class ChangePwdFailException extends Exception {
