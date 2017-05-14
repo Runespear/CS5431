@@ -740,6 +740,7 @@ public class SSLServer extends Thread {
                     JSONObject response = new JSONObject();
                     response.put("msgType", "setPwdGroupAck");
                     response.put("uid", jsonObject.getInt("uid"));
+                    response.put("hasPwdRec", hasRec);
                     return response;
                 }
             }

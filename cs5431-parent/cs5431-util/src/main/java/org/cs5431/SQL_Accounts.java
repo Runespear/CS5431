@@ -1249,14 +1249,17 @@ public class SQL_Accounts {
 
             PreparedStatement addRecovery = null;
             PreparedStatement createLog = null;
+            PreparedStatement addNeededNo = null;
 
-            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets, neededUsers) + values (?, ?, ?, ?)";
+            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets) + values (?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertNeeded = "UPDATE Users SET neededUsers = ? WHERE uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
                 addRecovery = connection.prepareStatement(insertRecovery);
+                addNeededNo = connection.prepareStatement(insertNeeded);
                 connection.setAutoCommit(false);
                 JSONArray groupUid = json.getJSONArray("groupUid");
                 JSONArray secrets = json.getJSONArray("secrets");
@@ -1265,9 +1268,12 @@ public class SQL_Accounts {
                     addRecovery.setInt(1, uid);
                     addRecovery.setInt(2, groupUid.getInt(i));
                     addRecovery.setString(3, secrets.getString(i));
-                    addRecovery.setInt(4, neededUsers);
                     addRecovery.executeUpdate();
                 }
+                addNeededNo.setInt(1, neededUsers);
+                addNeededNo.setInt(2, uid);
+                addNeededNo.executeUpdate();
+
                 createLog.setInt(1, 0);
                 createLog.setInt(2, uid);
                 createLog.setString(3, null);
@@ -1307,6 +1313,9 @@ public class SQL_Accounts {
                 }
                 if (createLog != null) {
                     createLog.close();
+                }
+                if (addNeededNo != null) {
+                    addNeededNo.close();
                 }
                 connection.setAutoCommit(true);
             }
@@ -1598,14 +1607,17 @@ public class SQL_Accounts {
 
             PreparedStatement createLog = null;
             PreparedStatement getPrivKey = null;
+            PreparedStatement getNeededNo = null;
 
             String selectKey = "SELECT U.privKey FROM Users U WHERE U.uid = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String selectNeeded = "SELECT U.neededUsers FROM Users U WHERE U.uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
                 getPrivKey = connection.prepareStatement(selectKey);
+                getNeededNo = connection.prepareStatement(selectNeeded);
                 connection.setAutoCommit(false);
 
                 getPrivKey.setInt(1, uid);
@@ -1617,18 +1629,35 @@ public class SQL_Accounts {
                 if (rs.next()) {
                     json.put("encPK", rs.getString(1));
 
+                    getNeededNo.setInt(1 ,uid);
+                    rs = getNeededNo.executeQuery();
+
+                    if (rs.next()) {
+                        json.put("neededUsers", rs.getInt(1));
+                        createLog.setInt(1, 0);
+                        createLog.setInt(2, uid);
+                        createLog.setString(3, null);
+                        createLog.setTimestamp(4, lastModified);
+                        createLog.setString(5, "RECOVER_PWD");
+                        createLog.setString(6, "SUCCESS");
+                        createLog.setString(7, sourceIp);
+                        createLog.setString(8, null);
+                        createLog.executeUpdate();
+
+                        connection.commit();
+                        return json;
+                    }
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
                     createLog.setTimestamp(4, lastModified);
                     createLog.setString(5, "RECOVER_PWD");
-                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(6, "FAILURE");
                     createLog.setString(7, sourceIp);
-                    createLog.setString(8, null);
+                    createLog.setString(8, "INVALID PWD RECOVERY");
                     createLog.executeUpdate();
-
                     connection.commit();
-                    return json;
+                    return null;
                 } else {
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
@@ -1666,6 +1695,9 @@ public class SQL_Accounts {
                 }
                 if (createLog != null) {
                     createLog.close();
+                }
+                if (getNeededNo != null) {
+                    getNeededNo.close();
                 }
                 connection.setAutoCommit(true);
             }
