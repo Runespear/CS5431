@@ -259,12 +259,14 @@ public class EditDetailsController implements Initializable {
                     }
                 });
             }
+        } else {
+            pwdTaskRunning = true;
         }
 
         //Tries to change the email if the email fields are not blank.
         if (!oldEmail.isEmpty() || !newEmail.isEmpty() ||
                 !confirmNewEmail.isEmpty()) {
-            if (oldEmail.isEmpty() || confirmNewEmail.isEmpty()) {
+            if (newEmail.isEmpty() || confirmNewEmail.isEmpty()) {
                 emailMessages.add("New email cannot be empty.");
             } else if (!newEmail.equals(confirmNewEmail)){
                 emailMessages.add("New emails don't match.");
@@ -297,6 +299,8 @@ public class EditDetailsController implements Initializable {
                     }
                 });
             }
+        } else {
+            emailTaskRunning = true;
         }
 
         //Tries to change the phone number if the phone number fields are not blank.
@@ -338,6 +342,8 @@ public class EditDetailsController implements Initializable {
                     }
                 });
             }
+        } else {
+            phoneTaskRunning = true;
         }
 
         //to make things simpler, always attempt to save 2fa
@@ -362,12 +368,14 @@ public class EditDetailsController implements Initializable {
             }
         };
         task.setOnFailed(t -> {
-            emailMessages.add("Saving two factor authentication information failed.");
-            showMessages(emailMessages);
+            List<String> twoFaMsgs = new ArrayList<>();
+            twoFaMsgs.add("Saving two factor authentication information failed.");
+            showMessages(twoFaMsgs);
         });
         task.setOnSucceeded(t -> {
-            emailMessages.add("Two factor authentication information saved.");
-            showMessages(emailMessages);
+            List<String> twoFaMsgs = new ArrayList<>();
+            twoFaMsgs.add("Two factor authentication information saved.");
+            showMessages(twoFaMsgs);
         });
         Thread th = new Thread(task);
         th.setDaemon(true);
