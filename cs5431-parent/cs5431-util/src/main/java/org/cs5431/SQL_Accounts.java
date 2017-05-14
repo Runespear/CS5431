@@ -1182,6 +1182,7 @@ public class SQL_Accounts {
                     JSONObject json = new JSONObject();
                     int uid = rs.getInt(1);
                     String pubKey = rs.getString(2);
+                    json.put("msgType", "pwdNominateAck");
                     json.put("uid", uid);
                     json.put("pubKey", pubKey);
                     return json;
