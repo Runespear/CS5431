@@ -35,14 +35,12 @@ public class TwoFactorAuth {
 
     /**
      * Generates and sends a one time pin for 3FA with phone
-     * @param ACCOUNT_SID The sms service's account SID
-     * @param AUTH_TOKEN  The sms service's auth token
      * @param User_Phone  The user's phone number
      * @return The generated OTP
      * CURRENTLY ONLY WORKS WHEN SENDING TEXT MESSAGES TO MY PHONE BECAUSE I NEED TO REGISTER
      * OTHER PHONES
      */
-    public static String generateAndSend3fa(String ACCOUNT_SID, String AUTH_TOKEN, String User_Phone){
+    public String generateAndSend3fa(String User_Phone){
 
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         String otp = getRandomPassword(4);
@@ -61,7 +59,6 @@ public class TwoFactorAuth {
      */
     public String generateAndSend2fa(String userEmail) {
 
-        //TODO: Hardcode admin mail for now?
         //Generate a random password
         String otp = getRandomPassword(20);
 
