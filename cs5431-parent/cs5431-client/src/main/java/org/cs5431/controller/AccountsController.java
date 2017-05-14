@@ -41,14 +41,15 @@ public class AccountsController {
     * Creates user with the username, password, and email provided.
     * @return user if successful
     */
-    public User createUser(String username, String password, String email, boolean has2fa,
-                           boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
+    public User createUser(String username, String password, String email, String phoneNumber,
+                           boolean has2fa, boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
         throws Exception {
 
         JSONObject user = new JSONObject();
         user.put("msgType", "registration");
         user.put("username", username);
         user.put("email", email);
+        user.put("phoneNo", phoneNumber);
         user.put("has2fa", has2fa);
         user.put("hasRecovery", hasRecovery);
         if (hasRecovery) {

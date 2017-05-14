@@ -62,6 +62,15 @@ public class EditDetailsController implements Initializable {
 
     @FXML
     public Button pwdRecoveryButton;
+    
+    @FXML
+    public TextField txtOldPhoneNo;
+    
+    @FXML
+    public TextField txtNewPhoneNo;
+    
+    @FXML
+    public TextField txtConfirmNewPhoneNo;
 
     private Stage stage;
     private AccountsController accountsController;
@@ -114,6 +123,24 @@ public class EditDetailsController implements Initializable {
 
         txtConfirmNewEmail.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
+                txtOldPhoneNo.requestFocus();
+            }
+        });
+
+        txtOldPhoneNo.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtNewPhoneNo.requestFocus();
+            }
+        });
+
+        txtNewPhoneNo.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtConfirmNewPhoneNo.requestFocus();
+            }
+        });
+
+        txtConfirmNewPhoneNo.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
                 saveButton.fire();
             }
         });
@@ -130,8 +157,6 @@ public class EditDetailsController implements Initializable {
 
         deleteButton.setOnAction(e -> delete());
 
-        txtOldPassword.requestFocus();
-
         email2faLink.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Email two-factor authentication");
@@ -143,6 +168,8 @@ public class EditDetailsController implements Initializable {
         });
 
         pwdRecoveryButton.setOnAction(this::goToRecovery);
+
+        txtOldPassword.requestFocus();
     }
 
     /**
@@ -160,12 +187,18 @@ public class EditDetailsController implements Initializable {
         String newEmail = txtNewEmail.getCharacters().toString();
         String confirmNewEmail = txtConfirmNewEmail.getCharacters()
                 .toString();
+        String oldPhone = txtOldPhoneNo.getCharacters().toString();
+        String newPhone = txtNewPhoneNo.getCharacters().toString();
+        String confirmNewPhone = txtConfirmNewPhoneNo.getCharacters()
+                .toString();
         
         List<String> pwdMessages = new ArrayList<>();
         List<String> emailMessages = new ArrayList<>();
+        List<String> phoneMessages = new ArrayList<>();
 
         boolean pwdTaskRunning = false;
         boolean emailTaskRunning = false;
+        boolean phoneTaskRunning = false;
         //Tries to change the password if the password fields are not blank.
         if (!oldPassword.isEmpty() || !newPassword.isEmpty() ||
             !confirmNewPassword.isEmpty()) {
@@ -244,6 +277,47 @@ public class EditDetailsController implements Initializable {
             }
         }
 
+        //Tries to change the phone number if the phone number fields are not blank.
+        if (!oldPhone.isEmpty() || !newPhone.isEmpty() ||
+                !confirmNewPhone.isEmpty()) {
+            if (oldPhone.isEmpty() || newPhone.isEmpty() ||
+                    confirmNewPhone.isEmpty()) {
+                phoneMessages.add("At least one phone number field is empty.");
+            } else if (!newPhone.equals(confirmNewPhone)){
+                phoneMessages.add("New phone numbers don't match.");
+            } /*else if (!Validator.validPassword(newPhone)) {
+                phoneMessages.add("Passwords should be at least 16 characters " +
+                        "long.");
+            }*/
+             else {
+                phoneTaskRunning = true;
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        userController.changePhoneNumber(oldPhone, newPhone);
+                        return null;
+                    }
+                };
+                task.setOnFailed(t -> {
+                    phoneMessages.add("Wrong phone number.");
+                    showMessages(phoneMessages);
+                });
+                task.setOnSucceeded(t -> {
+                    phoneMessages.add("Phone number successfully changed.");
+                    showMessages(phoneMessages);
+                });
+                Thread th = new Thread(task);
+                th.setDaemon(true);
+                th.start();
+                task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                    if(newValue != null) {
+                        Exception ex = (Exception) newValue;
+                        ex.printStackTrace();
+                    }
+                });
+            }
+        }
+
         //to make things simpler, always attempt to save 2fa
         Task<Void> task = new Task<Void>() {
             @Override
@@ -276,6 +350,8 @@ public class EditDetailsController implements Initializable {
         if (!emailTaskRunning) {
             showMessages(emailMessages);
         }
+        if (!phoneTaskRunning)
+            showMessages(phoneMessages);
     }
 
     private void showMessages(List<String> messages) {

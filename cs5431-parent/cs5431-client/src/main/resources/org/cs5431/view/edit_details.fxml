@@ -37,6 +37,12 @@
                                 vgrow="SOMETIMES"/>
                 <RowConstraints minHeight="10.0" prefHeight="30.0"
                                 vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
             </rowConstraints>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
                   text="Old Password" GridPane.columnIndex="1"/>
@@ -76,6 +82,20 @@
                 <Label text="  "/>
                 <Circle fx:id="passwordCircle" radius="6.0"/>
             </HBox>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Old Phone Number" GridPane.columnIndex="6"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="New Phone Number" GridPane.columnIndex="7"
+                  GridPane.rowIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm New Phone Number" GridPane.columnIndex="8"
+                  GridPane.rowIndex="2"/>
+            <TextField fx:id="txtOldPhoneNo" promptText="old phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="6"/>
+            <TextField fx:id="txtNewPhoneNo" promptText="new phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="7"/>
+            <TextField fx:id="txtConfirmNewPhoneNo" promptText="new phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="8"/>
         </GridPane>
         <HBox alignment="TOP_CENTER" prefWidth="200.0">
             <Label text="Enable email two-factor authentication"/>

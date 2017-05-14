@@ -34,6 +34,8 @@
                                 vgrow="SOMETIMES"/>
                 <RowConstraints minHeight="10.0" prefHeight="30.0"
                                 vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
             </rowConstraints>
             <Text strokeType="OUTSIDE" strokeWidth="0.0"
                   text="Username*" GridPane.columnIndex="1"/>
@@ -45,6 +47,8 @@
                   GridPane.rowIndex="2"/>
             <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Email"
                   GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Phone Number"
+                  GridPane.columnIndex="1" GridPane.rowIndex="4"/>
             <TextField fx:id="txtUsername" promptText="username"
                        GridPane.columnIndex="2"/>
             <PasswordField fx:id="txtPassword" promptText="password"
@@ -56,6 +60,8 @@
                            GridPane.rowIndex="2"/>
             <TextField fx:id="txtEmail" promptText="email"
                        GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+            <TextField fx:id="txtPhoneNumber" promptText="phoneNumber"
+                       GridPane.columnIndex="2" GridPane.rowIndex="4"/>
             <HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
                 <Label text="  "/>
                 <Circle fx:id="passwordCircle" radius="6.0"/>

@@ -54,6 +54,9 @@ public class RegistrationController implements Initializable {
     @FXML
     public Button pwdRecoveryButton;
 
+    @FXML
+    public TextField txtPhoneNumber;
+
     private Stage stage;
     private AccountsController accountsController;
 
@@ -89,6 +92,12 @@ public class RegistrationController implements Initializable {
         });
 
         txtEmail.setOnKeyPressed(key -> {
+            if (key.getCode().equals(KeyCode.ENTER)) {
+                txtPhoneNumber.requestFocus();
+            }
+        });
+
+        txtPhoneNumber.setOnKeyPressed(key -> {
             if (key.getCode().equals(KeyCode.ENTER)) {
                 registerButton.fire();
             }
@@ -151,6 +160,7 @@ public class RegistrationController implements Initializable {
         String password = txtPassword.getCharacters().toString();
         String confirmPwd = txtConfirmPassword.getCharacters().toString();
         String email = txtEmail.getCharacters().toString();
+        String phoneNumber = txtPhoneNumber.getCharacters().toString();
         boolean has2fa = email2faCheck.isSelected();
         //Client side validation
 
@@ -187,8 +197,8 @@ public class RegistrationController implements Initializable {
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
-                    return accountsController.createUser(username, password, email, has2fa,
-                            hasRecovery, nominatedUids, neededUsers);
+                    return accountsController.createUser(username, password, email, phoneNumber,
+                            has2fa, hasRecovery, nominatedUids, neededUsers);
                 }
             };
             task.setOnSucceeded(t -> {
