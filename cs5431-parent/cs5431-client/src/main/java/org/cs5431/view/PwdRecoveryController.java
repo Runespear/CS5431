@@ -261,9 +261,6 @@ public class PwdRecoveryController implements Initializable {
     private void updateRecoveryInfo(boolean hasRecovery, int neededUsers,
                                     List<Integer> nominatedUids, List<String> encSecrets) throws Exception {
         uc.saveRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setContentText("Successfully saved password nomination information");
-        alert.showAndWait();
     }
 
     /**
@@ -320,6 +317,11 @@ public class PwdRecoveryController implements Initializable {
                             return null;
                         }
                     };
+                    task.setOnSucceeded(v -> {
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setContentText("Successfully saved password nomination information");
+                        alert.showAndWait();
+                    });
                     Thread th = new Thread(task);
                     th.setDaemon(true);
                     th.start();
