@@ -21,7 +21,7 @@ public class SQL_Accounts {
     private String DB_USER;
     private String DB_PASSWORD;
 
-    SQL_Accounts(String ip, int dbPort, String username, String
+    public SQL_Accounts(String ip, int dbPort, String username, String
             password) {
         this.ip = ip;
         this.port = dbPort;
@@ -32,7 +32,7 @@ public class SQL_Accounts {
     /** Determines if the username already exists in the database.
      * @param username is the username to be checked in the database.
      * @return true if the username does not exist; false otherwise. */
-    boolean isUniqueUsername(String username) {
+    public boolean isUniqueUsername(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -83,7 +83,7 @@ public class SQL_Accounts {
      * @param pwdSalt salt of the password that was used
      * @return json containing registrationAck and details of the user added (refer to protocols doc)
      * */
-    JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt, String sourceIp) {
+    public JSONObject createUser(JSONObject user, String hashedPwd, String pwdSalt, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -251,7 +251,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    boolean logSessionLimit(String sourceIp) {
+    public boolean logSessionLimit(String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -290,7 +290,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject twoFactorLogin (int uid, String sourceIp) {
+    public JSONObject twoFactorLogin (int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -370,7 +370,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    boolean create2faFailureLog (int uid, String sourceIp) {
+    public boolean create2faFailureLog (int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -415,7 +415,7 @@ public class SQL_Accounts {
      * Creates a failure login log if the user's password and username does not match. (username is valid).
      * Creates a success login log upon success.
      * @return h(privKey) of the user if the authentication is valid. **/
-    JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action, Email adminEmail) {
+    public JSONObject authenticate(JSONObject allegedUser, String encPwd, String sourceIp, String action, Email adminEmail) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
@@ -588,7 +588,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    String getPrivKeySalt(String username) {
+    public String getPrivKeySalt(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         System.out.println("Connecting to database...");
@@ -625,7 +625,7 @@ public class SQL_Accounts {
     /** Gets pwdSalt of pwd associated with username.
      * Creates a failed login log if the username does not exist.
      * @return salt of password associated with username */
-    String getSalt(String username, String sourceIp, String action) {
+    public String getSalt(String username, String sourceIp, String action) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -684,7 +684,7 @@ public class SQL_Accounts {
      * This can only be done by the admin.
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion.
      */
-    int adminDeleteUser(int uid, String sourceIp) {
+    public int adminDeleteUser(int uid, String sourceIp) {
         int parentFolderid = getParentFolderid(uid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
@@ -1249,7 +1249,7 @@ public class SQL_Accounts {
      * @param username The userid of the user
      * @return The userid of the user
      */
-    int getUserId(String username) {
+    public int getUserId(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");

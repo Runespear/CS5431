@@ -18,7 +18,7 @@ public class Email {
     private String adminEmail;
     private String adminPwd;
 
-    Email(String adminEmail, String adminPwd) {
+    public Email(String adminEmail, String adminPwd) {
         this.adminEmail = adminEmail;
         this.adminPwd = adminPwd;
     }

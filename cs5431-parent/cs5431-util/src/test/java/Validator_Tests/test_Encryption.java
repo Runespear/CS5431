@@ -18,7 +18,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-//TODO: Use method generateUserKeys to test public keys, private keys and salt for password encryption
+//Use method generateUserKeys to test public keys, private keys and salt for password encryption
 class test_Encryption {
 
     public static PublicKey correctPublicKey;
@@ -473,7 +473,7 @@ class test_Encryption {
         }
     }
 
-    @Test //TODO: CHECK IF THIS IS CORRECT?
+    @Test
     void test_sameHashedPassword(){//Check whether pwdBasedHash gives same result with same salt and password
         byte[] randomsalt = Encryption.newPwdSalt();
         String password = getRandomString(20, 593);
