@@ -166,9 +166,7 @@ public class PwdRecoveryController implements Initializable {
                 nominatedUsersTable.setItems(observableList);
                 changed = true;
             });
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;
@@ -211,9 +209,7 @@ public class PwdRecoveryController implements Initializable {
             }
             setGraphics(response.getBoolean("hasPwdRec"));
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -247,9 +243,7 @@ public class PwdRecoveryController implements Initializable {
             observableList.addAll(task.getValue());
             nominatedUsersTable.setItems(observableList);
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -322,9 +316,7 @@ public class PwdRecoveryController implements Initializable {
                         alert.setContentText("Successfully saved password nomination information");
                         alert.showAndWait();
                     });
-                    Thread th = new Thread(task);
-                    th.setDaemon(true);
-                    th.start();
+                    Client.exec.submit(task);
                     task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                         if(newValue != null) {
                             Exception ex = (Exception) newValue;

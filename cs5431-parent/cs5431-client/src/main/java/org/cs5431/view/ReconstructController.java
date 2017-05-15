@@ -101,9 +101,7 @@ public class ReconstructController implements Initializable {
                 alert.showAndWait();
                 tryExit();
             });
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;

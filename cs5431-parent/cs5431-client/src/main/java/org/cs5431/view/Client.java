@@ -8,6 +8,8 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Client extends Application {
 
@@ -16,6 +18,12 @@ public class Client extends Application {
     static Parent fileViewNode;
     static Parent registrationNode;
     static Parent editDetailsNode;
+
+    public static ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true); // allows app to exit if tasks are running
+        return t ;
+    });
 
     public static void main(String[] args) {
         launch(args);

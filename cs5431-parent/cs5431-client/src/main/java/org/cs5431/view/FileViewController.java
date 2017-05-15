@@ -196,9 +196,7 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.setOnSucceeded(t -> populateListView());
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
@@ -235,9 +233,7 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
 
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
@@ -276,9 +272,7 @@ public class FileViewController implements Initializable {
                         .getFileName() + "!");
                 alert.showAndWait();
             });
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
 
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
@@ -315,9 +309,7 @@ public class FileViewController implements Initializable {
                 alert.showAndWait();
                 populateListView();
             });
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
@@ -376,9 +368,7 @@ public class FileViewController implements Initializable {
                 populateListView();
                 showAppropriateImages(false, false, false);
             });
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 //TODO don't throw exception if due to not enough privileges?
                 Exception ex = (Exception) newValue;
@@ -512,9 +502,7 @@ public class FileViewController implements Initializable {
             imgCreateFolder.setVisible(currParent.isEditor());
             imgCreateFolder.setDisable(!currParent.isEditor());
             });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);

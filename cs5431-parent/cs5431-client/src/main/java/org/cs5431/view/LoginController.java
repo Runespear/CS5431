@@ -94,7 +94,8 @@ public class LoginController implements Initializable {
             protected User call() throws Exception {
                 JSONObject login = accountsController.login(username, password);
                 if (login.getInt("has2fa") != NO_2FA) {
-                    return new User(login.getInt("uid"), null, null, null, null, null, login.getInt("has2fa"));
+                    return new User(login.getInt("uid"), null, null, null,
+                            null, null, login.getInt("has2fa"), null);
                 } else {
                     return accountsController.parseLogin(username, password, login, NO_2FA);
                 }
@@ -120,9 +121,7 @@ public class LoginController implements Initializable {
                 changeToFileView(e, task.getValue());
             }
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             loginButton.setDisable(false);
@@ -168,9 +167,7 @@ public class LoginController implements Initializable {
             }
         };
         task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -221,8 +218,16 @@ public class LoginController implements Initializable {
                 FXMLLoader fxmlLoader = new FXMLLoader(r);
                 Parent root = fxmlLoader.load();
                 ReconstructController rc = fxmlLoader.getController();
+                int neededUsers = json.getInt("neededUsers");
+                int groupSize = json.getInt("groupSize");
+                if (neededUsers > groupSize) {
+                    showError("Whoops, some of your friends deleted their accounts." +
+                            "Now there's not enough people left to reconstruct your password." +
+                            " Sorry :(");
+                    return;
+                }
                 rc.setUp(stage, username, json.getInt("uid"), json.getString("encPK"),
-                        json.getInt("neededUsers"), json.getString("salt"),
+                        neededUsers, json.getString("salt"),
                         accountsController);
                 scene.setRoot(root);
             } catch (AccountsController.UserRetrieveException ex) {
