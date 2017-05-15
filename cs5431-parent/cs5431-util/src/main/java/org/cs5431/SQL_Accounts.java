@@ -11,6 +11,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.secondPwdHash;
@@ -550,7 +552,11 @@ public class SQL_Accounts {
                     getEmail.setString(1, username);
                     ResultSet userEmail = getEmail.executeQuery();
                     if (userEmail.next() && adminEmail != null) {
-                        adminEmail.send(userEmail.getString(1),"Failed Login Attempt", "");
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        adminEmail.send(userEmail.getString(1),"PSFS: Failed Login Attempt",
+                                "An attempt to log into your Pretty Secure File Sharing account failed" +
+                                " on " + sdf.format(new java.util.Date()) + ". Do contact us at psfs5431@gmail.com if " +
+                                        "you require further assistance.");
                     }
                     connection.commit();
                     return null;
@@ -1651,6 +1657,35 @@ public class SQL_Accounts {
         return null;
     }
 
+    boolean hasRecovery (int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement getRec = null;
+
+            String selectRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+
+            try {
+                getRec = connection.prepareStatement(selectRec);
+                ResultSet rs = getRec.executeQuery();
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+                return false;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                if (getRec != null) {
+                    getRec.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     JSONObject getSecrets(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1727,16 +1762,19 @@ public class SQL_Accounts {
             PreparedStatement createLog = null;
             PreparedStatement getPrivKey = null;
             PreparedStatement getNeededNo = null;
+            PreparedStatement getSize = null;
 
             String selectKey = "SELECT U.privKey, U.privKeySalt FROM Users U WHERE U.uid = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String selectNeeded = "SELECT U.neededUsers FROM Users U WHERE U.uid = ?";
+            String selectSize = "SELECT COUNT(*) FROM PwdGroup P WHERE P.uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
                 getPrivKey = connection.prepareStatement(selectKey);
                 getNeededNo = connection.prepareStatement(selectNeeded);
+                getSize = connection.prepareStatement(selectSize);
                 connection.setAutoCommit(false);
 
                 getPrivKey.setInt(1, uid);
@@ -1749,48 +1787,44 @@ public class SQL_Accounts {
                     json.put("encPK", rs.getString(1));
                     json.put("salt", rs.getString(2));
 
-                    getNeededNo.setInt(1 ,uid);
+                    getNeededNo.setInt(1, uid);
                     rs = getNeededNo.executeQuery();
 
                     if (rs.next()) {
                         json.put("neededUsers", rs.getInt(1));
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, uid);
-                        createLog.setString(3, null);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "RECOVER_PWD");
-                        createLog.setString(6, "SUCCESS");
-                        createLog.setString(7, sourceIp);
-                        createLog.setString(8, null);
-                        createLog.executeUpdate();
 
-                        connection.commit();
-                        return json;
+                        getSize.setInt(1, uid);
+                        rs = getSize.executeQuery();
+
+                        if (rs.next()) {
+                            json.put("groupSize", rs.getInt(1));
+                            
+                            createLog.setInt(1, 0);
+                            createLog.setInt(2, uid);
+                            createLog.setString(3, null);
+                            createLog.setTimestamp(4, lastModified);
+                            createLog.setString(5, "RECOVER_PWD");
+                            createLog.setString(6, "SUCCESS");
+                            createLog.setString(7, sourceIp);
+                            createLog.setString(8, null);
+                            createLog.executeUpdate();
+
+                            connection.commit();
+                            return json;
+                        }
                     }
-                    createLog.setInt(1, 0);
-                    createLog.setInt(2, uid);
-                    createLog.setString(3, null);
-                    createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, "RECOVER_PWD");
-                    createLog.setString(6, "FAILURE");
-                    createLog.setString(7, sourceIp);
-                    createLog.setString(8, "INVALID PWD RECOVERY");
-                    createLog.executeUpdate();
-                    connection.commit();
-                    return null;
-                } else {
-                    createLog.setInt(1, 0);
-                    createLog.setInt(2, uid);
-                    createLog.setString(3, null);
-                    createLog.setTimestamp(4, lastModified);
-                    createLog.setString(5, "RECOVER_PWD");
-                    createLog.setString(6, "FAILURE");
-                    createLog.setString(7, sourceIp);
-                    createLog.setString(8, "INVALID PWD RECOVERY");
-                    createLog.executeUpdate();
-                    connection.commit();
-                    return null;
                 }
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "RECOVER_PWD");
+                createLog.setString(6, "FAILURE");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, "INVALID PWD RECOVERY");
+                createLog.executeUpdate();
+                connection.commit();
+                return null;
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
@@ -1818,6 +1852,9 @@ public class SQL_Accounts {
                 }
                 if (getNeededNo != null) {
                     getNeededNo.close();
+                }
+                if (getSize != null) {
+                    getSize.close();
                 }
                 connection.setAutoCommit(true);
             }

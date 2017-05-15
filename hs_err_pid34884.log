@@ -1,0 +1,102 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x000000011c6df58d, pid=34884, tid=2571
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_45-b14) (build 1.8.0_45-b14)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.45-b02 mixed mode bsd-amd64 compressed oops)
+# Problematic frame:
+# C  [libglass.dylib+0x1558d]  GlassScreenDidChangeScreenParameters+0x9d
+#
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread is native thread
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 1 (SEGV_MAPERR), si_addr: 0x0000000000000000
+
+Registers:
+RAX=0x000000011c711bc0, RBX=0x0000000000000000, RCX=0x0000000000000103, RDX=0x00007f88595e0830
+RSP=0x00007fff5d113670, RBP=0x00007fff5d113680, RSI=0x00007f8859613808, RDI=0x0000000000000000
+R8 =0x0000000000000040, R9 =0x00007fff722fe1e0, R10=0xffffffffffffffff, R11=0x0000000000000246
+R12=0x00007f885bb88d80, R13=0x00007f885944f720, R14=0x00007f885944f760, R15=0x0000000000000000
+RIP=0x000000011c6df58d, EFLAGS=0x0000000000010206, ERR=0x0000000000000004
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x00007fff5d113670)
+0x00007fff5d113670:   00007fff5d1136c8 00007f885944f760
+0x00007fff5d113680:   00007fff5d113690 00007fff911ccbbc
+0x00007fff5d113690:   00007fff5d1136b0 00007fff911ccb4f
+0x00007fff5d1136a0:   0000000000000000 0000000000000000
+0x00007fff5d1136b0:   00007fff5d113720 00007fff911ccac7
+0x00007fff5d1136c0:   00007fff75fe89d0 00007fff724930a0
+0x00007fff5d1136d0:   0000000042000000 00007fff911ccb10
+0x00007fff5d1136e0:   00007fff7528c720 00007f885944f720
+0x00007fff5d1136f0:   00007f885bb88d80 00007fff5d113ec8
+0x00007fff5d113700:   00007fff753b9780 00007fff5d113ec8
+0x00007fff5d113710:   00007f885944f720 00007fff9158c9e2
+0x00007fff5d113720:   00007fff5d113760 00007fff911cc832
+0x00007fff5d113730:   00007fff5d113d40 0000000000000000
+0x00007fff5d113740:   00007fff753b9780 00007fff5d113ec8
+0x00007fff5d113750:   00007fff820db4c0 00007fff9158c9e2
+0x00007fff5d113760:   00007fff5d113e70 00007fff911895e2
+0x00007fff5d113770:   00007fff5d1137c0 00007fff824643f8
+0x00007fff5d113780:   00007f885bbf8080 00007f885941b440
+0x00007fff5d113790:   00007f885a003048 00007f885973ecf0
+0x00007fff5d1137a0:   0000000000000000 00007f885944f7c0
+0x00007fff5d1137b0:   0000000000000000 0000000000000000
+0x00007fff5d1137c0:   00007fff752c9bc0 00007fff5d113d40
+0x00007fff5d1137d0:   0000000000000001 0000000000000100
+0x00007fff5d1137e0:   0000000000000200 00007fff5d113c40
+0x00007fff5d1137f0:   0000000000000000 0000000000000100
+0x00007fff5d113800:   00007fff5d113800 00007fff753b9780
+0x00007fff5d113810:   0000000000000000 00007fff7528d500
+0x00007fff5d113820:   00007fff753b9780 0000000000000000
+0x00007fff5d113830:   00007fff7528d500 00007f885970f7e0
+0x00007fff5d113840:   00007f885bbf8000 0000000000000002
+0x00007fff5d113850:   0000000000000000 00007fff820db4c0
+0x00007fff5d113860:   00007fff5d113a20 00007fff961b1480 
+
+Instructions: (pc=0x000000011c6df58d)
+0x000000011c6df56d:   89 df 4c 89 f1 41 ff 90 68 04 00 00 48 8d 05 48
+0x000000011c6df57d:   25 03 00 48 8b 30 48 8d 05 36 26 03 00 48 8b 10
+0x000000011c6df58d:   48 8b 0b 30 c0 48 89 df ff 91 68 04 00 00 48 8b
+0x000000011c6df59d:   03 48 89 df ff 50 78 48 85 c0 74 36 49 89 c6 48 
+
+Register to memory mapping:
+
+RAX=0x000000011c711bc0: jScreenNotifySettingsChanged+0 in /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/libglass.dylib at 0x000000011c6ca000
+RBX=0x0000000000000000 is an unknown value
+RCX=0x0000000000000103 is an unknown value
+RDX=0x00007f88595e0830 is an unknown value
+RSP=0x00007fff5d113670 is an unknown value
+RBP=0x00007fff5d113680 is an unknown value
+RSI=0x00007f8859613808 is a global jni handle
+RDI=0x0000000000000000 is an unknown value
+R8 =0x0000000000000040 is an unknown value
+R9 =0x00007fff722fe1e0: __sFX+0x1c0 in /usr/lib/system/libsystem_c.dylib at 0x00007fff83064000
+R10=0xffffffffffffffff is an unknown value
+R11=0x0000000000000246 is an unknown value
+R12=0x00007f885bb88d80 is an unknown value
+R13=0x00007f885944f720 is an unknown value
+R14=0x00007f885944f760 is an unknown value
+R15=0x0000000000000000 is an unknown value
+
+
+Stack: [0x00007fff5c918000,0x00007fff5d118000],  sp=0x00007fff5d113670,  free space=8173k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libglass.dylib+0x1558d]  GlassScreenDidChangeScreenParameters+0x9d
+C  [CoreFoundation+0xa0bbc]  __CFNOTIFICATIONCENTER_IS_CALLING_OUT_TO_AN_OBSERVER__+0xc
+C  [CoreFoundation+0xa0b4f]  ___CFXRegistrationPost_block_invoke+0x3f
+C  [CoreFoundation+0xa0ac7]  _CFXRegistrationPost+0x197
+C  [CoreFoundation+0xa0832]  ___CFXNotificationPost_block_invoke+0x32
+C  [CoreFoundation+0x5d5e2]  -[_CFXNotificationRegistrar find:object:observer:enumerator:]+0x782
+C  [CoreFoundation+0x5c835]  _CFXNotificationPost+0x2b5
+C  [Foundation+0x717a]  -[NSNotificationCenter postNotificationName:object:userInfo:]+0x42
+C  [AppKit+0x41c08b]  -[NSApplication _reactToScreenInvalidationImmediately:]+0x17f
+C  [AppKit+0x41bedc]  __44-[NSApplication _reactToScreenInvalidation:]_block_invoke+0x3b
