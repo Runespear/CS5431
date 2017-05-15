@@ -16,12 +16,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import org.cs5431.Encryption;
+import org.cs5431.SSS;
 import org.cs5431.Validator;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.UserController;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +34,7 @@ import java.util.ResourceBundle;
 import static org.cs5431.Constants.EMAIL_2FA;
 import static org.cs5431.Constants.NO_2FA;
 import static org.cs5431.Constants.PHONE_2FA;
+import static org.cs5431.Encryption.encryptSecrets;
 
 public class EditDetailsController implements Initializable {
     @FXML
@@ -248,6 +253,7 @@ public class EditDetailsController implements Initializable {
                     showMessages(pwdMessages);
                 });
                 task.setOnSucceeded(t -> {
+                    tryChangeRecovery(newPassword);
                     pwdMessages.add("Password successfully changed.");
                     showMessages(pwdMessages);
                 });
@@ -397,6 +403,48 @@ public class EditDetailsController implements Initializable {
         }
         if (!phoneTaskRunning)
             showMessages(phoneMessages);
+    }
+
+    private void tryChangeRecovery(String newPassword) {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+            JSONObject json = userController.getRecoveryInfo();
+            boolean hasRecovery = json.getBoolean("hasPwdRec");
+            if (hasRecovery) {
+                int neededUsers = json.getInt("neededUsers");
+                List<Integer> groupId = new ArrayList<>();
+                JSONArray groupIdArr = json.getJSONArray("groupId");
+                JSONArray usernameArr = json.getJSONArray("usernames");
+                List<PublicKey> publicKeys = new ArrayList<>();
+                for (int i = 0; i < groupIdArr.length(); i++) {
+                    groupId.add(groupIdArr.getInt(i));
+                    String username = usernameArr.getString(i);
+                    PwdRecoveryBundle pwd = accountsController.getUserForPwdRecovery(username);
+                    publicKeys.add(pwd.publicKey);
+                }
+                SSS secretGen = new SSS(groupId.size(), neededUsers,
+                        new BigInteger(newPassword.getBytes()));
+                List<String> encSecrets = encryptSecrets(publicKeys, secretGen.generateSecrets());
+                userController.saveRecoveryInfo(true, neededUsers, groupId, encSecrets);
+            }
+            return null;
+            }
+        };
+        task.setOnSucceeded(v -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setContentText("Successfully updated password nomination information");
+            alert.showAndWait();
+        });
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
+                ex.printStackTrace();
+            }
+        });
     }
 
     private void showMessages(List<String> messages) {
