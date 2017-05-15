@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,7 +82,65 @@ class test_SSS {
 
     @Test
     void checkGenerateCoordinates(){
-        assertEquals(true,true);
+        setup();
+        //Check each point
+        BigInteger[][] testCoordinates = new BigInteger[this.numParts][2];
+        for (int x = 1; x <=numParts ;x++){
+            testCoordinates[x-1][0]=BigInteger.valueOf(x);
+            testCoordinates[x-1][1]=sssObject.applyPoly(x,this.polynomial);
+        }
+        BigInteger[][] generatedCoordinates = sssObject.generateCoordinates();
+
+        assert(Arrays.deepEquals(testCoordinates,generatedCoordinates) );
     }
+
+    @Test
+    void checkCheckSubsets(){
+        setup();
+
+        BigInteger[][] badArray = new BigInteger[3][2];
+        badArray[0][0] = BigInteger.ONE;
+        badArray[0][1] = BigInteger.valueOf(123);
+        badArray[1][0] = BigInteger.valueOf(2);
+        badArray[1][1] = BigInteger.valueOf(1234);
+        badArray[2][0] = BigInteger.ONE;
+        badArray[2][1] = BigInteger.valueOf(123);
+
+        HashMap<BigInteger,BigInteger> uniqueCoords = sssObject.checkSubsets(badArray);
+
+        System.out.println(System.lineSeparator()+"Printing our unique Dict");
+        for (Map.Entry<BigInteger, BigInteger> entry : uniqueCoords.entrySet()) {
+            System.out.println(entry.getKey()+" : "+entry.getValue());
+        }
+        assertEquals(2,uniqueCoords.size());
+    }
+
+    @Test
+    void checkGenerateSecrets(){
+        setup();
+        List<String> HolyShit = sssObject.generateSecrets();
+
+        this.polynomial = sssObject.polynomial;
+
+        BigInteger[][] coordinates = sssObject.generateCoordinates();
+        List<String> secrets = new ArrayList<String>();
+        for (int i = 0 ; i < coordinates.length;i++){
+            String coordinateStr = coordinates[i][0].toString() + ":" + coordinates[i][1].toString();
+            secrets.add(coordinateStr);
+        }
+
+        Iterator itHS = HolyShit.iterator();
+        Iterator itS = secrets.iterator();
+
+        for (int i = 0; i<HolyShit.size();i++){
+            System.out.println();
+            System.out.println(HolyShit.get(i));
+            System.out.println(secrets.get(i));
+            assert(secrets.get(i).equals(HolyShit.get(i)));
+        }
+
+
+    }
+
 
 }

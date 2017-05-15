@@ -92,7 +92,7 @@ public class SSS {
         //Need == numSubsets
         //Use dictionary
         //Check length first
-        assert(coordinateSubsets.length >= this.numSubsets - 1):"Not enough subsets";
+        //assert(coordinateSubsets.length >= this.numSubsets - 1):"Not enough subsets";
         //Check uniqueness
         //TODO checkSubsets
         HashMap<BigInteger,BigInteger> uniqueCoord = new HashMap<BigInteger,BigInteger>();
@@ -105,7 +105,7 @@ public class SSS {
     public BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
         //Guaranteed to have minimum required
         //Need precheck to ensure that they are unique
-        
+
         //What we want
         BigInteger L0 = BigInteger.ZERO;
         //Summation Term
@@ -135,7 +135,7 @@ public class SSS {
         //e.g. 5:123456
         List<String> secrets = new ArrayList<String>();
         for (int i = 0 ; i < coordinates.length;i++){
-            String coordinateStr = coordinates[i][0].toString() + ":" + coordinates[i][1];
+            String coordinateStr = coordinates[i][0].toString() + ":" + coordinates[i][1].toString();
             secrets.add(coordinateStr);
         }
         return secrets;
