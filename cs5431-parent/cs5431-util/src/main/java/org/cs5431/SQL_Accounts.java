@@ -4,15 +4,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.io.File;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.secondPwdHash;
@@ -551,7 +548,7 @@ public class SQL_Accounts {
                     getEmail = connection.prepareStatement(selectEmail);
                     getEmail.setString(1, username);
                     ResultSet userEmail = getEmail.executeQuery();
-                    if (userEmail.next() && adminEmail != null) {
+                    if (userEmail.next() && adminEmail != null && !userEmail.getString(1).equals("")) {
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         adminEmail.send(userEmail.getString(1),"PSFS: Failed Login Attempt",
                                 "An attempt to log into your Pretty Secure File Sharing account failed" +
@@ -1124,26 +1121,28 @@ public class SQL_Accounts {
                 changeEmail.setString(1, newEmail);
                 changeEmail.setInt(2, uid);
                 changeEmail.setString(3, oldEmail);
-                changeEmail.executeUpdate();
-                if (DEBUG_MODE) {
-                    System.out.println("changed email");
-                }
+                int successNo = changeEmail.executeUpdate();
+                if (successNo >0) {
+                    if (DEBUG_MODE) {
+                        System.out.println("changed email");
+                    }
 
-                createLog.setInt(1, 0);
-                createLog.setInt(2, uid);
-                createLog.setString(3, null);
-                createLog.setTimestamp(4, lastModified);
-                createLog.setString(5, "CHANGE_EMAIL");
-                createLog.setString(6, "SUCCESS");
-                createLog.setString(7, sourceIp);
-                createLog.setString(8, null);
-                createLog.executeUpdate();
-                if (DEBUG_MODE) {
-                    System.out.println("created log");
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "CHANGE_EMAIL");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
+                    connection.commit();
+                    return true;
                 }
-
-                connection.commit();
-                return true;
+                return false;
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
@@ -1922,26 +1921,28 @@ public class SQL_Accounts {
                 changePhone.setString(1, newPhone);
                 changePhone.setInt(2, uid);
                 changePhone.setString(3, oldPhone);
-                changePhone.executeUpdate();
-                if (DEBUG_MODE) {
-                    System.out.println("changed phoneNo");
-                }
+                int successNo = changePhone.executeUpdate();
+                if (successNo > 0) {
+                    if (DEBUG_MODE) {
+                        System.out.println("changed phoneNo");
+                    }
 
-                createLog.setInt(1, 0);
-                createLog.setInt(2, uid);
-                createLog.setString(3, null);
-                createLog.setTimestamp(4, lastModified);
-                createLog.setString(5, "CHANGE_PHONE_NO");
-                createLog.setString(6, "SUCCESS");
-                createLog.setString(7, sourceIp);
-                createLog.setString(8, null);
-                createLog.executeUpdate();
-                if (DEBUG_MODE) {
-                    System.out.println("created log");
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "CHANGE_PHONE_NO");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created log");
+                    }
+                    connection.commit();
+                    return uid;
                 }
-
-                connection.commit();
-                return uid;
+                return -1;
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
