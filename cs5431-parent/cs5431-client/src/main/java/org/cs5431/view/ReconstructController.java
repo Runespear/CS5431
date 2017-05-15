@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.getPrivKeyFromJSON;
 import static org.cs5431.controller.UserController.completeChangePwd;
 
@@ -37,7 +38,11 @@ public class ReconstructController implements Initializable {
     @FXML
     public Label neededTxt;
 
+    @FXML
+    public Button sendEmailButton;
+
     private Stage stage;
+    private String username;
     private Integer uid;
     private String encPK;
     private Integer neededUsers;
@@ -50,6 +55,8 @@ public class ReconstructController implements Initializable {
         recoverButton.setOnAction(e -> tryRecover());
 
         imgExit.setOnMouseClicked(e -> tryExit());
+
+        sendEmailButton.setOnMouseClicked(e -> sendEmail());
     }
 
     private void tryRecover() {
@@ -118,9 +125,10 @@ public class ReconstructController implements Initializable {
         stage.show();
     }
 
-    public void setUp(Stage stage, int uid, String encPK, int neededUsers,
+    public void setUp(Stage stage, String username, int uid, String encPK, int neededUsers,
                       String salt, AccountsController ac) {
         this.stage = stage;
+        this.username = username;
         this.uid = uid;
         this.encPK = encPK;
         this.neededUsers = neededUsers;
@@ -133,10 +141,22 @@ public class ReconstructController implements Initializable {
             label.setText(i + ")");
             TextField text = new TextField();
             box.getChildren().addAll(label, text);
+            boxen.getChildren().add(box);
             fields.add(text);
         }
 
         neededTxt.setText(neededUsers + " codes are needed from your friends:");
+    }
+
+    private void sendEmail() {
+        try {
+            ac.sendRecoveryEmail(uid, username);
+        } catch (AccountsController.UserRetrieveException ex) {
+            ex.printStackTrace();
+            showError(ex.getMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void showError(String error) {

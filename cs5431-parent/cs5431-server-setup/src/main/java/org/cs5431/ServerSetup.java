@@ -166,7 +166,7 @@ public class ServerSetup {
         String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
                 "uid INT UNSIGNED, \n" +
                 "simulatedUsername VARCHAR(50), \n" +
-                "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(20) NOT NULL,\n" +
+                "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(30) NOT NULL,\n" +
                 "status CHAR(10) NOT NULL,\n" +
                 "sourceIp VARCHAR(30) NOT NULL, \n" +
                 "failureType VARCHAR(100));";
@@ -182,7 +182,7 @@ public class ServerSetup {
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createPwdRecovery = "CREATE TABLE PwdGroup (uid INT UNSIGNED NOT NULL, nominatedUid INT UNSIGNED NOT NULL,\n" +
-                "secret CHAR(255) NOT NULL," +
+                "secret BLOB NOT NULL," +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (nominatedUid) REFERENCES Users(uid) ON DELETE CASCADE);";
         String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE';";

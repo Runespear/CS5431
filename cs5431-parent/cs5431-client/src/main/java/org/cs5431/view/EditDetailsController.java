@@ -9,6 +9,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -505,10 +507,14 @@ public class EditDetailsController implements Initializable {
         result.ifPresent(code -> {
             try {
                 String secret = userController.decryptSecret(code);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(secret);
+                clipboard.setContent(content);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Secret");
                 alert.setContentText("Please share this new code with the person you got this from: "
-                        + secret); //todo make this copiable?
+                        + secret + "\nThe code has also been copied to your clipboard.");
                 alert.showAndWait();
             } catch (Exception ex) {
                 ex.printStackTrace();

@@ -282,7 +282,6 @@ public class FileViewController implements Initializable {
 
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
-                    //TODO alert?
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
                 }
@@ -320,7 +319,6 @@ public class FileViewController implements Initializable {
             th.setDaemon(true);
             th.start();
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
-                //TODO don't throw exception if due to not enough privileges?
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
             });

@@ -88,7 +88,7 @@ public class AccountsController {
 
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
             Folder parentFolder = new Folder(parentFolderid, username,
-                    lastModified, true, true);
+                    lastModified, true);
             return new User(uid, username, email, parentFolder,
                     privKey, pubKey, twoFa);
         } else if (newUser.getString("msgType").equals("error")) {
@@ -185,7 +185,7 @@ public class AccountsController {
     private Folder getFolderFromId(int folderId, int uid, PrivateKey
             userPrivKey) {
         try {
-            Folder parentFolder = new Folder(folderId, "", null, true, true);
+            Folder parentFolder = new Folder(folderId, "", null, true);
             List<FileSystemObject> contents = FileController.getChildrenWithId
                     (folderId, uid, sslSocket, userPrivKey);
             for (FileSystemObject child : contents)
@@ -264,19 +264,38 @@ public class AccountsController {
 
     }
 
-    public class RegistrationFailException extends Exception {
+    public void sendRecoveryEmail(int uid, String username) throws IOException, ClassNotFoundException,
+            UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","recoverPwdEmail");
+        json.put("uid", uid);
+        json.put("username", username);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("recoverPwdEmailAck")) {
+            if (response.getInt("uid") != uid) {
+                throw new UserRetrieveException("Could not send out email!");
+            }
+        } else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+    }
+
+    public static class RegistrationFailException extends Exception {
         RegistrationFailException(String message) {
             super(message);
         }
     }
 
-    public class LoginFailException extends Exception {
+    public static class LoginFailException extends Exception {
         LoginFailException(String message) {
             super(message);
         }
     }
 
-    public class UserRetrieveException extends Exception {
+    public static class UserRetrieveException extends Exception {
         UserRetrieveException(String message) {
             super(message);
         }

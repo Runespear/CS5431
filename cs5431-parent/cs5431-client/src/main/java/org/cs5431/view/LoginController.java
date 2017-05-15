@@ -125,6 +125,7 @@ public class LoginController implements Initializable {
         th.start();
         loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            loginButton.setDisable(false);
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
@@ -216,11 +217,11 @@ public class LoginController implements Initializable {
                 Stage stage = (Stage) node.getScene().getWindow();
                 Scene scene = stage.getScene();
 
-                final URL r = getClass().getResource("registration.fxml");
+                final URL r = getClass().getResource("reconstruct.fxml");
                 FXMLLoader fxmlLoader = new FXMLLoader(r);
                 Parent root = fxmlLoader.load();
                 ReconstructController rc = fxmlLoader.getController();
-                rc.setUp(stage, json.getInt("uid"), json.getString("encPK"),
+                rc.setUp(stage, username, json.getInt("uid"), json.getString("encPK"),
                         json.getInt("neededUsers"), json.getString("salt"),
                         accountsController);
                 scene.setRoot(root);

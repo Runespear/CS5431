@@ -4,24 +4,15 @@ import org.cs5431.TransmittedFile;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Signature;
-import java.util.Random;
-import java.util.Scanner;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 
 public class SSLController {
-
-
-
-
-
     public static Socket connect_SSLServerSocket(String host, int
             Port_Number, String storeName) throws Exception{
 

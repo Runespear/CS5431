@@ -376,14 +376,9 @@ public class SQL_Accounts {
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
             PreparedStatement createLog = null;
-            PreparedStatement limitUsername = null;
 
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
-            String countUsername = "SELECT COUNT(*) FROM UserLog U \n" +
-                    "WHERE U.lastModified > DATE_SUB(now(), INTERVAL 5 MINUTE) \n" +
-                    "AND U.actionType = \"LOGIN\" AND U.status = \"FAILURE\" \n" +
-                    "AND U.simulatedUsername = ?;";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -472,7 +467,7 @@ public class SQL_Accounts {
                     addLog.setString(8, "IP TOO MANY FAILED LOGINS");
                     addLog.executeUpdate();
                     connection.commit();
-                    return null; //TODO: what to return
+                    return null;
                 }
 
                 limitUsername.setString(1, username);
@@ -493,7 +488,7 @@ public class SQL_Accounts {
                     addLog.setString(8, "USERNAME TOO MANY FAILED LOGINS");
                     addLog.executeUpdate();
                     connection.commit();
-                    return null; //TODO: what to return
+                    return null;
                 }
 
                 verifyUser.setString(1, username);
@@ -1043,7 +1038,6 @@ public class SQL_Accounts {
     /** Saves the userlog as csv file into /tmp/userlogs.csv
      * Logs the change of password in the userlog.
      * Creates failure file log invalid password or db error (rollsback accordingly). */
-    //TODO: how to verify admin?
     String getUserLog() {
         if (DEBUG_MODE) {
             System.out.println("Can view file logs");
@@ -1373,10 +1367,10 @@ public class SQL_Accounts {
             PreparedStatement createLog = null;
             PreparedStatement addNeededNo = null;
 
-            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets) + values (?, ?, ?)";
+            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secret) values (?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
-            String insertNeeded = "UPDATE Users SET neededUsers = ? WHERE uid = ?";
+            String insertNeeded = "UPDATE Users SET neededUsers = ?, hasPwdRec = true WHERE uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1598,7 +1592,7 @@ public class SQL_Accounts {
             PreparedStatement getNominated = null;
             PreparedStatement getUsername = null;
 
-            String getPwdRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+            String getPwdRec = "SELECT U.hasPwdRec, U.neededUsers FROM Users U WHERE U.uid = ?";
             String selectGroup = "SELECT U.nominatedUid FROM PwdGroup U WHERE U.uid = ?";
             String selectUsername = "SELECT U.username FROM Users U WHERE U.uid = ?";
 
@@ -1612,7 +1606,8 @@ public class SQL_Accounts {
                 json.put("msgType", "pwdRecoveryInfoAck");
                 json.put("uid", uid);
 
-                if (rs.next() && rs.getInt(1) == 1) {
+                if (rs.next() && rs.getBoolean(1)) {
+                    json.put("neededUsers", rs.getInt(2));
                     getNominated = connection.prepareStatement(selectGroup);
                     getUsername = connection.prepareStatement(selectUsername);
                     getNominated.setInt(1, uid);
@@ -1633,6 +1628,7 @@ public class SQL_Accounts {
                     json.put("hasPwdRec", true);
                     json.put("groupUid", groupUid);
                     json.put("usernames", usernames);
+
                     return json;
                 }
                 json.put("hasPwdRec", false);

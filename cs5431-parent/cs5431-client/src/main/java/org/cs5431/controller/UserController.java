@@ -332,31 +332,31 @@ public class UserController {
         }
     }
 
-    public class ChangeEmailFailException extends Exception {
+    public static class ChangeEmailFailException extends Exception {
         ChangeEmailFailException(String message) {
             super(message);
         }
     }
 
-    public class DeleteUserException extends Exception {
+    public static class DeleteUserException extends Exception {
         DeleteUserException(String message) {
             super(message);
         }
     }
 
-    public class LogoutException extends Exception {
+    public static class LogoutException extends Exception {
         LogoutException(String message) {
             super(message);
         }
     }
 
-    public class PwdRecoveryException extends Exception {
+    public static class PwdRecoveryException extends Exception {
         PwdRecoveryException(String message) {
             super(message);
         }
     }
 
-    public class TwoFactorException extends Exception {
+    public static class TwoFactorException extends Exception {
         TwoFactorException(String message) {
             super(message);
         }

@@ -6,12 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-/**
- * Created by Brandon on 17/4/2017.
- */
-
-//TODO: IF THERE IS A PROBLEM WITH SENDING MAIL AND ENCOUNTER AN AUTHENTICATIONFAILEDEXCEPTION,
-//TODO: GO TO https://myaccount.google.com/lesssecureapps AND MAKE IT LESS SECURE
+//IF THERE IS A PROBLEM WITH SENDING MAIL AND ENCOUNTER AN AUTHENTICATIONFAILEDEXCEPTION,
+//GO TO https://myaccount.google.com/lesssecureapps AND MAKE IT LESS SECURE
 
 public class Email {
 
