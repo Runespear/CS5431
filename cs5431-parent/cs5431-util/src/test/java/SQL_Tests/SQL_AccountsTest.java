@@ -1,7 +1,6 @@
 package SQL_Tests;
 
 import org.cs5431.Email;
-import org.cs5431.JSON;
 import org.cs5431.SQL_Accounts;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Base64;
 
 import static org.cs5431.Encryption.secondPwdHash;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by user on 17/4/2017.
@@ -285,5 +284,7 @@ class SQL_AccountsTest {
     @AfterEach
     void tearDown() {
     }
+
+    
 
 }

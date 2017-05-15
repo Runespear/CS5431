@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 
 public class IntrusionDetection {
     private int port;
@@ -70,27 +69,27 @@ public class IntrusionDetection {
         File intrusionLog = new File("./intrusion-log.txt");
         if (!intrusionLog.exists()) {
             try {
-                intrusionLog.createNewFile();
+                boolean createdNewFile = intrusionLog.createNewFile();
+                if (createdNewFile) {
+                    FileWriter fw;
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    try {
+                        fw = new FileWriter(intrusionLog, true);
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        bw.write(sdf.format(new java.util.Date()) + " " + log);
+                        bw.newLine();
+                        bw.flush();
+                        fw.flush();
+                        bw.close();
+                        fw.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        FileWriter fw;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            fw = new FileWriter(intrusionLog, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(sdf.format(new Date()) + " " + log);
-            bw.newLine();
-            bw.flush();
-            fw.flush();
-            bw.close();
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     //any ip from this list should be banned

@@ -342,6 +342,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
@@ -749,6 +750,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, 0);
                     createLog.setString(3, null);
@@ -859,6 +861,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, username);
@@ -1006,6 +1009,7 @@ public class SQL_Accounts {
                 e.printStackTrace();
                 try {
                     Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, username);
@@ -1148,6 +1152,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
@@ -1184,13 +1189,8 @@ public class SQL_Accounts {
      */
     boolean checkCredentials() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        if (DEBUG_MODE) {
-            System.out.println("Connecting to database...");
-        }
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (connection != null) {
-                return true;
-            }
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             if (DEBUG_MODE) {
@@ -1198,7 +1198,6 @@ public class SQL_Accounts {
             }
             return false;
         }
-        return true;
     }
 
     /**
@@ -1413,6 +1412,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
@@ -1482,6 +1482,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
@@ -1555,14 +1556,18 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
                     createLog.setTimestamp(4, lastModified);
                     switch (newToggle) {
                         case 0: createLog.setString(5,  "DISABLED_2FA");
+                            break;
                         case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
+                            break;
                         case 2: createLog.setString(5,  "ENABLED_PHONE_2FA");
+                            break;
                     }
                     createLog.setString(6, "FAILURE");
                     createLog.setString(7, sourceIp);
@@ -1830,6 +1835,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);
@@ -1948,6 +1954,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
                     createLog.setString(3, null);

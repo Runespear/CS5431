@@ -119,25 +119,23 @@ public class SQL_Files {
                     return null;
                 }
             } catch (JSONException e) {
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
-                        createLog.setInt(3, uid);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "GET_UPLOAD_KEYS");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setInt(8, 0);
-                        createLog.setString(9, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
-                    return null;
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "GET_UPLOAD_KEYS");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
+                return null;
             } finally {
                 if (verifyEditors != null) {
                     verifyEditors.close();
@@ -193,7 +191,6 @@ public class SQL_Files {
             PreparedStatement createLog = null;
             PreparedStatement addPermission = null;
             PreparedStatement addFile = null;
-            PreparedStatement addPath = null;
             PreparedStatement addParent = null;
 
             String insertFolder = "INSERT INTO FileSystemObjects (fsoid, fsoName, size, " +
@@ -358,9 +355,6 @@ public class SQL_Files {
                 }
                 if (addFile != null) {
                     addFile.close();
-                }
-                if (addPath != null) {
-                    addPath.close();
                 }
                 if (addParent != null) {
                     addParent.close();
@@ -939,6 +933,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -1115,6 +1110,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -1302,6 +1298,7 @@ public class SQL_Files {
                     try {
                         System.err.println("Transaction is being rolled back");
                         connection.rollback();
+                        createLog = connection.prepareStatement(insertLog);
                         createLog.setInt(1, 0);
                         createLog.setInt(2, fsoid);
                         createLog.setInt(3, uid);
@@ -1425,6 +1422,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -1537,6 +1535,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -1736,6 +1735,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -1879,6 +1879,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, fsoid);
                     createLog.setInt(3, uid);
@@ -1975,6 +1976,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    logDeleteObject = connection.prepareStatement(deleteLog);
                     logDeleteObject.setInt(1, 0);
                     logDeleteObject.setInt(2, fsoid);
                     logDeleteObject.setInt(3, uid);
@@ -2094,6 +2096,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    logDeleteObject = connection.prepareStatement(deleteLog);
                     logDeleteObject.setInt(1, 0);
                     logDeleteObject.setInt(2, fsoid);
                     logDeleteObject.setInt(3, uid);
@@ -2170,7 +2173,7 @@ public class SQL_Files {
 
                 getFileLog = connection.prepareStatement(selectLog);
                 getFileLog.setString(1, location);
-                getFileLog.executeQuery();
+                getFileLog.execute();
                 return location;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -2221,7 +2224,7 @@ public class SQL_Files {
                 getFileLog = connection.prepareStatement(selectLog);
                 getFileLog.setInt(1, fsoid);
                 getFileLog.setString(2, location);
-                getFileLog.executeQuery();
+                getFileLog.execute();
                 return location;
             } catch (SQLException e) {
                 e.printStackTrace();

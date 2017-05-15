@@ -216,6 +216,7 @@ public class ServerSetup {
 
             statement = connection.prepareStatement(flushPriv);
             statement.execute();
+            statement.close();
             connection.close();
 
             connection = DriverManager.getConnection(url+"/PSFS5431?autoReconnect=true&useSSL=false",
@@ -243,6 +244,7 @@ public class ServerSetup {
             statement = connection.prepareStatement(createPwdRecovery);
             statement.execute();
 
+            statement.close();
             connection.close();
 
             //SSL handling
