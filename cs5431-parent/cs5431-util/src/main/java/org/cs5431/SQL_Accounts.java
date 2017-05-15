@@ -1991,7 +1991,7 @@ public class SQL_Accounts {
             PreparedStatement dropTable = null;
             PreparedStatement createTable = null;
 
-            String removeTable = "DROP TABLE UserLogs";
+            String removeTable = "DROP TABLE UserLog";
             String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
                     "uid INT UNSIGNED, \n" +
                     "simulatedUsername VARCHAR(50), \n" +
@@ -2007,7 +2007,7 @@ public class SQL_Accounts {
                 createTable.execute();
 
                 return true;
-                
+
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
