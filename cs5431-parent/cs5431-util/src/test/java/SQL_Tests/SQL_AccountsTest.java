@@ -5,6 +5,7 @@ import org.cs5431.JSON;
 import org.cs5431.SQL_Accounts;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +23,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SQL_AccountsTest {
     public static SQL_Accounts account;
+
+    @BeforeAll
+    void setUpAll() {
+        //TODO HI RUIXIN
+    }
 
     @BeforeEach
     void setUp() {

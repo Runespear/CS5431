@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,7 +20,7 @@ public class Client extends Application {
     static Parent registrationNode;
     static Parent editDetailsNode;
 
-    public static ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
+    public static final ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true); // allows app to exit if tasks are running
         return t ;
@@ -64,7 +65,7 @@ public class Client extends Application {
      * Currently prints to System.err
      * @param message The message to be printed
      */
-    public static void printNonFatalError(String message) {
+    static void printNonFatalError(String message) {
         System.err.println(message);
     }
 }

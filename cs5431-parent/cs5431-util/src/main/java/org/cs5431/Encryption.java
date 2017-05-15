@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -47,7 +49,7 @@ public class Encryption {
             BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-        return cipher.doFinal(fileName.getBytes());
+        return cipher.doFinal(fileName.getBytes(StandardCharsets.UTF_8));
     }
 
     public static byte[] encFileSecretKey (SecretKey secretKey, PublicKey
@@ -139,7 +141,7 @@ public class Encryption {
 
     public static byte[] SHA256(String msg) {
         SHA256Digest sha256 = new SHA256Digest();
-        byte msgByte[] = msg.getBytes();
+        byte msgByte[] = msg.getBytes(StandardCharsets.UTF_8);
         sha256.update(msgByte, 0, msgByte.length);
         Arrays.fill(msgByte, (byte)0 );    //an attempt to zero out pwd
         byte[] hashedPwd = new byte[sha256.getDigestSize()];
@@ -375,7 +377,7 @@ public class Encryption {
             Cipher cipher = Cipher.getInstance
                     ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
             cipher.init(Cipher.ENCRYPT_MODE, publicKeys.get(i));
-            byte SKbytes[] = cipher.doFinal(plainSecrets.get(i).getBytes());
+            byte SKbytes[] = cipher.doFinal(plainSecrets.get(i).getBytes(StandardCharsets.UTF_8));
             secrets.add(Base64.getEncoder().encodeToString(SKbytes));
         }
         return secrets;

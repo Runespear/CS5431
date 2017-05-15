@@ -166,12 +166,12 @@ public class ConnectController implements Initializable {
                 "server admin has given you into the folder /user-config/");
         alert.showAndWait();
     }
-    public class CertException extends Exception {
+    public static class CertException extends Exception {
         CertException(String message) {
             super(message);
         }
     }
-    public class JKSException extends Exception {
+    public static class JKSException extends Exception {
         JKSException(String message) {
             super(message);
         }

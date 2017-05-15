@@ -52,7 +52,10 @@ public class SSS {
         for (int i = 1; i<this.polynomial.length;i++ ){
             this.polynomial[i]= BigInteger.valueOf(this.subsets[i-1]);
         }
-        return this.polynomial;
+        //deep copy
+        BigInteger retPoly[] = new BigInteger[this.polynomial.length];
+        System.arraycopy(this.polynomial, 0, retPoly, 0, this.polynomial.length);
+        return retPoly;
     }
 
     public BigInteger applyPoly(BigInteger x, BigInteger[] polynomial){
@@ -84,7 +87,12 @@ public class SSS {
             this.coordinates[i][1] = applyPoly(x,this.polynomial);
             x++;
         }
-        return this.coordinates;
+        BigInteger retCoord[][] = new BigInteger[this.coordinates.length][];
+        for (int i = 0; i < this.coordinates.length; i++) {
+            retCoord[i] = new BigInteger[this.coordinates[i].length];
+            System.arraycopy(this.coordinates[i], 0, retCoord[i], 0, this.coordinates[i].length);
+        }
+        return retCoord;
     }
 
     public HashMap<BigInteger, BigInteger> checkSubsets(BigInteger[][] coordinateSubsets){
@@ -171,7 +179,7 @@ public class SSS {
         return secret;
     }
 
-    public class NotEnoughSubsetsException extends Exception {
+    public static class NotEnoughSubsetsException extends Exception {
         NotEnoughSubsetsException(String message) {
             super(message);
         }

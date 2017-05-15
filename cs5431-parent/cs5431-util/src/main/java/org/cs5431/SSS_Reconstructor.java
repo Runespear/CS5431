@@ -92,7 +92,7 @@ public class SSS_Reconstructor{
         return asd.num;
     }
 
-    public class NotEnoughSubsetsException extends Exception {
+    public static class NotEnoughSubsetsException extends Exception {
         NotEnoughSubsetsException(String message) {
             super(message);
         }
