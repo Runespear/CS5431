@@ -93,7 +93,6 @@ public class LoginController implements Initializable {
             @Override
             protected User call() throws Exception {
                 JSONObject login = accountsController.login(username, password);
-                System.out.println("2fa status: " + login.getInt("has2fa") );
                 if (login.getInt("has2fa") != NO_2FA) {
                     return new User(login.getInt("uid"), null, null, null, null, null, login.getInt("has2fa"));
                 } else {
@@ -173,6 +172,7 @@ public class LoginController implements Initializable {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
+                showError(ex.getMessage());
             }
         });
     }
@@ -219,7 +219,8 @@ public class LoginController implements Initializable {
                 Parent root = fxmlLoader.load();
                 ReconstructController rc = fxmlLoader.getController();
                 rc.setUp(stage, json.getInt("uid"), json.getString("encPK"),
-                        json.getInt("neededUsers")) ;
+                        json.getInt("neededUsers"), json.getString("salt"),
+                        accountsController.getSSLSocket());
                 scene.setRoot(root);
             } catch (AccountsController.UserRetrieveException ex) {
                 showError(ex.getMessage());

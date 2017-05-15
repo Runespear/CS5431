@@ -11,10 +11,7 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.*;
 import java.util.Base64;
 import java.util.List;
 
@@ -59,38 +56,8 @@ public class UserController {
 
             if (saltResponse.getString("msgType").equals("getPrivKeySaltAck")) {
                 String strSalt = saltResponse.getString("privKeySalt");
-                byte[] privKeySalt = Base64.getDecoder().decode(strSalt);
-                JSONObject allegedUser = new JSONObject();
-                allegedUser.put("newPrivKey", encryptPrivateKey(newPassword,
-                        user.getPrivKey().getEncoded(), privKeySalt));
-
-                String username = user.getUsername();
-                allegedUser.put("msgType", "changePwd");
-                allegedUser.put("uid", user.getId());
-                allegedUser.put("username", username);
-                allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(oldPassword)));
-                allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
-
-                sendJson(allegedUser, sslSocket);
-                if (DEBUG_MODE) {
-                    System.out.println("waiting to receive json...");
-                }
-                JSONObject jsonAck = receiveJson(sslSocket);
-                if (DEBUG_MODE) {
-                    System.out.println("change pwd json recived: " + jsonAck);
-                }
-
-                if (jsonAck.getString("msgType").equals("changePwdAck")) {
-                    if (jsonAck.getInt("uid") != user.getId())
-                        throw new ChangePwdFailException("Received bad response " +
-                                "from server - user id does not match up");
-                } else if (jsonAck.getString("msgType").equals("error")) {
-                    throw new ChangePwdFailException(jsonAck.getString
-                            ("message"));
-                } else {
-                    throw new ChangePwdFailException("Received bad response " +
-                            "from server");
-                }
+                completeChangePwd(newPassword, user.getPrivKey(), strSalt,
+                        user.getUsername(), oldPassword, user.getId(), sslSocket);
             } else if (saltResponse.getString("msgType").equals("error")) {
                 throw new ChangePwdFailException(saltResponse.getString
                         ("message"));
@@ -102,6 +69,45 @@ public class UserController {
                 | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException
                 | BadPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void completeChangePwd(String newPassword, PrivateKey privateKey, String strSalt,
+                                         String username, String oldPassword, int uid, Socket sslSocket)
+            throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException, IOException, ClassNotFoundException,
+            UserController.ChangePwdFailException {
+        JSONObject allegedUser = new JSONObject();
+        byte[] privKeySalt = Base64.getDecoder().decode(strSalt);
+        allegedUser.put("newPrivKey", encryptPrivateKey(newPassword, privateKey.getEncoded()
+                , privKeySalt));
+
+        allegedUser.put("msgType", "changePwd");
+        allegedUser.put("uid", uid);
+        allegedUser.put("username", username);
+        allegedUser.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(oldPassword)));
+        allegedUser.put("newHashedPwd", Base64.getEncoder().encodeToString(SHA256(newPassword)));
+
+        sendJson(allegedUser, sslSocket);
+        if (DEBUG_MODE) {
+            System.out.println("waiting to receive json...");
+        }
+        JSONObject jsonAck = receiveJson(sslSocket);
+        if (DEBUG_MODE) {
+            System.out.println("change pwd json received: " + jsonAck);
+        }
+
+        if (jsonAck.getString("msgType").equals("changePwdAck")) {
+            if (jsonAck.getInt("uid") != uid)
+                throw new ChangePwdFailException("Received bad response " +
+                        "from server - user id does not match up");
+        } else if (jsonAck.getString("msgType").equals("error")) {
+            throw new ChangePwdFailException(jsonAck.getString
+                    ("message"));
+        } else {
+            throw new ChangePwdFailException("Received bad response " +
+                    "from server");
         }
     }
 
@@ -293,7 +299,7 @@ public class UserController {
         return Encryption.decryptSecret(user.getPrivKey(), code);
     }
 
-    public class ChangePwdFailException extends Exception {
+    public static class ChangePwdFailException extends Exception {
         ChangePwdFailException(String message) {
             super(message);
         }
