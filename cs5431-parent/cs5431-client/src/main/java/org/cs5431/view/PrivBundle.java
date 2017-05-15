@@ -7,7 +7,6 @@ public class PrivBundle {
     int userId;
     FileSystemObject fso;
     boolean canEdit;
-    boolean canView;
     private final SimpleStringProperty username;
     String privilege;
 
@@ -16,7 +15,6 @@ public class PrivBundle {
         this.userId = userId;
         this.fso = fso;
         this.canEdit = canEdit;
-        this.canView = canView;
         if (canEdit && canView)
             privilege = "Can Edit";
         else if (canView)
