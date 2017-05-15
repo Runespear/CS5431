@@ -60,7 +60,7 @@
                            GridPane.rowIndex="2"/>
             <TextField fx:id="txtEmail" promptText="email"
                        GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-            <TextField fx:id="txtPhoneNumber" promptText="phoneNumber"
+            <TextField fx:id="txtPhoneNumber" promptText="phone number"
                        GridPane.columnIndex="2" GridPane.rowIndex="4"/>
             <HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
                 <Label text="  "/>
