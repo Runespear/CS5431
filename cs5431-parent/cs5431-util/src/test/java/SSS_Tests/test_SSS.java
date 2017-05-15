@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Created by zilong on 14/5/17.
  */
-class SSSTest {
+class test_SSS {
 
     SSS sssObject;
     BigInteger secretNumber;
@@ -43,5 +43,7 @@ class SSSTest {
         assertEquals(this.sssObject.numParts,this.numParts);
         assertEquals(this.sssObject.numSubsets,this.numSubsets);
     }
+
+
 
 }
