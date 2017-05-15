@@ -211,6 +211,7 @@ public class SQL_Accounts {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     Timestamp currDate = new Timestamp(System.currentTimeMillis());
                     createLog.setInt(1, 0);
                     createLog.setInt(2, 0);
