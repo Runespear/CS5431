@@ -57,7 +57,7 @@ public class TwoFactorAuth {
         String otp = getRandomPassword(10);
 
         adminEmail.send(userEmail, "2FA for PSFS Account", "The following is the second factor " +
-                "authentication into your Pretty Secure File Sharing Account:" + otp);
+                "authentication into your Pretty Secure File Sharing Account: " + otp);
         return otp;
     }
 
@@ -68,7 +68,7 @@ public class TwoFactorAuth {
      * @param otpGenTime Time when the OTP was generated, use system.nanoTime() to get current time in ns
      * @return True if the OTP is valid, false otherwise
      */
-    public static boolean checkOtpValid(String otp, String receivedOtp, long otpGenTime) {
+    public boolean checkOtpValid(String otp, String receivedOtp, long otpGenTime) {
         long current_time = System.nanoTime();
         long time_difference;
         //checking for overflow, highly unlikely as it will take 292 yrs to do so
@@ -80,7 +80,7 @@ public class TwoFactorAuth {
         }
 
         //if otp has existed for more than 2 minutes, we return false
-        if (time_difference/1000000000 > 120){
+        if (time_difference/1000000000 > 300){
             //TODO: Comment out the print line if you wish
             System.out.println("OTP expired!");
             return false;
