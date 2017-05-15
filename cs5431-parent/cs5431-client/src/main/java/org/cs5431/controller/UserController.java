@@ -320,6 +320,14 @@ public class UserController {
         }
     }
 
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    public String getPhoneNo() {
+        return user.getPhoneNo();
+    }
+
     public String decryptSecret(String code) throws NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, IllegalBlockSizeException, BadPaddingException {

@@ -214,6 +214,14 @@ public class RegistrationController implements Initializable {
         if (!email.isEmpty() && !Validator.validEmail(email))
             errMessages.add("The email entered is invalid.");
 
+        if (twoFa == EMAIL_2FA && email.isEmpty()) {
+            errMessages.add("If you activate email 2fa, you must provide a valid email.");
+        }
+
+        if (twoFa == PHONE_2FA && phoneNumber.isEmpty()) {
+            errMessages.add("If you activate phone 2fa, you must provide a phone number.");
+        }
+
         if (!errMessages.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Registration failed");

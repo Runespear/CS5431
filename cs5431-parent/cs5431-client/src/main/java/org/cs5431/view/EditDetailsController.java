@@ -227,8 +227,11 @@ public class EditDetailsController implements Initializable {
         List<String> phoneMessages = new ArrayList<>();
 
         boolean pwdTaskRunning = false;
+        boolean pwdNoChange = false;
         boolean emailTaskRunning = false;
+        boolean emailNoChange = false;
         boolean phoneTaskRunning = false;
+        boolean phoneNoChange = false;
         //Tries to change the password if the password fields are not blank.
         if (!oldPassword.isEmpty() || !newPassword.isEmpty() ||
             !confirmNewPassword.isEmpty()) {
@@ -267,7 +270,7 @@ public class EditDetailsController implements Initializable {
                 });
             }
         } else {
-            pwdTaskRunning = true;
+            pwdNoChange = true;
         }
 
         //Tries to change the email if the email fields are not blank.
@@ -305,7 +308,7 @@ public class EditDetailsController implements Initializable {
                 });
             }
         } else {
-            emailTaskRunning = true;
+            emailNoChange = true;
         }
 
         //Tries to change the phone number if the phone number fields are not blank.
@@ -346,10 +349,10 @@ public class EditDetailsController implements Initializable {
                 });
             }
         } else {
-            phoneTaskRunning = true;
+            phoneNoChange = true;
         }
 
-        //to make things simpler, always attempt to save 2fa
+        //to make things simpler, always attempt to save 2fa if email/phone number provided when needed
         int twoFa = 0;
         RadioButton selectedRadioButton = (RadioButton) group2fa.getSelectedToggle();
         String value = selectedRadioButton.getText();
@@ -367,39 +370,61 @@ public class EditDetailsController implements Initializable {
                 System.err.println("Ack, value of selected radio button is weird: " + value);
                 break;
         }
-        int finalTwoFa = twoFa;
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                userController.save2fa(finalTwoFa);
-                return null;
-            }
-        };
-        task.setOnFailed(t -> {
-            List<String> twoFaMsgs = new ArrayList<>();
-            twoFaMsgs.add("Saving two factor authentication information failed.");
-            showMessages(twoFaMsgs);
-        });
-        task.setOnSucceeded(t -> {
-            List<String> twoFaMsgs = new ArrayList<>();
-            twoFaMsgs.add("Two factor authentication information saved.");
-            showMessages(twoFaMsgs);
-        });
-        Client.exec.submit(task);
-        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
-            if(newValue != null) {
-                Exception ex = (Exception) newValue;
-                ex.printStackTrace();
-            }
-        });
+        boolean do2fa = false;
+        if (twoFa == NO_2FA) {
+            do2fa = true;
+        } else if (twoFa == EMAIL_2FA) {
+            //not trying to change email, current email is not empty
+            if (!emailTaskRunning && !userController.getEmail().isEmpty())
+                do2fa = true;
+            //trying to change email, new email is not empty
+            if (emailTaskRunning && !newEmail.isEmpty())
+                do2fa = true;
+        } else {
+            if (!phoneTaskRunning && !userController.getPhoneNo().isEmpty())
+                do2fa = true;
+            if (phoneTaskRunning && !newPhone.isEmpty())
+                do2fa = true;
+        }
+        if (do2fa) {
+            int finalTwoFa = twoFa;
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    userController.save2fa(finalTwoFa);
+                    return null;
+                }
+            };
+            task.setOnFailed(t -> {
+                List<String> twoFaMsgs = new ArrayList<>();
+                twoFaMsgs.add("Saving two factor authentication information failed.");
+                showMessages(twoFaMsgs);
+            });
+            task.setOnSucceeded(t -> {
+                List<String> twoFaMsgs = new ArrayList<>();
+                twoFaMsgs.add("Two factor authentication information saved.");
+                showMessages(twoFaMsgs);
+            });
+            Client.exec.submit(task);
+            task.exceptionProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    Exception ex = (Exception) newValue;
+                    ex.printStackTrace();
+                }
+            });
+        } else {
+            showError("Could not save two factor authentication information: check whether" +
+                    " email/phone number is provided.");
+        }
 
         //prints all success+failure messages if not shown in a task
-        if (!pwdTaskRunning)
+        if (!pwdTaskRunning && !phoneNoChange) {
             showMessages(pwdMessages);
-        if (!emailTaskRunning) {
+        }
+        if (!emailTaskRunning && !emailNoChange) {
             showMessages(emailMessages);
         }
-        if (!phoneTaskRunning)
+        if (!phoneTaskRunning && !phoneNoChange)
             showMessages(phoneMessages);
     }
 
@@ -427,11 +452,6 @@ public class EditDetailsController implements Initializable {
             return null;
             }
         };
-        task.setOnSucceeded(v -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText("Successfully updated password nomination information");
-            alert.showAndWait();
-        });
         Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {

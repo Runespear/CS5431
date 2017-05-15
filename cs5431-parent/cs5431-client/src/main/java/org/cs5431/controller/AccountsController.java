@@ -90,7 +90,7 @@ public class AccountsController {
             Folder parentFolder = new Folder(parentFolderid, username,
                     lastModified, true);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey, twoFa);
+                    privKey, pubKey, twoFa, phoneNumber);
         } else if (newUser.getString("msgType").equals("error")) {
             throw new RegistrationFailException(newUser.getString
                     ("message"));
@@ -161,7 +161,7 @@ public class AccountsController {
             int uid = user.getInt("uid");
             int parentFolderid = user.getInt("parentFolderid");
             String email = user.getString("email");
-
+            String phoneNo = user.getString("phoneNo");
             String encodedPrivKey = user.getString("privKey");
             String privKeySalt = user.getString("privKeySalt");
             PrivateKey privKey = getPrivKeyFromJSON(encodedPrivKey, privKeySalt,
@@ -171,7 +171,7 @@ public class AccountsController {
             Folder parentFolder = getFolderFromId(parentFolderid, uid,
                     privKey);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey, has2fa);
+                    privKey, pubKey, has2fa, phoneNo);
         } catch (NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
                 IllegalBlockSizeException | BadPaddingException |

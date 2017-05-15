@@ -9,9 +9,11 @@ public class User extends Account {
     private PrivateKey privKey;
     private PublicKey pubKey;
     private int has2fa;
+    private String phoneNo;
 
     public User(int id, String username, String email, Folder
-            userParentFolder, PrivateKey privKey, PublicKey pubKey, int has2fa) {
+            userParentFolder, PrivateKey privKey, PublicKey pubKey, int has2fa,
+                String phoneNo) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -19,6 +21,7 @@ public class User extends Account {
         this.privKey = privKey;
         this.pubKey = pubKey;
         this.has2fa = has2fa;
+        this.phoneNo = phoneNo;
     }
 
     public Folder getUserParentFolder() {
@@ -38,4 +41,6 @@ public class User extends Account {
     }
 
     public int getHas2fa() {return has2fa;}
+
+    public String getPhoneNo() {return phoneNo;}
 }
