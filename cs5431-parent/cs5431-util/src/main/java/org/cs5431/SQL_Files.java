@@ -2418,5 +2418,139 @@ public class SQL_Files {
         }
         return null;
     }
+
+
+    JSONObject updateFileKeys(JSONObject json, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+
+        int fsoid = json.getInt("fsoid");
+        int uid = json.getInt("uid");
+        JSONArray editorList = json.getJSONArray("editorList");
+        JSONArray viewerList = json.getJSONArray("viewerList");
+        JSONArray editorKeys = json.getJSONArray("editorKeys");
+        JSONArray viewerKeys = json.getJSONArray("viewerKeys");
+        String fsoName = json.getString("fsoName");
+        String fsoNameIV = json.getString("fsoNameIV");
+        boolean isFile = json.getBoolean("isFile");
+
+        String fileIV = null;
+        String file = null;
+        if (isFile) {
+            file = json.getString("file");
+            fileIV = json.getString("fileIV");
+        }
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            PreparedStatement editFso = null;
+            PreparedStatement editPriv = null;
+            PreparedStatement getPath = null;
+            PreparedStatement createLog = null;
+
+            String updateFso = "UPDATE FileSystemObject SET fsoName = ?, fsoNameIV = ?, fileIV = ?, lastKeyUpdate = NOW()";
+            String updatePriv = "UPDATE FsoEncryption SET encKey = ? WHERE fsoid = ? AND uid = ?";
+            String selectPath = "SELECT F.path FROM FileContents F WHERE F.fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                if (hasPermission) {
+                    connection.setAutoCommit(false);
+
+                    editFso = connection.prepareStatement(updateFso);
+                    editFso.setString(1, fsoName);
+                    editFso.setString(2, fsoNameIV);
+                    editFso.setString(3, fileIV);
+                    editFso.execute();
+
+                    for (int i=0; i<editorList.length(); i++) {
+                        editPriv = connection.prepareStatement(updatePriv);
+                        editPriv.setString(1, editorKeys.getString(i));
+                        editPriv.setInt(2, fsoid);
+                        editPriv.setInt(3, editorList.getInt(i));
+                        editPriv.execute();
+                    }
+
+                    for (int i=0; i<editorList.length(); i++) {
+                        editPriv = connection.prepareStatement(updatePriv);
+                        editPriv.setString(1, viewerKeys.getString(i));
+                        editPriv.setInt(2, fsoid);
+                        editPriv.setInt(3, viewerList.getInt(i));
+                        editPriv.execute();
+                    }
+
+                    if (isFile) {
+                        getPath = connection.prepareStatement(selectPath);
+                        getPath.setInt(1, fsoid);
+                        ResultSet rs = getPath.executeQuery();
+
+                        if (rs.next()) {
+                            FileOutputStream fos = new FileOutputStream(rs.getString(1), false);
+                            fos.write(Base64.getDecoder().decode(file));
+                            fos.close();
+                        }
+                    }
+                    JSONObject response = new JSONObject();
+                    response.put("msgType", "updateFileAck");
+                    response.put("uid", uid);
+                    response.put("fsoid", fsoid);
+                    connection.commit();
+                    return response;
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "UPDATE_KEYS");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                    return null;
+                }
+            } catch (SQLException | IOException e) {
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "UPDATE_KEYS");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.execute();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
+                    }
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+            } finally {
+                if (editFso != null) {
+                    editFso.close();
+                }
+                if (editPriv != null) {
+                    editPriv.close();
+                }
+                if (getPath != null) {
+                    getPath.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
 
