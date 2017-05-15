@@ -901,6 +901,11 @@ public class FileController {
         }
     }
 
+    public FileSystemObject renewKey(FileSystemObject fso) {
+
+        return null;
+    }
+
     public int getLoggedInUid() {
         return user.getId();
     }

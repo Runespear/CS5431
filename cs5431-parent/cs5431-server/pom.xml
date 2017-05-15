@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.cs5431</groupId>
         <artifactId>cs5431-parent</artifactId>
-        <version>0.3-MILESTONE-BETA</version>
+        <version>1.0-MILESTONE-FINAL</version>
     </parent>
     <artifactId>cs5431-server</artifactId>
     <packaging>jar</packaging>

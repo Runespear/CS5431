@@ -60,7 +60,9 @@ public class SSLServer extends Thread {
                         ("getEditorViewerList") || type.equals("deleteUser")
                         || type.equals("uploadKeys") || type.equals("2faToggle") ||
                         type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo") ||
-                        type.equals("changePhoneNo") || type.equals("checkPwd")) {
+                        type.equals("changePhoneNo") || type.equals("checkPwd") ||
+                        type.equals("updateUserKey") || type.equals("updateUserKeyFile") ||
+                        type.equals("updateFileReq") || type.equals("updateFile")) {
                     if (!isLoggedInUser(jsonObject)) {
                         check = false;
                         sql_accounts.attemptedUidFailLog(jsonObject.getInt("uid"), loggedInUid, sourceIp);
@@ -211,6 +213,22 @@ public class SSLServer extends Thread {
                         break;
                     case "recoverPwdEmail":
                         response = recoverPwdEmail(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "updateUserKey":
+                        response = updateUserKey(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "updateUserKeyFile":
+                        response = updateUserKeyFile(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
+                    case "updateFileReq":
+                        response = updateFileReq(jsonObject, sql_files);
+                        sendJson(response, s);
+                        break;
+                    case "updateFile":
+                        response = updateFile(jsonObject, sql_files);
                         sendJson(response, s);
                         break;
                     default:
@@ -861,6 +879,26 @@ public class SSLServer extends Thread {
             return response;
         }
         return makeErrJson("Unable to recover password.");
+    }
+
+    private JSONObject updateUserKey(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO hi ruixin
+        return null;
+    }
+
+    private JSONObject updateUserKeyFile(JSONObject jsonObject, SQL_Accounts sql_accounts) {
+        //TODO hi ruixin
+        return null;
+    }
+
+    private JSONObject updateFileReq(JSONObject jsonObject, SQL_Files sql_files) {
+        //TODO hi ruixin
+        return null;
+    }
+
+    private JSONObject updateFile(JSONObject jsonObject, SQL_Files sql_files) {
+        //TODO hi ruixin
+        return null;
     }
 
     private JSONObject makeErrJson(String message) {

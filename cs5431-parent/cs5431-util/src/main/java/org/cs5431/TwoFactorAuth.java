@@ -76,7 +76,7 @@ public class TwoFactorAuth {
             time_difference = current_time - otpGenTime;
         }
 
-        //if otp has existed for more than 2 minutes, we return false
+        //if otp has existed for more than 5 minutes, we return false
         if (time_difference/1000000000 > 300){
             if (DEBUG_MODE) {
                 System.out.println("OTP expired!");

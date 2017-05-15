@@ -2,6 +2,7 @@ package org.cs5431.model;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.sql.Timestamp;
 
 public class User extends Account {
     private Folder userParentFolder;
@@ -10,10 +11,11 @@ public class User extends Account {
     private PublicKey pubKey;
     private int has2fa;
     private String phoneNo;
+    private Timestamp keyLastUpdated;  //get when key was last updated
 
     public User(int id, String username, String email, Folder
             userParentFolder, PrivateKey privKey, PublicKey pubKey, int has2fa,
-                String phoneNo) {
+                String phoneNo, Timestamp keyLastUpdated) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -22,6 +24,7 @@ public class User extends Account {
         this.pubKey = pubKey;
         this.has2fa = has2fa;
         this.phoneNo = phoneNo;
+        this.keyLastUpdated = keyLastUpdated;
     }
 
     public Folder getUserParentFolder() {
@@ -49,4 +52,6 @@ public class User extends Account {
     public void setEmail(String email) {this.email = email;}
 
     public void setPhoneNo(String phoneNo) {this.phoneNo = phoneNo;}
+
+    public Timestamp getKeyLastUpdated() {return new Timestamp(keyLastUpdated.getTime());}
 }

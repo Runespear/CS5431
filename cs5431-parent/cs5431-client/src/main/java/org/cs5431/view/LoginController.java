@@ -95,7 +95,7 @@ public class LoginController implements Initializable {
                 JSONObject login = accountsController.login(username, password);
                 if (login.getInt("has2fa") != NO_2FA) {
                     return new User(login.getInt("uid"), null, null, null,
-                            null, null, login.getInt("has2fa"), null);
+                            null, null, login.getInt("has2fa"), null, null);
                 } else {
                     return accountsController.parseLogin(username, password, login, NO_2FA);
                 }
@@ -118,7 +118,7 @@ public class LoginController implements Initializable {
                     do2fa(e, otp[0], task.getValue().getId(), username, password, task.getValue().getHas2fa());
                 }
             } else {
-                changeToFileView(e, task.getValue());
+                checkUserKeyUpdate(task.getValue(), password, e);
             }
         });
         try {
@@ -170,12 +170,12 @@ public class LoginController implements Initializable {
                 return accountsController.parseLogin(username, password, response2fa, twofa);
             }
         };
-        task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
+        task.setOnSucceeded(t -> checkUserKeyUpdate(task.getValue(), password, e));
         try {
-                    Client.exec.submit(task);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            Client.exec.submit(task);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -242,6 +242,32 @@ public class LoginController implements Initializable {
                 showError(ex.getMessage());
                 ex.printStackTrace();
             } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void checkUserKeyUpdate(User user, String password, Event e) {
+        Task<User> task = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                //if keys older than 1 year
+                if (System.currentTimeMillis() - user.getKeyLastUpdated().getTime() > 31536000000L) {
+                    return accountsController.updateUserKeys(user, password);
+                } else {
+                    return user;
+                }
+            }
+        };
+        task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
+        try {
+            Client.exec.submit(task);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            if(newValue != null) {
+                Exception ex = (Exception) newValue;
                 ex.printStackTrace();
             }
         });

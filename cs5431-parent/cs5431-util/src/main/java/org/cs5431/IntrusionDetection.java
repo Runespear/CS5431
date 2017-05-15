@@ -17,7 +17,7 @@ public class IntrusionDetection {
     private int FAILURE_PER_IP_PER_DAY = 20;
     private int TOTAL_FAILED_LOGIN_PER_DAY = 200;
 
-    IntrusionDetection(String ip, int dbPort, String username, String password) {
+    public IntrusionDetection(String ip, int dbPort, String username, String password) {
         this.ip = ip;
         this.port = dbPort;
         this.DB_USER = username;
@@ -93,7 +93,7 @@ public class IntrusionDetection {
     }
 
     //any ip from this list should be banned
-    List<String> noPermissionAlert() {
+    public List<String> noPermissionAlert() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -137,7 +137,7 @@ public class IntrusionDetection {
         return null;
     }
 
-    List<String> getFailedLoginsPerIp() {
+    public List<String> getFailedLoginsPerIp() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -186,7 +186,7 @@ public class IntrusionDetection {
         return null;
     }
 
-    List<Integer> getFailedLoginsPerUid() {
+    public List<Integer> getFailedLoginsPerUid() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -234,7 +234,7 @@ public class IntrusionDetection {
         return null;
     }
 
-    int totalFailedLogins() {
+    public int totalFailedLogins() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -261,7 +261,7 @@ public class IntrusionDetection {
         return -1;
     }
 
-    List<Integer> getAttemptedUidFailure() {
+    public List<Integer> getAttemptedUidFailure() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getNoPermission = null;
         PreparedStatement getLast = null;
@@ -305,7 +305,7 @@ public class IntrusionDetection {
     }
 
     //Authentication comes from change password and delete user
-    List<String> getFailedAuthPerIp() {
+    public List<String> getFailedAuthPerIp() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -353,7 +353,7 @@ public class IntrusionDetection {
         return null;
     }
 
-    List<Integer> getFailedAuthPerUid() {
+    public List<Integer> getFailedAuthPerUid() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
