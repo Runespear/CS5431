@@ -41,6 +41,7 @@ public class ReconstructController implements Initializable {
     public Button sendEmailButton;
 
     private Stage stage;
+    private String username;
     private Integer uid;
     private String encPK;
     private Integer neededUsers;
@@ -123,9 +124,10 @@ public class ReconstructController implements Initializable {
         stage.show();
     }
 
-    public void setUp(Stage stage, int uid, String encPK, int neededUsers,
+    public void setUp(Stage stage, String username, int uid, String encPK, int neededUsers,
                       String salt, AccountsController ac) {
         this.stage = stage;
+        this.username = username;
         this.uid = uid;
         this.encPK = encPK;
         this.neededUsers = neededUsers;
@@ -147,7 +149,7 @@ public class ReconstructController implements Initializable {
 
     private void sendEmail() {
         try {
-            ac.sendRecoveryEmail(uid);
+            ac.sendRecoveryEmail(uid, username);
         } catch (AccountsController.UserRetrieveException ex) {
             ex.printStackTrace();
             showError(ex.getMessage());

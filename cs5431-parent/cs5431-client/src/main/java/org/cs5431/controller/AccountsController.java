@@ -264,11 +264,12 @@ public class AccountsController {
 
     }
 
-    public void sendRecoveryEmail(int uid) throws IOException, ClassNotFoundException,
+    public void sendRecoveryEmail(int uid, String username) throws IOException, ClassNotFoundException,
             UserRetrieveException {
         JSONObject json = new JSONObject();
         json.put("msgType","recoverPwdEmail");
         json.put("uid", uid);
+        json.put("username", username);
         sendJson(json, sslSocket);
         JSONObject response = receiveJson(sslSocket);
         if (response.getString("msgType").equals("recoverPwdEmailAck")) {

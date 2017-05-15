@@ -221,7 +221,7 @@ public class LoginController implements Initializable {
                 FXMLLoader fxmlLoader = new FXMLLoader(r);
                 Parent root = fxmlLoader.load();
                 ReconstructController rc = fxmlLoader.getController();
-                rc.setUp(stage, json.getInt("uid"), json.getString("encPK"),
+                rc.setUp(stage, username, json.getInt("uid"), json.getString("encPK"),
                         json.getInt("neededUsers"), json.getString("salt"),
                         accountsController);
                 scene.setRoot(root);
