@@ -17,15 +17,12 @@ import org.cs5431.model.User;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import static org.cs5431.Constants.DEBUG_MODE;
-import static org.cs5431.Constants.EMAIL_2FA;
-import static org.cs5431.Constants.NO_2FA;
+import static org.cs5431.Constants.*;
 import static org.cs5431.controller.SSLController.connect_SSLServerSocket;
 
 public class LoginController implements Initializable {
@@ -72,7 +69,7 @@ public class LoginController implements Initializable {
 
         txtNoAcct.setOnAction(this::goToRegistration);
 
-        recoverLink.setOnAction(e -> recoverPwd());
+        recoverLink.setOnAction(this::recoverPwd);
     }
 
     /**
@@ -204,7 +201,7 @@ public class LoginController implements Initializable {
         }
     }
 
-    private void recoverPwd() {
+    private void recoverPwd(Event e) {
         TextInputDialog dialog = new TextInputDialog("Code");
         dialog.setTitle("Recover your password");
         dialog.setContentText("If you have set up password recovery, you can recover your password by entering your username here:");
@@ -212,17 +209,23 @@ public class LoginController implements Initializable {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(username -> {
             try {
-                int uid = accountsController.recoverPassword(username);
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Secret");
-                alert.setContentText("Please get your friends to send you the codes after decrypting them, and enter them here:");
-                //TODO: SHOULD NOT BE AN ALERT BOX, etc.
-                alert.showAndWait();
-            } catch (AccountsController.UserRetrieveException e) {
-                showError(e.getMessage());
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+                JSONObject json = accountsController.recoverPassword(username);
+                Node node = (Node) e.getSource();
+                Stage stage = (Stage) node.getScene().getWindow();
+                Scene scene = stage.getScene();
+
+                final URL r = getClass().getResource("registration.fxml");
+                FXMLLoader fxmlLoader = new FXMLLoader(r);
+                Parent root = fxmlLoader.load();
+                ReconstructController rc = fxmlLoader.getController();
+                rc.setUp(stage, json.getInt("uid"), json.getString("encPK"),
+                        json.getInt("neededUsers")) ;
+                scene.setRoot(root);
+            } catch (AccountsController.UserRetrieveException ex) {
+                showError(ex.getMessage());
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         });
     }
