@@ -74,7 +74,7 @@ public class TwoFactorAuth {
      * @param otpGenTime Time when the OTP was generated, use system.nanoTime() to get current time in ns
      * @return True if the OTP is valid, false otherwise
      */
-    public static boolean checkOtpValid(String otp, String receivedOtp, long otpGenTime) {
+    public boolean checkOtpValid(String otp, String receivedOtp, long otpGenTime) {
         long current_time = System.nanoTime();
         long time_difference;
         //checking for overflow, highly unlikely as it will take 292 yrs to do so

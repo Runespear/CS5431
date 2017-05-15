@@ -316,13 +316,21 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject login2fa(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        if (TwoFactorAuth.checkOtpValid(otp, jsonObject.getString("otp"), otpGenTime)) {
+        int uid = jsonObject.getInt("uid");
+        if (twoFactorAuth.checkOtpValid(otp, jsonObject.getString("otp"), otpGenTime)) {
             //TODO: hook up to backend and return value
             //TODO: need to change protocol?
             //loggedInUid = auth.getInt("uid");
+            JSONObject user = sql_accounts.twoFactorLogin(uid, sourceIp);
+            if (user != null) {
+                return user;
+            }
+            return makeErrJson("An error occurred. Please try logging in again.");
         }
-        return null;
-    }
+        if (sql_accounts.create2faFailureLog(uid, sourceIp)) {
+            return makeErrJson("Invalid OTP.");
+        }
+        return makeErrJson("An error occurred. Please try logging in again.");    }
 
     private JSONObject changePwd(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         String newHashedPwd = jsonObject.getString("newHashedPwd");
