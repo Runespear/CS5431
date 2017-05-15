@@ -8,6 +8,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 import static org.cs5431.Encryption.secondPwdHash;
@@ -97,7 +101,11 @@ class SQL_AccountsTest {
     void test_twoFactorLogin(){
         //returns a null object when the uid is not valid
         JSONObject empty = account.twoFactorLogin(5000, "192.168.0.55");
-        assertEquals(empty, null);
+        boolean test = false;
+        if (empty == null){
+            test = true;
+        }
+        assertEquals(test, true);
     }
 
     @Test
@@ -151,7 +159,11 @@ class SQL_AccountsTest {
         jsonUser.put("phoneNo", "6073799856");
         Email email_acc = new Email("test","test");
         JSONObject object = account.authenticate(jsonUser,"password","192.168.0.0","check",email_acc);
-        assertEquals(object, null);
+        boolean test = false;
+        if (object == null){
+            test = true;
+        }
+        assertEquals(test, true);
         account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
     }
 
@@ -277,8 +289,43 @@ class SQL_AccountsTest {
     }
 
     @Test
-    void test_getUserLog(){
-        account.getUserLog();
+    void test_getUserLog() throws IOException{
+        String test =account.getUserLog();
+        //user logs successfully extracted
+        assertEquals(test.equals(null), false);
+        Path p1 = Paths.get("C:/ProgramData/MySQL/MySQL Server 5.7/Uploads/userlogs.csv");
+        Files.deleteIfExists(p1);
+    }
+
+    @Test
+    void test_changeEmail(){
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        jsonUser.put("hashedPwd",  "password");
+        jsonUser.put("newPrivKey", "newPrivKey");
+
+        account.createUser(jsonUser, "password", "salt", "192.168.0.1");
+        boolean test = account.changeEmail(account.getUserId(username), email, "newemail@email.com", "192.168.0.1");
+        //Successful email change
+        assertEquals(true, test);
+        account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
     }
 
     @AfterEach
