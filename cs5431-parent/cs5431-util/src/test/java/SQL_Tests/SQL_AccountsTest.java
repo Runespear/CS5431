@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
 
 import static org.cs5431.Encryption.secondPwdHash;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -300,7 +301,11 @@ class SQL_AccountsTest {
         String newpassword = secondPwdHash("newpassword", Base64.getDecoder().decode("salt"));
         JSONObject test_object = account.changePassword(jsonUser, newpassword, "192.168.0.1");
         //incorrect authentication
-        assertEquals(test_object,null);
+        boolean test = false;
+        if (test_object == null){
+            test = true;
+        }
+        assertEquals(true, test);
         account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
         account.dropUserLogs();
     }
@@ -591,7 +596,120 @@ class SQL_AccountsTest {
 
     @Test
     void test_getSecrets(){
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        jsonUser.put("hashedPwd",  "password");
+        jsonUser.put("newPrivKey", "newPrivKey");
 
+        account.createUser(jsonUser, "password", "salt", "192.168.0.1");
+        JSONObject test_object = account.getSecrets(account.getUserId("username"));
+        boolean test = false;
+        if (test_object == null){
+            test = true;
+        }
+        assertEquals(false,test);
+        account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
+        account.dropUserLogs();
+    }
+
+    @Test
+    void test_recoverPwd(){
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        jsonUser.put("hashedPwd",  "password");
+        jsonUser.put("newPrivKey", "newPrivKey");
+
+        account.createUser(jsonUser, "password", "salt", "192.168.0.1");
+        JSONObject test_object = account.recoverPwd(account.getUserId("username"),"192.168.0.1");
+        boolean test = true;
+        if (test_object == null){
+            test = false;
+        }
+        //password recovery is activated
+        assertEquals(test,true);
+        account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
+        account.dropUserLogs();
+    }
+
+    @Test
+    void testgetpubkeys(){
+        JSONArray array = new JSONArray();
+        List<String> list= account.getPubKeys(array);
+        //the list should not be empty
+        boolean test = false;
+        if (list == null){
+            test = true;
+        }
+        assertEquals(false, test);
+    }
+
+    @Test
+    void testChangePhoneNumber(){
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        jsonUser.put("hashedPwd",  "password");
+        jsonUser.put("newPrivKey", "newPrivKey");
+        jsonUser.put("oldPhone", "oldPhone");
+        jsonUser.put("newPhone", "newPhone");
+
+        int test_int = account.changePhoneNo(jsonUser,"192.168.0.3");
+        boolean test = true;
+        if (test_int == -1){
+            test = false;
+        }
+        //json user does not exist, so will return -1
+        assertEquals(false,test);
     }
 
     @AfterEach

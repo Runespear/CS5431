@@ -1742,7 +1742,7 @@ public class SQL_Accounts {
     }
 
     //returns null if password recovery is not activated
-    JSONObject recoverPwd(int uid, String sourceIp) {
+    public JSONObject recoverPwd(int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1852,7 +1852,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    List<String> getPubKeys(JSONArray groupUid) {
+    public List<String> getPubKeys(JSONArray groupUid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1885,7 +1885,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    int changePhoneNo(JSONObject json, String sourceIp) {
+    public int changePhoneNo(JSONObject json, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
