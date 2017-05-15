@@ -931,7 +931,7 @@ public class SQL_Accounts {
      * @param allegedUser json with the credentials of the user to be modified along
      *                    a new privKey.
      * @return json with changePwdAck and the uid; if user is not authenticated, return null. */
-    JSONObject changePassword(JSONObject allegedUser, String newEncPwd, String sourceIp) {
+    public JSONObject changePassword(JSONObject allegedUser, String newEncPwd, String sourceIp) {
         int uid = allegedUser.getInt("uid");
         String username = allegedUser.getString("username");
         String password = allegedUser.getString("hashedPwd");

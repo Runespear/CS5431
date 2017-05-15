@@ -1,6 +1,7 @@
 package SQL_Tests;
 
 import org.cs5431.Email;
+import org.cs5431.JSON;
 import org.cs5431.SQL_Accounts;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -151,7 +152,7 @@ class SQL_AccountsTest {
         Email email_acc = new Email("test","test");
         JSONObject object = account.authenticate(jsonUser,"password","192.168.0.0","check",email_acc);
         assertEquals(object, null);
-
+        account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
     }
 
     @Test
@@ -245,7 +246,34 @@ class SQL_AccountsTest {
 
     @Test
     void test_changepassword(){
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        jsonUser.put("hashedPwd",  "password");
+        jsonUser.put("newPrivKey", "newPrivKey");
 
+        account.createUser(jsonUser, "password", "salt", "192.168.0.1");
+        String newpassword = secondPwdHash("newpassword", Base64.getDecoder().decode("salt"));
+        JSONObject test_object = account.changePassword(jsonUser, newpassword, "192.168.0.1");
+        //incorrect authentication
+        assertEquals(test_object,null);
+        account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
     }
 
     @AfterEach
