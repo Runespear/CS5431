@@ -412,7 +412,7 @@ public class EditDetailsController implements Initializable {
             if (hasRecovery) {
                 int neededUsers = json.getInt("neededUsers");
                 List<Integer> groupId = new ArrayList<>();
-                JSONArray groupIdArr = json.getJSONArray("groupId");
+                JSONArray groupIdArr = json.getJSONArray("groupUid");
                 List<PublicKey> publicKeys = new ArrayList<>();
                 JSONArray pubKeysArr = json.getJSONArray("pubKeys");
                 for (int i = 0; i < groupIdArr.length(); i++) {
