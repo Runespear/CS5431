@@ -369,10 +369,10 @@ public class SQL_Files {
         return -1;
     }
 
-    boolean addParentPermissions(int uid, int fsoid, int parentFolderid, String sourceIp,
+    public boolean addParentPermissions(int uid, int fsoid, int parentFolderid, String sourceIp,
                                  JSONArray editors, JSONArray viewers, JSONArray editorsKeys, JSONArray viewersKeys) {
         for (int i=0; i<editors.length(); i++) {
-            int editor = (int) editors.get(i);
+            int editor =  Integer.parseInt((String)editors.get(i)) ;
             if (editor != uid) {
                 String editorKey = (String) editorsKeys.get(i);
                 if (addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp) == -1) return false;
