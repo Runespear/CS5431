@@ -1,6 +1,7 @@
 package org.cs5431.controller;
 
 import org.cs5431.Encryption;
+import org.cs5431.model.Account;
 import org.cs5431.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -228,9 +229,11 @@ public class UserController {
         recover.put("msgType", "setPwdGroup");
         recover.put("uid", user.getId());
         recover.put("hasPwdRec", hasRecovery);
-        recover.put("neededUsers", neededUsers);
-        recover.put("groupUid", nominatedUids);
-        recover.put("secrets", encSecrets);
+        if (hasRecovery) {
+            recover.put("neededUsers", neededUsers);
+            recover.put("groupUid", nominatedUids);
+            recover.put("secrets", encSecrets);
+        }
 
         sendJson(recover, sslSocket);
 
@@ -286,6 +289,29 @@ public class UserController {
                 throw new PwdRecoveryException("Got password recovery information" +
                         "for wrong user!");
             }
+        } else if (response.getString("msgType").equals("error")) {
+            throw new PwdRecoveryException(response.getString
+                    ("message"));
+        } else {
+            throw new PwdRecoveryException("Received bad response " +
+                    "from server");
+        }
+    }
+
+    public void checkLoggedInPwd(String password) throws IOException,
+            ClassNotFoundException, PwdRecoveryException{
+        JSONObject json = new JSONObject();
+        json.put("msgType", "checkPwd");
+        json.put("uid", user.getId());
+        json.put("hashedPwd", Base64.getEncoder().encodeToString(SHA256(password)));
+
+        sendJson(json, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+
+        if (response.getString("msgType").equals("checkPwdAck")) {
+            if (response.getInt("uid") != user.getId())
+                throw new PwdRecoveryException("Wrong user id received");
         } else if (response.getString("msgType").equals("error")) {
             throw new PwdRecoveryException(response.getString
                     ("message"));
