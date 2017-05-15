@@ -289,7 +289,8 @@ public class SSLServer extends Thread {
                     case 1: otp = twoFactorAuth.generateAndSend2fa(auth.getString("email"));
                         otpGenTime = System.nanoTime();
                         return jsonFor2fa;
-                    case 2: twoFactorAuth.generateAndSend3fa(auth.getString("phoneNo"));
+                    case 2: otp = twoFactorAuth.generateAndSend3fa(auth.getString("phoneNo"));
+                        otpGenTime = System.nanoTime();
                         return jsonFor2fa;
                 }
             }
