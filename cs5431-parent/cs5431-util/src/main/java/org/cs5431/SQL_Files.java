@@ -136,7 +136,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (verifyEditors != null) {
                     verifyEditors.close();
@@ -315,6 +314,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     isFile = fso.getBoolean("isFile");
                     String actionType;
                     if (isFile) {
@@ -338,7 +338,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (createFso != null) {
                     createFso.close();
@@ -489,7 +488,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getFiles != null) {
                     getFiles.close();
@@ -611,7 +609,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getPath != null) {
                     getPath.close();
@@ -687,7 +684,6 @@ public class SQL_Files {
 
             } catch (JSONException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (verifyEditors != null) {
                     verifyEditors.close();
@@ -718,7 +714,6 @@ public class SQL_Files {
             } catch (JSONException e1) {
                 System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
-                return false;
             }
         }
         return false;
@@ -765,7 +760,6 @@ public class SQL_Files {
             } catch (JSONException e1) {
                 System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
-                return false;
             }
         }
         return false;
@@ -848,7 +842,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getFileLog != null) {
                     getFileLog.close();
@@ -859,8 +852,8 @@ public class SQL_Files {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     int renameFso(int fsoid, int uid, String newName, String
@@ -942,7 +935,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (renameFso != null) {
                     renameFso.close();
@@ -1001,7 +993,6 @@ public class SQL_Files {
                 return true;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (rmExisting != null) {
                     rmExisting.close();
@@ -1119,7 +1110,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (addEditor != null) {
                     addEditor.close();
@@ -1306,7 +1296,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (addViewer != null) {
                     addViewer.close();
@@ -1429,7 +1418,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (rmViewer != null) {
                     rmViewer.close();
@@ -1541,7 +1529,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (rmEditor != null) {
                     rmEditor.close();
@@ -1624,7 +1611,6 @@ public class SQL_Files {
                 createLog.setInt(8, 0);
                 createLog.setString(9, "DB ERROR");
                 createLog.execute();
-                return null;
             } finally {
                 if (createLog != null) {
                     createLog.close();
@@ -1744,7 +1730,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (overwriteFso != null) {
                     overwriteFso.close();
@@ -1794,7 +1779,6 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (isFile != null) {
                     isFile.close();
@@ -1888,7 +1872,6 @@ public class SQL_Files {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (createLog != null) {
                     createLog.close();
