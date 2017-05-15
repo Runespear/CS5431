@@ -793,6 +793,7 @@ public class SSLServer extends Thread {
         if (sql_accounts.hasRecovery(uid)) {
             JSONObject response = sql_accounts.recoverPwd(uid, sourceIp);
             if (response != null) {
+                System.out.println("has paswor rec");
                 return response;
             }
             return makeErrJson("Unable to recover password. Please try again.");
