@@ -16,7 +16,7 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.cs5431.view.ReconstructController">
     <VBox alignment="TOP_CENTER">
         <ToolBar prefHeight="46.0" prefWidth="600.0" />
-        <HBox>
+        <HBox alignment="CENTER">
             <Label text="First time here? Press this button: "/>
             <Button fx:id="sendEmailButton" text="Send secrets to your friends" />
         </HBox>

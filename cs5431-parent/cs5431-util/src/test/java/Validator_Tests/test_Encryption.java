@@ -27,9 +27,11 @@ class test_Encryption {
     public static PublicKey wrongPublicKeyAlgoAndSize;
     public static PrivateKey wrongPrivateKeySize;
     public static PrivateKey wrongPrivateKeyAlgoAndSize;
+    public static SecureRandom secureRandom;
+    public static Random random;
 
     public static byte[] getRandomBytes(int seed){
-        Random random = new Random(seed);
+        random.setSeed(seed);
         byte[] b = new byte[random.nextInt(100)+10];
         new Random().nextBytes(b);
         return b;
@@ -62,7 +64,7 @@ class test_Encryption {
     }
 
     public static void getPrivPubKeyPair() throws Exception{
-        SecureRandom random = new SecureRandom();//generating public key
+        SecureRandom random = secureRandom;//generating public key
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA" , "BC");
         keygen.initialize(4096,random);
         KeyPair keypair = keygen.generateKeyPair();
@@ -70,14 +72,14 @@ class test_Encryption {
         correctPrivateKey = keypair.getPrivate();
 
 
-        SecureRandom random2 = new SecureRandom();//generating public key of wrong size
+        SecureRandom random2 = secureRandom;//generating public key of wrong size
         KeyPairGenerator keygen2 = KeyPairGenerator.getInstance("RSA", "BC");
         keygen2.initialize(1024,random2);
         KeyPair keypair2 = keygen2.generateKeyPair();
         wrongPublicKeySize = keypair2.getPublic();
         wrongPrivateKeySize = keypair2.getPrivate();
 
-        SecureRandom random3 = new SecureRandom();//generating public/private key of wrong algo and size
+        SecureRandom random3 = secureRandom;//generating public/private key of wrong algo and size
         KeyPairGenerator keygen3 = KeyPairGenerator.getInstance("DSA");
         keygen3.initialize(1024,random3);
         KeyPair keypair3 = keygen3.generateKeyPair();
@@ -88,6 +90,8 @@ class test_Encryption {
     @BeforeAll
     public static void setUp() throws Exception{
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        secureRandom = new SecureRandom();
+        random = new Random();
 
         PrintWriter pw = new PrintWriter(new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt"));
         Random random = new Random();
@@ -146,7 +150,7 @@ class test_Encryption {
     @Test
     public void test_encFileWithInvalidKey()throws Exception{ //Checking if encryption fails with invalid key(diff alg, diff size)
         KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256"); //generating key with different algorithm but correct size
-        kg.init(128, new SecureRandom());
+        kg.init(128, secureRandom);
         SecretKey key = kg.generateKey();
 
         SecretKey correctkey = Encryption.generateSecretKey();
@@ -160,7 +164,7 @@ class test_Encryption {
 
         try {
             KeyGenerator kg2 = KeyGenerator.getInstance("AES"); //generating key with different size but correct algo
-            kg2.init(256, new SecureRandom());
+            kg2.init(256, secureRandom);
             SecretKey key2 = kg2.generateKey();
 
             IvParameterSpec iv2 = Encryption.generateIV();
@@ -168,7 +172,7 @@ class test_Encryption {
             fail("InvalidKeyException should be thrown");
 
             KeyGenerator kg3 = KeyGenerator.getInstance("DES"); //generating key with different size and different algo
-            kg2.init(56, new SecureRandom());
+            kg2.init(56, secureRandom);
             SecretKey key3 = kg3.generateKey();
 
             IvParameterSpec iv3 = Encryption.generateIV();
@@ -193,7 +197,7 @@ class test_Encryption {
     @Test
     void test_encFileNameWithInvalidKey() throws Exception{ //Checking if encryption fails with invalid key(diff alg, diff size)
         KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256"); //generating key with different algorithm but correct size
-        kg.init(128, new SecureRandom());
+        kg.init(128, secureRandom);
         SecretKey key = kg.generateKey();
 
         SecretKey correctkey = Encryption.generateSecretKey();
@@ -206,7 +210,7 @@ class test_Encryption {
 
         try {
             KeyGenerator kg2 = KeyGenerator.getInstance("AES"); //generating key with different size but correct algo
-            kg2.init(256, new SecureRandom());
+            kg2.init(256, secureRandom);
             SecretKey key2 = kg2.generateKey();
 
             IvParameterSpec iv2 = Encryption.generateIV();
@@ -214,7 +218,7 @@ class test_Encryption {
             fail("InvalidKeyException should be thrown");
 
             KeyGenerator kg3 = KeyGenerator.getInstance("DES"); //generating key with different size and different algorithm
-            kg2.init(56, new SecureRandom());
+            kg2.init(56, secureRandom);
             SecretKey key3 = kg3.generateKey();
 
             IvParameterSpec iv3 = Encryption.generateIV();
@@ -228,11 +232,11 @@ class test_Encryption {
     @Test
     void test_encFileSecretKey() throws Exception{ //Test to ensure that same key is encrypted differently
         KeyGenerator kg = KeyGenerator.getInstance("AES"); //generating secret key
-        kg.init(128, new SecureRandom());
+        kg.init(128, secureRandom);
         SecretKey secretkey = kg.generateKey();
 
         /*
-        SecureRandom random = new SecureRandom();//generating public key
+        SecureRandom random = secureRandom;//generating public key
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA" , "BC");
         keygen.initialize(4096,random);
         KeyPair keypair = keygen.generateKeyPair();
@@ -247,20 +251,20 @@ class test_Encryption {
     @Test
     void test_encFileSecretKeyWithInvalidKey()throws Exception{ //Checking if encryption fails with invalid key(diff algo, diff size)
         KeyGenerator kg = KeyGenerator.getInstance("AES"); //generating secret key
-        kg.init(128, new SecureRandom());
+        kg.init(128, secureRandom);
         SecretKey secretkey = kg.generateKey();
 
         /*
         //generating correct public key
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA" , "BC");
-        keygen.initialize(4096, new SecureRandom());
+        keygen.initialize(4096, secureRandom);
         KeyPair correctkeypair = keygen.generateKeyPair();
         PublicKey correctPubKey = correctkeypair.getPublic();
         */
 
        //generating public key with different algorithm and different size
         KeyPairGenerator keygen2 = KeyPairGenerator.getInstance("DSA");
-        keygen2.initialize(1024,new SecureRandom());
+        keygen2.initialize(1024,secureRandom);
         KeyPair keypair = keygen2.generateKeyPair();
         PublicKey pubKey = keypair.getPublic();
 
@@ -273,7 +277,7 @@ class test_Encryption {
 
         //generating public key with correct algorithm but different size
         KeyPairGenerator keygen3 = KeyPairGenerator.getInstance("RSA");
-        keygen3.initialize(1024,new SecureRandom());
+        keygen3.initialize(1024,secureRandom);
         KeyPair keypair3 = keygen3.generateKeyPair();
         PublicKey pubKey2 = keypair3.getPublic();
 
@@ -445,7 +449,7 @@ class test_Encryption {
     @Test
     void test_decFileSecretKey() throws Exception{ //Test to ensure that the file secret key is encrypted and decrypted correctly
         KeyGenerator kg = KeyGenerator.getInstance("AES"); //generating secret key
-        kg.init(128, new SecureRandom());
+        kg.init(128, secureRandom);
         SecretKey secretkey = kg.generateKey();
         byte[] encSK = Encryption.encFileSecretKey(secretkey, correctPublicKey);
         SecretKey decryptedkey = Encryption.decFileSecretKey(encSK,correctPrivateKey);
@@ -457,7 +461,7 @@ class test_Encryption {
     @Test
     void test_decFileSecretKeyWithWrongKey()throws Exception{ //Test to ensure that the file secret key cannot be decrypted with wrong key(different algo and different size)
         KeyGenerator kg = KeyGenerator.getInstance("AES"); //generating secret key
-        kg.init(128, new SecureRandom());
+        kg.init(128, secureRandom);
         SecretKey secretkey = kg.generateKey();
 
         byte[] encSK = Encryption.encFileSecretKey(secretkey, correctPublicKey);
