@@ -1,5 +1,7 @@
 package org.cs5431;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 import java.math.BigInteger;
 import java.util.*;
 
@@ -67,7 +69,7 @@ public class SSS_Reconstructor{
         catch (Exception ex){
             return null;
         }
-        System.out.println("Success!");
+        if (Constants.DEBUG_MODE) System.out.println("Success!");
         //Generate array of arrays of size minSubsets * 2
 
         BigInteger[][] subsetsUsed = new BigInteger[minSubsets][2];
