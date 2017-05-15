@@ -88,7 +88,7 @@ public class AccountsController {
 
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
             Folder parentFolder = new Folder(parentFolderid, username,
-                    lastModified, true, true);
+                    lastModified, true);
             return new User(uid, username, email, parentFolder,
                     privKey, pubKey, twoFa);
         } else if (newUser.getString("msgType").equals("error")) {
@@ -185,7 +185,7 @@ public class AccountsController {
     private Folder getFolderFromId(int folderId, int uid, PrivateKey
             userPrivKey) {
         try {
-            Folder parentFolder = new Folder(folderId, "", null, true, true);
+            Folder parentFolder = new Folder(folderId, "", null, true);
             List<FileSystemObject> contents = FileController.getChildrenWithId
                     (folderId, uid, sslSocket, userPrivKey);
             for (FileSystemObject child : contents)
@@ -283,19 +283,19 @@ public class AccountsController {
                     "server");
     }
 
-    public class RegistrationFailException extends Exception {
+    public static class RegistrationFailException extends Exception {
         RegistrationFailException(String message) {
             super(message);
         }
     }
 
-    public class LoginFailException extends Exception {
+    public static class LoginFailException extends Exception {
         LoginFailException(String message) {
             super(message);
         }
     }
 
-    public class UserRetrieveException extends Exception {
+    public static class UserRetrieveException extends Exception {
         UserRetrieveException(String message) {
             super(message);
         }

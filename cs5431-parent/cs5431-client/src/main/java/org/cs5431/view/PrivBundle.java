@@ -11,7 +11,7 @@ public class PrivBundle {
     private final SimpleStringProperty username;
     String privilege;
 
-    public PrivBundle(int userId, String username, FileSystemObject fso, boolean
+    PrivBundle(int userId, String username, FileSystemObject fso, boolean
             canEdit, boolean canView) {
         this.userId = userId;
         this.fso = fso;

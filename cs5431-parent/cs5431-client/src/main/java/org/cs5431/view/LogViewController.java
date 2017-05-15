@@ -29,7 +29,6 @@ public class LogViewController implements Initializable {
     public ListView<String> listViewLog;
 
     private Stage stage;
-    private FileController fileController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -64,7 +63,6 @@ public class LogViewController implements Initializable {
      * @param fileName File name associated with the log that is being viewed
      */
     void setDetails(FileController fileController, int fsoid, String fileName) {
-        this.fileController = fileController;
         txtFilename.setText(fileName+" log");
 
         Task<List<String>> task = new Task<List<String>>() {

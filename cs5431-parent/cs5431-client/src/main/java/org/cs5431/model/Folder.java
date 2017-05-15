@@ -13,8 +13,8 @@ public class Folder extends FileSystemObject {
     }
 
     public Folder (int id, String name, Timestamp
-            lastModified, boolean isEditor, boolean isViewer) {
-        super(id, name, lastModified, isEditor, isViewer);
+            lastModified, boolean isEditor) {
+        super(id, name, lastModified, isEditor);
         this.type = FSOType.FOLDER;
         this.children = new ArrayList<>();
         this.size = 0;

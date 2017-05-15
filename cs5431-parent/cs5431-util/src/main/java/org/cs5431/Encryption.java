@@ -33,7 +33,8 @@ public class Encryption {
             IOException, IllegalBlockSizeException, BadPaddingException {
         FileInputStream inputStream = new FileInputStream(file);
         byte[] fileBytes = new byte[inputStream.available()];
-        inputStream.read(fileBytes);
+        if (inputStream.read(fileBytes) != -1)
+            throw new IOException("Stopped reading file before EOF!");
         inputStream.close();
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);

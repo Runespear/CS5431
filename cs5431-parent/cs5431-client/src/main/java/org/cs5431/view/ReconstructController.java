@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.getPrivKeyFromJSON;
 import static org.cs5431.controller.UserController.completeChangePwd;
 

@@ -75,6 +75,7 @@ public class ConnectController implements Initializable {
             String server = br.readLine();
             String outPort = br.readLine();
             String sslPort = br.readLine();
+            br.close();
             if (!Validator.validIP(server)|| !Validator.validPort(outPort) ||
                     !Validator.validPort(sslPort)){
                 throw new IOException("Config file tampered with");
@@ -84,6 +85,7 @@ public class ConnectController implements Initializable {
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream
                     (pubKeyFile));
             PublicKey serverPubKey = (PublicKey) ois.readObject();
+            ois.close();
 
             File cert = new File("./user-config/"+serverName+".cer");
             File jks = new File("./user-config/"+serverName+".jks");

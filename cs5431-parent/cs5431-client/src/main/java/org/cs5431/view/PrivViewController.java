@@ -92,10 +92,12 @@ public class PrivViewController implements Initializable{
                         if (!prev.equals(now) && now.equals("Can Edit") &&
                                 !bundle.canEdit) {
                             bundle.canEdit = true;
+                            bundle.canView = true;
                             changeToEditor(bundle, comboBox);
                         } else if (!prev.equals(now) && now.equals("Can " +
                                 "View") && bundle.canEdit) {
                             bundle.canEdit = false;
+                            bundle.canView = true;
                             changeToViewer(bundle, comboBox);
                         }
                     });

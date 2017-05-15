@@ -193,7 +193,7 @@ public class FileController {
 
                     if (folderSentId != -1) {
                         Folder folderSent = new Folder(folderSentId, folderName,
-                                lastModified, true, true);
+                                lastModified, true);
                         parentFolder.addChild(folderSent);
                     } else {
                         throw new FileControllerException("Failed to create folder");
@@ -420,7 +420,7 @@ public class FileController {
                 String ivNameString = c.getString("fsoNameIV");
                 String encKeyString = c.getString("encKey");
                 boolean isEditor = c.getBoolean("isEditor");
-                boolean isViewer = c.getBoolean("isViewer");
+                //boolean isViewer = c.getBoolean("isViewer");
                 SecretKey fileSK = decFileSecretKey(Base64.getDecoder().decode
                         (encKeyString), userPrivKey);
                 IvParameterSpec ivSpec = new IvParameterSpec(Base64.getDecoder()
@@ -431,9 +431,9 @@ public class FileController {
                 String type = c.getString("FSOType");
                 FileSystemObject child;
                 if (type.equals("FOLDER")) {
-                    child = new Folder(id, name, lastModified, isEditor, isViewer);
+                    child = new Folder(id, name, lastModified, isEditor);
                 } else {
-                    child = new File(id, name, longSize, lastModified, isEditor, isViewer);
+                    child = new File(id, name, longSize, lastModified, isEditor);
                 }
                 children.add(child);
                 if (CAN_KEYS_BE_DESTROYED) {
@@ -905,7 +905,7 @@ public class FileController {
         return user.getId();
     }
 
-    public class FileControllerException extends Exception {
+    public static class FileControllerException extends Exception {
         FileControllerException(String message) {
             super(message);
         }
