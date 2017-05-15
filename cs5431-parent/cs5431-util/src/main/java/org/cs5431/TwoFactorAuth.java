@@ -80,7 +80,7 @@ public class TwoFactorAuth {
         }
 
         //if otp has existed for more than 2 minutes, we return false
-        if (time_difference/1000000000 > 60){
+        if (time_difference/1000000000 > 120){
             //TODO: Comment out the print line if you wish
             System.out.println("OTP expired!");
             return false;
