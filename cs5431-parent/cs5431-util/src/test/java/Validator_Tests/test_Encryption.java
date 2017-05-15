@@ -33,7 +33,7 @@ class test_Encryption {
     public static byte[] getRandomBytes(int seed){
         random.setSeed(seed);
         byte[] b = new byte[random.nextInt(100)+10];
-        new Random().nextBytes(b);
+        random.nextBytes(b);
         return b;
     }
 
