@@ -133,6 +133,7 @@ public class ReconstructController implements Initializable {
             label.setText(i + ")");
             TextField text = new TextField();
             box.getChildren().addAll(label, text);
+            boxen.getChildren().add(box);
             fields.add(text);
         }
 
