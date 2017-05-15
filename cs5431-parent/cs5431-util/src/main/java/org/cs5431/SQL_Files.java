@@ -2217,7 +2217,7 @@ public class SQL_Files {
         return null;
     }
 
-    boolean isFolder(int fsoid, int uid, String sourceIp) {
+    public boolean isFolder(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement isFolder = null;
         PreparedStatement createLog = null;
@@ -2271,7 +2271,7 @@ public class SQL_Files {
         return false;
     }
 
-    List<Integer> getChildrenId (int fsoid, int uid, String sourceIp) {
+    public List<Integer> getChildrenId (int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getSecretKey = null;
         PreparedStatement createLog = null;
@@ -2329,7 +2329,7 @@ public class SQL_Files {
         return null;
     }
 
-    String getPubKey(int uid) {
+    public String getPubKey(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getPubKey = null;
         if (DEBUG_MODE) {
