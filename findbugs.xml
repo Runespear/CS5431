@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<BugCollection version="3.0.1" sequence="0" timestamp="1494874195014" analysisTimestamp="1494874230701" release="">
+<BugCollection version="3.0.1" sequence="1" timestamp="1494876593271" analysisTimestamp="1494876593054" release="">
   <Project projectName="findbugs-final">
     <Jar>C:\Users\root\CS\CS5431</Jar>
     <SrcDir>C:\Users\root\CS\CS5431</SrcDir>
+    <SuppressionFilter>
+      <LastVersion value="-1" relOp="NEQ"/>
+    </SuppressionFilter>
+    <Cloud id="edu.umd.cs.findbugs.cloud.appengine.findbugs-cloud" online="true" detailsUrl="http://findbugs-cloud.appspot.com/issues/%s?embed"></Cloud>
   </Project>
   <BugInstance type="DMI_DOH" priority="3" rank="10" abbrev="DMI" category="CORRECTNESS">
     <Class classname="SQL_Tests.SQL_AccountsTest">
@@ -705,7 +709,7 @@
     <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.LOCAL_NAME" value="three"/>
     <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.NO_LOADS" value="true"/>
   </BugInstance>
-  <BugInstance type="DMI_RANDOM_USED_ONLY_ONCE" priority="1" rank="14" abbrev="DMI" category="BAD_PRACTICE">
+  <BugInstance type="DMI_RANDOM_USED_ONLY_ONCE" priority="1" rank="14" abbrev="DMI" category="BAD_PRACTICE" last="0" removedByChange="true">
     <Class classname="Validator_Tests.test_Encryption">
       <SourceLine classname="Validator_Tests.test_Encryption" sourcefile="test_Encryption.java" sourcepath="Validator_Tests/test_Encryption.java"/>
     </Class>
@@ -1451,12 +1455,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="adminDeleteUser" signature="(ILjava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="690" end="783" startBytecode="0" endBytecode="2003" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="687" end="780" startBytecode="0" endBytecode="2003" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="9" pc="119" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="755" end="755" startBytecode="557" endBytecode="557" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="702" end="702" startBytecode="99" endBytecode="99" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="711" end="711" startBytecode="121" endBytecode="121" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="752" end="752" startBytecode="557" endBytecode="557" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="699" end="699" startBytecode="99" endBytecode="99" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="708" end="708" startBytecode="121" endBytecode="121" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1465,12 +1469,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="changeEmail" signature="(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1109" end="1177" startBytecode="0" endBytecode="1600" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1106" end="1176" startBytecode="0" endBytecode="1792" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="10" pc="90" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1152" end="1152" startBytecode="366" endBytecode="366" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1114" end="1114" startBytecode="77" endBytecode="77" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1121" end="1121" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1151" end="1151" startBytecode="449" endBytecode="449" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1111" end="1111" startBytecode="77" endBytecode="77" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1118" end="1118" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1479,12 +1483,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="changePassword" signature="(Lorg/json/JSONObject;Ljava/lang/String;Ljava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="942" end="1039" startBytecode="0" endBytecode="2284" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="939" end="1036" startBytecode="0" endBytecode="2284" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="15" pc="174" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1012" end="1012" startBytecode="634" endBytecode="634" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="959" end="959" startBytecode="152" endBytecode="152" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="965" end="965" startBytecode="176" endBytecode="176" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1009" end="1009" startBytecode="634" endBytecode="634" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="956" end="956" startBytecode="152" endBytecode="152" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="962" end="962" startBytecode="176" endBytecode="176" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1493,12 +1497,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="changePhoneNo" signature="(Lorg/json/JSONObject;Ljava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1903" end="1975" startBytecode="0" endBytecode="1654" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1902" end="1976" startBytecode="0" endBytecode="1846" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="11" pc="112" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1950" end="1950" startBytecode="392" endBytecode="392" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1912" end="1912" startBytecode="99" endBytecode="99" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1919" end="1919" startBytecode="114" endBytecode="114" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1951" end="1951" startBytecode="475" endBytecode="475" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1911" end="1911" startBytecode="99" endBytecode="99" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1918" end="1918" startBytecode="114" endBytecode="114" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1507,12 +1511,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="createRecoveryGroup" signature="(Lorg/json/JSONObject;Ljava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1364" end="1445" startBytecode="0" endBytecode="1880" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1363" end="1444" startBytecode="0" endBytecode="1880" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="9" pc="104" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1417" end="1417" startBytecode="476" endBytecode="476" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1371" end="1371" startBytecode="84" endBytecode="84" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1380" end="1380" startBytecode="106" endBytecode="106" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1416" end="1416" startBytecode="476" endBytecode="476" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1370" end="1370" startBytecode="84" endBytecode="84" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1379" end="1379" startBytecode="106" endBytecode="106" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1521,12 +1525,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="deleteUser" signature="(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="791" end="893" startBytecode="0" endBytecode="2334" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="788" end="890" startBytecode="0" endBytecode="2334" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="15" pc="186" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="865" end="865" startBytecode="643" endBytecode="643" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="810" end="810" startBytecode="166" endBytecode="166" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="819" end="819" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="862" end="862" startBytecode="643" endBytecode="643" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="807" end="807" startBytecode="166" endBytecode="166" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="816" end="816" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1535,12 +1539,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="recoverPwd" signature="(ILjava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1759" end="1865" startBytecode="0" endBytecode="2365" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1758" end="1864" startBytecode="0" endBytecode="2365" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="7" pc="102" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1834" end="1834" startBytecode="744" endBytecode="744" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1763" end="1763" startBytecode="72" endBytecode="72" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1775" end="1775" startBytecode="104" endBytecode="104" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1833" end="1833" startBytecode="744" endBytecode="744" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1762" end="1762" startBytecode="72" endBytecode="72" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1774" end="1774" startBytecode="104" endBytecode="104" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1549,12 +1553,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="removeSecrets" signature="(ILjava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1449" end="1511" startBytecode="0" endBytecode="1478" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1448" end="1510" startBytecode="0" endBytecode="1478" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="8" pc="88" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1486" end="1486" startBytecode="329" endBytecode="329" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1455" end="1455" startBytecode="75" endBytecode="75" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1462" end="1462" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1485" end="1485" startBytecode="329" endBytecode="329" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1454" end="1454" startBytecode="75" endBytecode="75" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1461" end="1461" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1563,12 +1567,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="toggle2fa" signature="(IILjava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1515" end="1588" startBytecode="0" endBytecode="1616" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1514" end="1587" startBytecode="0" endBytecode="1616" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="8" pc="90" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1559" end="1559" startBytecode="393" endBytecode="393" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1519" end="1519" startBytecode="74" endBytecode="74" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1527" end="1527" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1558" end="1558" startBytecode="393" endBytecode="393" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1518" end="1518" startBytecode="74" endBytecode="74" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1526" end="1526" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1577,12 +1581,12 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="twoFactorLogin" signature="(ILjava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="297" end="373" startBytecode="0" endBytecode="1903" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="294" end="370" startBytecode="0" endBytecode="1903" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="createLog" register="8" pc="88" role="LOCAL_VARIABLE_VALUE_OF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="348" end="348" startBytecode="578" endBytecode="578" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="302" end="302" startBytecode="75" endBytecode="75" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="310" end="310" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="345" end="345" startBytecode="578" endBytecode="578" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_DEREF"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="299" end="299" startBytecode="75" endBytecode="75" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_NULL_VALUE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="307" end="307" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_KNOWN_NULL"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.ALWAYS_ON_EXCEPTION_PATH" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.NullDerefProperty.LONG_RANGE_NULL_SOURCE" value="true"/>
   </BugInstance>
@@ -1591,34 +1595,34 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="authenticate" signature="(Lorg/json/JSONObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/cs5431/Email;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="418" end="590" startBytecode="0" endBytecode="3817" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="415" end="587" startBytecode="0" endBytecode="3833" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="456" end="456" startBytecode="183" endBytecode="183" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="458" end="458" startBytecode="190" endBytecode="190" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="462" end="462" startBytecode="210" endBytecode="210" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="463" end="463" startBytecode="216" endBytecode="216" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="464" end="464" startBytecode="225" endBytecode="225" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="465" end="465" startBytecode="234" endBytecode="234" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="466" end="466" startBytecode="244" endBytecode="244" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="467" end="467" startBytecode="262" endBytecode="262" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="468" end="468" startBytecode="272" endBytecode="272" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="469" end="469" startBytecode="283" endBytecode="283" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="470" end="470" startBytecode="293" endBytecode="293" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="471" end="471" startBytecode="304" endBytecode="304" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="472" end="472" startBytecode="312" endBytecode="312" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="473" end="473" startBytecode="319" endBytecode="319" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="567" end="567" startBytecode="322" endBytecode="322" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="570" end="570" startBytecode="334" endBytecode="334" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="573" end="573" startBytecode="346" endBytecode="346" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="576" end="576" startBytecode="358" endBytecode="358" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="579" end="579" startBytecode="370" endBytecode="370" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="582" end="582" startBytecode="382" endBytecode="382" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="584" end="584" startBytecode="390" endBytecode="390" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="473" end="473" startBytecode="429" endBytecode="429" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="453" end="453" startBytecode="183" endBytecode="183" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="455" end="455" startBytecode="190" endBytecode="190" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="459" end="459" startBytecode="210" endBytecode="210" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="460" end="460" startBytecode="216" endBytecode="216" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="461" end="461" startBytecode="225" endBytecode="225" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="462" end="462" startBytecode="234" endBytecode="234" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="463" end="463" startBytecode="244" endBytecode="244" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="464" end="464" startBytecode="262" endBytecode="262" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="465" end="465" startBytecode="272" endBytecode="272" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="466" end="466" startBytecode="283" endBytecode="283" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="467" end="467" startBytecode="293" endBytecode="293" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="468" end="468" startBytecode="304" endBytecode="304" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="469" end="469" startBytecode="312" endBytecode="312" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="470" end="470" startBytecode="319" endBytecode="319" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="564" end="564" startBytecode="322" endBytecode="322" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="567" end="567" startBytecode="334" endBytecode="334" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="570" end="570" startBytecode="346" endBytecode="346" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="573" end="573" startBytecode="358" endBytecode="358" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="576" end="576" startBytecode="370" endBytecode="370" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="579" end="579" startBytecode="382" endBytecode="382" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="581" end="581" startBytecode="390" endBytecode="390" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="470" end="470" startBytecode="429" endBytecode="429" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1626,19 +1630,19 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getParentFolderid" signature="(I)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="897" end="931" startBytecode="0" endBytecode="1061" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="894" end="928" startBytecode="0" endBytecode="1061" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="912" end="912" startBytecode="103" endBytecode="103" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="913" end="913" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="921" end="921" startBytecode="193" endBytecode="193" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="924" end="924" startBytecode="205" endBytecode="205" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="928" end="928" startBytecode="322" endBytecode="322" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="930" end="930" startBytecode="411" endBytecode="411" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="931" end="931" startBytecode="419" endBytecode="419" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="909" end="909" startBytecode="103" endBytecode="103" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="910" end="910" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="918" end="918" startBytecode="193" endBytecode="193" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="921" end="921" startBytecode="205" endBytecode="205" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="925" end="925" startBytecode="322" endBytecode="322" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="927" end="927" startBytecode="411" endBytecode="411" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="928" end="928" startBytecode="419" endBytecode="419" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1646,18 +1650,18 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getPrivKeySalt" signature="(Ljava/lang/String;)Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="594" end="624" startBytecode="0" endBytecode="957" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="591" end="621" startBytecode="0" endBytecode="957" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="608" end="608" startBytecode="106" endBytecode="106" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="609" end="609" startBytecode="113" endBytecode="113" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="612" end="612" startBytecode="133" endBytecode="133" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="617" end="617" startBytecode="137" endBytecode="137" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="621" end="621" startBytecode="149" endBytecode="149" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="612" end="612" startBytecode="185" endBytecode="185" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="605" end="605" startBytecode="106" endBytecode="106" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="606" end="606" startBytecode="113" endBytecode="113" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="609" end="609" startBytecode="133" endBytecode="133" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="614" end="614" startBytecode="137" endBytecode="137" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="618" end="618" startBytecode="149" endBytecode="149" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="609" end="609" startBytecode="185" endBytecode="185" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1665,20 +1669,20 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getSalt" signature="(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="631" end="681" startBytecode="0" endBytecode="1309" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="628" end="678" startBytecode="0" endBytecode="1309" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="652" end="652" startBytecode="128" endBytecode="128" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="653" end="653" startBytecode="135" endBytecode="135" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="654" end="654" startBytecode="145" endBytecode="145" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="666" end="666" startBytecode="252" endBytecode="252" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="671" end="671" startBytecode="256" endBytecode="256" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="674" end="674" startBytecode="268" endBytecode="268" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="678" end="678" startBytecode="280" endBytecode="280" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="666" end="666" startBytecode="319" endBytecode="319" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="649" end="649" startBytecode="128" endBytecode="128" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="650" end="650" startBytecode="135" endBytecode="135" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="651" end="651" startBytecode="145" endBytecode="145" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="663" end="663" startBytecode="252" endBytecode="252" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="668" end="668" startBytecode="256" endBytecode="256" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="671" end="671" startBytecode="268" endBytecode="268" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="675" end="675" startBytecode="280" endBytecode="280" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="663" end="663" startBytecode="319" endBytecode="319" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1686,18 +1690,18 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getUserId" signature="(Ljava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1251" end="1282" startBytecode="0" endBytecode="1000" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1250" end="1281" startBytecode="0" endBytecode="1000" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1266" end="1266" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1268" end="1268" startBytecode="117" endBytecode="117" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1275" end="1275" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1279" end="1279" startBytecode="281" endBytecode="281" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1281" end="1281" startBytecode="370" endBytecode="370" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1282" end="1282" startBytecode="378" endBytecode="378" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1265" end="1265" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1267" end="1267" startBytecode="117" endBytecode="117" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1274" end="1274" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1278" end="1278" startBytecode="281" endBytecode="281" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1280" end="1280" startBytecode="370" endBytecode="370" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1281" end="1281" startBytecode="378" endBytecode="378" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1705,23 +1709,23 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getUserLog" signature="()Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1047" end="1097" startBytecode="0" endBytecode="1092" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1044" end="1094" startBytecode="0" endBytecode="1092" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1070" end="1070" startBytecode="107" endBytecode="107" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1071" end="1071" startBytecode="114" endBytecode="114" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1072" end="1072" startBytecode="117" endBytecode="117" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1080" end="1080" startBytecode="178" endBytecode="178" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1081" end="1081" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1082" end="1082" startBytecode="197" endBytecode="197" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1083" end="1083" startBytecode="204" endBytecode="204" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1087" end="1087" startBytecode="208" endBytecode="208" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1090" end="1090" startBytecode="218" endBytecode="218" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1094" end="1094" startBytecode="228" endBytecode="228" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1083" end="1083" startBytecode="267" endBytecode="267" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1067" end="1067" startBytecode="107" endBytecode="107" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1068" end="1068" startBytecode="114" endBytecode="114" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1069" end="1069" startBytecode="117" endBytecode="117" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1077" end="1077" startBytecode="178" endBytecode="178" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1078" end="1078" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1079" end="1079" startBytecode="197" endBytecode="197" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1080" end="1080" startBytecode="204" endBytecode="204" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1084" end="1084" startBytecode="208" endBytecode="208" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1087" end="1087" startBytecode="218" endBytecode="218" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1091" end="1091" startBytecode="228" endBytecode="228" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1080" end="1080" startBytecode="267" endBytecode="267" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1729,18 +1733,18 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getUsername" signature="(I)Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1211" end="1242" startBytecode="0" endBytecode="992" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1210" end="1241" startBytecode="0" endBytecode="992" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1226" end="1226" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1228" end="1228" startBytecode="117" endBytecode="117" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1235" end="1235" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1239" end="1239" startBytecode="281" endBytecode="281" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1241" end="1241" startBytecode="370" endBytecode="370" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1242" end="1242" startBytecode="378" endBytecode="378" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1225" end="1225" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1227" end="1227" startBytecode="117" endBytecode="117" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1234" end="1234" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1238" end="1238" startBytecode="281" endBytecode="281" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1240" end="1240" startBytecode="370" endBytecode="370" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1241" end="1241" startBytecode="378" endBytecode="378" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1748,18 +1752,18 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="hasRecovery" signature="(I)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1661" end="1687" startBytecode="0" endBytecode="1009" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1660" end="1686" startBytecode="0" endBytecode="1009" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1671" end="1671" startBytecode="87" endBytecode="87" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1672" end="1672" startBytecode="94" endBytecode="94" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1675" end="1675" startBytecode="165" endBytecode="165" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1680" end="1680" startBytecode="168" endBytecode="168" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1684" end="1684" startBytecode="180" endBytecode="180" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1675" end="1675" startBytecode="216" endBytecode="216" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1670" end="1670" startBytecode="87" endBytecode="87" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1671" end="1671" startBytecode="94" endBytecode="94" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1674" end="1674" startBytecode="165" endBytecode="165" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1679" end="1679" startBytecode="168" endBytecode="168" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1683" end="1683" startBytecode="180" endBytecode="180" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1674" end="1674" startBytecode="216" endBytecode="216" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1767,19 +1771,19 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="isUniqueUsername" signature="(Ljava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="39" end="78" startBytecode="0" endBytecode="1064" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="36" end="75" startBytecode="0" endBytecode="1064" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="55" end="55" startBytecode="103" endBytecode="103" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="56" end="56" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="63" end="63" startBytecode="182" endBytecode="182" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="65" end="65" startBytecode="190" endBytecode="190" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="71" end="71" startBytecode="193" endBytecode="193" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="75" end="75" startBytecode="205" endBytecode="205" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="65" end="65" startBytecode="241" endBytecode="241" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="52" end="52" startBytecode="103" endBytecode="103" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="53" end="53" startBytecode="110" endBytecode="110" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="60" end="60" startBytecode="182" endBytecode="182" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="62" end="62" startBytecode="190" endBytecode="190" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="68" end="68" startBytecode="193" endBytecode="193" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="72" end="72" startBytecode="205" endBytecode="205" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="62" end="62" startBytecode="241" endBytecode="241" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="OBL_UNSATISFIED_OBLIGATION" priority="2" rank="20" abbrev="OBL" category="EXPERIMENTAL">
@@ -1787,18 +1791,18 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="userEmailExists" signature="(Ljava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1286" end="1321" startBytecode="0" endBytecode="1189" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1285" end="1320" startBytecode="0" endBytecode="1189" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Class classname="java.sql.ResultSet" role="CLASS_REFTYPE">
       <SourceLine classname="java.sql.ResultSet"/>
     </Class>
     <Int value="1" role="INT_OBLIGATIONS_REMAINING"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1299" end="1299" startBytecode="95" endBytecode="95" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1300" end="1300" startBytecode="102" endBytecode="102" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1309" end="1309" startBytecode="226" endBytecode="226" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1314" end="1314" startBytecode="229" endBytecode="229" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1318" end="1318" startBytecode="241" endBytecode="241" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1309" end="1309" startBytecode="277" endBytecode="277" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1298" end="1298" startBytecode="95" endBytecode="95" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_OBLIGATION_CREATED"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1299" end="1299" startBytecode="102" endBytecode="102" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1308" end="1308" startBytecode="226" endBytecode="226" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1313" end="1313" startBytecode="229" endBytecode="229" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1317" end="1317" startBytecode="241" endBytecode="241" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1308" end="1308" startBytecode="277" endBytecode="277" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_PATH_CONTINUES"/>
     <String value="{ResultSet x 1}" role="STRING_REMAINING_OBLIGATIONS"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
@@ -1806,250 +1810,250 @@
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="adminDeleteUser" signature="(ILjava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="690" end="783" startBytecode="0" endBytecode="353" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="687" end="780" startBytecode="0" endBytecode="353" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="711" end="711" startBytecode="121" endBytecode="121" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="713" end="713" startBytecode="143" endBytecode="143" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="708" end="708" startBytecode="121" endBytecode="121" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="710" end="710" startBytecode="143" endBytecode="143" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="authenticate" signature="(Lorg/json/JSONObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/cs5431/Email;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="418" end="590" startBytecode="0" endBytecode="681" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="415" end="587" startBytecode="0" endBytecode="687" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="449" end="449" startBytecode="124" endBytecode="124" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="451" end="451" startBytecode="146" endBytecode="146" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="452" end="452" startBytecode="157" endBytecode="157" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="551" end="551" startBytecode="1258" endBytecode="1258" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="446" end="446" startBytecode="124" endBytecode="124" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="448" end="448" startBytecode="146" endBytecode="146" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="449" end="449" startBytecode="157" endBytecode="157" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="548" end="548" startBytecode="1258" endBytecode="1258" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="changeEmail" signature="(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1109" end="1177" startBytecode="0" endBytecode="254" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1106" end="1176" startBytecode="0" endBytecode="285" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1121" end="1121" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1118" end="1118" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="changePassword" signature="(Lorg/json/JSONObject;Ljava/lang/String;Ljava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="942" end="1039" startBytecode="0" endBytecode="389" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="939" end="1036" startBytecode="0" endBytecode="389" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="965" end="965" startBytecode="176" endBytecode="176" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="962" end="962" startBytecode="176" endBytecode="176" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="changePhoneNo" signature="(Lorg/json/JSONObject;Ljava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1903" end="1975" startBytecode="0" endBytecode="266" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1902" end="1976" startBytecode="0" endBytecode="297" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1919" end="1919" startBytecode="114" endBytecode="114" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1918" end="1918" startBytecode="114" endBytecode="114" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="createRecoveryGroup" signature="(Lorg/json/JSONObject;Ljava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1364" end="1445" startBytecode="0" endBytecode="310" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1363" end="1444" startBytecode="0" endBytecode="310" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1380" end="1380" startBytecode="106" endBytecode="106" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1382" end="1382" startBytecode="128" endBytecode="128" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1379" end="1379" startBytecode="106" endBytecode="106" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1381" end="1381" startBytecode="128" endBytecode="128" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="createUser" signature="(Lorg/json/JSONObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="90" end="254" startBytecode="0" endBytecode="555" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="87" end="251" startBytecode="0" endBytecode="555" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="134" end="134" startBytecode="222" endBytecode="222" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="135" end="135" startBytecode="233" endBytecode="233" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="136" end="136" startBytecode="244" endBytecode="244" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="131" end="131" startBytecode="222" endBytecode="222" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="132" end="132" startBytecode="233" endBytecode="233" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="133" end="133" startBytecode="244" endBytecode="244" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="deleteUser" signature="(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)I" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="791" end="893" startBytecode="0" endBytecode="393" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="788" end="890" startBytecode="0" endBytecode="393" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="819" end="819" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="822" end="822" startBytecode="215" endBytecode="215" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="816" end="816" startBytecode="188" endBytecode="188" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="819" end="819" startBytecode="215" endBytecode="215" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getPasRecInfo" signature="(I)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1592" end="1657" startBytecode="0" endBytecode="283" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1591" end="1656" startBytecode="0" endBytecode="283" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1604" end="1604" startBytecode="83" endBytecode="83" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1616" end="1616" startBytecode="186" endBytecode="186" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1603" end="1603" startBytecode="83" endBytecode="83" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1615" end="1615" startBytecode="186" endBytecode="186" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getSalt" signature="(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="631" end="681" startBytecode="0" endBytecode="196" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="628" end="678" startBytecode="0" endBytecode="196" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="649" end="649" startBytecode="99" endBytecode="99" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="646" end="646" startBytecode="99" endBytecode="99" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getSecrets" signature="(I)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1691" end="1754" startBytecode="0" endBytecode="281" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1690" end="1753" startBytecode="0" endBytecode="281" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1703" end="1703" startBytecode="83" endBytecode="83" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1723" end="1723" startBytecode="247" endBytecode="247" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1702" end="1702" startBytecode="83" endBytecode="83" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1722" end="1722" startBytecode="247" endBytecode="247" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="getUserLog" signature="()Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1047" end="1097" startBytecode="0" endBytecode="178" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1044" end="1094" startBytecode="0" endBytecode="178" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1069" end="1069" startBytecode="100" endBytecode="100" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1066" end="1066" startBytecode="100" endBytecode="100" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="recoverPwd" signature="(ILjava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1759" end="1865" startBytecode="0" endBytecode="419" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1758" end="1864" startBytecode="0" endBytecode="419" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1775" end="1775" startBytecode="104" endBytecode="104" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1777" end="1777" startBytecode="126" endBytecode="126" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1778" end="1778" startBytecode="137" endBytecode="137" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1774" end="1774" startBytecode="104" endBytecode="104" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1776" end="1776" startBytecode="126" endBytecode="126" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1777" end="1777" startBytecode="137" endBytecode="137" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="removeSecrets" signature="(ILjava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1449" end="1511" startBytecode="0" endBytecode="240" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1448" end="1510" startBytecode="0" endBytecode="240" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1462" end="1462" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1461" end="1461" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="toggle2fa" signature="(IILjava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1515" end="1588" startBytecode="0" endBytecode="266" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1514" end="1587" startBytecode="0" endBytecode="266" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1527" end="1527" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1526" end="1526" startBytecode="92" endBytecode="92" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" priority="3" rank="19" abbrev="ODR" category="BAD_PRACTICE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="twoFactorLogin" signature="(ILjava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="297" end="373" startBytecode="0" endBytecode="342" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="294" end="370" startBytecode="0" endBytecode="342" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <Type descriptor="Ljava/sql/PreparedStatement;" role="TYPE_CLOSEIT">
       <SourceLine classname="java.sql.PreparedStatement"/>
     </Type>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="310" end="310" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="307" end="307" startBytecode="90" endBytecode="90" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
   </BugInstance>
   <BugInstance type="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" priority="2" rank="18" abbrev="RCN" category="STYLE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="checkCredentials" signature="()Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1187" end="1202" startBytecode="0" endBytecode="505" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1186" end="1201" startBytecode="0" endBytecode="505" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="connection" register="2" pc="66" role="LOCAL_VARIABLE_VALUE_OF"/>
     <Method classname="java.sql.DriverManager" name="getConnection" signature="(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/Connection;" isStatic="true" role="METHOD_RETURN_VALUE_OF">
       <SourceLine classname="java.sql.DriverManager"/>
     </Method>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1192" end="1192" startBytecode="67" endBytecode="67" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_REDUNDANT_NULL_CHECK"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1191" end="1191" startBytecode="67" endBytecode="67" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_REDUNDANT_NULL_CHECK"/>
   </BugInstance>
   <BugInstance type="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" priority="3" rank="20" abbrev="RCN" category="STYLE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="createUser" signature="(Lorg/json/JSONObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/json/JSONObject;" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="90" end="254" startBytecode="0" endBytecode="3350" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="87" end="251" startBytecode="0" endBytecode="3350" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
     <LocalVariable name="connection" register="8" pc="1004" role="LOCAL_VARIABLE_VALUE_OF"/>
     <Method classname="java.sql.DriverManager" name="getConnection" signature="(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/Connection;" isStatic="true" role="METHOD_RETURN_VALUE_OF">
       <SourceLine classname="java.sql.DriverManager"/>
     </Method>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="212" end="212" startBytecode="1006" endBytecode="1006" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_REDUNDANT_NULL_CHECK"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="209" end="209" startBytecode="1006" endBytecode="1006" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_REDUNDANT_NULL_CHECK"/>
   </BugInstance>
   <BugInstance type="SF_SWITCH_FALLTHROUGH" priority="2" rank="17" abbrev="SF" category="STYLE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="toggle2fa" signature="(IILjava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1515" end="1588" startBytecode="0" endBytecode="1616" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1514" end="1587" startBytecode="0" endBytecode="1616" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1564" end="1565" startBytecode="457" endBytecode="462" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1565" end="1566" startBytecode="467" endBytecode="472" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1563" end="1564" startBytecode="457" endBytecode="462" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1564" end="1565" startBytecode="467" endBytecode="472" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="SF_SWITCH_NO_DEFAULT" priority="2" rank="19" abbrev="SF" category="STYLE">
     <Class classname="org.cs5431.SQL_Accounts">
       <SourceLine classname="org.cs5431.SQL_Accounts" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Class>
     <Method classname="org.cs5431.SQL_Accounts" name="toggle2fa" signature="(IILjava/lang/String;)Z" isStatic="false">
-      <SourceLine classname="org.cs5431.SQL_Accounts" start="1515" end="1588" startBytecode="0" endBytecode="1616" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+      <SourceLine classname="org.cs5431.SQL_Accounts" start="1514" end="1587" startBytecode="0" endBytecode="1616" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1539" end="1544" startBytecode="182" endBytecode="243" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
-    <SourceLine classname="org.cs5431.SQL_Accounts" start="1563" end="1566" startBytecode="427" endBytecode="481" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1538" end="1543" startBytecode="182" endBytecode="243" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java"/>
+    <SourceLine classname="org.cs5431.SQL_Accounts" start="1562" end="1565" startBytecode="427" endBytecode="481" sourcefile="SQL_Accounts.java" sourcepath="org/cs5431/SQL_Accounts.java" role="SOURCE_LINE_ANOTHER_INSTANCE"/>
   </BugInstance>
   <BugInstance type="NP_LOAD_OF_KNOWN_NULL_VALUE" priority="3" rank="19" abbrev="NP" category="STYLE">
     <Class classname="org.cs5431.SQL_Files">
@@ -2798,16 +2802,16 @@
       <SourceLine classname="org.cs5431.SSS" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
     </Class>
     <Method classname="org.cs5431.SSS" name="generateCoordinates" signature="()[[Ljava/math/BigInteger;" isStatic="false">
-      <SourceLine classname="org.cs5431.SSS" start="79" end="87" startBytecode="0" endBytecode="43" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
+      <SourceLine classname="org.cs5431.SSS" start="82" end="95" startBytecode="0" endBytecode="80" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
     </Method>
     <LocalVariable name="numCoordinates" register="1" pc="5" role="LOCAL_VARIABLE_NAMED"/>
-    <SourceLine classname="org.cs5431.SSS" start="79" end="79" startBytecode="4" endBytecode="4" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
+    <SourceLine classname="org.cs5431.SSS" start="82" end="82" startBytecode="4" endBytecode="4" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
     <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.BASE_VALUE" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.CACHING_VALUE" value="true"/>
     <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.LOCAL_NAME" value="numCoordinates"/>
     <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.NO_LOADS" value="true"/>
   </BugInstance>
-  <BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE">
+  <BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE" last="0" removedByChange="true">
     <Class classname="org.cs5431.SSS">
       <SourceLine classname="org.cs5431.SSS" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
     </Class>
@@ -2819,7 +2823,7 @@
     </Field>
     <SourceLine classname="org.cs5431.SSS" start="87" end="87" startBytecode="74" endBytecode="74" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
   </BugInstance>
-  <BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE">
+  <BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE" last="0" removedByChange="true">
     <Class classname="org.cs5431.SSS">
       <SourceLine classname="org.cs5431.SSS" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
     </Class>
@@ -2831,7 +2835,7 @@
     </Field>
     <SourceLine classname="org.cs5431.SSS" start="55" end="55" startBytecode="102" endBytecode="102" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
   </BugInstance>
-  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE">
+  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE" last="0" removedByChange="true">
     <Class classname="org.cs5431.SSS$NotEnoughSubsetsException">
       <SourceLine classname="org.cs5431.SSS$NotEnoughSubsetsException" start="175" end="177" sourcefile="SSS.java" sourcepath="org/cs5431/SSS.java"/>
     </Class>
@@ -2841,11 +2845,11 @@
       <SourceLine classname="org.cs5431.SSS_Reconstructor" sourcefile="SSS_Reconstructor.java" sourcepath="org/cs5431/SSS_Reconstructor.java"/>
     </Class>
     <Method classname="org.cs5431.SSS_Reconstructor" name="recreateSecretR" signature="(Ljava/util/List;I)Lorg/cs5431/BigRational;" isStatic="false">
-      <SourceLine classname="org.cs5431.SSS_Reconstructor" start="56" end="87" startBytecode="0" endBytecode="603" sourcefile="SSS_Reconstructor.java" sourcepath="org/cs5431/SSS_Reconstructor.java"/>
+      <SourceLine classname="org.cs5431.SSS_Reconstructor" start="56" end="87" startBytecode="0" endBytecode="602" sourcefile="SSS_Reconstructor.java" sourcepath="org/cs5431/SSS_Reconstructor.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.SSS_Reconstructor" start="69" end="69" startBytecode="145" endBytecode="145" sourcefile="SSS_Reconstructor.java" sourcepath="org/cs5431/SSS_Reconstructor.java"/>
+    <SourceLine classname="org.cs5431.SSS_Reconstructor" start="69" end="69" startBytecode="144" endBytecode="144" sourcefile="SSS_Reconstructor.java" sourcepath="org/cs5431/SSS_Reconstructor.java"/>
   </BugInstance>
-  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE">
+  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE" last="0" removedByChange="true">
     <Class classname="org.cs5431.SSS_Reconstructor$NotEnoughSubsetsException">
       <SourceLine classname="org.cs5431.SSS_Reconstructor$NotEnoughSubsetsException" start="96" end="98" sourcefile="SSS_Reconstructor.java" sourcepath="org/cs5431/SSS_Reconstructor.java"/>
     </Class>
@@ -3146,7 +3150,7 @@
     </Field>
     <SourceLine classname="org.cs5431.model.File" start="10" end="10" startBytecode="19" endBytecode="19" sourcefile="File.java" sourcepath="org/cs5431/model/File.java"/>
   </BugInstance>
-  <BugInstance type="MS_SHOULD_BE_FINAL" priority="1" rank="16" abbrev="MS" category="MALICIOUS_CODE">
+  <BugInstance type="MS_SHOULD_BE_FINAL" priority="1" rank="16" abbrev="MS" category="MALICIOUS_CODE" last="0" removedByChange="true">
     <Class classname="org.cs5431.view.Client">
       <SourceLine classname="org.cs5431.view.Client" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
     </Class>
@@ -3160,21 +3164,21 @@
       <SourceLine classname="org.cs5431.view.Client" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
     </Class>
     <Method classname="org.cs5431.view.Client" name="start" signature="(Ljavafx/stage/Stage;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.Client" start="35" end="52" startBytecode="0" endBytecode="250" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
+      <SourceLine classname="org.cs5431.view.Client" start="35" end="54" startBytecode="0" endBytecode="263" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
     </Method>
     <Field classname="org.cs5431.view.Client" name="connectNode" signature="Ljavafx/scene/Parent;" isStatic="true">
       <SourceLine classname="org.cs5431.view.Client" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
     </Field>
-    <SourceLine classname="org.cs5431.view.Client" start="41" end="41" startBytecode="36" endBytecode="36" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
+    <SourceLine classname="org.cs5431.view.Client" start="43" end="43" startBytecode="45" endBytecode="45" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
   </BugInstance>
   <BugInstance type="UI_INHERITANCE_UNSAFE_GETRESOURCE" priority="3" rank="19" abbrev="UI" category="BAD_PRACTICE">
     <Class classname="org.cs5431.view.Client">
       <SourceLine classname="org.cs5431.view.Client" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
     </Class>
     <Method classname="org.cs5431.view.Client" name="start" signature="(Ljavafx/stage/Stage;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.Client" start="35" end="52" startBytecode="0" endBytecode="250" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
+      <SourceLine classname="org.cs5431.view.Client" start="35" end="54" startBytecode="0" endBytecode="263" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.Client" start="35" end="35" startBytecode="6" endBytecode="6" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
+    <SourceLine classname="org.cs5431.view.Client" start="37" end="37" startBytecode="15" endBytecode="15" sourcefile="Client.java" sourcepath="org/cs5431/view/Client.java"/>
   </BugInstance>
   <BugInstance type="BC_UNCONFIRMED_CAST_OF_RETURN_VALUE" priority="3" rank="20" abbrev="BC" category="STYLE">
     <Class classname="org.cs5431.view.ConnectController">
@@ -3196,7 +3200,7 @@
       <SourceLine classname="org.cs5431.view.ConnectController" sourcefile="ConnectController.java" sourcepath="org/cs5431/view/ConnectController.java"/>
     </Class>
     <Method classname="org.cs5431.view.ConnectController" name="connect" signature="(Ljavafx/event/Event;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.ConnectController" start="64" end="133" startBytecode="0" endBytecode="1288" sourcefile="ConnectController.java" sourcepath="org/cs5431/view/ConnectController.java"/>
+      <SourceLine classname="org.cs5431.view.ConnectController" start="64" end="133" startBytecode="0" endBytecode="1284" sourcefile="ConnectController.java" sourcepath="org/cs5431/view/ConnectController.java"/>
     </Method>
     <Method classname="java.io.FileReader" name="&lt;init&gt;" signature="(Ljava/io/File;)V" isStatic="false" role="METHOD_CALLED">
       <SourceLine classname="java.io.FileReader"/>
@@ -3224,12 +3228,12 @@
     </Method>
     <SourceLine classname="org.cs5431.view.ConnectController" start="148" end="148" startBytecode="35" endBytecode="35" sourcefile="ConnectController.java" sourcepath="org/cs5431/view/ConnectController.java"/>
   </BugInstance>
-  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE">
+  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE" last="0" removedByChange="true">
     <Class classname="org.cs5431.view.ConnectController$CertException">
       <SourceLine classname="org.cs5431.view.ConnectController$CertException" start="170" end="172" sourcefile="ConnectController.java" sourcepath="org/cs5431/view/ConnectController.java"/>
     </Class>
   </BugInstance>
-  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE">
+  <BugInstance type="SIC_INNER_SHOULD_BE_STATIC" priority="2" rank="18" abbrev="SIC" category="PERFORMANCE" last="0" removedByChange="true">
     <Class classname="org.cs5431.view.ConnectController$JKSException">
       <SourceLine classname="org.cs5431.view.ConnectController$JKSException" start="175" end="177" sourcefile="ConnectController.java" sourcepath="org/cs5431/view/ConnectController.java"/>
     </Class>
@@ -3649,11 +3653,11 @@
       <SourceLine classname="org.cs5431.view.LoginController" sourcefile="LoginController.java" sourcepath="org/cs5431/view/LoginController.java"/>
     </Field>
     <Method classname="org.cs5431.view.LoginController" name="disconnect" signature="()V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.LoginController" start="244" end="247" startBytecode="0" endBytecode="86" sourcefile="LoginController.java" sourcepath="org/cs5431/view/LoginController.java"/>
+      <SourceLine classname="org.cs5431.view.LoginController" start="252" end="255" startBytecode="0" endBytecode="86" sourcefile="LoginController.java" sourcepath="org/cs5431/view/LoginController.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.LoginController" start="244" end="244" startBytecode="4" endBytecode="4" sourcefile="LoginController.java" sourcepath="org/cs5431/view/LoginController.java"/>
+    <SourceLine classname="org.cs5431.view.LoginController" start="252" end="252" startBytecode="4" endBytecode="4" sourcefile="LoginController.java" sourcepath="org/cs5431/view/LoginController.java"/>
   </BugInstance>
-  <BugInstance type="URF_UNREAD_FIELD" priority="2" rank="18" abbrev="UrF" category="PERFORMANCE">
+  <BugInstance type="URF_UNREAD_FIELD" priority="2" rank="18" abbrev="UrF" category="PERFORMANCE" last="0" removedByChange="true">
     <Class classname="org.cs5431.view.PrivBundle">
       <SourceLine classname="org.cs5431.view.PrivBundle" sourcefile="PrivBundle.java" sourcepath="org/cs5431/view/PrivBundle.java"/>
     </Class>
@@ -3667,48 +3671,48 @@
       <SourceLine classname="org.cs5431.view.PrivViewController" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Class>
     <Method classname="org.cs5431.view.PrivViewController" name="changeToEditor" signature="(Lorg/cs5431/view/PrivBundle;Ljavafx/scene/control/ComboBox;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.PrivViewController" start="156" end="175" startBytecode="0" endBytecode="165" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+      <SourceLine classname="org.cs5431.view.PrivViewController" start="154" end="173" startBytecode="0" endBytecode="165" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Method>
     <Method classname="java.util.concurrent.ExecutorService" name="submit" signature="(Ljava/lang/Runnable;)Ljava/util/concurrent/Future;" isStatic="false" role="METHOD_CALLED">
       <SourceLine classname="java.util.concurrent.ExecutorService"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.PrivViewController" start="166" end="166" startBytecode="35" endBytecode="35" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+    <SourceLine classname="org.cs5431.view.PrivViewController" start="164" end="164" startBytecode="35" endBytecode="35" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
   </BugInstance>
   <BugInstance type="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" priority="3" rank="19" abbrev="RV" category="BAD_PRACTICE">
     <Class classname="org.cs5431.view.PrivViewController">
       <SourceLine classname="org.cs5431.view.PrivViewController" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Class>
     <Method classname="org.cs5431.view.PrivViewController" name="changeToViewer" signature="(Lorg/cs5431/view/PrivBundle;Ljavafx/scene/control/ComboBox;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.PrivViewController" start="178" end="197" startBytecode="0" endBytecode="165" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+      <SourceLine classname="org.cs5431.view.PrivViewController" start="176" end="195" startBytecode="0" endBytecode="165" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Method>
     <Method classname="java.util.concurrent.ExecutorService" name="submit" signature="(Ljava/lang/Runnable;)Ljava/util/concurrent/Future;" isStatic="false" role="METHOD_CALLED">
       <SourceLine classname="java.util.concurrent.ExecutorService"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.PrivViewController" start="188" end="188" startBytecode="35" endBytecode="35" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+    <SourceLine classname="org.cs5431.view.PrivViewController" start="186" end="186" startBytecode="35" endBytecode="35" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
   </BugInstance>
   <BugInstance type="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" priority="3" rank="19" abbrev="RV" category="BAD_PRACTICE">
     <Class classname="org.cs5431.view.PrivViewController">
       <SourceLine classname="org.cs5431.view.PrivViewController" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Class>
     <Method classname="org.cs5431.view.PrivViewController" name="removePriv" signature="(Lorg/cs5431/view/PrivBundle;Ljavafx/scene/control/TableView;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.PrivViewController" start="133" end="153" startBytecode="0" endBytecode="164" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+      <SourceLine classname="org.cs5431.view.PrivViewController" start="131" end="151" startBytecode="0" endBytecode="164" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Method>
     <Method classname="java.util.concurrent.ExecutorService" name="submit" signature="(Ljava/lang/Runnable;)Ljava/util/concurrent/Future;" isStatic="false" role="METHOD_CALLED">
       <SourceLine classname="java.util.concurrent.ExecutorService"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.PrivViewController" start="146" end="146" startBytecode="36" endBytecode="36" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+    <SourceLine classname="org.cs5431.view.PrivViewController" start="144" end="144" startBytecode="36" endBytecode="36" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
   </BugInstance>
   <BugInstance type="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" priority="3" rank="19" abbrev="RV" category="BAD_PRACTICE">
     <Class classname="org.cs5431.view.PrivViewController">
       <SourceLine classname="org.cs5431.view.PrivViewController" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Class>
     <Method classname="org.cs5431.view.PrivViewController" name="setDetails" signature="(Lorg/cs5431/controller/FileController;Lorg/cs5431/model/FileSystemObject;Lorg/cs5431/controller/AccountsController;)V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.PrivViewController" start="278" end="323" startBytecode="0" endBytecode="270" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+      <SourceLine classname="org.cs5431.view.PrivViewController" start="276" end="321" startBytecode="0" endBytecode="270" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Method>
     <Method classname="java.util.concurrent.ExecutorService" name="submit" signature="(Ljava/lang/Runnable;)Ljava/util/concurrent/Future;" isStatic="false" role="METHOD_CALLED">
       <SourceLine classname="java.util.concurrent.ExecutorService"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.PrivViewController" start="316" end="316" startBytecode="91" endBytecode="91" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+    <SourceLine classname="org.cs5431.view.PrivViewController" start="314" end="314" startBytecode="91" endBytecode="91" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
   </BugInstance>
   <BugInstance type="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR" priority="3" rank="20" abbrev="UwF" category="STYLE">
     <Class classname="org.cs5431.view.PrivViewController">
@@ -3718,9 +3722,9 @@
       <SourceLine classname="org.cs5431.view.PrivViewController" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Field>
     <Method classname="org.cs5431.view.PrivViewController" name="retrieveUsername" signature="(I)Ljava/lang/String;" isStatic="false">
-      <SourceLine classname="org.cs5431.view.PrivViewController" start="327" end="336" startBytecode="0" endBytecode="208" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+      <SourceLine classname="org.cs5431.view.PrivViewController" start="325" end="334" startBytecode="0" endBytecode="208" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.PrivViewController" start="327" end="327" startBytecode="5" endBytecode="5" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+    <SourceLine classname="org.cs5431.view.PrivViewController" start="325" end="325" startBytecode="5" endBytecode="5" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
   </BugInstance>
   <BugInstance type="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR" priority="3" rank="20" abbrev="UwF" category="STYLE">
     <Class classname="org.cs5431.view.PrivViewController">
@@ -3730,9 +3734,9 @@
       <SourceLine classname="org.cs5431.view.PrivViewController" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Field>
     <Method classname="org.cs5431.view.PrivViewController" name="exit" signature="()V" isStatic="false">
-      <SourceLine classname="org.cs5431.view.PrivViewController" start="203" end="206" startBytecode="0" endBytecode="86" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+      <SourceLine classname="org.cs5431.view.PrivViewController" start="201" end="204" startBytecode="0" endBytecode="86" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
     </Method>
-    <SourceLine classname="org.cs5431.view.PrivViewController" start="203" end="203" startBytecode="4" endBytecode="4" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
+    <SourceLine classname="org.cs5431.view.PrivViewController" start="201" end="201" startBytecode="4" endBytecode="4" sourcefile="PrivViewController.java" sourcepath="org/cs5431/view/PrivViewController.java"/>
   </BugInstance>
   <BugInstance type="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" priority="3" rank="19" abbrev="RV" category="BAD_PRACTICE">
     <Class classname="org.cs5431.view.PwdRecoveryController">
@@ -3935,7 +3939,7 @@
     <MissingClass>org.junit.gen5.api.Assertions</MissingClass>
     <MissingClass>org.junit.jupiter.api.Assertions</MissingClass>
   </Errors>
-  <FindBugsSummary timestamp="Mon, 15 May 2017 14:49:55 -0400" total_classes="114" referenced_classes="628" total_bugs="290" total_size="9757" num_packages="9" java_version="1.8.0_131" vm_version="25.131-b11" cpu_seconds="196.92" clock_seconds="92.39" peak_mbytes="648.43" alloc_mbytes="1796.00" gc_seconds="3.84" priority_3="176" priority_2="85" priority_1="29">
+  <FindBugsSummary timestamp="Mon, 15 May 2017 15:29:53 -0400" total_classes="114" referenced_classes="629" total_bugs="281" total_size="9761" num_packages="9" java_version="1.8.0_131" vm_version="25.131-b11" cpu_seconds="104.77" clock_seconds="115.55" peak_mbytes="856.97" alloc_mbytes="1796.00" gc_seconds="1.81" priority_3="176" priority_2="78" priority_1="27">
     <PackageStats package="Controller_Tests" total_bugs="0" total_types="1" total_size="62">
       <ClassStats class="Controller_Tests.AccountsControllerTest" sourceFile="AccountsControllerTest.java" interface="false" size="62" bugs="0"/>
     </PackageStats>
@@ -3959,8 +3963,8 @@
     <PackageStats package="SSS_Tests" total_bugs="3" total_types="1" total_size="106" priority_3="1" priority_2="2">
       <ClassStats class="SSS_Tests.test_SSS" sourceFile="test_SSS.java" interface="false" size="106" bugs="3" priority_3="1" priority_2="2"/>
     </PackageStats>
-    <PackageStats package="Validator_Tests" total_bugs="51" total_types="7" total_size="786" priority_3="36" priority_2="11" priority_1="4">
-      <ClassStats class="Validator_Tests.test_Encryption" sourceFile="test_Encryption.java" interface="false" size="572" bugs="47" priority_3="36" priority_2="7" priority_1="4"/>
+    <PackageStats package="Validator_Tests" total_bugs="50" total_types="7" total_size="786" priority_3="36" priority_2="11" priority_1="3">
+      <ClassStats class="Validator_Tests.test_Encryption" sourceFile="test_Encryption.java" interface="false" size="572" bugs="46" priority_3="36" priority_2="7" priority_1="3"/>
       <ClassStats class="Validator_Tests.test_validEmail" sourceFile="test_validEmail.java" interface="false" size="21" bugs="0"/>
       <ClassStats class="Validator_Tests.test_validFileName" sourceFile="test_validFileName.java" interface="false" size="36" bugs="1" priority_2="1"/>
       <ClassStats class="Validator_Tests.test_validIP" sourceFile="test_validIP.java" interface="false" size="45" bugs="0"/>
@@ -3968,7 +3972,7 @@
       <ClassStats class="Validator_Tests.test_validPort" sourceFile="test_validPort.java" interface="false" size="28" bugs="0"/>
       <ClassStats class="Validator_Tests.test_validUsername" sourceFile="test_validUsername.java" interface="false" size="51" bugs="0"/>
     </PackageStats>
-    <PackageStats package="org.cs5431" total_bugs="141" total_types="25" total_size="5000" priority_3="67" priority_2="59" priority_1="15">
+    <PackageStats package="org.cs5431" total_bugs="137" total_types="25" total_size="5006" priority_3="67" priority_2="55" priority_1="15">
       <ClassStats class="org.cs5431.BigRational" sourceFile="BigRational.java" interface="false" size="88" bugs="0"/>
       <ClassStats class="org.cs5431.CertSocketThread" sourceFile="CertSocketThread.java" interface="false" size="18" bugs="0"/>
       <ClassStats class="org.cs5431.CertTransferThread" sourceFile="CertSocketThread.java" interface="false" size="49" bugs="4" priority_3="2" priority_2="2"/>
@@ -3980,14 +3984,14 @@
       <ClassStats class="org.cs5431.IntrusionDetection" sourceFile="IntrusionDetection.java" interface="false" size="252" bugs="16" priority_3="8" priority_2="7" priority_1="1"/>
       <ClassStats class="org.cs5431.JSON" sourceFile="JSON.java" interface="false" size="32" bugs="0"/>
       <ClassStats class="org.cs5431.PromptAdminThread" sourceFile="PromptAdminThread.java" interface="false" size="84" bugs="4" priority_1="4"/>
-      <ClassStats class="org.cs5431.SQL_Accounts" sourceFile="SQL_Accounts.java" interface="false" size="1355" bugs="40" priority_3="17" priority_2="23"/>
+      <ClassStats class="org.cs5431.SQL_Accounts" sourceFile="SQL_Accounts.java" interface="false" size="1359" bugs="40" priority_3="17" priority_2="23"/>
       <ClassStats class="org.cs5431.SQL_Files" sourceFile="SQL_Files.java" interface="false" size="1725" bugs="49" priority_3="30" priority_2="19"/>
       <ClassStats class="org.cs5431.SSLServer" sourceFile="SSLServer.java" interface="false" size="610" bugs="2" priority_3="2"/>
       <ClassStats class="org.cs5431.SSLSocketThread" sourceFile="SSLSocketThread.java" interface="false" size="19" bugs="0"/>
-      <ClassStats class="org.cs5431.SSS" sourceFile="SSS.java" interface="false" size="99" bugs="3" priority_3="1" priority_2="2"/>
-      <ClassStats class="org.cs5431.SSS$NotEnoughSubsetsException" sourceFile="SSS.java" interface="false" size="6" bugs="1" priority_2="1"/>
+      <ClassStats class="org.cs5431.SSS" sourceFile="SSS.java" interface="false" size="105" bugs="1" priority_3="1"/>
+      <ClassStats class="org.cs5431.SSS$NotEnoughSubsetsException" sourceFile="SSS.java" interface="false" size="4" bugs="0"/>
       <ClassStats class="org.cs5431.SSS_Reconstructor" sourceFile="SSS_Reconstructor.java" interface="false" size="50" bugs="1" priority_3="1"/>
-      <ClassStats class="org.cs5431.SSS_Reconstructor$NotEnoughSubsetsException" sourceFile="SSS_Reconstructor.java" interface="false" size="6" bugs="1" priority_2="1"/>
+      <ClassStats class="org.cs5431.SSS_Reconstructor$NotEnoughSubsetsException" sourceFile="SSS_Reconstructor.java" interface="false" size="4" bugs="0"/>
       <ClassStats class="org.cs5431.ServerSetup" sourceFile="ServerSetup.java" interface="false" size="172" bugs="5" priority_3="1" priority_2="2" priority_1="2"/>
       <ClassStats class="org.cs5431.ServerView" sourceFile="ServerView.java" interface="false" size="99" bugs="4" priority_3="1" priority_1="3"/>
       <ClassStats class="org.cs5431.TransmittedFile" sourceFile="TransmittedFile.java" interface="false" size="7" bugs="0"/>
@@ -4020,11 +4024,11 @@
       <ClassStats class="org.cs5431.model.Folder" sourceFile="Folder.java" interface="false" size="15" bugs="0"/>
       <ClassStats class="org.cs5431.model.User" sourceFile="User.java" interface="false" size="36" bugs="0"/>
     </PackageStats>
-    <PackageStats package="org.cs5431.view" total_bugs="66" total_types="46" total_size="2319" priority_3="57" priority_2="4" priority_1="5">
-      <ClassStats class="org.cs5431.view.Client" sourceFile="Client.java" interface="false" size="43" bugs="3" priority_3="1" priority_2="1" priority_1="1"/>
+    <PackageStats package="org.cs5431.view" total_bugs="62" total_types="46" total_size="2317" priority_3="57" priority_2="1" priority_1="4">
+      <ClassStats class="org.cs5431.view.Client" sourceFile="Client.java" interface="false" size="44" bugs="2" priority_3="1" priority_2="1"/>
       <ClassStats class="org.cs5431.view.ConnectController" sourceFile="ConnectController.java" interface="false" size="100" bugs="4" priority_3="3" priority_1="1"/>
-      <ClassStats class="org.cs5431.view.ConnectController$CertException" sourceFile="ConnectController.java" interface="false" size="6" bugs="1" priority_2="1"/>
-      <ClassStats class="org.cs5431.view.ConnectController$JKSException" sourceFile="ConnectController.java" interface="false" size="6" bugs="1" priority_2="1"/>
+      <ClassStats class="org.cs5431.view.ConnectController$CertException" sourceFile="ConnectController.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="org.cs5431.view.ConnectController$JKSException" sourceFile="ConnectController.java" interface="false" size="4" bugs="0"/>
       <ClassStats class="org.cs5431.view.EditDetailsController" sourceFile="EditDetailsController.java" interface="false" size="391" bugs="4" priority_3="4"/>
       <ClassStats class="org.cs5431.view.EditDetailsController$1" sourceFile="EditDetailsController.java" interface="false" size="10" bugs="0"/>
       <ClassStats class="org.cs5431.view.EditDetailsController$2" sourceFile="EditDetailsController.java" interface="false" size="10" bugs="0"/>
@@ -4044,12 +4048,12 @@
       <ClassStats class="org.cs5431.view.FileViewController$6" sourceFile="FileViewController.java" interface="false" size="7" bugs="0"/>
       <ClassStats class="org.cs5431.view.LogViewController" sourceFile="LogViewController.java" interface="false" size="43" bugs="2" priority_3="2"/>
       <ClassStats class="org.cs5431.view.LogViewController$1" sourceFile="LogViewController.java" interface="false" size="9" bugs="1" priority_3="1"/>
-      <ClassStats class="org.cs5431.view.LoginController" sourceFile="LoginController.java" interface="false" size="164" bugs="8" priority_3="8"/>
+      <ClassStats class="org.cs5431.view.LoginController" sourceFile="LoginController.java" interface="false" size="169" bugs="8" priority_3="8"/>
       <ClassStats class="org.cs5431.view.LoginController$1" sourceFile="LoginController.java" interface="false" size="13" bugs="0"/>
       <ClassStats class="org.cs5431.view.LoginController$2" sourceFile="LoginController.java" interface="false" size="13" bugs="0"/>
-      <ClassStats class="org.cs5431.view.PrivBundle" sourceFile="PrivBundle.java" interface="false" size="22" bugs="0"/>
+      <ClassStats class="org.cs5431.view.PrivBundle" sourceFile="PrivBundle.java" interface="false" size="20" bugs="0"/>
       <ClassStats class="org.cs5431.view.PrivViewController" sourceFile="PrivViewController.java" interface="false" size="176" bugs="6" priority_3="6"/>
-      <ClassStats class="org.cs5431.view.PrivViewController$1" sourceFile="PrivViewController.java" interface="false" size="33" bugs="1" priority_2="1"/>
+      <ClassStats class="org.cs5431.view.PrivViewController$1" sourceFile="PrivViewController.java" interface="false" size="31" bugs="0"/>
       <ClassStats class="org.cs5431.view.PrivViewController$2" sourceFile="PrivViewController.java" interface="false" size="17" bugs="0"/>
       <ClassStats class="org.cs5431.view.PrivViewController$3" sourceFile="PrivViewController.java" interface="false" size="11" bugs="0"/>
       <ClassStats class="org.cs5431.view.PrivViewController$4" sourceFile="PrivViewController.java" interface="false" size="9" bugs="0"/>
@@ -4069,25 +4073,30 @@
       <ClassStats class="org.cs5431.view.RegistrationController$1" sourceFile="RegistrationController.java" interface="false" size="13" bugs="0"/>
     </PackageStats>
     <FindBugsProfile>
-      <ClassProfile name="edu.umd.cs.findbugs.FindBugs2" totalMilliseconds="14351" invocations="2" avgMicrosecondsPerInvocation="7175884" maxMicrosecondsPerInvocation="12559839" standardDeviationMircosecondsPerInvocation="5383955"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassDataAnalysisEngine" totalMilliseconds="9947" invocations="2599" avgMicrosecondsPerInvocation="3827" maxMicrosecondsPerInvocation="311163" standardDeviationMircosecondsPerInvocation="13937"/>
-      <ClassProfile name="edu.umd.cs.findbugs.ba.npe.NullDerefAndRedundantComparisonFinder" totalMilliseconds="4145" invocations="818" avgMicrosecondsPerInvocation="5067" maxMicrosecondsPerInvocation="1537886" standardDeviationMircosecondsPerInvocation="54381"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassInfoAnalysisEngine" totalMilliseconds="3651" invocations="2591" avgMicrosecondsPerInvocation="1409" maxMicrosecondsPerInvocation="280685" standardDeviationMircosecondsPerInvocation="7894"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.ValueNumberDataflowFactory" totalMilliseconds="3272" invocations="936" avgMicrosecondsPerInvocation="3496" maxMicrosecondsPerInvocation="258603" standardDeviationMircosecondsPerInvocation="12657"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.TypeDataflowFactory" totalMilliseconds="2870" invocations="933" avgMicrosecondsPerInvocation="3076" maxMicrosecondsPerInvocation="118573" standardDeviationMircosecondsPerInvocation="8465"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.StreamResourceTracker" totalMilliseconds="2847" invocations="579" avgMicrosecondsPerInvocation="4918" maxMicrosecondsPerInvocation="89073" standardDeviationMircosecondsPerInvocation="7489"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.UnconditionalValueDerefDataflowFactory" totalMilliseconds="2750" invocations="823" avgMicrosecondsPerInvocation="3341" maxMicrosecondsPerInvocation="934916" standardDeviationMircosecondsPerInvocation="33189"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.FieldItemSummary" totalMilliseconds="2335" invocations="628" avgMicrosecondsPerInvocation="3718" maxMicrosecondsPerInvocation="84510" standardDeviationMircosecondsPerInvocation="8697"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.FindNoSideEffectMethods" totalMilliseconds="2301" invocations="628" avgMicrosecondsPerInvocation="3664" maxMicrosecondsPerInvocation="106068" standardDeviationMircosecondsPerInvocation="8837"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.IsNullValueDataflowFactory" totalMilliseconds="2228" invocations="850" avgMicrosecondsPerInvocation="2621" maxMicrosecondsPerInvocation="222972" standardDeviationMircosecondsPerInvocation="10549"/>
-      <ClassProfile name="edu.umd.cs.findbugs.OpcodeStack$JumpInfoFactory" totalMilliseconds="1930" invocations="1814" avgMicrosecondsPerInvocation="1064" maxMicrosecondsPerInvocation="104844" standardDeviationMircosecondsPerInvocation="4335"/>
-      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.CFGFactory" totalMilliseconds="1268" invocations="850" avgMicrosecondsPerInvocation="1492" maxMicrosecondsPerInvocation="144779" standardDeviationMircosecondsPerInvocation="6017"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.FindRefComparison$SpecialTypeAnalysis" totalMilliseconds="1222" invocations="794" avgMicrosecondsPerInvocation="1539" maxMicrosecondsPerInvocation="60288" standardDeviationMircosecondsPerInvocation="4622"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.FindOpenStream" totalMilliseconds="1061" invocations="114" avgMicrosecondsPerInvocation="9310" maxMicrosecondsPerInvocation="283000" standardDeviationMircosecondsPerInvocation="33942"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.DumbMethods" totalMilliseconds="901" invocations="114" avgMicrosecondsPerInvocation="7905" maxMicrosecondsPerInvocation="600832" standardDeviationMircosecondsPerInvocation="56145"/>
-      <ClassProfile name="edu.umd.cs.findbugs.detect.NoteDirectlyRelevantTypeQualifiers" totalMilliseconds="845" invocations="628" avgMicrosecondsPerInvocation="1345" maxMicrosecondsPerInvocation="130847" standardDeviationMircosecondsPerInvocation="6098"/>
+      <ClassProfile name="edu.umd.cs.findbugs.FindBugs2" totalMilliseconds="5296" invocations="2" avgMicrosecondsPerInvocation="2648494" maxMicrosecondsPerInvocation="5005277" standardDeviationMircosecondsPerInvocation="2356783"/>
+      <ClassProfile name="edu.umd.cs.findbugs.ba.npe.NullDerefAndRedundantComparisonFinder" totalMilliseconds="2722" invocations="818" avgMicrosecondsPerInvocation="3327" maxMicrosecondsPerInvocation="1405367" standardDeviationMircosecondsPerInvocation="49166"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassInfoAnalysisEngine" totalMilliseconds="2058" invocations="2603" avgMicrosecondsPerInvocation="790" maxMicrosecondsPerInvocation="164039" standardDeviationMircosecondsPerInvocation="3640"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassDataAnalysisEngine" totalMilliseconds="1978" invocations="2611" avgMicrosecondsPerInvocation="757" maxMicrosecondsPerInvocation="53150" standardDeviationMircosecondsPerInvocation="1051"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.ValueNumberDataflowFactory" totalMilliseconds="1561" invocations="936" avgMicrosecondsPerInvocation="1668" maxMicrosecondsPerInvocation="42704" standardDeviationMircosecondsPerInvocation="4144"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.TypeDataflowFactory" totalMilliseconds="1492" invocations="933" avgMicrosecondsPerInvocation="1599" maxMicrosecondsPerInvocation="48921" standardDeviationMircosecondsPerInvocation="3924"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.StreamResourceTracker" totalMilliseconds="1464" invocations="580" avgMicrosecondsPerInvocation="2525" maxMicrosecondsPerInvocation="13887" standardDeviationMircosecondsPerInvocation="2454"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.IsNullValueDataflowFactory" totalMilliseconds="1055" invocations="850" avgMicrosecondsPerInvocation="1241" maxMicrosecondsPerInvocation="42956" standardDeviationMircosecondsPerInvocation="3214"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FindNoSideEffectMethods" totalMilliseconds="1050" invocations="629" avgMicrosecondsPerInvocation="1670" maxMicrosecondsPerInvocation="43186" standardDeviationMircosecondsPerInvocation="3659"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FieldItemSummary" totalMilliseconds="952" invocations="629" avgMicrosecondsPerInvocation="1514" maxMicrosecondsPerInvocation="35629" standardDeviationMircosecondsPerInvocation="3142"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.UnconditionalValueDerefDataflowFactory" totalMilliseconds="938" invocations="823" avgMicrosecondsPerInvocation="1139" maxMicrosecondsPerInvocation="26919" standardDeviationMircosecondsPerInvocation="2679"/>
+      <ClassProfile name="edu.umd.cs.findbugs.OpcodeStack$JumpInfoFactory" totalMilliseconds="923" invocations="1818" avgMicrosecondsPerInvocation="508" maxMicrosecondsPerInvocation="116246" standardDeviationMircosecondsPerInvocation="2871"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FindRefComparison$SpecialTypeAnalysis" totalMilliseconds="918" invocations="794" avgMicrosecondsPerInvocation="1156" maxMicrosecondsPerInvocation="52789" standardDeviationMircosecondsPerInvocation="3663"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.CFGFactory" totalMilliseconds="783" invocations="850" avgMicrosecondsPerInvocation="921" maxMicrosecondsPerInvocation="101874" standardDeviationMircosecondsPerInvocation="3882"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FindOpenStream" totalMilliseconds="611" invocations="114" avgMicrosecondsPerInvocation="5361" maxMicrosecondsPerInvocation="128108" standardDeviationMircosecondsPerInvocation="19397"/>
+      <ClassProfile name="edu.umd.cs.findbugs.util.TopologicalSort" totalMilliseconds="383" invocations="2498" avgMicrosecondsPerInvocation="153" maxMicrosecondsPerInvocation="56476" standardDeviationMircosecondsPerInvocation="1609"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.RuntimeExceptionCapture" totalMilliseconds="348" invocations="114" avgMicrosecondsPerInvocation="3058" maxMicrosecondsPerInvocation="195228" standardDeviationMircosecondsPerInvocation="18531"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.LoadOfKnownNullValue" totalMilliseconds="325" invocations="114" avgMicrosecondsPerInvocation="2852" maxMicrosecondsPerInvocation="104397" standardDeviationMircosecondsPerInvocation="11205"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.ConstantDataflowFactory" totalMilliseconds="321" invocations="850" avgMicrosecondsPerInvocation="378" maxMicrosecondsPerInvocation="12907" standardDeviationMircosecondsPerInvocation="1018"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.NoteDirectlyRelevantTypeQualifiers" totalMilliseconds="299" invocations="629" avgMicrosecondsPerInvocation="475" maxMicrosecondsPerInvocation="11482" standardDeviationMircosecondsPerInvocation="998"/>
     </FindBugsProfile>
   </FindBugsSummary>
   <ClassFeatures></ClassFeatures>
-  <History></History>
+  <History>
+    <AppVersion sequence="0" timestamp="1494874195014" release="" codeSize="9757" numClasses="114"/>
+  </History>
 </BugCollection>
