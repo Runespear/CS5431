@@ -122,6 +122,7 @@ public class SQL_Files {
                 try {
                     System.err.println("Transaction is being rolled back");
                     connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
                     createLog.setInt(2, 0);
                     createLog.setInt(3, uid);
@@ -311,33 +312,31 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        isFile = fso.getBoolean("isFile");
-                        String actionType;
-                        if (isFile) {
-                            actionType = "UPLOAD_FILE";
-                        } else {
-                            actionType = "CREATE_FOLDER";
-                        }
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
-                        createLog.setInt(3, uid);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, actionType);
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setInt(8, 0);
-                        createLog.setString(9, "DB ERROR");
-                        createLog.executeUpdate();
-                        if (DEBUG_MODE) {
-                            System.out.println("created failure log");
-                        }
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    isFile = fso.getBoolean("isFile");
+                    String actionType;
+                    if (isFile) {
+                        actionType = "UPLOAD_FILE";
+                    } else {
+                        actionType = "CREATE_FOLDER";
                     }
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, actionType);
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
+                    }
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return -1;
             } finally {
@@ -595,24 +594,22 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog = connection.prepareStatement(insertLog);
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, fsoid);
-                        createLog.setInt(3, uid);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "DOWNLOAD");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setInt(8, 0);
-                        createLog.setString(9, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "DOWNLOAD");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return null;
             } finally {
@@ -836,22 +833,20 @@ public class SQL_Files {
                 }
             } catch (SQLException | JSONException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        createLog = connection.prepareStatement(insertLog);
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, fsoid);
-                        createLog.setInt(3, uid);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "GET_FILELOG");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setInt(8, 0);
-                        createLog.setString(9, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "GET_FILELOG");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return null;
             } finally {
@@ -1294,24 +1289,22 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        createLog = connection.prepareStatement(insertLog);
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, fsoid);
-                        createLog.setInt(3, uid);
-                        createLog.setTimestamp(4, lastModified);
-                        createLog.setString(5, "ADD_VIEWER");
-                        createLog.setString(6, "FAILURE");
-                        createLog.setString(7, sourceIp);
-                        createLog.setInt(8, newUid);
-                        createLog.setString(9, "DB ERROR");
-                        createLog.executeUpdate();
-                    } catch (SQLException excep) {
-                        excep.printStackTrace();
-                    }
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "ADD_VIEWER");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, newUid);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return -1;
             } finally {
@@ -1465,15 +1458,14 @@ public class SQL_Files {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement rmEditor = null;
-        PreparedStatement createLog = null;
-        PreparedStatement removeKey = null;
-        PreparedStatement rmFso = null;
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-            if (DEBUG_MODE)
-                System.out.println("Database connected!");
+            PreparedStatement rmEditor = null;
+            PreparedStatement createLog = null;
+            PreparedStatement removeKey = null;
+            PreparedStatement rmFso = null;
+
             String deleteEditor = "DELETE FROM Editors WHERE fsoid = ? AND uid = ?";
             String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, " +
                     "newUid, failureType) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";

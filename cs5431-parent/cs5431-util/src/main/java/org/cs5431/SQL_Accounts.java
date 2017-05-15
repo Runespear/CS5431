@@ -206,25 +206,23 @@ public class SQL_Accounts {
 
             } catch (SQLException e ) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        Timestamp currDate = new Timestamp(System.currentTimeMillis());
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
-                        createLog.setTimestamp(3, currDate);
-                        createLog.setString(4, "CREATE_USER");
-                        createLog.setString(5, "FAILURE");
-                        createLog.setString(6, sourceIp);
-                        createLog.setString(7, "DB ERROR");
-                        createLog.executeUpdate();
-                        if (DEBUG_MODE) {
-                            System.out.println("created failure log");
-                        }
-                    } catch(SQLException excep) {
-                        excep.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    Timestamp currDate = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setTimestamp(3, currDate);
+                    createLog.setString(4, "CREATE_USER");
+                    createLog.setString(5, "FAILURE");
+                    createLog.setString(6, sourceIp);
+                    createLog.setString(7, "DB ERROR");
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
                     }
+                } catch(SQLException excep) {
+                    excep.printStackTrace();
                 }
                 return null;
             } finally {
@@ -1537,6 +1535,7 @@ public class SQL_Accounts {
                 createLog.setString(3, null);
                 createLog.setTimestamp(4, lastModified);
                 switch (newToggle) {
+                    default: return false;
                     case 0: createLog.setString(5,  "DISABLED_2FA");
                         break;
                     case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
