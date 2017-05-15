@@ -820,7 +820,18 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject checkPwd(JSONObject json, SQL_Accounts sql_accounts) {
-        //TODO HI RUIXIN
+        int uid = json.getInt("uid");
+        String username = sql_accounts.getUsername(uid);
+        if (username != null) {
+            json.put("username", username);
+            JSONObject user = sql_accounts.authenticate(json, json.getString("hashedPwd"),
+                    sourceIp, "AUTHENTICATE", null);
+            if (user != null) {
+                JSONObject response = new JSONObject();
+                response.put("msgType", "checkPwdAck");
+                response.put("uid", uid);
+            }
+        }
         return null;
     }
 
