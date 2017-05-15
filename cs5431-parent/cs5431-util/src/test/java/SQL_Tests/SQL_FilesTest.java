@@ -100,23 +100,47 @@ class SQL_FilesTest {
 
         int k = files.createFso(fso,IP);
 
-        int uid = fso.getInt("uid");
-        int parentFolderid = fso.getInt("parentFolderid");
-        String fsoName = fso.getString("fsoName");
-        String size = fso.getString("size");
-        Timestamp lastModified = Timestamp.valueOf(fso.getString("lastModified"));
-        boolean isFile = fso.getBoolean("isFile");
-        JSONArray editors = fso.getJSONArray("editors");
-        JSONArray viewers = fso.getJSONArray("viewers");
-        JSONArray editorsKeys = fso.getJSONArray("editorsKeys");
-        JSONArray viewersKeys = fso.getJSONArray("viewersKeys");
-
         assertEquals(k,-1);
     }
 
     @Test
     void check_addParentPermissions(){
-        
+        JSONObject fso = new JSONObject() ;// = receiveJson(s);
+        fso.put("msgType","createFso");
+        fso.put("parentFolderid",1);
+        fso.put("uid",322);
+        fso.put("fsoName","Onii-chan.txt");
+        fso.put("size","123");
+        fso.put("lastModified","1993-12-12 12:12:33");
+        fso.put("isFile",true);
+
+        //INPUT ARRAYS
+        JSONArray editorsArr = new JSONArray();
+        editorsArr.put("123");
+
+        JSONArray viewersArr = new JSONArray();
+        viewersArr.put("321");
+
+        JSONArray editorsKeysArr = new JSONArray();
+        editorsKeysArr.put("3154");
+
+        JSONArray viewersKeysArr = new JSONArray();
+        viewersKeysArr.put("18-03-1993");
+
+
+        fso.put("editors",editorsArr);
+        fso.put("viewers",viewersArr);
+        fso.put("editorsKeys",editorsKeysArr);
+        fso.put("viewersKeys",viewersKeysArr);
+        fso.put("fileIV","123");
+        fso.put("fsoNameIV","asdasd");
+
+        boolean result = files.addParentPermissions(322,123,1,IP,editorsArr,
+                viewersArr,editorsKeysArr,viewersKeysArr);
+
+        assertEquals(false,result);
+
+
     }
 
 }
