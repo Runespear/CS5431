@@ -268,7 +268,8 @@ public class SSLServer extends Thread {
         Date now = new Date();
         if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
                 failedTime)) {
-            return (sql_accounts.logSessionLimit(sourceIp)) ? makeErrJson("Too many failed logins recently"): null;
+            return (sql_accounts.logSessionLimit(sourceIp)) ?
+                    makeErrJson("Too many failed logins recently. Please try again in 5 minutes."): null;
         }
 
         String pwdSalt = sql_accounts.getSalt(jsonObject.getString
