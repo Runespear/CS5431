@@ -3,6 +3,7 @@ package org.cs5431.view;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.getPrivKeyFromJSON;
 import static org.cs5431.controller.UserController.completeChangePwd;
 
@@ -141,6 +141,7 @@ public class ReconstructController implements Initializable {
             label.setText(i + ")");
             TextField text = new TextField();
             box.getChildren().addAll(label, text);
+            box.setAlignment(Pos.CENTER);
             boxen.getChildren().add(box);
             fields.add(text);
         }
