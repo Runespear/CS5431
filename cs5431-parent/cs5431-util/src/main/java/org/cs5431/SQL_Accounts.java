@@ -1535,8 +1535,11 @@ public class SQL_Accounts {
                 createLog.setTimestamp(4, lastModified);
                 switch (newToggle) {
                     case 0: createLog.setString(5,  "DISABLED_2FA");
+                        break;
                     case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
+                        break;
                     case 2: createLog.setString(5,  "ENABLED_PHONE_2FA");
+                        break;
                 }
                 createLog.setString(6, "SUCCESS");
                 createLog.setString(7, sourceIp);
