@@ -121,7 +121,11 @@ public class LoginController implements Initializable {
                 changeToFileView(e, task.getValue());
             }
         });
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
         loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             loginButton.setDisable(false);
@@ -167,7 +171,11 @@ public class LoginController implements Initializable {
             }
         };
         task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;

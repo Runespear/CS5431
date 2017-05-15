@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,7 +167,11 @@ public class PwdRecoveryController implements Initializable {
                 nominatedUsersTable.setItems(observableList);
                 changed = true;
             });
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;
@@ -209,7 +214,11 @@ public class PwdRecoveryController implements Initializable {
             }
             setGraphics(response.getBoolean("hasPwdRec"));
         });
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -243,7 +252,11 @@ public class PwdRecoveryController implements Initializable {
             observableList.addAll(task.getValue());
             nominatedUsersTable.setItems(observableList);
         });
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -305,7 +318,7 @@ public class PwdRecoveryController implements Initializable {
                         protected Void call() throws Exception {
                             uc.checkLoggedInPwd(password[0]);
                             SSS secretGen = new SSS(nominatedUsersTable.getItems().size(), finalNeededUsers,
-                                    new BigInteger(password[0].getBytes()));
+                                    new BigInteger(password[0].getBytes(StandardCharsets.UTF_8)));
                             List<String> encSecrets = encryptSecrets(pubKeys, secretGen.generateSecrets());
                             updateRecoveryInfo(true, finalNeededUsers, nominatedUids, encSecrets);
                             return null;
@@ -316,7 +329,11 @@ public class PwdRecoveryController implements Initializable {
                         alert.setContentText("Successfully saved password nomination information");
                         alert.showAndWait();
                     });
+                    try {
                     Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                     task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                         if(newValue != null) {
                             Exception ex = (Exception) newValue;

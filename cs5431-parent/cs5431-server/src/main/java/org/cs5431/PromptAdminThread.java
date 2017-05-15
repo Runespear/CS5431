@@ -2,6 +2,7 @@ package org.cs5431;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -32,7 +33,7 @@ public class PromptAdminThread implements Runnable {
     }
 
     private void prompt() throws SQLException {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
         while(true) {
             System.out.println("Enter 'u' to download user logs");
             System.out.println("Enter 'f' to download file logs");
@@ -81,7 +82,7 @@ public class PromptAdminThread implements Runnable {
         System.out.println("Type 'a' to download all file logs");
         System.out.println("Type 's' to download the file log of a specific " +
                 "file");
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
         while (true) {
             String input = scanner.nextLine();
             switch(input) {
@@ -111,7 +112,7 @@ public class PromptAdminThread implements Runnable {
 
     private String downloadOneFileLog(SQL_Files sql_files) {
         System.out.println("Type the file id of the file log to download");
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
         while (true) {
             try {
                 Integer input = Integer.parseInt(scanner.nextLine());
@@ -129,7 +130,7 @@ public class PromptAdminThread implements Runnable {
     }
 
     private void deleteUser(SQL_Accounts sql_accounts) throws SQLException {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
         while(true) {
             System.out.println("Enter the username of the user to delete:");
             String userToDelete = scanner.nextLine();

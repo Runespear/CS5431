@@ -4,6 +4,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.util.Scanner;
 
@@ -25,7 +26,7 @@ public class ServerView {
             return;
         }
 
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
         System.out.println("Enter the name of the server you wish to run:");
         System.out.print("Current servers: ");
         for (File f : configFiles) {
@@ -64,7 +65,8 @@ public class ServerView {
         try {
             File configFile = new File("./server-config/" + serverName +
                     ".config");
-            BufferedReader br = new BufferedReader(new FileReader(configFile));
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(configFile), StandardCharsets.UTF_8.name()));
             server = br.readLine();
             dbPort = Integer.parseInt(br.readLine());
             outPort = Integer.parseInt(br.readLine());
@@ -136,7 +138,7 @@ public class ServerView {
 
         System.setProperty("javax.net.ssl.keyStore", "./server-config/" + serverName + ".jks");
 
-        Scanner scanner = new Scanner (System.in);
+        Scanner scanner = new Scanner (System.in, StandardCharsets.UTF_8.name());
         System.out.println("Type in your password to access the keystore: ");
         String pass = scanner.nextLine(); //Obtain user's command
 

@@ -16,6 +16,7 @@ import org.cs5431.controller.AccountsController;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public class ReconstructController implements Initializable {
         SSS_Reconstructor rec = new SSS_Reconstructor();
         try {
             BigInteger pwdBytes = rec.recreateSecret(secrets, neededUsers);
-            String pwd = new String(pwdBytes.toByteArray());
+            String pwd = new String(pwdBytes.toByteArray(), StandardCharsets.UTF_8);
             PrivateKey privateKey = getPrivKeyFromJSON(encPK, salt, pwd);
 
             final String[] newPassword = {null};
@@ -101,7 +102,11 @@ public class ReconstructController implements Initializable {
                 alert.showAndWait();
                 tryExit();
             });
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;

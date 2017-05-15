@@ -63,10 +63,12 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
+                }
+                if (connection != null) {
+                    connection.close();
                 }
             }
         } catch (SQLException e) {
@@ -206,27 +208,25 @@ public class SQL_Accounts {
 
             } catch (SQLException e ) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        Timestamp currDate = new Timestamp(System.currentTimeMillis());
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
-                        createLog.setTimestamp(3, currDate);
-                        createLog.setString(4, "CREATE_USER");
-                        createLog.setString(5, "FAILURE");
-                        createLog.setString(6, sourceIp);
-                        createLog.setString(7, "DB ERROR");
-                        createLog.executeUpdate();
-                        if (DEBUG_MODE) {
-                            System.out.println("created failure log");
-                        }
-                    } catch(SQLException excep) {
-                        excep.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    Timestamp currDate = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setTimestamp(3, currDate);
+                    createLog.setString(4, "CREATE_USER");
+                    createLog.setString(5, "FAILURE");
+                    createLog.setString(6, sourceIp);
+                    createLog.setString(7, "DB ERROR");
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
                     }
+                } catch(SQLException excep) {
+                    excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (createFolder != null) {
                     createFolder.close();
@@ -278,7 +278,6 @@ public class SQL_Accounts {
                 return true;
             } catch (SQLException e1) {
                 e1.printStackTrace();
-                return false;
             } finally {
                 if (addLog != null) {
                     addLog.close();
@@ -355,7 +354,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getDetails != null) {
                     getDetails.close();
@@ -457,7 +455,7 @@ public class SQL_Accounts {
                     numIp = rs.getInt(1);
                 }
 
-                if (numIp >= 5) {
+                if (numIp > 5) {
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
@@ -478,7 +476,7 @@ public class SQL_Accounts {
                     numUsername = rs.getInt(1);
                 }
 
-                if (numUsername >= 5) {
+                if (numUsername > 5) {
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
@@ -610,7 +608,6 @@ public class SQL_Accounts {
                 return salt;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getSalt != null) {
                     getSalt.close();
@@ -664,7 +661,6 @@ public class SQL_Accounts {
                 return salt;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getSalt != null) {
                     getSalt.close();
@@ -763,7 +759,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (removeUser != null) {
                     removeUser.close();
@@ -874,7 +869,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (removeUser != null) {
                     removeUser.close();
@@ -916,7 +910,6 @@ public class SQL_Accounts {
 
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
             } finally {
                 if (getParentFolder != null) {
                     getParentFolder.close();
@@ -1024,7 +1017,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (changePwd != null) {
                     changePwd.close();
@@ -1165,7 +1157,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (changeEmail != null) {
                     changeEmail.close();
@@ -1187,7 +1178,7 @@ public class SQL_Accounts {
      * @return true if the username and password combination can be used to
      * connect to the database, false otherwise
      */
-    boolean checkCredentials() {
+    public boolean checkCredentials() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             return true;
@@ -1205,7 +1196,7 @@ public class SQL_Accounts {
      * @param userId The userid of the user
      * @return The username of the user
      */
-    String getUsername(int userId) {
+    public String getUsername(int userId) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1228,7 +1219,6 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getUsername != null) {
                     getUsername.close();
@@ -1268,7 +1258,6 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
             } finally {
                 if (getUid != null) {
                     getUid.close();
@@ -1280,7 +1269,7 @@ public class SQL_Accounts {
         return -1;
     }
 
-    JSONObject userEmailExists(String username) {
+    public JSONObject userEmailExists(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1307,7 +1296,6 @@ public class SQL_Accounts {
                 return null;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
@@ -1323,7 +1311,7 @@ public class SQL_Accounts {
      * the session uid
      * @return true if log is successfully created; false otherwise
      */
-    boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
+    public boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1358,7 +1346,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean createRecoveryGroup(JSONObject json, String sourceIp) {
+    public boolean createRecoveryGroup(JSONObject json, String sourceIp) {
         int uid = json.getInt("uid");
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -1425,7 +1413,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (addRecovery != null) {
                     addRecovery.close();
@@ -1444,7 +1431,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean removeSecrets(int uid, String sourceIp) {
+    public boolean removeSecrets(int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
@@ -1495,7 +1482,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (rmRecovery != null) {
                     rmRecovery.close();
@@ -1511,7 +1497,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean toggle2fa(int uid, int newToggle, String sourceIp) {
+    public boolean toggle2fa(int uid, int newToggle, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1537,6 +1523,7 @@ public class SQL_Accounts {
                 createLog.setString(3, null);
                 createLog.setTimestamp(4, lastModified);
                 switch (newToggle) {
+                    default: return false;
                     case 0: createLog.setString(5,  "DISABLED_2FA");
                         break;
                     case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
@@ -1576,7 +1563,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (update2fa != null) {
                     update2fa.close();
@@ -1592,7 +1578,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject getPasRecInfo(int uid) {
+    public JSONObject getPasRecInfo(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1643,7 +1629,6 @@ public class SQL_Accounts {
                 return json;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getNominated != null) {
                     getNominated.close();
@@ -1661,7 +1646,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    boolean hasRecovery (int uid) {
+    public boolean hasRecovery (int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1679,7 +1664,6 @@ public class SQL_Accounts {
                 return false;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (getRec != null) {
                     getRec.close();
@@ -1691,7 +1675,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject getSecrets(int uid) {
+    public JSONObject getSecrets(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1740,7 +1724,6 @@ public class SQL_Accounts {
                 return json;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getNominated != null) {
                     getNominated.close();
@@ -1848,7 +1831,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getPrivKey != null) {
                     getPrivKey.close();
@@ -1892,7 +1874,6 @@ public class SQL_Accounts {
                 return pubKeys;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getPub != null) {
                     getPub.close();
@@ -1967,7 +1948,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (changePhone != null) {
                     changePhone.close();
@@ -1983,5 +1963,45 @@ public class SQL_Accounts {
         return -1;
     }
 
+    public boolean dropUserLogs() {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement dropTable = null;
+            PreparedStatement createTable = null;
+
+            String removeTable = "DROP TABLE UserLog";
+            String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
+                    "uid INT UNSIGNED, \n" +
+                    "simulatedUsername VARCHAR(50), \n" +
+                    "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(30) NOT NULL,\n" +
+                    "status CHAR(10) NOT NULL,\n" +
+                    "sourceIp VARCHAR(30) NOT NULL, \n" +
+                    "failureType VARCHAR(100));";
+            try {
+                dropTable = connection.prepareStatement(removeTable);
+                dropTable.execute();
+
+                createTable = connection.prepareStatement(createUserLog);
+                createTable.execute();
+
+                return true;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (dropTable != null) {
+                    dropTable.close();
+                }
+                if (createTable != null) {
+                    createTable.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
 

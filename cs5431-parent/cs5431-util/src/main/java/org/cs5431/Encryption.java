@@ -87,7 +87,7 @@ public class Encryption {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, fileSK, ivSpec);
         byte fileName[] = cipher.doFinal(encFileName);
-        return new String(fileName);
+        return new String(fileName, StandardCharsets.UTF_8);
     }
 
     public static SecretKey decFileSecretKey(byte[] encSK, PrivateKey
@@ -389,6 +389,6 @@ public class Encryption {
         Cipher cipher = Cipher.getInstance
                 ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return new String(cipher.doFinal(Base64.getDecoder().decode(code)));
+        return new String(cipher.doFinal(Base64.getDecoder().decode(code)), StandardCharsets.UTF_8);
     }
 }
