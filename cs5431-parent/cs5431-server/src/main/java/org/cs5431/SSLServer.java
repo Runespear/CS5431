@@ -198,7 +198,7 @@ public class SSLServer extends Thread {
                         sendJson(response, s);
                         break;
                     case "recoverPwd":
-                        response = recoverPwd(jsonObject, sql_accounts, email);
+                        response = recoverPwd(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "changePhoneNo":
@@ -784,28 +784,18 @@ public class SSLServer extends Thread {
         return makeErrJson("Error occurred while fetching the information. Please try again.");
     }
 
-    private JSONObject recoverPwd(JSONObject jsonObject, SQL_Accounts sql_accounts, Email adminEmail) {
+    private JSONObject recoverPwd(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         String username = jsonObject.getString("username");
         int uid = sql_accounts.getUserId(username);
         if (uid == -1) {
             return makeErrJson("The username does not exist.");
         }
-        JSONObject json = sql_accounts.getSecrets(uid);
-        if (json != null) {
-            JSONArray groupUid = json.getJSONArray("groupUid");
-            JSONArray secrets = json.getJSONArray("secrets");
-            JSONArray emails = json.getJSONArray("emails");
 
-            for (int i=0; i<groupUid.length(); i++) {
-                adminEmail.send(emails.getString(i),"Password Recovery", "The user " + username + " has " +
-                        "requested to recover the password to his/her Pretty Secure File Sharing account. Please inform " +
-                        username + " of the following secret: " + secrets.getString(i));
-            }
             JSONObject response = sql_accounts.recoverPwd(uid, sourceIp);
             if (response != null) {
                 return response;
             }
-        }
+
         return makeErrJson("Unable to recover password. Please try again.");
     }
 
@@ -842,8 +832,26 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject recoverPwdEmail(JSONObject json, SQL_Accounts sql_accounts) {
-        //TODO RUIXIN
-        return null;
+        int uid = json.getInt("uid");
+        JSONObject sqlObject = sql_accounts.getSecrets(uid);
+        String username = json.getString("username");
+        if (sqlObject != null) {
+            JSONArray groupUid = sqlObject.getJSONArray("groupUid");
+            JSONArray secrets = sqlObject.getJSONArray("secrets");
+            JSONArray emails = sqlObject.getJSONArray("emails");
+
+            for (int i = 0; i < groupUid.length(); i++) {
+                email.send(emails.getString(i), "Password Recovery", "The user " + username + " has " +
+                        "requested to recover the password to his/her Pretty Secure File Sharing account. Please inform " +
+                        username + " of the following secret: " + secrets.getString(i));
+            }
+
+            JSONObject response = new JSONObject();
+            response.put("msgType", "recoverPwdEmailAck");
+            response.put("uid", uid);
+            return response;
+        }
+        return makeErrJson("Unable to recover password.");
     }
 
     private JSONObject makeErrJson(String message) {
