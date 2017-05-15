@@ -276,13 +276,12 @@ public class EditDetailsController implements Initializable {
         //Tries to change the email if the email fields are not blank.
         if (!oldEmail.isEmpty() || !newEmail.isEmpty() ||
                 !confirmNewEmail.isEmpty()) {
-            if (newEmail.isEmpty() || confirmNewEmail.isEmpty()) {
-                emailMessages.add("New email cannot be empty.");
-            } else if (!newEmail.equals(confirmNewEmail)){
+            if (!newEmail.equals(confirmNewEmail)){
                 emailMessages.add("New emails don't match.");
             } else if (!Validator.validEmail(newEmail)) {
                 emailMessages.add("The email entered is invalid.");
             } else {
+                String currEmail = userController.getEmail();
                 emailTaskRunning = true;
                 Task<Void> task = new Task<Void>() {
                     @Override
@@ -296,6 +295,7 @@ public class EditDetailsController implements Initializable {
                     showMessages(emailMessages);
                 });
                 task.setOnSucceeded(t -> {
+                    userController.setEmail(newEmail);
                     emailMessages.add("Email successfully changed.");
                     showMessages(emailMessages);
                 });
@@ -304,6 +304,7 @@ public class EditDetailsController implements Initializable {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
                         ex.printStackTrace();
+                        userController.setEmail(currEmail);
                     }
                 });
             }
@@ -314,16 +315,10 @@ public class EditDetailsController implements Initializable {
         //Tries to change the phone number if the phone number fields are not blank.
         if (!oldPhone.isEmpty() || !newPhone.isEmpty() ||
                 !confirmNewPhone.isEmpty()) {
-            if (oldPhone.isEmpty() || newPhone.isEmpty() ||
-                    confirmNewPhone.isEmpty()) {
-                phoneMessages.add("At least one phone number field is empty.");
-            } else if (!newPhone.equals(confirmNewPhone)){
+            if (!newPhone.equals(confirmNewPhone)){
                 phoneMessages.add("New phone numbers don't match.");
-            } /*else if (!Validator.validPassword(newPhone)) {
-                phoneMessages.add("Passwords should be at least 16 characters " +
-                        "long.");
-            }*/
-             else {
+            } else {
+                String currPhone = userController.getPhoneNo();
                 phoneTaskRunning = true;
                 Task<Void> task = new Task<Void>() {
                     @Override
@@ -337,6 +332,7 @@ public class EditDetailsController implements Initializable {
                     showMessages(phoneMessages);
                 });
                 task.setOnSucceeded(t -> {
+                    userController.setPhoneNo(newPhone);
                     phoneMessages.add("Phone number successfully changed.");
                     showMessages(phoneMessages);
                 });
@@ -345,6 +341,7 @@ public class EditDetailsController implements Initializable {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
                         ex.printStackTrace();
+                        userController.setPhoneNo(currPhone);
                     }
                 });
             }
@@ -387,6 +384,7 @@ public class EditDetailsController implements Initializable {
                 do2fa = true;
         }
         if (do2fa) {
+            int currTwoFa = userController.getHas2fa();
             int finalTwoFa = twoFa;
             Task<Void> task = new Task<Void>() {
                 @Override
@@ -404,12 +402,14 @@ public class EditDetailsController implements Initializable {
                 List<String> twoFaMsgs = new ArrayList<>();
                 twoFaMsgs.add("Two factor authentication information saved.");
                 showMessages(twoFaMsgs);
+                userController.setHas2fa(finalTwoFa);
             });
             Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     Exception ex = (Exception) newValue;
                     ex.printStackTrace();
+                    userController.setHas2fa(currTwoFa);
                 }
             });
         } else {
@@ -418,7 +418,7 @@ public class EditDetailsController implements Initializable {
         }
 
         //prints all success+failure messages if not shown in a task
-        if (!pwdTaskRunning && !phoneNoChange) {
+        if (!pwdTaskRunning && !pwdNoChange) {
             showMessages(pwdMessages);
         }
         if (!emailTaskRunning && !emailNoChange) {

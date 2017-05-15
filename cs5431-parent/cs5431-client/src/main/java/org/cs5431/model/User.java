@@ -42,5 +42,11 @@ public class User extends Account {
 
     public int getHas2fa() {return has2fa;}
 
+    public void setHas2fa(int has2fa) {this.has2fa = has2fa;}
+
     public String getPhoneNo() {return phoneNo;}
+
+    public void setEmail(String email) {this.email = email;}
+
+    public void setPhoneNo(String phoneNo) {this.phoneNo = phoneNo;}
 }

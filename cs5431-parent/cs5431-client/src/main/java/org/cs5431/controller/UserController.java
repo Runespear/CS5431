@@ -324,8 +324,24 @@ public class UserController {
         return user.getEmail();
     }
 
+    public void setEmail(String email) {
+        user.setEmail(email);
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        user.setPhoneNo(phoneNo);
+    }
+
+    public void setHas2fa(int has2fa) {
+        user.setHas2fa(has2fa);
+    }
+
     public String getPhoneNo() {
         return user.getPhoneNo();
+    }
+
+    public int getHas2fa() {
+        return user.getHas2fa();
     }
 
     public String decryptSecret(String code) throws NoSuchAlgorithmException,
