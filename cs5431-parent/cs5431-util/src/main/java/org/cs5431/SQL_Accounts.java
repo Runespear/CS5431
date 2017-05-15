@@ -290,6 +290,122 @@ public class SQL_Accounts {
         return false;
     }
 
+    JSONObject twoFactorLogin (int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement getDetails = null;
+            PreparedStatement createLog = null;
+
+            String selectDetails = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt, U.has2fa, " +
+                    "U.hasPwdRec, U.phoneNo FROM Users U WHERE U.uid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                getDetails = connection.prepareStatement(selectDetails);
+                connection.setAutoCommit(false);
+                getDetails.setInt(1, uid);
+                ResultSet rs = getDetails.executeQuery();
+
+                JSONObject user = new JSONObject();
+                if (rs.next()) {
+                    user.put("msgType", "login2faAck");
+                    user.put("uid", uid);
+                    user.put("parentFolderid", rs.getInt(2));
+                    user.put("email", rs.getString(3));
+                    user.put("privKey", rs.getString(4));
+                    user.put("pubKey", rs.getString(5));
+                    user.put("privKeySalt", rs.getString(6));
+                    user.put("has2fa", rs.getInt(7));
+                    user.put("hasPwdRec", rs.getBoolean(8));
+                    user.put("phoneNo", rs.getString(9));
+
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "2FA_LOGIN");
+                    createLog.setString(6, "SUCCESS");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, null);
+                    createLog.executeUpdate();
+
+                    connection.commit();
+                    return user;
+                }
+                return null;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "2FA_LOGIN");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+                return null;
+            } finally {
+                if (getDetails != null) {
+                    getDetails.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    boolean create2faFailureLog (int uid, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement createLog = null;
+
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                createLog = connection.prepareStatement(insertLog);
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "2FA_LOGIN");
+                createLog.setString(6, "FAILURE");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, "INVALID OTP");
+                createLog.executeUpdate();
+                return true;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (createLog != null) {
+                    createLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /** Compares username and encrypted password with row of User table.
      * Creates a failure login log if the user's password and username does not match. (username is valid).
      * Creates a success login log upon success.
@@ -1419,8 +1535,11 @@ public class SQL_Accounts {
                 createLog.setTimestamp(4, lastModified);
                 switch (newToggle) {
                     case 0: createLog.setString(5,  "DISABLED_2FA");
+                        break;
                     case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
+                        break;
                     case 2: createLog.setString(5,  "ENABLED_PHONE_2FA");
+                        break;
                 }
                 createLog.setString(6, "SUCCESS");
                 createLog.setString(7, sourceIp);
@@ -1610,7 +1729,7 @@ public class SQL_Accounts {
             PreparedStatement getPrivKey = null;
             PreparedStatement getNeededNo = null;
 
-            String selectKey = "SELECT U.privKey FROM Users U WHERE U.uid = ?";
+            String selectKey = "SELECT U.privKey, U.pwdSalt FROM Users U WHERE U.uid = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String selectNeeded = "SELECT U.neededUsers FROM Users U WHERE U.uid = ?";
@@ -1629,6 +1748,7 @@ public class SQL_Accounts {
 
                 if (rs.next()) {
                     json.put("encPK", rs.getString(1));
+                    json.put("salt", rs.getString(2));
 
                     getNeededNo.setInt(1 ,uid);
                     rs = getNeededNo.executeQuery();
