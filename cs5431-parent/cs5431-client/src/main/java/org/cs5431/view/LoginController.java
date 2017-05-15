@@ -101,6 +101,7 @@ public class LoginController implements Initializable {
             }
         };
         task.setOnSucceeded(t -> {
+            loginButton.setDisable(false);
             if(task.getValue().getHas2fa() != NO_2FA) {
                 TextInputDialog dialog = new TextInputDialog("otp");
                 dialog.setTitle("Two Factor Authentication");
@@ -122,6 +123,7 @@ public class LoginController implements Initializable {
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();
+        loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
