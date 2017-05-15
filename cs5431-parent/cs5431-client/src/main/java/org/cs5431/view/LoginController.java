@@ -96,6 +96,7 @@ public class LoginController implements Initializable {
             @Override
             protected User call() throws Exception {
                 JSONObject login = accountsController.login(username, password);
+                System.out.println("2fa status: " + login.getInt("has2fa") );
                 if (login.getInt("has2fa") != NO_2FA) {
                     return new User(login.getInt("uid"), null, null, null, null, null, login.getInt("has2fa"));
                 } else {
@@ -113,11 +114,11 @@ public class LoginController implements Initializable {
                     dialog.setContentText("Please enter the code that has been sent to your phone:");
 
                 final String[] otp = {null};
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
                 if (otp[0] != null) {
-                    Optional<String> result = dialog.showAndWait();
-                    result.ifPresent(enteredOTP -> otp[0] = enteredOTP);
+                    do2fa(e, otp[0], task.getValue().getId(), username, password, task.getValue().getHas2fa());
                 }
-                do2fa(e, otp[0], task.getValue().getId(), username, password, task.getValue().getHas2fa());
             } else {
                 changeToFileView(e, task.getValue());
             }
