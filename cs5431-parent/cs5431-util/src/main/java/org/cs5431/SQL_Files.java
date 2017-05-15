@@ -2420,7 +2420,7 @@ public class SQL_Files {
     }
 
 
-    JSONObject updateFileKeys(JSONObject json, String sourceIp) {
+    public JSONObject updateFileKeys(JSONObject json, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         int fsoid = json.getInt("fsoid");
