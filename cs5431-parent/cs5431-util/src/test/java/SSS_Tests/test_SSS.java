@@ -1,6 +1,8 @@
 package SSS_Tests;
 
+import org.cs5431.BigRational;
 import org.cs5431.SSS;
+import org.cs5431.SSS_Reconstructor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
@@ -138,8 +140,42 @@ class test_SSS {
             System.out.println(secrets.get(i));
             assert(secrets.get(i).equals(HolyShit.get(i)));
         }
+    }
 
-
+    @Test
+    void checkReconstructSecrets(){
+        //From wikipedia
+        //1:1494
+        //2:1942
+        //3:2578
+        //4:3402
+        //5:4414
+        //6:5614
+        //f(x) = 1234 + 166x + 94x^2
+        SSS_Reconstructor ssr = new SSS_Reconstructor();
+        List<String> shares = new ArrayList<String>();
+        shares.add("1:1494");
+        shares.add("2:1942");
+        shares.add("3:2578");
+        shares.add("4:3402");
+        shares.add("5:4414");
+        shares.add("6:5614");
+        int numSubsets = 3;
+        BigRational secretGenerated = BigRational.ZERO;
+        BigInteger asd = BigInteger.ZERO;
+        try{
+            secretGenerated = ssr.recreateSecretR(shares,numSubsets);
+            asd = ssr.recreateSecret(shares,numSubsets);
+        }
+        catch(Exception e){
+            ;
+        }
+        BigInteger secretSupposed = new BigInteger("1234");
+        //System.out.println(BigInteger.valueOf(100).divide(BigInteger.valueOf(3)));
+        System.out.println(secretGenerated.num);
+        System.out.println(secretGenerated.den);
+        assertEquals(secretSupposed,secretGenerated.num);
+        assertEquals(secretSupposed,asd);
     }
 
 

@@ -164,6 +164,7 @@ public class SSS {
             Map.Entry<BigInteger,BigInteger> pair = (Map.Entry<BigInteger,BigInteger>) it.next();
             subsetsUsed[j][0] = pair.getKey();
             subsetsUsed[j][1] = pair.getValue();
+            j++;
         }
         BigInteger secret = reconstructSecret(subsetsUsed);
 
