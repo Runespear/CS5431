@@ -76,6 +76,7 @@ public class SSS {
         //Generate # coordinates = this.numParts
         int numCoordinates = this.numParts;
         int x = 1; // Start from x=1 end at x = numParts
+        this.coordinates = new BigInteger[this.numParts][2];
         for (int i = 0; i<this.coordinates.length;i++){
             this.coordinates[i][0] = BigInteger.valueOf(x);
             this.coordinates[i][1] = applyPoly(x);
