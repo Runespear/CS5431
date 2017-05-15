@@ -373,7 +373,7 @@ public class Encryption {
         return returnedValues;
     }
 
-    public static List<String> encryptSecrets(List<PublicKey> publicKeys, BigInteger[] secrets) {
+    public static List<String> encryptSecrets(List<PublicKey> publicKeys, List<String> plainSecrets) {
         //TODO: encrypt
         return null;
     }

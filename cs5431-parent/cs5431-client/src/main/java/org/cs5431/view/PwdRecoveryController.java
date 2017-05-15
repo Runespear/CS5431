@@ -12,16 +12,21 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import org.cs5431.SSS;
 import org.cs5431.controller.AccountsController;
 import org.cs5431.controller.UserController;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigInteger;
 import java.net.URL;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static org.cs5431.Encryption.encryptSecrets;
 
 public class PwdRecoveryController implements Initializable {
 
@@ -285,15 +290,19 @@ public class PwdRecoveryController implements Initializable {
             }
         }
         //save
-        //TODO: gen secrets here
         List<Integer> nominatedUids = new ArrayList<>();
-        List<String> encSecrets = new ArrayList<>();
+        List<PublicKey> pubKeys = new ArrayList<>();
         for (PwdRecoveryBundle bundle : nominatedUsersTable.getItems()) {
             nominatedUids.add(bundle.userId);
-            //TODO: encrypt secret here
+            pubKeys.add(bundle.publicKey);
         }
         if (uc != null && changed) {
             try {
+                //todo prompt for password
+                String password = "lalala";
+                SSS secretGen = new SSS(nominatedUsersTable.getItems().size(), neededUsers,
+                        new BigInteger(password.getBytes()));
+                List<String> encSecrets = encryptSecrets(pubKeys, secretGen.generateSecrets());
                 updateRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
             } catch (Exception e) {
                 showError("Failed to save password recovery information...");

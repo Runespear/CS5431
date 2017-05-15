@@ -220,7 +220,7 @@ public class LoginController implements Initializable {
                 ReconstructController rc = fxmlLoader.getController();
                 rc.setUp(stage, json.getInt("uid"), json.getString("encPK"),
                         json.getInt("neededUsers"), json.getString("salt"),
-                        accountsController.getSSLSocket());
+                        accountsController);
                 scene.setRoot(root);
             } catch (AccountsController.UserRetrieveException ex) {
                 showError(ex.getMessage());

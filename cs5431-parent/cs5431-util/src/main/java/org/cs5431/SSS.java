@@ -28,7 +28,7 @@ public class SSS {
     }
 
     public SSS(int nParts, int nSubsets, BigInteger secret){
-        assert (nParts >= 3 && nSubsets >= 2): "At least 3 parts and 2 subsets";
+        assert (nParts >= 2 && nSubsets >= 2): "At least 3 parts and 2 subsets";
         assert (  nParts >= nSubsets  ):"Number of Subsets must be lower than number of parts";
         this.numParts = nParts;
         this.numSubsets = nSubsets;
