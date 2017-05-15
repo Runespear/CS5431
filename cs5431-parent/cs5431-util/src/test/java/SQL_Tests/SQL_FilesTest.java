@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Map;
@@ -251,6 +252,28 @@ class SQL_FilesTest {
         int result = files.addEditPriv( 532,232,11155,IP );
 
         assertEquals(-1,result);
+    }
+
+    @Test
+
+    void check_addViewPriv(){
+
+        SecureRandom generator = new SecureRandom();
+
+        byte[] keyBytes = new byte[256];
+
+        generator.nextBytes(keyBytes);
+
+        String key = new String(keyBytes);
+
+        int result = files.addViewPriv(555,112,3314,151,key,IP);
+        assertEquals(result,-1);
+
+    }
+
+    @Test
+    void check_removeViewPriv(){
+
     }
 
 

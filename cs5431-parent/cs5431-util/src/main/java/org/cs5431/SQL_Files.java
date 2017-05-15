@@ -1331,7 +1331,7 @@ public class SQL_Files {
         return -1;
     }
 
-    int removeViewPriv(int fsoid, int uid, int rmUid, String sourceIp) {
+    public int removeViewPriv(int fsoid, int uid, int rmUid, String sourceIp) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
