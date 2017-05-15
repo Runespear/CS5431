@@ -218,8 +218,16 @@ public class LoginController implements Initializable {
                 FXMLLoader fxmlLoader = new FXMLLoader(r);
                 Parent root = fxmlLoader.load();
                 ReconstructController rc = fxmlLoader.getController();
+                int neededUsers = json.getInt("neededUsers");
+                int groupSize = json.getInt("groupSize");
+                if (neededUsers > groupSize) {
+                    showError("Whoops, some of your friends deleted their accounts." +
+                            "Now there's not enough people left to reconstruct your password." +
+                            " Sorry :(");
+                    return;
+                }
                 rc.setUp(stage, username, json.getInt("uid"), json.getString("encPK"),
-                        json.getInt("neededUsers"), json.getString("salt"),
+                        neededUsers, json.getString("salt"),
                         accountsController);
                 scene.setRoot(root);
             } catch (AccountsController.UserRetrieveException ex) {

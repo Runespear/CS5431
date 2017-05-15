@@ -5,10 +5,8 @@ import org.cs5431.controller.UserController;
 import org.cs5431.model.User;
 import org.cs5431.view.PwdRecoveryBundle;
 import org.json.JSONObject;
-import org.junit.gen5.api.AfterAll;
-import org.junit.gen5.api.BeforeAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.Socket;
@@ -26,7 +24,7 @@ class AccountsControllerTest {
     private static Socket s;
 
     @BeforeAll
-    void setUp() throws Exception {
+    static void setUp() throws Exception {
         ac = new AccountsController();
         s = connect_SSLServerSocket("127.0.0.1",8888, "./user-config/test_server.jks");
         ac.setSocket(s);
@@ -35,7 +33,7 @@ class AccountsControllerTest {
     }
 
     @AfterAll
-    void tearDown() throws Exception {
+    static void tearDown() throws Exception {
         UserController userController = new UserController(testUser, s);
         userController.deleteUser(testUser.getUsername(), "passwordpassword");
     }
