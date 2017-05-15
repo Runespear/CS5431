@@ -24,7 +24,7 @@ public class SQL_Files {
     private String DB_USER;
     private String DB_PASSWORD;
 
-    SQL_Files(String ip, int dbPort, String username, String
+    public SQL_Files(String ip, int dbPort, String username, String
             password) {
         this.ip = ip;
         this.port = dbPort;
@@ -32,7 +32,7 @@ public class SQL_Files {
         this.DB_PASSWORD = password;
     }
 
-    JSONObject uploadKeys(JSONObject json, String sourceIp) {
+    public JSONObject uploadKeys(JSONObject json, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
