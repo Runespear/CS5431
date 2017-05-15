@@ -37,6 +37,9 @@ public class ReconstructController implements Initializable {
     @FXML
     public Label neededTxt;
 
+    @FXML
+    public Button sendEmailButton;
+
     private Stage stage;
     private Integer uid;
     private String encPK;
@@ -50,6 +53,8 @@ public class ReconstructController implements Initializable {
         recoverButton.setOnAction(e -> tryRecover());
 
         imgExit.setOnMouseClicked(e -> tryExit());
+
+        sendEmailButton(e -> sendEmail());
     }
 
     private void tryRecover() {

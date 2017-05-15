@@ -209,6 +209,10 @@ public class SSLServer extends Thread {
                         response = checkPwd(jsonObject, sql_accounts);
                         sendJson(response, s);
                         break;
+                    case "recoverPwdEmail":
+                        response = recoverPwdEmail(jsonObject, sql_accounts);
+                        sendJson(response, s);
+                        break;
                     default:
                         response = makeErrJson("Did not understand " +
                                 "incoming request");
@@ -835,6 +839,11 @@ public class SSLServer extends Thread {
             }
         }
         return makeErrJson("Invalid password.");
+    }
+
+    private JSONObject recoverPwdEmail(JSONObject json, SQL_Accounts sql_accounts) {
+        //TODO RUIXIN
+        return null;
     }
 
     private JSONObject makeErrJson(String message) {

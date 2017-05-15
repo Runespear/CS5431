@@ -264,6 +264,24 @@ public class AccountsController {
 
     }
 
+    public void sendRecoveryEmail(int uid) throws IOException, ClassNotFoundException,
+            UserRetrieveException {
+        JSONObject json = new JSONObject();
+        json.put("msgType","recoverPwdEmail");
+        json.put("uid", uid);
+        sendJson(json, sslSocket);
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("recoverPwdEmailAck")) {
+            if (response.getInt("uid") != uid) {
+                throw new UserRetrieveException("Could not send out email!");
+            }
+        } else if (response.getString("msgType").equals("error"))
+            throw new UserRetrieveException(response.getString("message"));
+        else
+            throw new UserRetrieveException("Received bad response from " +
+                    "server");
+    }
+
     public class RegistrationFailException extends Exception {
         RegistrationFailException(String message) {
             super(message);
