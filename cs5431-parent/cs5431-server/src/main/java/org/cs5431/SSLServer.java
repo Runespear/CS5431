@@ -272,7 +272,8 @@ public class SSLServer extends Thread {
         Date now = new Date();
         if (failedLogins >= MAX_LOGINS_PER_MINUTE && withinOneMinute(now,
                 failedTime)) {
-            return (sql_accounts.logSessionLimit(sourceIp)) ? makeErrJson("Too many failed logins recently"): null;
+            return (sql_accounts.logSessionLimit(sourceIp)) ?
+                    makeErrJson("Too many failed logins recently. Please try again in 5 minutes."): null;
         }
 
         String pwdSalt = sql_accounts.getSalt(jsonObject.getString
@@ -819,7 +820,18 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject checkPwd(JSONObject json, SQL_Accounts sql_accounts) {
-        //TODO HI RUIXIN
+        int uid = json.getInt("uid");
+        String username = sql_accounts.getUsername(uid);
+        if (username != null) {
+            json.put("username", username);
+            JSONObject user = sql_accounts.authenticate(json, json.getString("hashedPwd"),
+                    sourceIp, "AUTHENTICATE", null);
+            if (user != null) {
+                JSONObject response = new JSONObject();
+                response.put("msgType", "checkPwdAck");
+                response.put("uid", uid);
+            }
+        }
         return null;
     }
 

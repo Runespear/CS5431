@@ -376,9 +376,14 @@ public class SQL_Accounts {
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
             PreparedStatement createLog = null;
+            PreparedStatement limitUsername = null;
 
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String countUsername = "SELECT COUNT(*) FROM UserLog U \n" +
+                    "WHERE U.lastModified > DATE_SUB(now(), INTERVAL 5 MINUTE) \n" +
+                    "AND U.actionType = \"LOGIN\" AND U.status = \"FAILURE\" \n" +
+                    "AND U.simulatedUsername = ?;";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1937,5 +1942,6 @@ public class SQL_Accounts {
         }
         return -1;
     }
+
 }
 
