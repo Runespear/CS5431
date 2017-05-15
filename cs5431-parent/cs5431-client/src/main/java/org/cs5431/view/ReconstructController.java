@@ -60,7 +60,7 @@ public class ReconstructController implements Initializable {
                 showError("You must fill in all the boxes!");
                 return;
             }
-            secrets.add(secret);
+            secrets.add(Base64.secret);
         }
         SSS_Reconstructor rec = new SSS_Reconstructor();
         try {

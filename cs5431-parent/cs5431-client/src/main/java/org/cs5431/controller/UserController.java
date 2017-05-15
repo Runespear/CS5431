@@ -320,7 +320,9 @@ public class UserController {
         }
     }
 
-    public BigInteger decryptSecret(String code) {
+    public String decryptSecret(String code) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return Encryption.decryptSecret(user.getPrivKey(), code);
     }
 

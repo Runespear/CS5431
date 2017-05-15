@@ -373,13 +373,26 @@ public class Encryption {
         return returnedValues;
     }
 
-    public static List<String> encryptSecrets(List<PublicKey> publicKeys, List<String> plainSecrets) {
-        //TODO: encrypt
-        return null;
+    public static List<String> encryptSecrets(List<PublicKey> publicKeys, List<String> plainSecrets)
+    throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+    InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+        List<String> secrets = new ArrayList<>();
+        for (int i = 0; i < publicKeys.size(); i++) {
+            Cipher cipher = Cipher.getInstance
+                    ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKeys.get(i));
+            byte SKbytes[] = cipher.doFinal(plainSecrets.get(i).getBytes());
+            secrets.add(Base64.getEncoder().encodeToString(SKbytes));
+        }
+        return secrets;
     }
 
-    public static BigInteger decryptSecret(PrivateKey privateKey, String code) {
-        //TODO decrypt what's sent in the email
-        return null;
+    public static String decryptSecret(PrivateKey privateKey, String code)
+            throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance
+                ("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return new String(cipher.doFinal(Base64.getDecoder().decode(code)));
     }
 }

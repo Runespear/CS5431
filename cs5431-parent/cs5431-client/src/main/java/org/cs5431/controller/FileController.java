@@ -72,6 +72,9 @@ public class FileController {
         if (keysAck.get("msgType").equals("uploadKeysAck")) {
             String name = file.getName();
             long size = file.length();
+            if (size > 10000000000L) {
+                throw new FileControllerException("File too big: bigger than 10GB");
+            }
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
             JSONObject fso = new JSONObject();

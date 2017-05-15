@@ -503,12 +503,16 @@ public class EditDetailsController implements Initializable {
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(code -> {
-            BigInteger secret = userController.decryptSecret(code);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Secret");
-            alert.setContentText("Please share this new code with the person you got this from: "
-                    + secret.toString()); //todo make this copiable?
-            alert.showAndWait();
+            try {
+                String secret = userController.decryptSecret(code);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Secret");
+                alert.setContentText("Please share this new code with the person you got this from: "
+                        + secret); //todo make this copiable?
+                alert.showAndWait();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
     }
 
