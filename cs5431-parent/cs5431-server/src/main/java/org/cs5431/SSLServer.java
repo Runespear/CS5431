@@ -804,8 +804,13 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject changePhoneNo(JSONObject json, SQL_Accounts sql_accounts) {
-        //TODO hi ruixin
-        return null;
+        if (sql_accounts.changePhoneNo(json, sourceIp) != -1) {
+            JSONObject response = new JSONObject();
+            response.put("msgType","changePhoneNoAck");
+            response.put("uid", json.getInt("uid"));
+            return response;
+        }
+        return makeErrJson("Unable to change phone number.");
     }
 
     private JSONObject makeErrJson(String message) {
