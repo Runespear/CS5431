@@ -1654,6 +1654,35 @@ public class SQL_Accounts {
         return null;
     }
 
+    boolean hasRecovery (int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement getRec = null;
+
+            String selectRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+
+            try {
+                getRec = connection.prepareStatement(selectRec);
+                ResultSet rs = getRec.executeQuery();
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+                return false;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                if (getRec != null) {
+                    getRec.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     JSONObject getSecrets(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {

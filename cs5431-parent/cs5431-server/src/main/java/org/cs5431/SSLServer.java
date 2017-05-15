@@ -790,13 +790,14 @@ public class SSLServer extends Thread {
         if (uid == -1) {
             return makeErrJson("The username does not exist.");
         }
-
+        if (sql_accounts.hasRecovery(uid)) {
             JSONObject response = sql_accounts.recoverPwd(uid, sourceIp);
             if (response != null) {
                 return response;
             }
-
-        return makeErrJson("Unable to recover password. Please try again.");
+            return makeErrJson("Unable to recover password. Please try again.");
+        }
+        return makeErrJson("The user does not have password recovery set up.");
     }
 
     private JSONObject changePhoneNo(JSONObject json, SQL_Accounts sql_accounts) {
