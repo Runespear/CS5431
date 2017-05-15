@@ -276,13 +276,14 @@ public class SSLServer extends Thread {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "LOGIN", email);
             if (auth != null) {
+                TwoFactorAuth twoFactorAuth = new TwoFactorAuth(email);
                 switch (auth.getInt("has2fa")) {
                     case 0: loggedInUid = auth.getInt("uid");
                         break;
-                    case 1: otp = TwoFactorAuth.generateAndSend2fa(auth.getString("email")); //TODO
+                    case 1: otp = twoFactorAuth.generateAndSend2fa(auth.getString("email"));
                         otpGenTime = System.nanoTime();
                         break;
-                    case 2: //TODO
+                    case 2: twoFactorAuth.generateAndSend3fa(auth.getString("phoneNo"));
                         break;
                 }
                 return auth;
@@ -744,14 +745,15 @@ public class SSLServer extends Thread {
             if (hasRec) {
                 //TODO: generate secrets and put into json
                 boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
-                if (setGroup) {
-                    JSONObject response = new JSONObject();
-                    response.put("msgType", "setPwdGroupAck");
-                    response.put("uid", jsonObject.getInt("uid"));
-                    response.put("hasPwdRec", hasRec);
-                    return response;
+                if (!setGroup) {
+                    return makeErrJson("Failed to create recovery group.");
                 }
             }
+            JSONObject response = new JSONObject();
+            response.put("msgType", "setPwdGroupAck");
+            response.put("uid", jsonObject.getInt("uid"));
+            response.put("hasPwdRec", hasRec);
+            return response;
         }
         return makeErrJson("Failed to create recovery group.");
     }
