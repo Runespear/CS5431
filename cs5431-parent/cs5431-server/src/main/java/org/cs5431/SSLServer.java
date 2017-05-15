@@ -824,15 +824,21 @@ public class SSLServer extends Thread {
         String username = sql_accounts.getUsername(uid);
         if (username != null) {
             json.put("username", username);
-            JSONObject user = sql_accounts.authenticate(json, json.getString("hashedPwd"),
-                    sourceIp, "AUTHENTICATE", null);
-            if (user != null) {
-                JSONObject response = new JSONObject();
-                response.put("msgType", "checkPwdAck");
-                response.put("uid", uid);
+            String pwdSalt = sql_accounts.getSalt(username, sourceIp, "AUTHENTICATE");
+            String hashedPwd = json.getString("hashedPwd");
+            if (pwdSalt != null) {
+                String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
+                JSONObject user = sql_accounts.authenticate(json, encPwd,
+                        sourceIp, "AUTHENTICATE", null);
+                if (user != null) {
+                    JSONObject response = new JSONObject();
+                    response.put("msgType", "checkPwdAck");
+                    response.put("uid", uid);
+                    return response;
+                }
             }
         }
-        return null;
+        return makeErrJson("Invalid password.");
     }
 
     private JSONObject makeErrJson(String message) {
