@@ -1742,7 +1742,7 @@ public class SQL_Accounts {
     }
 
     //returns null if password recovery is not activated
-    JSONObject recoverPwd(int uid, String sourceIp) {
+    public JSONObject recoverPwd(int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1852,7 +1852,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    List<String> getPubKeys(JSONArray groupUid) {
+    public List<String> getPubKeys(JSONArray groupUid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1885,7 +1885,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    int changePhoneNo(JSONObject json, String sourceIp) {
+    public int changePhoneNo(JSONObject json, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -2003,5 +2003,168 @@ public class SQL_Accounts {
         }
         return false;
     }
+
+    JSONObject getKeyUpdate(int uid) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement getEnc = null;
+            PreparedStatement getSecrets = null;
+
+            String selectEnc = "SELECT F.fsoid, F.encKey FROM FsoEncryption F WHERE F.uid = ?";
+            String selectSecrets = "SELECT P.uid, P.secret FROM PwdGroup P WHERE P.nominatedUid = ?";
+
+            try {
+                getEnc = connection.prepareStatement(selectEnc);
+                getSecrets = connection.prepareStatement(selectSecrets);
+                connection.setAutoCommit(false);
+
+                getEnc.setInt(1, uid);
+                ResultSet rs = getEnc.executeQuery();
+
+                JSONArray fsoids = new JSONArray();
+                JSONArray EncFileKeys = new JSONArray();
+                JSONArray secrets = new JSONArray();
+                JSONArray groupUid = new JSONArray();
+
+                while (rs.next()) {
+                    fsoids.put(rs.getInt(1));
+                    EncFileKeys.put(rs.getString(2));
+                }
+
+                getSecrets.setInt(1, uid);
+                rs = getSecrets.executeQuery();
+
+                while (rs.next()) {
+                    groupUid.put(rs.getInt(1));
+                    secrets.put(rs.getString(2));
+                }
+
+                JSONObject json = new JSONObject();
+                json.put("fsoids", fsoids);
+                json.put("groupUid", groupUid);
+                json.put("EncFileKeys", EncFileKeys);
+                json.put("secrets", secrets);
+
+                connection.commit();
+                return json;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (getEnc != null) {
+                    getEnc.close();
+                }
+                if (getSecrets != null) {
+                    getSecrets.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    int updateUserKeyFile(JSONObject json, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            int uid = json.getInt("uid");
+            JSONArray encFileKeys = json.getJSONArray("encFileKeys");
+            JSONArray groupUid = json.getJSONArray("groupUid");
+            JSONArray secrets = json.getJSONArray("secrets");
+            JSONArray fsoids = json.getJSONArray("fsoids");
+
+            PreparedStatement editUser = null;
+            PreparedStatement createLog = null;
+            PreparedStatement editSecrets = null;
+            PreparedStatement editFileEnc = null;
+
+            String updateUser = "UPDATE Users SET privKey = ?, privKeySalt = ?, pubKey = ?, lastKeyUpdate = NOW() WHERE uid = ?";
+            String updateFileEnc = "UPDATE FsoEncryption SET encKey = ? WHERE fsoid = ? AND uid = ?";
+            String updateSecrets = "UPDATE PwdGroup SET secret = ? WHERE uid = ? AND nominatedUid = ?";
+            String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                connection.setAutoCommit(false);
+
+                editUser = connection.prepareStatement(updateUser);
+                editUser.setString(1, json.getString("privKey"));
+                editUser.setString(2, json.getString("privKeySalt"));
+                editUser.setString(3, json.getString("pubKey"));
+                editUser.setInt(4, uid);
+                editUser.execute();
+
+                for (int i=0; i<fsoids.length();i++) {
+                    editFileEnc = connection.prepareStatement(updateFileEnc);
+                    editFileEnc.setString(1, encFileKeys.getString(i));
+                    editFileEnc.setInt(2, groupUid.getInt(i));
+                    editFileEnc.setInt(3, uid);
+                    editFileEnc.execute();
+                }
+
+                for (int j=0; j<groupUid.length(); j++) {
+                    editSecrets = connection.prepareStatement(updateSecrets);
+                    editSecrets.setString(1, secrets.getString(j));
+                    editSecrets.setInt(2, fsoids.getInt(j));
+                    editSecrets.setInt(3, uid);
+                    editSecrets.execute();
+                }
+
+                createLog = connection.prepareStatement(insertLog);
+                createLog.setInt(1, 0);
+                createLog.setInt(2, uid);
+                createLog.setString(3, null);
+                createLog.setTimestamp(4, lastModified);
+                createLog.setString(5, "UPDATE_PRIV_KEY");
+                createLog.setString(6, "SUCCESS");
+                createLog.setString(7, sourceIp);
+                createLog.setString(8, null);
+                createLog.executeUpdate();
+
+                connection.commit();
+                return uid;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, uid);
+                    createLog.setString(3, null);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "UPDATE_PRIV_KEY");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setString(8, "DB ERROR");
+                    createLog.executeUpdate();
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+            } finally {
+                if (editFileEnc != null) {
+                    editFileEnc.close();
+                }
+                if (editSecrets != null) {
+                    editSecrets.close();
+                }
+                if (editUser != null) {
+                    editUser.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
 }
 

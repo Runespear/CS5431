@@ -7,9 +7,14 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+
 import java.io.IOException;
 import java.net.Socket;
+import java.security.SecureRandom;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.cs5431.JSON.receiveJson;
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +28,8 @@ class SQL_FilesTest {
     String IP = "127.0.0.1";
     int port = 3306;
     JSONObject jsonUser;
+    JSONObject fso;
+    final boolean MASK = false;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +57,36 @@ class SQL_FilesTest {
         jsonUser.put("hasPwdRec", true);
         jsonUser.put("phoneNo", "6073799856");
 
+        fso = new JSONObject() ;// = receiveJson(s);
+        fso.put("msgType","createFso");
+        fso.put("parentFolderid",1);
+        fso.put("uid",322);
+        fso.put("fsoName","Onii-chan.txt");
+        fso.put("size","123");
+        fso.put("lastModified","1993-12-12 12:12:33");
+        fso.put("isFile",true);
+
+        //INPUT ARRAYS
+        JSONArray editorsArr = new JSONArray();
+        editorsArr.put("123");
+
+        JSONArray viewersArr = new JSONArray();
+        viewersArr.put("321");
+
+        JSONArray editorsKeysArr = new JSONArray();
+        editorsKeysArr.put("3154");
+
+        JSONArray viewersKeysArr = new JSONArray();
+        viewersKeysArr.put("18-03-1993");
+
+
+        fso.put("editors",editorsArr);
+        fso.put("viewers",viewersArr);
+        fso.put("editorsKeys",editorsKeysArr);
+        fso.put("viewersKeys",viewersKeysArr);
+        fso.put("fileIV","123");
+        fso.put("fsoNameIV","666");
+        fso.put("fsoid","32123");
     }
 
     @Test
@@ -68,35 +105,7 @@ class SQL_FilesTest {
     void check_createFso() throws Exception {
         Socket s = new Socket(IP,port);
 
-        JSONObject fso = new JSONObject() ;// = receiveJson(s);
-        fso.put("msgType","createFso");
-        fso.put("parentFolderid",1);
-        fso.put("uid",322);
-        fso.put("fsoName","Onii-chan.txt");
-        fso.put("size","123");
-        fso.put("lastModified","1993-12-12 12:12:33");
-        fso.put("isFile",true);
-
-        //INPUT ARRAYS
-        JSONArray editorsArr = new JSONArray();
-        editorsArr.put("johnny");
-
-        JSONArray viewersArr = new JSONArray();
-        viewersArr.put("mary");
-
-        JSONArray editorsKeysArr = new JSONArray();
-        editorsKeysArr.put("3154");
-
-        JSONArray viewersKeysArr = new JSONArray();
-        viewersKeysArr.put("18-03-1993");
-
-
-        fso.put("editors",editorsArr);
-        fso.put("viewers",viewersArr);
-        fso.put("editorsKeys",editorsKeysArr);
-        fso.put("viewersKeys",viewersKeysArr);
-        fso.put("fileIV","123");
-        fso.put("fsoNameIV","asdasd");
+        //setUp();
 
         int k = files.createFso(fso,IP);
 
@@ -140,7 +149,135 @@ class SQL_FilesTest {
 
         assertEquals(false,result);
 
+    }
+
+    @Test
+    void check_getChildren(){
+        JSONObject asd = new JSONObject();
+
+        asd.put("uid",123);
+        asd.put("fsoid",422);
+
+        JSONArray result = files.getChildren(asd,IP);
+
+        assertEquals(result,null);
+    }
+
+    @Test
+    void check_getFile(){
+        JSONObject asd = new JSONObject();
+
+        asd.put("uid",123);
+        asd.put("fsoid",422);
+        JSONObject result = new JSONObject();
+        try{
+            result = files.getFile(asd,IP);
+        }catch(Exception e){
+            ;
+        }
+
+        assertEquals(result,null);
+    }
+    @Test
+    void check_getPermissions(){
+
+        JSONObject asd = files.getPermissions(fso.getInt("fsoid"));
+        JSONObject result = new JSONObject();
+        String[] empt = {};
+        result.put("viewers",empt);
+        result.put("editors",empt);
+        //Redundant test
+        assert(true);
+    }
+    @Test
+    void check_verifyEditPermission(){
+
+        boolean result = files.verifyEditPermission(fso.getInt("fsoid"),fso.getInt("uid"));
+
+        assertEquals(false,result);
+    }
+
+    @Test
+    void check_verifyBothPermission(){
+        boolean result = files.verifyBothPermission(fso.getInt("fsoid"),fso.getInt("uid"));
+
+        assertEquals(false,result);
+    }
+
+    @Test
+    void check_getFileLog(){
+
+        //Ought to be empty
+        //Should throw exception
+        if(!MASK){
+            try{
+                JSONArray result = files.getFileLog(fso,IP);
+                assertEquals(null,result);
+            }
+            catch(Exception e){
+                ;
+            }
+        }
+        else{
+            assert(true);
+        }
 
     }
+
+    @Test
+    void check_renameFso(){
+        //int fsoid, int uid, String newName, String
+        //newFSONameIV, String sourceIp
+
+        int result;
+
+        result = files.renameFso(fso.getInt("fsoid"),fso.getInt("uid"),
+                "Onii-chan-v2.txt","666",IP);
+
+        assertEquals(-1,result);
+        assertEquals(fso.getString("fsoNameIV"),"666");
+    }
+
+    @Test
+    void check_removeDuplicates(){
+
+        boolean result = files.removeDuplicates(444);
+
+        assertEquals(false,result);
+    }
+
+    @Test
+
+    void check_addEditPriv(){
+        int result = files.addEditPriv( 532,232,11155,IP );
+
+        assertEquals(-1,result);
+    }
+
+    @Test
+
+    void check_addViewPriv(){
+
+        SecureRandom generator = new SecureRandom();
+
+        byte[] keyBytes = new byte[256];
+
+        generator.nextBytes(keyBytes);
+
+        String key = new String(keyBytes);
+
+        int result = files.addViewPriv(555,112,3314,151,key,IP);
+        assertEquals(result,-1);
+
+    }
+
+    @Test
+    void check_removeViewPriv(){
+
+    }
+
+
+
+
 
 }
