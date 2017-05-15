@@ -63,10 +63,12 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
+                }
+                if (connection != null) {
+                    connection.close();
                 }
             }
         } catch (SQLException e) {
@@ -224,7 +226,6 @@ public class SQL_Accounts {
                 } catch(SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (createFolder != null) {
                     createFolder.close();
@@ -276,7 +277,6 @@ public class SQL_Accounts {
                 return true;
             } catch (SQLException e1) {
                 e1.printStackTrace();
-                return false;
             } finally {
                 if (addLog != null) {
                     addLog.close();
@@ -353,7 +353,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getDetails != null) {
                     getDetails.close();
@@ -455,7 +454,7 @@ public class SQL_Accounts {
                     numIp = rs.getInt(1);
                 }
 
-                if (numIp >= 5) {
+                if (numIp > 5) {
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
@@ -476,7 +475,7 @@ public class SQL_Accounts {
                     numUsername = rs.getInt(1);
                 }
 
-                if (numUsername >= 5) {
+                if (numUsername > 5) {
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
@@ -608,7 +607,6 @@ public class SQL_Accounts {
                 return salt;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getSalt != null) {
                     getSalt.close();
@@ -662,7 +660,6 @@ public class SQL_Accounts {
                 return salt;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getSalt != null) {
                     getSalt.close();
@@ -761,7 +758,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (removeUser != null) {
                     removeUser.close();
@@ -872,7 +868,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (removeUser != null) {
                     removeUser.close();
@@ -914,7 +909,6 @@ public class SQL_Accounts {
 
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
             } finally {
                 if (getParentFolder != null) {
                     getParentFolder.close();
@@ -1022,7 +1016,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (changePwd != null) {
                     changePwd.close();
@@ -1163,7 +1156,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (changeEmail != null) {
                     changeEmail.close();
@@ -1226,7 +1218,6 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getUsername != null) {
                     getUsername.close();
@@ -1266,7 +1257,6 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
             } finally {
                 if (getUid != null) {
                     getUid.close();
@@ -1305,7 +1295,6 @@ public class SQL_Accounts {
                 return null;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
@@ -1423,7 +1412,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (addRecovery != null) {
                     addRecovery.close();
@@ -1493,7 +1481,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (rmRecovery != null) {
                     rmRecovery.close();
@@ -1575,7 +1562,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (update2fa != null) {
                     update2fa.close();
@@ -1642,7 +1628,6 @@ public class SQL_Accounts {
                 return json;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getNominated != null) {
                     getNominated.close();
@@ -1678,7 +1663,6 @@ public class SQL_Accounts {
                 return false;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (getRec != null) {
                     getRec.close();
@@ -1739,7 +1723,6 @@ public class SQL_Accounts {
                 return json;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getNominated != null) {
                     getNominated.close();
@@ -1847,7 +1830,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getPrivKey != null) {
                     getPrivKey.close();
@@ -1891,7 +1873,6 @@ public class SQL_Accounts {
                 return pubKeys;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getPub != null) {
                     getPub.close();
@@ -1966,7 +1947,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (changePhone != null) {
                     changePhone.close();
