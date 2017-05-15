@@ -162,7 +162,7 @@ public class SQL_Files {
      * Verifies that the user has permission.
      * Creates file log of failure if the user doesnt have permission or if there is a db error (rolls back transaction).
      * @return fsoid of created fso; if no permission, return -1. **/
-    int createFso (JSONObject fso, String sourceIp) throws IOException {
+    public int createFso (JSONObject fso, String sourceIp) throws IOException {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
