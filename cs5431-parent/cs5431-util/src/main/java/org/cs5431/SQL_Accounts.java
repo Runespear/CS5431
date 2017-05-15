@@ -1043,7 +1043,7 @@ public class SQL_Accounts {
     /** Saves the userlog as csv file into /tmp/userlogs.csv
      * Logs the change of password in the userlog.
      * Creates failure file log invalid password or db error (rollsback accordingly). */
-    String getUserLog() {
+    public String getUserLog() {
         if (DEBUG_MODE) {
             System.out.println("Can view file logs");
         }
@@ -1105,7 +1105,7 @@ public class SQL_Accounts {
      * @param newEmail The email address to change to
      * @return true if the change of email is successful, false otherwise.
      */
-    boolean changeEmail(int uid, String oldEmail, String newEmail, String sourceIp) {
+    public boolean changeEmail(int uid, String oldEmail, String newEmail, String sourceIp) {
 
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
