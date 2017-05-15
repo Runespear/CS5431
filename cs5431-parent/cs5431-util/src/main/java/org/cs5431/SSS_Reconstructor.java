@@ -1,5 +1,7 @@
 package org.cs5431;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 import java.math.BigInteger;
 import java.util.*;
 
@@ -60,25 +62,26 @@ public class SSS_Reconstructor{
         }
         HashMap<BigInteger,BigInteger> uniqueCoord = checkSubsets(coordinates);
         try{
-            if (minSubsets >= uniqueCoord.size()){
+            if (minSubsets > uniqueCoord.size()){
                 throw new NotEnoughSubsetsException("Need "+minSubsets+" unique coordinates. Only have "+uniqueCoord.size());
             }
         }
         catch (Exception ex){
             return null;
         }
-        System.out.println("Success!");
+        if (Constants.DEBUG_MODE) System.out.println("Success!");
         //Generate array of arrays of size minSubsets * 2
 
         BigInteger[][] subsetsUsed = new BigInteger[minSubsets][2];
         Iterator it = uniqueCoord.entrySet().iterator();
         int j = 0;
-        while(it.hasNext() && j < minSubsets ){
+        while(j < minSubsets ){ //&&it.hasNext()
             Map.Entry<BigInteger,BigInteger> pair = (Map.Entry<BigInteger,BigInteger>) it.next();
             subsetsUsed[j][0] = pair.getKey();
             subsetsUsed[j][1] = pair.getValue();
             j++;
         }
+        
         BigRational secret = reconstructSecret(subsetsUsed);
 
         return secret;
