@@ -1187,7 +1187,7 @@ public class SQL_Accounts {
      * @return true if the username and password combination can be used to
      * connect to the database, false otherwise
      */
-    boolean checkCredentials() {
+    public boolean checkCredentials() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
             return true;
@@ -1205,7 +1205,7 @@ public class SQL_Accounts {
      * @param userId The userid of the user
      * @return The username of the user
      */
-    String getUsername(int userId) {
+    public String getUsername(int userId) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1280,7 +1280,7 @@ public class SQL_Accounts {
         return -1;
     }
 
-    JSONObject userEmailExists(String username) {
+    public JSONObject userEmailExists(String username) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1323,7 +1323,7 @@ public class SQL_Accounts {
      * the session uid
      * @return true if log is successfully created; false otherwise
      */
-    boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
+    public boolean attemptedUidFailLog(int uid, int sessionUid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1358,7 +1358,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean createRecoveryGroup(JSONObject json, String sourceIp) {
+    public boolean createRecoveryGroup(JSONObject json, String sourceIp) {
         int uid = json.getInt("uid");
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -1444,7 +1444,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean removeSecrets(int uid, String sourceIp) {
+    public boolean removeSecrets(int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
@@ -1511,7 +1511,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    boolean toggle2fa(int uid, int newToggle, String sourceIp) {
+    public boolean toggle2fa(int uid, int newToggle, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
@@ -1592,7 +1592,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject getPasRecInfo(int uid) {
+    public JSONObject getPasRecInfo(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1661,7 +1661,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    boolean hasRecovery (int uid) {
+    public boolean hasRecovery (int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1691,7 +1691,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject getSecrets(int uid) {
+    public JSONObject getSecrets(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -1983,7 +1983,7 @@ public class SQL_Accounts {
         return -1;
     }
 
-    boolean dropUserLogs() {
+    public boolean dropUserLogs() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
