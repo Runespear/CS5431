@@ -15,4 +15,6 @@ public class PwdRecoveryBundle {
         this.username = new SimpleStringProperty(username);
         this.publicKey = publicKey;
     }
+
+    public String getUsername() {return username.get();}
 }
