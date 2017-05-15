@@ -142,7 +142,7 @@ public class SSS {
         return secrets;
     }
 
-    public BigInteger recreateSecret(List<String> secrets, int minSubsets) throws Exception{
+    public BigInteger recreateSecret(List<String> secrets, int minSubsets) throws NotEnoughSubsetsException{
         //min Subsets is the minimum number of unique secrets required to reconstruct
         //Parse as x:f(x)
         int k = secrets.size();
@@ -153,7 +153,9 @@ public class SSS {
             coordinates[i][1] = new BigInteger(parts[1]);
         }
         HashMap<BigInteger,BigInteger> uniqueCoord = checkSubsets(coordinates);
-        assert(minSubsets >= uniqueCoord.size()):"Not enough unique coordinates";
+        if (minSubsets >= uniqueCoord.size()){
+            throw new NotEnoughSubsetsException("Need "+minSubsets+" unique coordinates. Only have "+uniqueCoord.size());
+        }
         //Generate array of arrays of size minSubsets * 2
 
         BigInteger[][] subsetsUsed = new BigInteger[minSubsets][2];
@@ -169,4 +171,9 @@ public class SSS {
         return secret;
     }
 
+    public class NotEnoughSubsetsException extends Exception {
+        NotEnoughSubsetsException(String message) {
+            super(message);
+        }
+    }
 }
