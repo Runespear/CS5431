@@ -93,7 +93,11 @@ public class FileViewCellController implements Initializable {
             nameBox.getChildren().remove(0);
             nameBox.getChildren().add(0, currLabel);
         });
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {

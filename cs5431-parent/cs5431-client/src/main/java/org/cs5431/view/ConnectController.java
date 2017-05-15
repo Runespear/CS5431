@@ -1,5 +1,6 @@
 package org.cs5431.view;
 
+import com.sun.xml.internal.bind.api.impl.NameConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -19,6 +20,7 @@ import org.cs5431.Validator;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.ResourceBundle;
 
@@ -71,7 +73,9 @@ public class ConnectController implements Initializable {
             }
             File configFile = new File("./user-config/" + serverName +
                     ".config");
-            BufferedReader br = new BufferedReader(new FileReader(configFile));
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(configFile), StandardCharsets.UTF_8.name()));
             String server = br.readLine();
             String outPort = br.readLine();
             String sslPort = br.readLine();

@@ -196,7 +196,11 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.setOnSucceeded(t -> populateListView());
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
@@ -233,7 +237,11 @@ public class FileViewController implements Initializable {
                     return null;
                 }
             };
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
@@ -272,7 +280,11 @@ public class FileViewController implements Initializable {
                         .getFileName() + "!");
                 alert.showAndWait();
             });
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
@@ -309,7 +321,11 @@ public class FileViewController implements Initializable {
                 alert.showAndWait();
                 populateListView();
             });
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
@@ -368,7 +384,11 @@ public class FileViewController implements Initializable {
                 populateListView();
                 showAppropriateImages(false, false, false);
             });
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 //TODO don't throw exception if due to not enough privileges?
                 Exception ex = (Exception) newValue;
@@ -502,7 +522,11 @@ public class FileViewController implements Initializable {
             imgCreateFolder.setVisible(currParent.isEditor());
             imgCreateFolder.setDisable(!currParent.isEditor());
             });
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);

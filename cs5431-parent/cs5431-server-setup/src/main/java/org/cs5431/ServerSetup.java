@@ -3,6 +3,7 @@ package org.cs5431;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +20,7 @@ import java.util.Scanner;
 public class ServerSetup {
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8.name());
 
         System.out.println("Enter the name of the server (that your users " +
                 "will see):");
@@ -92,7 +93,7 @@ public class ServerSetup {
             // easily distributable config file
             File configFile = new File("./user-config/"+name+".config");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new
-                    FileOutputStream(configFile)));
+                    FileOutputStream(configFile), StandardCharsets.UTF_8));
             writer.write(ip+"\n"+outPort+"\n"+sslPort+"\n");
             writer.close();
             //writes the server public key into an easily distributable file

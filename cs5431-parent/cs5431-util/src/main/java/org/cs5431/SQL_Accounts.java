@@ -63,10 +63,12 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
+                }
+                if (connection != null) {
+                    connection.close();
                 }
             }
         } catch (SQLException e) {
@@ -206,27 +208,25 @@ public class SQL_Accounts {
 
             } catch (SQLException e ) {
                 e.printStackTrace();
-                if (connection != null) {
-                    try {
-                        System.err.println("Transaction is being rolled back");
-                        connection.rollback();
-                        Timestamp currDate = new Timestamp(System.currentTimeMillis());
-                        createLog.setInt(1, 0);
-                        createLog.setInt(2, 0);
-                        createLog.setTimestamp(3, currDate);
-                        createLog.setString(4, "CREATE_USER");
-                        createLog.setString(5, "FAILURE");
-                        createLog.setString(6, sourceIp);
-                        createLog.setString(7, "DB ERROR");
-                        createLog.executeUpdate();
-                        if (DEBUG_MODE) {
-                            System.out.println("created failure log");
-                        }
-                    } catch(SQLException excep) {
-                        excep.printStackTrace();
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    Timestamp currDate = new Timestamp(System.currentTimeMillis());
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, 0);
+                    createLog.setTimestamp(3, currDate);
+                    createLog.setString(4, "CREATE_USER");
+                    createLog.setString(5, "FAILURE");
+                    createLog.setString(6, sourceIp);
+                    createLog.setString(7, "DB ERROR");
+                    createLog.executeUpdate();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
                     }
+                } catch(SQLException excep) {
+                    excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (createFolder != null) {
                     createFolder.close();
@@ -278,7 +278,6 @@ public class SQL_Accounts {
                 return true;
             } catch (SQLException e1) {
                 e1.printStackTrace();
-                return false;
             } finally {
                 if (addLog != null) {
                     addLog.close();
@@ -355,7 +354,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getDetails != null) {
                     getDetails.close();
@@ -457,7 +455,7 @@ public class SQL_Accounts {
                     numIp = rs.getInt(1);
                 }
 
-                if (numIp >= 5) {
+                if (numIp > 5) {
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
@@ -478,7 +476,7 @@ public class SQL_Accounts {
                     numUsername = rs.getInt(1);
                 }
 
-                if (numUsername >= 5) {
+                if (numUsername > 5) {
                     addLog.setInt(1, 0);
                     addLog.setInt(2, 0);
                     addLog.setString(3, username);
@@ -610,7 +608,6 @@ public class SQL_Accounts {
                 return salt;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getSalt != null) {
                     getSalt.close();
@@ -664,7 +661,6 @@ public class SQL_Accounts {
                 return salt;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getSalt != null) {
                     getSalt.close();
@@ -763,7 +759,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (removeUser != null) {
                     removeUser.close();
@@ -874,7 +869,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (removeUser != null) {
                     removeUser.close();
@@ -916,7 +910,6 @@ public class SQL_Accounts {
 
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
             } finally {
                 if (getParentFolder != null) {
                     getParentFolder.close();
@@ -1024,7 +1017,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (changePwd != null) {
                     changePwd.close();
@@ -1165,7 +1157,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (changeEmail != null) {
                     changeEmail.close();
@@ -1228,7 +1219,6 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getUsername != null) {
                     getUsername.close();
@@ -1268,7 +1258,6 @@ public class SQL_Accounts {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                return -1;
             } finally {
                 if (getUid != null) {
                     getUid.close();
@@ -1307,7 +1296,6 @@ public class SQL_Accounts {
                 return null;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (verifyUniqueness != null) {
                     verifyUniqueness.close();
@@ -1425,7 +1413,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (addRecovery != null) {
                     addRecovery.close();
@@ -1495,7 +1482,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (rmRecovery != null) {
                     rmRecovery.close();
@@ -1537,6 +1523,7 @@ public class SQL_Accounts {
                 createLog.setString(3, null);
                 createLog.setTimestamp(4, lastModified);
                 switch (newToggle) {
+                    default: return false;
                     case 0: createLog.setString(5,  "DISABLED_2FA");
                         break;
                     case 1: createLog.setString(5,  "ENABLED_EMAIL_2FA");
@@ -1576,7 +1563,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return false;
             } finally {
                 if (update2fa != null) {
                     update2fa.close();
@@ -1643,7 +1629,6 @@ public class SQL_Accounts {
                 return json;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getNominated != null) {
                     getNominated.close();
@@ -1679,7 +1664,6 @@ public class SQL_Accounts {
                 return false;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
             } finally {
                 if (getRec != null) {
                     getRec.close();
@@ -1740,7 +1724,6 @@ public class SQL_Accounts {
                 return json;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getNominated != null) {
                     getNominated.close();
@@ -1848,7 +1831,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return null;
             } finally {
                 if (getPrivKey != null) {
                     getPrivKey.close();
@@ -1892,7 +1874,6 @@ public class SQL_Accounts {
                 return pubKeys;
             } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             } finally {
                 if (getPub != null) {
                     getPub.close();
@@ -1967,7 +1948,6 @@ public class SQL_Accounts {
                 } catch (SQLException excep) {
                     excep.printStackTrace();
                 }
-                return -1;
             } finally {
                 if (changePhone != null) {
                     changePhone.close();

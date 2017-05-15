@@ -15,6 +15,7 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
@@ -62,7 +63,7 @@ public class AccountsController {
             user.put("nominatedUids", nominatedUids);
             user.put("neededUsers", neededUsers);
             SSS secretGen = new SSS(nominatedUids.size(), neededUsers,
-                    new BigInteger(password.getBytes()));
+                    new BigInteger(password.getBytes(StandardCharsets.UTF_8)));
             List<String> encSecrets = encryptSecrets(publicKeys, secretGen.generateSecrets());
             user.put("secrets", encSecrets);
         }
