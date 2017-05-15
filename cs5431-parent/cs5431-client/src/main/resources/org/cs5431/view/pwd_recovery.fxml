@@ -25,12 +25,12 @@
     <VBox>
         <ToolBar prefHeight="46.0" prefWidth="600.0"/>
         <HBox prefHeight="30.0" prefWidth="600.0">
-            <Text text="Activate password recovery"/>
+            <Text text="  Activate password recovery"/>
             <Hyperlink fx:id="helpLink" text="(?)"/>
             <CheckBox fx:id="pwdRecoveryCheck"/>
         </HBox>
         <HBox prefHeight="30.0" prefWidth="600.0">
-            <Text text="Number of users needed to recover password:"/>
+            <Text text="  Number of users needed to recover password:"/>
             <TextField fx:id="neededUsersField"/>
         </HBox>
         <TableView fx:id="nominatedUsersTable" layoutY="70.0" prefWidth="600.0">
