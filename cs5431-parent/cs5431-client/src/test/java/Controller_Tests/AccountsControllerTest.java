@@ -45,7 +45,7 @@ class AccountsControllerTest {
         User user = ac.createUser("testUser2", "passwordpassword", "bcp39@cornell.edu", "999",
                 0, false, null, 0, null);
         User expectedUser = new User(user.getId(), "testUser2", "bcp39@cornell.edu", user.getUserParentFolder(),
-                user.getPrivKey(), user.getPubKey(), 0);
+                user.getPrivKey(), user.getPubKey(), 0, null);
         assertEquals(expectedUser, user);
         UserController userController = new UserController(user, s);
         userController.deleteUser(user.getUsername(), "passwordpassword");

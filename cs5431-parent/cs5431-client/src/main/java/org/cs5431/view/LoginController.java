@@ -94,7 +94,8 @@ public class LoginController implements Initializable {
             protected User call() throws Exception {
                 JSONObject login = accountsController.login(username, password);
                 if (login.getInt("has2fa") != NO_2FA) {
-                    return new User(login.getInt("uid"), null, null, null, null, null, login.getInt("has2fa"));
+                    return new User(login.getInt("uid"), null, null, null,
+                            null, null, login.getInt("has2fa"), null);
                 } else {
                     return accountsController.parseLogin(username, password, login, NO_2FA);
                 }
