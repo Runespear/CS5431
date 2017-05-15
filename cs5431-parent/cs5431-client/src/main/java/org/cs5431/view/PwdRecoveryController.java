@@ -363,7 +363,7 @@ public class PwdRecoveryController implements Initializable {
             neededUsersField.setOpacity(1.0);
         } else {
             imgAdd.setDisable(true);
-            imgAdd.setOpacity(0.7);
+            imgAdd.setOpacity(0.3);
             nominatedUsersTable.setDisable(true);
             nominatedUsersTable.setOpacity(0.7);
             neededUsersField.setDisable(true);
