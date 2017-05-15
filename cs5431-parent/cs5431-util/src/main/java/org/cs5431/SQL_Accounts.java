@@ -1373,7 +1373,7 @@ public class SQL_Accounts {
             PreparedStatement createLog = null;
             PreparedStatement addNeededNo = null;
 
-            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secrets) + values (?, ?, ?)";
+            String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secret) + values (?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String insertNeeded = "UPDATE Users SET neededUsers = ? WHERE uid = ?";

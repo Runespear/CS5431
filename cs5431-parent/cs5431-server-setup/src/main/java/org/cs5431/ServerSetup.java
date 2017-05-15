@@ -166,7 +166,7 @@ public class ServerSetup {
         String createUserLog = "CREATE TABLE UserLog (userLogid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n" +
                 "uid INT UNSIGNED, \n" +
                 "simulatedUsername VARCHAR(50), \n" +
-                "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(20) NOT NULL,\n" +
+                "lastModified TIMESTAMP NOT NULL, actionType VARCHAR(30) NOT NULL,\n" +
                 "status CHAR(10) NOT NULL,\n" +
                 "sourceIp VARCHAR(30) NOT NULL, \n" +
                 "failureType VARCHAR(100));";

@@ -760,7 +760,6 @@ public class SSLServer extends Thread {
         boolean removedOldSecrets = sql_accounts.removeSecrets(uid, sourceIp);
         if (removedOldSecrets) {
             if (hasRec) {
-                //TODO: generate secrets and put into json
                 boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
                 if (!setGroup) {
                     return makeErrJson("Failed to create recovery group.");
