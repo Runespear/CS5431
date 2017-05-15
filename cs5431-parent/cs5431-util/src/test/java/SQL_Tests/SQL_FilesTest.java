@@ -27,6 +27,8 @@ class SQL_FilesTest {
     String IP = "127.0.0.1";
     int port = 3306;
     JSONObject jsonUser;
+    JSONObject fso;
+    final boolean MASK = false;
 
     @BeforeEach
     void setUp() {
@@ -54,25 +56,7 @@ class SQL_FilesTest {
         jsonUser.put("hasPwdRec", true);
         jsonUser.put("phoneNo", "6073799856");
 
-    }
-
-    @Test
-    void check_uploadKeys() throws Exception {
-        Socket s = new Socket(IP,port);
-
-        JSONObject jsonObject = new JSONObject() ;// = receiveJson(s);
-        jsonObject.put("msgType","uploadKeys");
-        jsonObject.put("fsoid",1);
-        jsonObject.put("uid",322);
-        JSONObject k = files.uploadKeys(jsonObject,IP);
-        assertEquals(k,null);
-    }
-
-    @Test
-    void check_createFso() throws Exception {
-        Socket s = new Socket(IP,port);
-
-        JSONObject fso = new JSONObject() ;// = receiveJson(s);
+        fso = new JSONObject() ;// = receiveJson(s);
         fso.put("msgType","createFso");
         fso.put("parentFolderid",1);
         fso.put("uid",322);
@@ -100,7 +84,27 @@ class SQL_FilesTest {
         fso.put("editorsKeys",editorsKeysArr);
         fso.put("viewersKeys",viewersKeysArr);
         fso.put("fileIV","123");
-        fso.put("fsoNameIV","asdasd");
+        fso.put("fsoNameIV","666");
+        fso.put("fsoid","32123");
+    }
+
+    @Test
+    void check_uploadKeys() throws Exception {
+        Socket s = new Socket(IP,port);
+
+        JSONObject jsonObject = new JSONObject() ;// = receiveJson(s);
+        jsonObject.put("msgType","uploadKeys");
+        jsonObject.put("fsoid",1);
+        jsonObject.put("uid",322);
+        JSONObject k = files.uploadKeys(jsonObject,IP);
+        assertEquals(k,null);
+    }
+
+    @Test
+    void check_createFso() throws Exception {
+        Socket s = new Socket(IP,port);
+
+        //setUp();
 
         int k = files.createFso(fso,IP);
 
@@ -176,7 +180,7 @@ class SQL_FilesTest {
     @Test
     void check_getPermissions(){
 
-        JSONObject asd = files.getPermissions(422);
+        JSONObject asd = files.getPermissions(fso.getInt("fsoid"));
         JSONObject result = new JSONObject();
         String[] empt = {};
         result.put("viewers",empt);
@@ -187,11 +191,70 @@ class SQL_FilesTest {
     @Test
     void check_verifyEditPermission(){
 
-        boolean result = files.verifyEditPermission(322,123);
+        boolean result = files.verifyEditPermission(fso.getInt("fsoid"),fso.getInt("uid"));
 
         assertEquals(false,result);
     }
 
     @Test
+    void check_verifyBothPermission(){
+        boolean result = files.verifyBothPermission(fso.getInt("fsoid"),fso.getInt("uid"));
+
+        assertEquals(false,result);
+    }
+
+    @Test
+    void check_getFileLog(){
+
+        //Ought to be empty
+        //Should throw exception
+        if(!MASK){
+            try{
+                JSONArray result = files.getFileLog(fso,IP);
+                assertEquals(null,result);
+            }
+            catch(Exception e){
+                ;
+            }
+        }
+        else{
+            assert(true);
+        }
+
+    }
+
+    @Test
+    void check_renameFso(){
+        //int fsoid, int uid, String newName, String
+        //newFSONameIV, String sourceIp
+
+        int result;
+
+        result = files.renameFso(fso.getInt("fsoid"),fso.getInt("uid"),
+                "Onii-chan-v2.txt","666",IP);
+
+        assertEquals(-1,result);
+        assertEquals(fso.getString("fsoNameIV"),"666");
+    }
+
+    @Test
+    void check_removeDuplicates(){
+
+        boolean result = files.removeDuplicates(444);
+
+        assertEquals(false,result);
+    }
+
+    @Test
+
+    void check_addEditPriv(){
+        int result = files.addEditPriv( 532,232,11155,IP );
+
+        assertEquals(-1,result);
+    }
+
+
+
+
 
 }

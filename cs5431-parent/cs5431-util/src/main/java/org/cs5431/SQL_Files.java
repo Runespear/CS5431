@@ -739,7 +739,7 @@ public class SQL_Files {
         return false;
     }
 
-    boolean verifyBothPermission(int fsoid, int uid) {
+    public boolean verifyBothPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         if (permissions != null) {
             try {
@@ -767,7 +767,7 @@ public class SQL_Files {
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @return A JsonArray of filelog entries; returns null otherwise  **/
-    JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
+    public JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
@@ -856,7 +856,7 @@ public class SQL_Files {
         return null;
     }
 
-    int renameFso(int fsoid, int uid, String newName, String
+    public int renameFso(int fsoid, int uid, String newName, String
             newFSONameIV, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -950,7 +950,7 @@ public class SQL_Files {
         return -1;
     }
 
-    boolean removeDuplicates(int uid) {
+    public boolean removeDuplicates(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         PreparedStatement getParentFolder = null;
@@ -1019,7 +1019,7 @@ public class SQL_Files {
      * @param newUid User id of the new editor
      * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
+    public int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
@@ -1140,7 +1140,7 @@ public class SQL_Files {
      * @param encKey File secret key encrypted with the new user's public key
      * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
+    public int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
                            String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         System.out.println("has permssion to add viewer: " + hasPermission);
