@@ -38,6 +38,8 @@ public class AccountsController {
     public void setSocket(Socket s) {
         this.sslSocket = s;
     }
+
+    public Socket getSSLSocket() { return this.sslSocket;}
     /**
     * Creates user with the username, password, and email provided.
     * @return user if successful

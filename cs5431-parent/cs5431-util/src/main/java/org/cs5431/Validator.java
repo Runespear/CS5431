@@ -61,4 +61,12 @@ public class Validator {
         EmailValidator emailValidator = EmailValidator.getInstance();
         return emailValidator.isValid(email);
     }
+
+    public static boolean validPhone(String phoneNumber){
+        //Grab from http://stackoverflow.com/questions/5958665/validation-for-a-cell-number-in-android/5959341#5959341
+        String regexStr = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$\n";
+        return phoneNumber.matches(regexStr);
+
+    }
+
 }

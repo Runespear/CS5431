@@ -3,13 +3,9 @@ package org.cs5431;
 import java.math.BigInteger;
 import java.util.*;
 
-/**
- * Created by user on 14/5/2017.
- */
 public class SSS_Reconstructor{
 
-    SSS_Reconstructor(){
-        ;
+    public SSS_Reconstructor(){
     }
 
     private HashMap<BigInteger, BigInteger> checkSubsets(BigInteger[][] coordinateSubsets){
