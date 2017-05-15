@@ -95,10 +95,11 @@ public class IntrusionDetection {
     //any ip from this list should be banned
     List<String> noPermissionAlert() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getNoPermission = null;
-        PreparedStatement getLast = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+
+            PreparedStatement getNoPermission = null;
+            PreparedStatement getLast = null;
 
             String selectUL = "SELECT L.sourceIp FROM FileLog L WHERE L.failureType = \"NO PERMISSION\"" +
                     "AND time_to_sec(timediff(?, L.lastModified )) / 3600 < 24";
@@ -138,11 +139,11 @@ public class IntrusionDetection {
 
     List<String> getFailedLoginsPerIp() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getFailure = null;
-        PreparedStatement getLast = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
+            PreparedStatement getFailure = null;
+            PreparedStatement getLast = null;
             //currently 20 fails from the same ip per day
             String selectFailure = "SELECT UL.sourceIp FROM\n" +
                     "(SELECT L.sourceIp, COUNT(*) as numFail FROM UserLog L " +
@@ -187,10 +188,10 @@ public class IntrusionDetection {
 
     List<Integer> getFailedLoginsPerUid() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getFailure = null;
-        PreparedStatement getLast = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            PreparedStatement getFailure = null;
+            PreparedStatement getLast = null;
             //currently 20 fails from the same uid per day
             String selectFailure = "SELECT UL.uid FROM\n" +
                     "(SELECT L.uid, COUNT(*) as numFail FROM UserLog L " +
@@ -235,10 +236,9 @@ public class IntrusionDetection {
 
     int totalFailedLogins() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getNoPermission = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-
+            PreparedStatement getNoPermission = null;
             String selectUL = "SELECT COUNT(*) FROM UserLog L WHERE L.status = \"FAILURE\" " +
                     "AND L.actionType = \"LOGIN\"";
 
@@ -307,11 +307,10 @@ public class IntrusionDetection {
     //Authentication comes from change password and delete user
     List<String> getFailedAuthPerIp() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getFailure = null;
-        PreparedStatement getLast = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-
+            PreparedStatement getFailure = null;
+            PreparedStatement getLast = null;
             //currently 20 fails from the same ip per day
             String selectFailure = "SELECT UL.sourceIp FROM\n" +
                     "(SELECT L.sourceIp, COUNT(*) as numFail FROM UserLog L " +
@@ -356,11 +355,10 @@ public class IntrusionDetection {
 
     List<Integer> getFailedAuthPerUid() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
-        PreparedStatement getFailure = null;
-        PreparedStatement getLast = null;
 
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
-
+            PreparedStatement getFailure = null;
+            PreparedStatement getLast = null;
             //currently 20 fails from the same uid per day
             String selectLastTime = "SELECT MAX(lastModified) FROM UserLog;";
             String selectFailure = "SELECT UL.uid FROM\n" +
