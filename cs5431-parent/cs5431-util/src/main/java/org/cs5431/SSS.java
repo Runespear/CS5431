@@ -14,17 +14,18 @@ public class SSS {
 
     public int numParts; // Degree of Polynomial
     public int numSubsets; // Number of Subsets required to reconstruct
-    private BigInteger secret; //Big secret!
-    private SecureRandom generator = new SecureRandom();
-    private int[] subsets;
-    private BigInteger[][] coordinates; // Dimension is numParts by 2, [x,f(x)], x starts from 1;
-    private BigInteger[] polynomial; //Degree of polynomial = # subsets, where x^0 coeff is secret
+    public BigInteger secret; //Big secret!
+    public SecureRandom generator = new SecureRandom();
+    public int[] subsets;
+    public BigInteger[][] coordinates; // Dimension is numParts by 2, [x,f(x)], x starts from 1;
+    public BigInteger[] polynomial; //Degree of polynomial = # subsets, where x^0 coeff is secret
 
     public SSS(BigInteger secret){
         //Default is 3 parts with any 2 points
         this.numParts = 3;
         this.numSubsets = 2;
         this.secret = secret;
+        //generatePolynomial();
     }
 
     public SSS(int nParts, int nSubsets, BigInteger secret){
@@ -33,10 +34,11 @@ public class SSS {
         this.numParts = nParts;
         this.numSubsets = nSubsets;
         this.secret = secret;
+        //generatePolynomial();
     }
 
 
-    private BigInteger[] generatePolynomial(){
+    public BigInteger[] generatePolynomial(){
         //Generate k-1 numbers, where they are for x, x^2,...,x^(k-1)
         //x^0 coeff is the secret itself
         this.subsets = new int[this.numSubsets-1];
@@ -53,12 +55,12 @@ public class SSS {
         return this.polynomial;
     }
 
-    private BigInteger applyPoly(BigInteger x){
+    public BigInteger applyPoly(BigInteger x, BigInteger[] polynomial){
         //Input x into the polynomial
         //Return the output
         BigInteger y = BigInteger.ZERO;
-        for (int i = 0;i < this.polynomial.length;i++){
-            BigInteger coefficient = this.polynomial[i];
+        for (int i = 0;i < polynomial.length;i++){
+            BigInteger coefficient = polynomial[i];
             //int exponent = i;
             BigInteger update = coefficient.multiply(x.pow(i));
             y = y.add(update);
@@ -66,26 +68,26 @@ public class SSS {
         return y;
     }
 
-    private BigInteger applyPoly(int x){
+    public BigInteger applyPoly(int x, BigInteger[] polynomial){
         //If input int
         BigInteger X = BigInteger.valueOf(x);
-        return applyPoly(X);
+        return applyPoly(X,polynomial);
     }
 
-    private BigInteger[][] generateCoordinates(){
+    public BigInteger[][] generateCoordinates(){
         //Generate # coordinates = this.numParts
         int numCoordinates = this.numParts;
         int x = 1; // Start from x=1 end at x = numParts
         this.coordinates = new BigInteger[this.numParts][2];
         for (int i = 0; i<this.coordinates.length;i++){
             this.coordinates[i][0] = BigInteger.valueOf(x);
-            this.coordinates[i][1] = applyPoly(x);
+            this.coordinates[i][1] = applyPoly(x,this.polynomial);
             x++;
         }
         return this.coordinates;
     }
 
-    private HashMap<BigInteger, BigInteger> checkSubsets(BigInteger[][] coordinateSubsets){
+    public HashMap<BigInteger, BigInteger> checkSubsets(BigInteger[][] coordinateSubsets){
         //Ensure that there are enough UNIQUE subsets
         //Need == numSubsets
         //Use dictionary
@@ -99,8 +101,8 @@ public class SSS {
         }
         return uniqueCoord;
     }
-    
-    private BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
+
+    public BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
         //Guaranteed to have minimum required
         //Need precheck to ensure that they are unique
         
@@ -124,10 +126,6 @@ public class SSS {
 
     }
 
-
-    public BigInteger[][] disseminateCoordinates(){
-        return this.coordinates;
-    }
 
     public List<String> generateSecrets() {
         //TODO
