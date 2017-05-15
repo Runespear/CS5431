@@ -364,7 +364,6 @@ public class FileController {
             SecretKey fileSK = decFileSecretKey(encFileSKbytes, user.getPrivKey());
             byte fsoBytes[] = Base64.getDecoder().decode(fileAck
                     .getString("encFile"));
-            //TODO: what should we do with dateModified and size?
             String ivString = fileAck.getString("fileIV");
             IvParameterSpec iv = new IvParameterSpec(Base64.getDecoder()
                     .decode(ivString));
