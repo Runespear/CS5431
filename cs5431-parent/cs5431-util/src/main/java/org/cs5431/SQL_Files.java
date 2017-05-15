@@ -1441,7 +1441,7 @@ public class SQL_Files {
         return -1;
     }
 
-    int removeEditPriv(int fsoid, int uid, int rmUid, String sourceIp) {
+    public int removeEditPriv(int fsoid, int uid, int rmUid, String sourceIp) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
 
@@ -1559,7 +1559,7 @@ public class SQL_Files {
      * @param uid the id of the requesting user
      * @return The file secret key associated with this fso and user
      */
-    String getFileSK(int fsoid, int uid, String sourceIp) {
+    public String getFileSK(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1635,7 +1635,7 @@ public class SQL_Files {
      *                the database
      * @return the fsoid if successful, -1 otherwise
      */
-    int overwrite(int fsoid, int uid, String newFileIV, String encFile, String sourceIp) {
+    public int overwrite(int fsoid, int uid, String newFileIV, String encFile, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
