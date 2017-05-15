@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import static org.cs5431.Constants.EMAIL_2FA;
 import static org.cs5431.Encryption.encryptSecrets;
 
 public class PwdRecoveryController implements Initializable {
@@ -60,7 +59,7 @@ public class PwdRecoveryController implements Initializable {
     private AccountsController ac;
     private RegistrationController rc;
     private UserController uc;
-    private boolean changed = false;    //TODO set changed for removed user
+    private boolean changed = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -104,7 +103,10 @@ public class PwdRecoveryController implements Initializable {
                 }
 
                 setGraphic(deleteButton);
-                deleteButton.setOnAction(event -> nominatedUsersTable.getItems().remove(bundle));
+                deleteButton.setOnAction(event -> {
+                    nominatedUsersTable.getItems().remove(bundle);
+                    changed = true;
+                });
             }
         });
 
@@ -197,7 +199,6 @@ public class PwdRecoveryController implements Initializable {
         });
         task.setOnSucceeded(t -> {
             JSONObject response = task.getValue();
-            //TODO check names of fields
             pwdRecoveryCheck.setSelected(response.getBoolean("hasPwdRec"));
             if (response.getBoolean("hasPwdRec")) {
                 neededUsersField.setText(Integer.toString(response.getInt("neededUsers")));

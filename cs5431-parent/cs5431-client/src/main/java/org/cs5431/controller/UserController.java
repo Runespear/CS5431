@@ -275,7 +275,6 @@ public class UserController {
 
     public JSONObject getRecoveryInfo() throws IOException, ClassNotFoundException,
             PwdRecoveryException {
-        //todo
         JSONObject recover = new JSONObject();
         recover.put("msgType", "pwdRecoveryInfo");
         recover.put("uid", user.getId());

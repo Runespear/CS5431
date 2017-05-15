@@ -241,7 +241,6 @@ public class LoginController implements Initializable {
     }
 
     private void disconnect() {
-        //TODO close secure channel
         Scene scene = stage.getScene();
         scene.setRoot(Client.connectNode);
         stage.show();

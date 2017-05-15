@@ -161,7 +161,6 @@ public class FileViewController implements Initializable {
                 showAppropriateImages(false, false, false);
             }
         });
-        //TODO: figure out how to get list view to lose its focus...
     }
 
     /**

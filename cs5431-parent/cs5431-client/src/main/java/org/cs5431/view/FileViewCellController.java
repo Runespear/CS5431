@@ -133,7 +133,6 @@ public class FileViewCellController implements Initializable {
             imgFile.setImage(new Image(getClass().getResource(
                     "/org/cs5431/assets/ic_folder.png").toExternalForm()));
         imgFile.setPreserveRatio(true);
-        //TODO: don't hardcode this number?
         imgFile.setFitHeight(20);
     }
 
