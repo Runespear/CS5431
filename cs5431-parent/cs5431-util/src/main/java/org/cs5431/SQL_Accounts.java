@@ -8,8 +8,8 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.secondPwdHash;
@@ -549,7 +549,11 @@ public class SQL_Accounts {
                     getEmail.setString(1, username);
                     ResultSet userEmail = getEmail.executeQuery();
                     if (userEmail.next() && adminEmail != null) {
-                        adminEmail.send(userEmail.getString(1),"Failed Login Attempt", "");
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        adminEmail.send(userEmail.getString(1),"PSFS: Failed Login Attempt",
+                                "An attempt to log into your Pretty Secure File Sharing account failed" +
+                                " on " + sdf.format(new java.util.Date()) + ". Do contact us at psfs5431@gmail.com if " +
+                                        "you require further assistance.");
                     }
                     connection.commit();
                     return null;

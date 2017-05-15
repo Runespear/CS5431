@@ -814,7 +814,7 @@ public class SSLServer extends Thread {
         String username = sql_accounts.getUsername(uid);
         if (username != null) {
             json.put("username", username);
-            String pwdSalt = sql_accounts.getSalt(username, sourceIp, "AUTHENTICATE");
+            String pwdSalt = sql_accounts.getSalt(username, sourceIp, "CHECK_PWD");
             String hashedPwd = json.getString("hashedPwd");
             if (pwdSalt != null) {
                 String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
@@ -841,9 +841,11 @@ public class SSLServer extends Thread {
             JSONArray emails = sqlObject.getJSONArray("emails");
 
             for (int i = 0; i < groupUid.length(); i++) {
-                email.send(emails.getString(i), "Password Recovery", "The user " + username + " has " +
-                        "requested to recover the password to his/her Pretty Secure File Sharing account. Please inform " +
-                        username + " of the following secret: " + secrets.getString(i));
+                email.send(emails.getString(i), "PSFS: Password Recovery", "The user " + username + " has " +
+                        "requested to recover the password to his/her Pretty Secure File Sharing account. Please access " +
+                        "your acccount and enter the following code in order to generate a password recovery code: " +
+                        secrets.getString(i) + "\n" +
+                        "Then, inform " + username + " of the code generated.");
             }
 
             JSONObject response = new JSONObject();
