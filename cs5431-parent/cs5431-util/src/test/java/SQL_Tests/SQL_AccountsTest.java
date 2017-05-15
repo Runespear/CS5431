@@ -337,6 +337,5 @@ class SQL_AccountsTest {
     void tearDown() {
     }
 
-    
 
 }
