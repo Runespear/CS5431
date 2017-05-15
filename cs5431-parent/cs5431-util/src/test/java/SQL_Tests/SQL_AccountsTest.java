@@ -276,6 +276,11 @@ class SQL_AccountsTest {
         account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
     }
 
+    @Test
+    void test_getUserLog(){
+        account.getUserLog();
+    }
+
     @AfterEach
     void tearDown() {
     }

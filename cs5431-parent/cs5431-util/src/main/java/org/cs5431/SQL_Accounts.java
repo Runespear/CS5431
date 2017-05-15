@@ -1035,7 +1035,7 @@ public class SQL_Accounts {
     /** Saves the userlog as csv file into /tmp/userlogs.csv
      * Logs the change of password in the userlog.
      * Creates failure file log invalid password or db error (rollsback accordingly). */
-    String getUserLog() {
+    public String getUserLog() {
         if (DEBUG_MODE) {
             System.out.println("Can view file logs");
         }
