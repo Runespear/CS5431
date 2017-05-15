@@ -125,6 +125,7 @@ public class LoginController implements Initializable {
         th.start();
         loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+            loginButton.setDisable(false);
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
                 ex.printStackTrace();
