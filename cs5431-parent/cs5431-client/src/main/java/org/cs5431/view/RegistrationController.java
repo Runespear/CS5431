@@ -215,7 +215,7 @@ public class RegistrationController implements Initializable {
             errMessages.add("The email entered is invalid.");
 
         if (twoFa == EMAIL_2FA && email.isEmpty()) {
-            errMessages.add("If you activate email 2fa, you must provide a valid email.");
+            errMessages.add("If you activate email 2fa, you must provide a valid email");
         }
 
         if (twoFa == PHONE_2FA && phoneNumber.isEmpty()) {
@@ -257,7 +257,11 @@ public class RegistrationController implements Initializable {
             registerButton.setDisable(true);
             cancelButton.setDisable(true);
             pwdRecoveryButton.setDisable(true);
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;

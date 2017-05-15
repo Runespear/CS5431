@@ -65,7 +65,8 @@ public class ServerView {
         try {
             File configFile = new File("./server-config/" + serverName +
                     ".config");
-            BufferedReader br = new BufferedReader(new FileReader(configFile));
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(configFile), StandardCharsets.UTF_8.name()));
             server = br.readLine();
             dbPort = Integer.parseInt(br.readLine());
             outPort = Integer.parseInt(br.readLine());

@@ -25,6 +25,7 @@ import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -261,7 +262,11 @@ public class EditDetailsController implements Initializable {
                     pwdMessages.add("Password successfully changed.");
                     showMessages(pwdMessages);
                 });
-                Client.exec.submit(task);
+                try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
@@ -299,7 +304,11 @@ public class EditDetailsController implements Initializable {
                     emailMessages.add("Email successfully changed.");
                     showMessages(emailMessages);
                 });
-                Client.exec.submit(task);
+                try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
@@ -336,7 +345,11 @@ public class EditDetailsController implements Initializable {
                     phoneMessages.add("Phone number successfully changed.");
                     showMessages(phoneMessages);
                 });
-                Client.exec.submit(task);
+                try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
@@ -404,7 +417,11 @@ public class EditDetailsController implements Initializable {
                 showMessages(twoFaMsgs);
                 userController.setHas2fa(finalTwoFa);
             });
-            Client.exec.submit(task);
+            try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             task.exceptionProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     Exception ex = (Exception) newValue;
@@ -445,14 +462,18 @@ public class EditDetailsController implements Initializable {
                     publicKeys.add(getPubKeyFromJSON(pubKeysArr.getString(i)));
                 }
                 SSS secretGen = new SSS(groupId.size(), neededUsers,
-                        new BigInteger(newPassword.getBytes()));
+                        new BigInteger(newPassword.getBytes(StandardCharsets.UTF_8)));
                 List<String> encSecrets = encryptSecrets(publicKeys, secretGen.generateSecrets());
                 userController.saveRecoveryInfo(true, neededUsers, groupId, encSecrets);
             }
             return null;
             }
         };
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -542,7 +563,11 @@ public class EditDetailsController implements Initializable {
                         scene.setRoot(Client.loginNode);
                         stage.show();
                     });
+                    try {
                     Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                     task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                         if(newValue != null) {
                             Exception ex = (Exception) newValue;

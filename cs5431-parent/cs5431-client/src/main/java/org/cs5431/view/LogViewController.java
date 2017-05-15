@@ -82,7 +82,11 @@ public class LogViewController implements Initializable {
             items.addAll(task.getValue());
             listViewLog.setItems(items);
         });
-        Client.exec.submit(task);
+        try {
+                    Client.exec.submit(task);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;

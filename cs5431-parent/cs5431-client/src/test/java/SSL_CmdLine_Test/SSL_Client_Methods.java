@@ -6,14 +6,15 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class SSL_Client_Methods {
 
     public static void send_Request(Socket s) throws Exception {
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader r = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         BufferedWriter w = new BufferedWriter(
-                new OutputStreamWriter(s.getOutputStream()));
+                new OutputStreamWriter(s.getOutputStream(),StandardCharsets.UTF_8));
 
         System.out.println("Enter text below and press Enter. "
                 + "The text will be echoed by the server.");
