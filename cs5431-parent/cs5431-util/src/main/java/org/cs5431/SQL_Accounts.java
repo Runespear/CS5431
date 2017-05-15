@@ -1726,7 +1726,7 @@ public class SQL_Accounts {
             PreparedStatement getPrivKey = null;
             PreparedStatement getNeededNo = null;
 
-            String selectKey = "SELECT U.privKey FROM Users U WHERE U.uid = ?";
+            String selectKey = "SELECT U.privKey, U.pwdSalt FROM Users U WHERE U.uid = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String selectNeeded = "SELECT U.neededUsers FROM Users U WHERE U.uid = ?";
@@ -1745,6 +1745,7 @@ public class SQL_Accounts {
 
                 if (rs.next()) {
                     json.put("encPK", rs.getString(1));
+                    json.put("salt", rs.getString(2));
 
                     getNeededNo.setInt(1 ,uid);
                     rs = getNeededNo.executeQuery();

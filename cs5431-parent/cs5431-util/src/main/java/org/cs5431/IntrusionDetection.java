@@ -28,42 +28,42 @@ public class IntrusionDetection {
 
         List<String> attackerIp = noPermissionAlert();
         if (!attackerIp.isEmpty()) {
-            System.out.println("INTRUSION DETECTED. IP(s) that attempted to access the system without permission: " + attackerIp);
+            //System.out.println("INTRUSION DETECTED. IP(s) that attempted to access the system without permission: " + attackerIp);
             log = "INTRUSION DETECTED. IP(s) that attempted to access the system without permission: " + attackerIp;
         }
 
         attackerIp = getFailedAuthPerIp();
         if (!attackerIp.isEmpty()) {
-            System.out.println("INTRUSION DETECTED. Multiple failed authentication attempts from the same IP(s): " + attackerIp);
+            //System.out.println("INTRUSION DETECTED. Multiple failed authentication attempts from the same IP(s): " + attackerIp);
             log = "INTRUSION DETECTED. Multiple failed authentication attempts from the same IP(s): " + attackerIp;
         }
 
         attackerIp = getFailedLoginsPerIp();
         if (!attackerIp.isEmpty()) {
-            System.out.println("INTRUSION DETECTED. Multiple failed login attempts from the same IP(s): " + attackerIp);
+            //System.out.println("INTRUSION DETECTED. Multiple failed login attempts from the same IP(s): " + attackerIp);
             log = "INTRUSION DETECTED. Multiple failed login attempts from the same IP(s): " + attackerIp;
         }
 
         List<Integer> attackedUid = getAttemptedUidFailure();
         if (!attackedUid.isEmpty()) {
-            System.out.println("INTRUSION DETECTED. Attempts to impersonate the following user(s): " + attackedUid);
+            //System.out.println("INTRUSION DETECTED. Attempts to impersonate the following user(s): " + attackedUid);
             log = "INTRUSION DETECTED. Attempts to impersonate the following user(s): " + attackedUid;
         }
 
         attackedUid = getFailedAuthPerUid();
         if (!attackedUid.isEmpty()) {
-            System.out.println("INTRUSION DETECTED. Multiple failed authentication attempts on the same uid(s): " + attackedUid);
+            //System.out.println("INTRUSION DETECTED. Multiple failed authentication attempts on the same uid(s): " + attackedUid);
             log = "INTRUSION DETECTED. Multiple failed authentication attempts on the same uid(s): " + attackedUid;
         }
 
         attackedUid = getFailedLoginsPerUid();
         if (!attackedUid.isEmpty()) {
-            System.out.println("INTRUSION DETECTED. Multiple failed login attempts on the same uid(s): " + attackedUid);
+            //System.out.println("INTRUSION DETECTED. Multiple failed login attempts on the same uid(s): " + attackedUid);
             log = "INTRUSION DETECTED. Multiple failed login attempts on the same uid(s): " + attackedUid;
         }
 
         if (totalFailedLogins() > TOTAL_FAILED_LOGIN_PER_DAY) {
-            System.out.println("INTRUSION DETECTED. An excessive number of failed login attempts.");
+            //System.out.println("INTRUSION DETECTED. An excessive number of failed login attempts.");
             log = "INTRUSION DETECTED. An excessive number of failed login attempts.";
         }
 
