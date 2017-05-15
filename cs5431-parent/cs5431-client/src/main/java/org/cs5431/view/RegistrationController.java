@@ -249,9 +249,7 @@ public class RegistrationController implements Initializable {
             registerButton.setDisable(true);
             cancelButton.setDisable(true);
             pwdRecoveryButton.setDisable(true);
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;

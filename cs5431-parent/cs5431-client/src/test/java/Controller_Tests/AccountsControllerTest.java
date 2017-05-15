@@ -1,9 +1,12 @@
 package Controller_Tests;
 
 import org.cs5431.controller.AccountsController;
+import org.cs5431.controller.UserController;
 import org.cs5431.model.User;
 import org.cs5431.view.PwdRecoveryBundle;
 import org.json.JSONObject;
+import org.junit.gen5.api.AfterAll;
+import org.junit.gen5.api.BeforeAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,22 +15,29 @@ import java.net.Socket;
 
 import static org.cs5431.controller.SSLController.connect_SSLServerSocket;
 import static org.junit.gen5.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Before running this test, please set up a server called test_server with ssl port 8080
+ */
 class AccountsControllerTest {
     private static AccountsController ac;
     private static User testUser;
+    private static Socket s;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() throws Exception {
         ac = new AccountsController();
-        Socket s = connect_SSLServerSocket("test_server",8080, "./user-config/test_server.jks");
+        s = connect_SSLServerSocket("127.0.0.1",8888, "./user-config/test_server.jks");
         ac.setSocket(s);
         testUser = ac.createUser("testUser1", "passwordpassword", "bcp39@cornell.edu", "999",
                 0, false, null, 0, null);
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterAll
+    void tearDown() throws Exception {
+        UserController userController = new UserController(testUser, s);
+        userController.deleteUser(testUser.getUsername(), "passwordpassword");
     }
 
     @Test
@@ -37,6 +47,8 @@ class AccountsControllerTest {
         User expectedUser = new User(user.getId(), "testUser2", "bcp39@cornell.edu", user.getUserParentFolder(),
                 user.getPrivKey(), user.getPubKey(), 0);
         assertEquals(expectedUser, user);
+        UserController userController = new UserController(user, s);
+        userController.deleteUser(user.getUsername(), "passwordpassword");
     }
 
     @Test
@@ -47,10 +59,15 @@ class AccountsControllerTest {
 
     @Test
     void do2fa() {
+        assertThrows( AccountsController.LoginFailException.class,
+                () -> ac.do2fa("wrong otp", testUser.getId()));
     }
 
     @Test
-    void parseLogin() {
+    void parseLogin() throws Exception {
+        JSONObject response = ac.login("testUser1", "passwordpassword");
+        User user = ac.parseLogin("testUser1", "passwordpassword", response, 0);
+        assertEquals(testUser, user);
     }
 
     @Test
@@ -75,10 +92,14 @@ class AccountsControllerTest {
 
     @Test
     void recoverPassword() {
+        assertThrows(AccountsController.UserRetrieveException.class,
+                () -> ac.recoverPassword("testUser1"));
     }
 
     @Test
     void sendRecoveryEmail() {
+        assertThrows(AccountsController.UserRetrieveException.class,
+                () -> ac.sendRecoveryEmail(testUser.getId(), "testUser1"));
     }
 
 }

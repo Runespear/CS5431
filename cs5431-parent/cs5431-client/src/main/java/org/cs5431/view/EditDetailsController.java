@@ -35,6 +35,7 @@ import static org.cs5431.Constants.EMAIL_2FA;
 import static org.cs5431.Constants.NO_2FA;
 import static org.cs5431.Constants.PHONE_2FA;
 import static org.cs5431.Encryption.encryptSecrets;
+import static org.cs5431.Encryption.getPubKeyFromJSON;
 
 public class EditDetailsController implements Initializable {
     @FXML
@@ -257,9 +258,7 @@ public class EditDetailsController implements Initializable {
                     pwdMessages.add("Password successfully changed.");
                     showMessages(pwdMessages);
                 });
-                Thread th = new Thread(task);
-                th.setDaemon(true);
-                th.start();
+                Client.exec.submit(task);
                 task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
@@ -297,9 +296,7 @@ public class EditDetailsController implements Initializable {
                     emailMessages.add("Email successfully changed.");
                     showMessages(emailMessages);
                 });
-                Thread th = new Thread(task);
-                th.setDaemon(true);
-                th.start();
+                Client.exec.submit(task);
                 task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
@@ -340,9 +337,7 @@ public class EditDetailsController implements Initializable {
                     phoneMessages.add("Phone number successfully changed.");
                     showMessages(phoneMessages);
                 });
-                Thread th = new Thread(task);
-                th.setDaemon(true);
-                th.start();
+                Client.exec.submit(task);
                 task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                     if(newValue != null) {
                         Exception ex = (Exception) newValue;
@@ -358,14 +353,19 @@ public class EditDetailsController implements Initializable {
         int twoFa = 0;
         RadioButton selectedRadioButton = (RadioButton) group2fa.getSelectedToggle();
         String value = selectedRadioButton.getText();
-        if (value.equals("None"))
-            twoFa = NO_2FA;
-        else if (value.equals("Email"))
-            twoFa = EMAIL_2FA;
-        else if (value.equals("Phone"))
-            twoFa = PHONE_2FA;
-        else {
-            System.err.println("Ack, value of selected radio button is weird: " + value);
+        switch (value) {
+            case "None":
+                twoFa = NO_2FA;
+                break;
+            case "Email":
+                twoFa = EMAIL_2FA;
+                break;
+            case "Phone":
+                twoFa = PHONE_2FA;
+                break;
+            default:
+                System.err.println("Ack, value of selected radio button is weird: " + value);
+                break;
         }
         int finalTwoFa = twoFa;
         Task<Void> task = new Task<Void>() {
@@ -385,9 +385,7 @@ public class EditDetailsController implements Initializable {
             twoFaMsgs.add("Two factor authentication information saved.");
             showMessages(twoFaMsgs);
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -415,13 +413,11 @@ public class EditDetailsController implements Initializable {
                 int neededUsers = json.getInt("neededUsers");
                 List<Integer> groupId = new ArrayList<>();
                 JSONArray groupIdArr = json.getJSONArray("groupId");
-                JSONArray usernameArr = json.getJSONArray("usernames");
                 List<PublicKey> publicKeys = new ArrayList<>();
+                JSONArray pubKeysArr = json.getJSONArray("pubKeys");
                 for (int i = 0; i < groupIdArr.length(); i++) {
                     groupId.add(groupIdArr.getInt(i));
-                    String username = usernameArr.getString(i);
-                    PwdRecoveryBundle pwd = accountsController.getUserForPwdRecovery(username);
-                    publicKeys.add(pwd.publicKey);
+                    publicKeys.add(getPubKeyFromJSON(pubKeysArr.getString(i)));
                 }
                 SSS secretGen = new SSS(groupId.size(), neededUsers,
                         new BigInteger(newPassword.getBytes()));
@@ -436,9 +432,7 @@ public class EditDetailsController implements Initializable {
             alert.setContentText("Successfully updated password nomination information");
             alert.showAndWait();
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -528,9 +522,7 @@ public class EditDetailsController implements Initializable {
                         scene.setRoot(Client.loginNode);
                         stage.show();
                     });
-                    Thread th = new Thread(task);
-                    th.setDaemon(true);
-                    th.start();
+                    Client.exec.submit(task);
                     task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                         if(newValue != null) {
                             Exception ex = (Exception) newValue;

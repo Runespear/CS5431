@@ -143,9 +143,7 @@ public class PrivViewController implements Initializable{
         task.setOnFailed(t -> showError("Failed to remove sharing " +
                 "permissions of user: " + bundle.getUsername()));
         task.setOnSucceeded(t -> tableView.getItems().remove(bundle));
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -165,9 +163,7 @@ public class PrivViewController implements Initializable{
         task.setOnFailed(t -> showError("Failed to change sharing " +
                 "permissions of user: " + bundle.getUsername()));
         task.setOnSucceeded(t -> bundle.canEdit = true);
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -189,9 +185,7 @@ public class PrivViewController implements Initializable{
         task.setOnFailed(t -> showError("Failed to change sharing " +
                 "permissions of user: " + bundle.getUsername()));
         task.setOnSucceeded(t -> bundle.canEdit = false);
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;
@@ -248,9 +242,7 @@ public class PrivViewController implements Initializable{
                 observableList.add(task.getValue());
                 tableViewPriv.setItems(observableList);
             });
-            Thread th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            Client.exec.submit(task);
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;
@@ -321,9 +313,7 @@ public class PrivViewController implements Initializable{
             observableList.addAll(task.getValue());
             tableViewPriv.setItems(observableList);
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;

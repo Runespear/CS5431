@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
 import static org.cs5431.Encryption.secondPwdHash;
@@ -1826,7 +1827,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    ArrayList<String> getPubKeys(JSONArray groupUid) {
+    List<String> getPubKeys(JSONArray groupUid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 

@@ -120,9 +120,7 @@ public class LoginController implements Initializable {
                 changeToFileView(e, task.getValue());
             }
         });
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             loginButton.setDisable(false);
@@ -168,9 +166,7 @@ public class LoginController implements Initializable {
             }
         };
         task.setOnSucceeded(t -> changeToFileView(e, task.getValue()));
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        Client.exec.submit(task);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             if(newValue != null) {
                 Exception ex = (Exception) newValue;

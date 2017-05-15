@@ -778,7 +778,12 @@ public class SSLServer extends Thread {
     private JSONObject getPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         int uid = jsonObject.getInt("uid");
         JSONObject response = sql_accounts.getPasRecInfo(uid);
+
         if (response != null) {
+            if (response.getBoolean("hasPwdRec")) {
+                List<String> pubKeys = sql_accounts.getPubKeys(response.getJSONArray("groupUid"));
+                response.put("pubKeys", pubKeys);
+            }
             return response;
         }
         return makeErrJson("Error occurred while fetching the information. Please try again.");
