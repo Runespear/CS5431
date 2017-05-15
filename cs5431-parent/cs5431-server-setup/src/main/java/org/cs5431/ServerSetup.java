@@ -182,7 +182,7 @@ public class ServerSetup {
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (childid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createPwdRecovery = "CREATE TABLE PwdGroup (uid INT UNSIGNED NOT NULL, nominatedUid INT UNSIGNED NOT NULL,\n" +
-                "secret CHAR(255) NOT NULL," +
+                "secret BLOB NOT NULL," +
                 "FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE,\n" +
                 "FOREIGN KEY (nominatedUid) REFERENCES Users(uid) ON DELETE CASCADE);";
         String setIsolationLevel = "SET GLOBAL tx_isolation='SERIALIZABLE';";
