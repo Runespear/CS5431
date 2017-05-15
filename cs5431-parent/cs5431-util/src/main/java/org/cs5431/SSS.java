@@ -4,14 +4,7 @@ import java.io.PrintStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by user on 13/5/2017.
@@ -43,7 +36,7 @@ public class SSS {
     }
 
 
-    private void generatePolynomial(){
+    private BigInteger[] generatePolynomial(){
         //Generate k-1 numbers, where they are for x, x^2,...,x^(k-1)
         //x^0 coeff is the secret itself
         this.subsets = new int[this.numSubsets-1];
@@ -57,7 +50,7 @@ public class SSS {
         for (int i = 1; i<this.polynomial.length;i++ ){
             this.polynomial[i]= BigInteger.valueOf(this.subsets[i-1]);
         }
-
+        return this.polynomial;
     }
 
     private BigInteger applyPoly(BigInteger x){
@@ -79,7 +72,7 @@ public class SSS {
         return applyPoly(X);
     }
 
-    private void generateCoordinates(){
+    private BigInteger[][] generateCoordinates(){
         //Generate # coordinates = this.numParts
         int numCoordinates = this.numParts;
         int x = 1; // Start from x=1 end at x = numParts
@@ -88,9 +81,10 @@ public class SSS {
             this.coordinates[i][1] = applyPoly(x);
             x++;
         }
+        return this.coordinates;
     }
 
-    private boolean checkSubsets(BigInteger[][] coordinateSubsets){
+    private HashMap<BigInteger, BigInteger> checkSubsets(BigInteger[][] coordinateSubsets){
         //Ensure that there are enough UNIQUE subsets
         //Need == numSubsets
         //Use dictionary
@@ -98,22 +92,26 @@ public class SSS {
         assert(coordinateSubsets.length >= this.numSubsets - 1):"Not enough subsets";
         //Check uniqueness
         //TODO checkSubsets
-        return true;
+        HashMap<BigInteger,BigInteger> uniqueCoord = new HashMap<BigInteger,BigInteger>();
+        for (int i = 0; i < coordinateSubsets.length ; i++){
+            uniqueCoord.put(coordinateSubsets[i][0],coordinateSubsets[i][1]);
+        }
+        return uniqueCoord;
     }
     
     private BigInteger reconstructSecret(BigInteger[][] coordinateSubsets){
-
+        //Guaranteed to have minimum required
         //Need precheck to ensure that they are unique
         
         //What we want
         BigInteger L0 = BigInteger.ZERO;
         //Summation Term
-        for (int i = 0; i < this.numSubsets;i++){
+        for (int i = 0; i < coordinateSubsets.length;i++){
             BigInteger outside = (coordinateSubsets[i][1]);
             //Compute inside
             BigInteger inside = BigInteger.ONE;
             //The product term
-            for (int m = 0; m<this.numSubsets;m++){
+            for (int m = 0; m<coordinateSubsets.length;m++){
                 if(m != i){
                     inside = inside.multiply(coordinateSubsets[m][0]);
                     inside = inside.divide(coordinateSubsets[m][0].subtract(coordinateSubsets[i][0]));
@@ -132,12 +130,43 @@ public class SSS {
 
     public List<String> generateSecrets() {
         //TODO
-        return null;
+        this.polynomial = generatePolynomial();
+        BigInteger[][] coordinates = generateCoordinates();
+        //Format is x:f(x)
+        //e.g. 5:123456
+        List<String> secrets = new ArrayList<String>();
+        for (int i = 0 ; i < coordinates.length;i++){
+            String coordinateStr = coordinates[i][0].toString() + ":" + coordinates[i][1];
+            secrets.add(coordinateStr);
+        }
+        return secrets;
     }
 
-    public BigInteger recreateSecret(List<String> secrets) {
-        //TODO
-        return null;
+    public BigInteger recreateSecret(List<String> secrets, int minSubsets) throws Exception{
+        //min Subsets is the minimum number of unique secrets required to reconstruct
+        //Parse as x:f(x)
+        int k = secrets.size();
+        BigInteger[][] coordinates = new BigInteger[k][2];
+        for (int i = 0;i < k ; i++){
+            String[] parts = secrets.get(i).split(":");
+            coordinates[i][0] = new BigInteger(parts[0]);
+            coordinates[i][1] = new BigInteger(parts[1]);
+        }
+        HashMap<BigInteger,BigInteger> uniqueCoord = checkSubsets(coordinates);
+        assert(minSubsets >= uniqueCoord.size()):"Not enough unique coordinates";
+        //Generate array of arrays of size minSubsets * 2
+
+        BigInteger[][] subsetsUsed = new BigInteger[minSubsets][2];
+        Iterator it = uniqueCoord.entrySet().iterator();
+        int j = 0;
+        while(it.hasNext() && j < minSubsets ){
+            Map.Entry<BigInteger,BigInteger> pair = (Map.Entry<BigInteger,BigInteger>) it.next();
+            subsetsUsed[j][0] = pair.getKey();
+            subsetsUsed[j][1] = pair.getValue();
+        }
+        BigInteger secret = reconstructSecret(subsetsUsed);
+
+        return secret;
     }
 
 }
