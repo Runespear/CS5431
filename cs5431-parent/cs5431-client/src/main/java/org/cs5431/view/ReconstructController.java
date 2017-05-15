@@ -54,7 +54,7 @@ public class ReconstructController implements Initializable {
 
         imgExit.setOnMouseClicked(e -> tryExit());
 
-        sendEmailButton(e -> sendEmail());
+        sendEmailButton.setOnMouseClicked(e -> sendEmail());
     }
 
     private void tryRecover() {
@@ -143,6 +143,17 @@ public class ReconstructController implements Initializable {
         }
 
         neededTxt.setText(neededUsers + " codes are needed from your friends:");
+    }
+
+    private void sendEmail() {
+        try {
+            ac.sendRecoveryEmail(uid);
+        } catch (AccountsController.UserRetrieveException ex) {
+            ex.printStackTrace();
+            showError(ex.getMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void showError(String error) {
