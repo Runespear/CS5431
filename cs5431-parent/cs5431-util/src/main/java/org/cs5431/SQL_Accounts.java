@@ -1667,6 +1667,7 @@ public class SQL_Accounts {
 
             try {
                 getRec = connection.prepareStatement(selectRec);
+                getRec.setInt(1, uid);
                 ResultSet rs = getRec.executeQuery();
                 if (rs.next()) {
                     return rs.getBoolean(1);
@@ -1798,7 +1799,7 @@ public class SQL_Accounts {
 
                         if (rs.next()) {
                             json.put("groupSize", rs.getInt(1));
-                            
+
                             createLog.setInt(1, 0);
                             createLog.setInt(2, uid);
                             createLog.setString(3, null);

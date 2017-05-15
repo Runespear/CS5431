@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -33,8 +32,7 @@ public class Encryption {
             IOException, IllegalBlockSizeException, BadPaddingException {
         FileInputStream inputStream = new FileInputStream(file);
         byte[] fileBytes = new byte[inputStream.available()];
-        if (inputStream.read(fileBytes) != -1)
-            throw new IOException("Stopped reading file before EOF!");
+        inputStream.read(fileBytes);
         inputStream.close();
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
