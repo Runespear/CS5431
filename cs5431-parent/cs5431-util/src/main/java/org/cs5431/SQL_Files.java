@@ -391,7 +391,7 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with uid and fsoid details.
      * @return An JsonArray of all children. */
-    JSONArray getChildren(JSONObject json, String sourceIp) {
+    public JSONArray getChildren(JSONObject json, String sourceIp) {
 
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
@@ -514,7 +514,7 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with details on uid and fsoid.
      * @return json with downloadAck and path of t*/
-    JSONObject getFile(JSONObject json, String sourceIp) throws Exception {
+    public JSONObject getFile(JSONObject json, String sourceIp) throws Exception {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
 
@@ -636,7 +636,7 @@ public class SQL_Files {
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
      * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value;
      * returns null otherwise  **/
-    JSONObject getPermissions(int fsoid) {
+    public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -699,7 +699,7 @@ public class SQL_Files {
         return null;
     }
 
-    boolean verifyEditPermission(int fsoid, int uid) {
+    public boolean verifyEditPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         if (permissions != null) {
             try {

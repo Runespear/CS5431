@@ -7,9 +7,13 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.cs5431.JSON.receiveJson;
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,10 +83,10 @@ class SQL_FilesTest {
 
         //INPUT ARRAYS
         JSONArray editorsArr = new JSONArray();
-        editorsArr.put("johnny");
+        editorsArr.put("123");
 
         JSONArray viewersArr = new JSONArray();
-        viewersArr.put("mary");
+        viewersArr.put("321");
 
         JSONArray editorsKeysArr = new JSONArray();
         editorsKeysArr.put("3154");
@@ -140,7 +144,54 @@ class SQL_FilesTest {
 
         assertEquals(false,result);
 
-
     }
+
+    @Test
+    void check_getChildren(){
+        JSONObject asd = new JSONObject();
+
+        asd.put("uid",123);
+        asd.put("fsoid",422);
+
+        JSONArray result = files.getChildren(asd,IP);
+
+        assertEquals(result,null);
+    }
+
+    @Test
+    void check_getFile(){
+        JSONObject asd = new JSONObject();
+
+        asd.put("uid",123);
+        asd.put("fsoid",422);
+        JSONObject result = new JSONObject();
+        try{
+            result = files.getFile(asd,IP);
+        }catch(Exception e){
+            ;
+        }
+
+        assertEquals(result,null);
+    }
+    @Test
+    void check_getPermissions(){
+
+        JSONObject asd = files.getPermissions(422);
+        JSONObject result = new JSONObject();
+        String[] empt = {};
+        result.put("viewers",empt);
+        result.put("editors",empt);
+        //Redundant test
+        assert(true);
+    }
+    @Test
+    void check_verifyEditPermission(){
+
+        boolean result = files.verifyEditPermission(322,123);
+
+        assertEquals(false,result);
+    }
+
+    @Test
 
 }
