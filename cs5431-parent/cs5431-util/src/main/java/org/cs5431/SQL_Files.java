@@ -391,7 +391,7 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with uid and fsoid details.
      * @return An JsonArray of all children. */
-    JSONArray getChildren(JSONObject json, String sourceIp) {
+    public JSONArray getChildren(JSONObject json, String sourceIp) {
 
         int uid = json.getInt("uid");
         int parentFolderid = json.getInt("fsoid");
@@ -514,7 +514,7 @@ public class SQL_Files {
      * Transaction rolls back if db error.
      * @param json with details on uid and fsoid.
      * @return json with downloadAck and path of t*/
-    JSONObject getFile(JSONObject json, String sourceIp) throws Exception {
+    public JSONObject getFile(JSONObject json, String sourceIp) throws Exception {
         int uid = json.getInt("uid");
         int fsoid = json.getInt("fsoid");
 
@@ -636,7 +636,7 @@ public class SQL_Files {
     /** Gets all viewers and editors of the fso. Fsoid has to refer to an existing fso.
      * @return A JsonObjects with 2 fields: "editors" and "viewers" with a arraylist value;
      * returns null otherwise  **/
-    JSONObject getPermissions(int fsoid) {
+    public JSONObject getPermissions(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -699,7 +699,7 @@ public class SQL_Files {
         return null;
     }
 
-    boolean verifyEditPermission(int fsoid, int uid) {
+    public boolean verifyEditPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         if (permissions != null) {
             try {
@@ -739,7 +739,7 @@ public class SQL_Files {
         return false;
     }
 
-    boolean verifyBothPermission(int fsoid, int uid) {
+    public boolean verifyBothPermission(int fsoid, int uid) {
         JSONObject permissions = getPermissions(fsoid);
         if (permissions != null) {
             try {
@@ -767,7 +767,7 @@ public class SQL_Files {
 
     /** Checks the permissions of the uid before getting all file log entries of this fsoid.
      * @return A JsonArray of filelog entries; returns null otherwise  **/
-    JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
+    public JSONArray getFileLog(JSONObject jsonObject, String sourceIp) {
         int fsoid = jsonObject.getInt("fsoid");
         int uid = jsonObject.getInt("uid");
         boolean hasPermission = verifyBothPermission(fsoid, uid);
@@ -856,7 +856,7 @@ public class SQL_Files {
         return null;
     }
 
-    int renameFso(int fsoid, int uid, String newName, String
+    public int renameFso(int fsoid, int uid, String newName, String
             newFSONameIV, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
@@ -950,7 +950,7 @@ public class SQL_Files {
         return -1;
     }
 
-    boolean removeDuplicates(int uid) {
+    public boolean removeDuplicates(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         PreparedStatement getParentFolder = null;
@@ -1019,7 +1019,7 @@ public class SQL_Files {
      * @param newUid User id of the new editor
      * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
+    public int addEditPriv(int uid, int fsoid, int newUid, String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
@@ -1140,7 +1140,7 @@ public class SQL_Files {
      * @param encKey File secret key encrypted with the new user's public key
      * @param sourceIp IP of the user making the request
      * @return newUid if successful; else -1 if unsuccessful. */
-    int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
+    public int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
                            String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         System.out.println("has permssion to add viewer: " + hasPermission);
@@ -1331,7 +1331,7 @@ public class SQL_Files {
         return -1;
     }
 
-    int removeViewPriv(int fsoid, int uid, int rmUid, String sourceIp) {
+    public int removeViewPriv(int fsoid, int uid, int rmUid, String sourceIp) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
@@ -2408,6 +2408,140 @@ public class SQL_Files {
             } finally {
                 if (getSecretKey != null) {
                     getSecretKey.close();
+                }
+                if (createLog != null) {
+                    createLog.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    JSONObject updateFileKeys(JSONObject json, String sourceIp) {
+        String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
+
+        int fsoid = json.getInt("fsoid");
+        int uid = json.getInt("uid");
+        JSONArray editorList = json.getJSONArray("editorList");
+        JSONArray viewerList = json.getJSONArray("viewerList");
+        JSONArray editorKeys = json.getJSONArray("editorKeys");
+        JSONArray viewerKeys = json.getJSONArray("viewerKeys");
+        String fsoName = json.getString("fsoName");
+        String fsoNameIV = json.getString("fsoNameIV");
+        boolean isFile = json.getBoolean("isFile");
+
+        String fileIV = null;
+        String file = null;
+        if (isFile) {
+            file = json.getString("file");
+            fileIV = json.getString("fileIV");
+        }
+
+        boolean hasPermission = verifyEditPermission(fsoid, uid);
+        Timestamp lastModified = new Timestamp(System.currentTimeMillis());
+
+        try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
+            PreparedStatement editFso = null;
+            PreparedStatement editPriv = null;
+            PreparedStatement getPath = null;
+            PreparedStatement createLog = null;
+
+            String updateFso = "UPDATE FileSystemObject SET fsoName = ?, fsoNameIV = ?, fileIV = ?, lastKeyUpdate = NOW()";
+            String updatePriv = "UPDATE FsoEncryption SET encKey = ? WHERE fsoid = ? AND uid = ?";
+            String selectPath = "SELECT F.path FROM FileContents F WHERE F.fsoid = ?";
+            String insertLog = "INSERT INTO FileLog (fileLogid, fsoid, uid, lastModified, actionType, status, sourceIp, newUid, failureType)"
+                    + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try {
+                if (hasPermission) {
+                    connection.setAutoCommit(false);
+
+                    editFso = connection.prepareStatement(updateFso);
+                    editFso.setString(1, fsoName);
+                    editFso.setString(2, fsoNameIV);
+                    editFso.setString(3, fileIV);
+                    editFso.execute();
+
+                    for (int i=0; i<editorList.length(); i++) {
+                        editPriv = connection.prepareStatement(updatePriv);
+                        editPriv.setString(1, editorKeys.getString(i));
+                        editPriv.setInt(2, fsoid);
+                        editPriv.setInt(3, editorList.getInt(i));
+                        editPriv.execute();
+                    }
+
+                    for (int i=0; i<editorList.length(); i++) {
+                        editPriv = connection.prepareStatement(updatePriv);
+                        editPriv.setString(1, viewerKeys.getString(i));
+                        editPriv.setInt(2, fsoid);
+                        editPriv.setInt(3, viewerList.getInt(i));
+                        editPriv.execute();
+                    }
+
+                    if (isFile) {
+                        getPath = connection.prepareStatement(selectPath);
+                        getPath.setInt(1, fsoid);
+                        ResultSet rs = getPath.executeQuery();
+
+                        if (rs.next()) {
+                            FileOutputStream fos = new FileOutputStream(rs.getString(1), false);
+                            fos.write(Base64.getDecoder().decode(file));
+                            fos.close();
+                        }
+                    }
+                    JSONObject response = new JSONObject();
+                    response.put("msgType", "updateFileAck");
+                    response.put("uid", uid);
+                    response.put("fsoid", fsoid);
+                    connection.commit();
+                    return response;
+                } else {
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                    createLog.setString(5, "UPDATE_KEYS");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "NO PERMISSION");
+                    createLog.execute();
+                    return null;
+                }
+            } catch (SQLException | IOException e) {
+                try {
+                    System.err.println("Transaction is being rolled back");
+                    connection.rollback();
+                    createLog = connection.prepareStatement(insertLog);
+                    createLog.setInt(1, 0);
+                    createLog.setInt(2, fsoid);
+                    createLog.setInt(3, uid);
+                    createLog.setTimestamp(4, lastModified);
+                    createLog.setString(5, "UPDATE_KEYS");
+                    createLog.setString(6, "FAILURE");
+                    createLog.setString(7, sourceIp);
+                    createLog.setInt(8, 0);
+                    createLog.setString(9, "DB ERROR");
+                    createLog.execute();
+                    if (DEBUG_MODE) {
+                        System.out.println("created failure log");
+                    }
+                } catch (SQLException excep) {
+                    excep.printStackTrace();
+                }
+            } finally {
+                if (editFso != null) {
+                    editFso.close();
+                }
+                if (editPriv != null) {
+                    editPriv.close();
+                }
+                if (getPath != null) {
+                    getPath.close();
                 }
                 if (createLog != null) {
                     createLog.close();
