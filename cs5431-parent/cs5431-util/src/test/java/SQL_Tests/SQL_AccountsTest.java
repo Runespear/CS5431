@@ -16,6 +16,7 @@ import java.util.Base64;
 
 import static org.cs5431.Encryption.secondPwdHash;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by user on 17/4/2017.
@@ -297,7 +298,7 @@ class SQL_AccountsTest {
     void test_getUserLog() throws IOException{
         String test =account.getUserLog();
         //user logs successfully extracted
-        assertEquals(test.equals(null), false);
+        assertNotNull(test);
         Path p1 = Paths.get("C:/ProgramData/MySQL/MySQL Server 5.7/Uploads/userlogs.csv");
         Files.deleteIfExists(p1);
     }
