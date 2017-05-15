@@ -1372,16 +1372,19 @@ public class SQL_Accounts {
             PreparedStatement addRecovery = null;
             PreparedStatement createLog = null;
             PreparedStatement addNeededNo = null;
+            PreparedStatement addHasRec = null;
 
             String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secret) values (?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertHasRec = "UPDATE Users SET hasPwdRec = true WHERE uid = ?";
             String insertNeeded = "UPDATE Users SET neededUsers = ? WHERE uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
                 addRecovery = connection.prepareStatement(insertRecovery);
                 addNeededNo = connection.prepareStatement(insertNeeded);
+                addHasRec = connection.prepareStatement(insertHasRec);
                 connection.setAutoCommit(false);
                 JSONArray groupUid = json.getJSONArray("groupUid");
                 JSONArray secrets = json.getJSONArray("secrets");
@@ -1395,6 +1398,9 @@ public class SQL_Accounts {
                 addNeededNo.setInt(1, neededUsers);
                 addNeededNo.setInt(2, uid);
                 addNeededNo.executeUpdate();
+
+                addHasRec.setInt(1, uid);
+                addHasRec.executeUpdate();
 
                 createLog.setInt(1, 0);
                 createLog.setInt(2, uid);
