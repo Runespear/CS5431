@@ -24,6 +24,7 @@ public class SSLServer extends Thread {
     private Email email;
     private long otpGenTime;
     private String otp;
+    private TwoFactorAuth twoFactorAuth;
 
     SSLServer(Socket socket, SQL_Accounts sql_accounts, SQL_Files sql_files, Email email){
         this.s = socket;
@@ -31,6 +32,7 @@ public class SSLServer extends Thread {
         this.sql_files = sql_files;
         this.sourceIp = s.getRemoteSocketAddress().toString();
         this.email = email;
+        this.twoFactorAuth = new TwoFactorAuth(email);
     }
 
     public void run(){
@@ -276,17 +278,20 @@ public class SSLServer extends Thread {
             String encPwd = secondPwdHash(hashedPwd, Base64.getDecoder().decode(pwdSalt));
             JSONObject auth = sql_accounts.authenticate(jsonObject, encPwd, sourceIp, "LOGIN", email);
             if (auth != null) {
-                TwoFactorAuth twoFactorAuth = new TwoFactorAuth(email);
-                switch (auth.getInt("has2fa")) {
+                int has2fa = auth.getInt("has2fa");
+                JSONObject jsonFor2fa = new JSONObject();
+                jsonFor2fa.put("msgType", "loginAck");
+                jsonFor2fa.put("uid", loggedInUid);
+                jsonFor2fa.put("has2fa", has2fa);
+                switch (has2fa) {
                     case 0: loggedInUid = auth.getInt("uid");
-                        break;
+                        return auth;
                     case 1: otp = twoFactorAuth.generateAndSend2fa(auth.getString("email"));
                         otpGenTime = System.nanoTime();
-                        break;
+                        return jsonFor2fa;
                     case 2: twoFactorAuth.generateAndSend3fa(auth.getString("phoneNo"));
-                        break;
+                        return jsonFor2fa;
                 }
-                return auth;
             }
         }
         if (DEBUG_MODE) {
