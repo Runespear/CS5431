@@ -1,6 +1,7 @@
 package org.cs5431.controller;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cs5431.SSS;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.Folder;
 import org.cs5431.model.User;
@@ -12,6 +13,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -45,7 +47,8 @@ public class AccountsController {
     * @return user if successful
     */
     public User createUser(String username, String password, String email, String phoneNumber,
-                           int twoFa, boolean hasRecovery, List<Integer> nominatedUids, int neededUsers)
+                           int twoFa, boolean hasRecovery, List<Integer> nominatedUids, int neededUsers,
+                           List<PublicKey> publicKeys)
         throws Exception {
 
         JSONObject user = new JSONObject();
@@ -58,6 +61,10 @@ public class AccountsController {
         if (hasRecovery) {
             user.put("nominatedUids", nominatedUids);
             user.put("neededUsers", neededUsers);
+            SSS secretGen = new SSS(nominatedUids.size(), neededUsers,
+                    new BigInteger(password.getBytes()));
+            List<String> encSecrets = encryptSecrets(publicKeys, secretGen.generateSecrets());
+            user.put("secrets", encSecrets);
         }
 
         //hashing password

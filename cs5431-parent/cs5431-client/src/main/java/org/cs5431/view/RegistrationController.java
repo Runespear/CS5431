@@ -19,6 +19,7 @@ import org.cs5431.controller.AccountsController;
 import org.cs5431.model.User;
 
 import java.net.URL;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -72,6 +73,7 @@ public class RegistrationController implements Initializable {
 
     private boolean hasRecovery = false;
     private List<Integer> nominatedUids = new ArrayList<>();
+    private List<PublicKey> publicKeys = new ArrayList<>();
     private Integer neededUsers = 0;
     private final ToggleGroup group2fa = new ToggleGroup();
 
@@ -159,10 +161,12 @@ public class RegistrationController implements Initializable {
         }
     }
 
-    void setRecoveryInfo(boolean hasRecovery, List<Integer> nominatedUids, int neededUsers) {
+    void setRecoveryInfo(boolean hasRecovery, List<Integer> nominatedUids, int neededUsers,
+                         List<PublicKey> publicKeys) {
         this.hasRecovery = hasRecovery;
         this.nominatedUids = nominatedUids;
         this.neededUsers = neededUsers;
+        this.publicKeys = publicKeys;
     }
 
     /**
@@ -226,7 +230,7 @@ public class RegistrationController implements Initializable {
                 @Override
                 protected User call() throws Exception {
                     return accountsController.createUser(username, password, email, phoneNumber, finalTwoFa,
-                            hasRecovery, nominatedUids, neededUsers);
+                            hasRecovery, nominatedUids, neededUsers, publicKeys);
                 }
             };
             task.setOnSucceeded(t -> {

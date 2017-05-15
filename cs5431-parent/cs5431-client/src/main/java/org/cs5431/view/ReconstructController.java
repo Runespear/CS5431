@@ -12,10 +12,8 @@ import javafx.stage.Stage;
 import org.cs5431.SSS;
 import org.cs5431.SSS_Reconstructor;
 import org.cs5431.controller.AccountsController;
-import org.cs5431.model.Account;
 
 import java.math.BigInteger;
-import java.net.Socket;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.util.ArrayList;
@@ -23,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import static org.cs5431.Constants.EMAIL_2FA;
 import static org.cs5431.Encryption.getPrivKeyFromJSON;
 import static org.cs5431.controller.UserController.completeChangePwd;
 
@@ -44,7 +41,7 @@ public class ReconstructController implements Initializable {
     private Integer uid;
     private String encPK;
     private Integer neededUsers;
-    List<TextField> fields = new ArrayList<>();
+    private List<TextField> fields = new ArrayList<>();
     private String salt;
     private AccountsController ac;
 

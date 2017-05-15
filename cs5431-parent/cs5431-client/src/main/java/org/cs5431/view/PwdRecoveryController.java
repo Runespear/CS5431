@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static org.cs5431.Constants.EMAIL_2FA;
 import static org.cs5431.Encryption.encryptSecrets;
 
 public class PwdRecoveryController implements Initializable {
@@ -298,26 +299,49 @@ public class PwdRecoveryController implements Initializable {
         }
         if (uc != null && changed) {
             try {
-                //todo prompt for password
-                String password = "lalala";
-                SSS secretGen = new SSS(nominatedUsersTable.getItems().size(), neededUsers,
-                        new BigInteger(password.getBytes()));
-                List<String> encSecrets = encryptSecrets(pubKeys, secretGen.generateSecrets());
-                updateRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
+                if (hasRecovery) {
+                    TextInputDialog dialog = new TextInputDialog("password");
+                    dialog.setTitle("Password");
+                    dialog.setContentText("Please enter your password");
+
+                    final String[] password = {null};
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresent(enteredPwd -> password[0] = enteredPwd);
+                    Integer finalNeededUsers = neededUsers;
+                    Task<Void> task = new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            uc.checkLoggedInPwd(password[0]);
+                            SSS secretGen = new SSS(nominatedUsersTable.getItems().size(), finalNeededUsers,
+                                    new BigInteger(password[0].getBytes()));
+                            List<String> encSecrets = encryptSecrets(pubKeys, secretGen.generateSecrets());
+                            updateRecoveryInfo(true, finalNeededUsers, nominatedUids, encSecrets);
+                            return null;
+                        }
+                    };
+                    Thread th = new Thread(task);
+                    th.setDaemon(true);
+                    th.start();
+                    task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
+                        if(newValue != null) {
+                            Exception ex = (Exception) newValue;
+                            ex.printStackTrace();
+                        }
+                    });
+                } else {
+                    updateRecoveryInfo(false, 0, null, null);
+                }
             } catch (Exception e) {
                 showError("Failed to save password recovery information...");
-                return; //TODO: to exit or not to exit?
             }
         } else if (rc != null) {
-            rc.setRecoveryInfo(hasRecovery, nominatedUids, neededUsers); //TODO: add encSecrets
+            rc.setRecoveryInfo(hasRecovery, nominatedUids, neededUsers, pubKeys);
         }
 
         //exit
         Scene scene = stage.getScene();
         scene.setRoot(parentNode);
         stage.show();
-
-        //todo wipe information? (esp. for registration)
     }
 
     private void showHelp() {
