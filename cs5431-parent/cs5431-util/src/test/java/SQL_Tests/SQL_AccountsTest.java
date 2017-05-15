@@ -7,6 +7,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Base64;
+
+import static org.cs5431.Encryption.secondPwdHash;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -207,8 +210,44 @@ class SQL_AccountsTest {
 
     @Test
     void test_deleteUser(){
-        
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        account.createUser(jsonUser, secondPwdHash("password", Base64.getDecoder().decode("salt")), "salt", "192.168.0.1");
+        int uid_test = account.getUserId("username");
+        int test = account.deleteUser(account.getUserId("username"),"username", "password","192.168.0.1");
+        //delete should be successful
+        assertEquals(test,uid_test);
     }
+
+    @Test
+    void test_getparentfolderid(){
+        //invalid parent id
+        int uid = account.getParentFolderid(100);
+        assertEquals(uid, -1);
+    }
+
+    @Test
+    void test_changepassword(){
+
+    }
+
     @AfterEach
     void tearDown() {
     }

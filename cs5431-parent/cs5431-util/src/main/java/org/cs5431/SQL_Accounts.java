@@ -780,7 +780,7 @@ public class SQL_Accounts {
     /** Deletes the user with uid. To be first authenticated using username and password.
      * Creates a log entry of the deletion of user.
      * @return the uid of the user that is deleted; -1 if unsuccessful deletion. */
-    int deleteUser(int uid, String username, String password, String sourceIp) {
+    public int deleteUser(int uid, String username, String password, String sourceIp) {
         JSONObject allegedUser = new JSONObject();
         allegedUser.put("username", username);
         String salt = getSalt(username, sourceIp, "DELETE_USER");
@@ -886,10 +886,7 @@ public class SQL_Accounts {
         return -1;
     }
 
-    private int
-
-
-    getParentFolderid (int uid) {
+    public int getParentFolderid (int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
