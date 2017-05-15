@@ -349,8 +349,6 @@ public class SSLServer extends Thread {
                 return verification;
             }
         }
-        //TODO: return error that says unable to authenticate IF AND ONLY IF
-        //the authentication is the part that failed!
         if (DEBUG_MODE) {
             System.out.println("Sending error -- unable to authenticate");
         }
@@ -615,8 +613,7 @@ public class SSLServer extends Thread {
     private JSONArray getChildren(JSONObject jsonObject, SQL_Files sql_files) {
         JSONArray arr = sql_files.getChildren(jsonObject, sourceIp);
         if (arr == null) {
-            return new JSONArray(); //TODO handle this better: currently just
-            // preventing server stalling
+            return new JSONArray();
         }
         int uid = jsonObject.getInt("uid");
         for (int i = 0; i < arr.length(); i++) {

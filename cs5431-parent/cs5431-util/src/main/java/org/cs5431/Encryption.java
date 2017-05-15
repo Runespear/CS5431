@@ -105,7 +105,6 @@ public class Encryption {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 3000);
-        //TODO: 256 is currently the key length. Is this correct?
         KeyParameter kp = (KeyParameter) generator.generateDerivedParameters
                 (128);
         return kp.getKey();
@@ -113,7 +112,6 @@ public class Encryption {
 
     public static byte[] newPwdSalt() {
         Random random = new SecureRandom();
-        //TODO: 32 is currently the salt length. Is this correct?
         byte salt[] = new byte[32];
         random.nextBytes(salt);
         return salt;
@@ -136,7 +134,6 @@ public class Encryption {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator();
         generator.init(PBEParametersGenerator.PKCS5PasswordToBytes(
                 pwd.toCharArray()), salt, 10000);
-        //TODO: 256 is currently the key length. Is this correct?
         KeyParameter kp = (KeyParameter) generator.generateDerivedParameters(256);
         return Base64.getEncoder().encodeToString(kp.getKey());
     }
@@ -340,7 +337,6 @@ public class Encryption {
             NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException,
             IOException, IllegalBlockSizeException, BadPaddingException {
-        //TODO BRANDON! I MADE THIS NEW METHOD!
         String ret[] = new String[2];
         IvParameterSpec iv = generateIV();
         byte[] encryptedFile = encryptFile(file, sk, iv);
@@ -355,7 +351,6 @@ public class Encryption {
             NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException,
             IOException, IllegalBlockSizeException, BadPaddingException {
-        //TODO BRANDON! I MADE THIS NEW METHOD!
         String ret[] = new String[2];
         IvParameterSpec iv = generateIV();
         byte[] encFileName = encryptFileName(fileName, sk, iv);

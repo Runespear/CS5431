@@ -217,7 +217,7 @@ public class LoginController implements Initializable {
                 Stage stage = (Stage) node.getScene().getWindow();
                 Scene scene = stage.getScene();
 
-                final URL r = getClass().getResource("registration.fxml");
+                final URL r = getClass().getResource("reconstruct.fxml");
                 FXMLLoader fxmlLoader = new FXMLLoader(r);
                 Parent root = fxmlLoader.load();
                 ReconstructController rc = fxmlLoader.getController();

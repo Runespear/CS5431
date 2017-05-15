@@ -13,7 +13,6 @@ public class SSL_Server {
     public static void main(String[] args){
         try {
             //generate keystore
-            //TODO: test generation of keystore and exporting in server-setup
             /*
             String filename = "";
             generateKeyStore(filename);

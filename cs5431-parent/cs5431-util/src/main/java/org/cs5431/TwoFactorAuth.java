@@ -2,6 +2,8 @@ package org.cs5431;
 
 import java.security.SecureRandom;
 
+import static org.cs5431.Constants.DEBUG_MODE;
+
 public class TwoFactorAuth {
 
     private Email adminEmail;
@@ -75,8 +77,9 @@ public class TwoFactorAuth {
 
         //if otp has existed for more than 2 minutes, we return false
         if (time_difference/1000000000 > 300){
-            //TODO: Comment out the print line if you wish
-            System.out.println("OTP expired!");
+            if (DEBUG_MODE) {
+                System.out.println("OTP expired!");
+            }
             return false;
         }
         else{
