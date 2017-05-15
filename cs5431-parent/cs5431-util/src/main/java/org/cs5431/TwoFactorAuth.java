@@ -4,15 +4,11 @@ import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.security.SecureRandom;
 
 public class TwoFactorAuth {
-
-    // Obtain Account Sid and Token at twilio.com/user/account,
-    // TODO: REMOVE THIS WHEN DONE username: psfs5431@gmail.com, password: psfs5431psfs5431
-    // TODO: This information should be keyed in by the admin
-    public static final String ACCOUNT_SID = "AC3933f4f181f6a36ef0f1484cd9316e48";
-    public static final String AUTH_TOKEN = "8c29f7034b30c0decae9da4f147bb215";
 
     private Email adminEmail;
 
@@ -42,13 +38,11 @@ public class TwoFactorAuth {
      */
     public String generateAndSend3fa(String User_Phone){
 
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        String otp = getRandomPassword(4);
-        Message message = Message
-                .creator(new PhoneNumber("+" + User_Phone),  // to
-                        new PhoneNumber("+16072755133"),  // from
-                        otp)  // message
-                .create();
+        //Generate a random password
+        String otp = getRandomPassword(5);
+
+        adminEmail.send(User_Phone + "@txt.att.net", "OTP for PSFS Account", "Your OTP is: " +
+                otp);
         return otp;
     }
 
@@ -60,7 +54,7 @@ public class TwoFactorAuth {
     public String generateAndSend2fa(String userEmail) {
 
         //Generate a random password
-        String otp = getRandomPassword(20);
+        String otp = getRandomPassword(10);
 
         adminEmail.send(userEmail, "2FA for PSFS Account", "The following is the second factor " +
                 "authentication into your Pretty Secure File Sharing Account: " + otp);
@@ -86,7 +80,7 @@ public class TwoFactorAuth {
         }
 
         //if otp has existed for more than 2 minutes, we return false
-        if (time_difference/1000000000 > 60){
+        if (time_difference/1000000000 > 120){
             //TODO: Comment out the print line if you wish
             System.out.println("OTP expired!");
             return false;
@@ -106,12 +100,16 @@ public class TwoFactorAuth {
     }
 
     //example on using the functions
-    /*public static void main(String[] args) throws Exception{
+    /*
+    public static void main(String[] args) throws Exception{
+
+        Email email = new Email("psfs5431@gmail.com", "theroadtoA+");
+        TwoFactorAuth factor = new TwoFactorAuth(email);
 
         long start_time = System.nanoTime();
-        String otp = generateAndSend2fa("brandon18031993@hotmail.com");
+        //String otp = generateAndSend2fa("brandon18031993@hotmail.com");
 
-        //String otp = generateAndSend3fa(ACCOUNT_SID,AUTH_TOKEN,"12797806");
+        String otp = factor.generateAndSend3fa("6073798244");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String user_otp;
