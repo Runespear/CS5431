@@ -1376,7 +1376,7 @@ public class SQL_Accounts {
             String insertRecovery = "INSERT INTO PwdGroup (uid, nominatedUid, secret) values (?, ?, ?)";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
-            String insertNeeded = "UPDATE Users SET neededUsers = ? AND hasPwdRec = true WHERE uid = ?";
+            String insertNeeded = "UPDATE Users SET neededUsers = ?, hasPwdRec = true WHERE uid = ?";
 
             try {
                 createLog = connection.prepareStatement(insertLog);
@@ -1598,7 +1598,7 @@ public class SQL_Accounts {
             PreparedStatement getNominated = null;
             PreparedStatement getUsername = null;
 
-            String getPwdRec = "SELECT U.hasPwdRec FROM Users U WHERE U.uid = ?";
+            String getPwdRec = "SELECT U.hasPwdRec, U.neededUsers FROM Users U WHERE U.uid = ?";
             String selectGroup = "SELECT U.nominatedUid FROM PwdGroup U WHERE U.uid = ?";
             String selectUsername = "SELECT U.username FROM Users U WHERE U.uid = ?";
 
@@ -1612,7 +1612,8 @@ public class SQL_Accounts {
                 json.put("msgType", "pwdRecoveryInfoAck");
                 json.put("uid", uid);
 
-                if (rs.next() && rs.getInt(1) == 1) {
+                if (rs.next() && rs.getBoolean(1)) {
+                    json.put("neededUsers", rs.getInt(2));
                     getNominated = connection.prepareStatement(selectGroup);
                     getUsername = connection.prepareStatement(selectUsername);
                     getNominated.setInt(1, uid);
@@ -1633,6 +1634,7 @@ public class SQL_Accounts {
                     json.put("hasPwdRec", true);
                     json.put("groupUid", groupUid);
                     json.put("usernames", usernames);
+
                     return json;
                 }
                 json.put("hasPwdRec", false);
