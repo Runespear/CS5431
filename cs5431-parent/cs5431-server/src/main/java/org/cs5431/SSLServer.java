@@ -281,7 +281,7 @@ public class SSLServer extends Thread {
                 int has2fa = auth.getInt("has2fa");
                 JSONObject jsonFor2fa = new JSONObject();
                 jsonFor2fa.put("msgType", "loginAck");
-                jsonFor2fa.put("uid", loggedInUid);
+                jsonFor2fa.put("uid", auth.getInt("uid"));
                 jsonFor2fa.put("has2fa", has2fa);
                 switch (has2fa) {
                     case 0: loggedInUid = auth.getInt("uid");
@@ -318,11 +318,9 @@ public class SSLServer extends Thread {
     private JSONObject login2fa(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         int uid = jsonObject.getInt("uid");
         if (twoFactorAuth.checkOtpValid(otp, jsonObject.getString("otp"), otpGenTime)) {
-            //TODO: hook up to backend and return value
-            //TODO: need to change protocol?
-            //loggedInUid = auth.getInt("uid");
             JSONObject user = sql_accounts.twoFactorLogin(uid, sourceIp);
             if (user != null) {
+                loggedInUid = uid;
                 return user;
             }
             return makeErrJson("An error occurred. Please try logging in again.");
