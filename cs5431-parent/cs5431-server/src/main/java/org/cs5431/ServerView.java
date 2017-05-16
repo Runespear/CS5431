@@ -56,6 +56,75 @@ public class ServerView {
         String username = scanner.nextLine();
         System.out.println("Enter the password you use to login to the server:");
         String password = scanner.nextLine();
+        System.out.println("Enter the threshold for maximum number of failures per user per day: (leave blank for default = 20)");
+        String threshold = scanner.nextLine();
+        Integer failures_per_uid = -1;
+        if (threshold.isEmpty())
+            failures_per_uid = 20;
+        else {
+            try {
+                failures_per_uid = Integer.parseInt(threshold);
+            } catch (NumberFormatException e) {}
+        }
+        while (failures_per_uid == -1) {
+            System.out.println("Please enter a valid number or leave blank for default:");
+            threshold = scanner.nextLine();
+            if (threshold.isEmpty())
+                failures_per_uid = 20;
+            else {
+                try {
+                    failures_per_uid = Integer.parseInt(threshold);
+                } catch (NumberFormatException e) {}
+            }
+        }
+
+        System.out.println("Enter the threshold for maximum number of failures per IP per day: (leave blank for default = 20)");
+        threshold = scanner.nextLine();
+        Integer failures_per_ip = -1;
+        if (threshold.isEmpty())
+            failures_per_ip = 20;
+        else {
+            try {
+                failures_per_ip = Integer.parseInt(threshold);
+            } catch (NumberFormatException e) {}
+        }
+        while (failures_per_ip == -1) {
+            System.out.println("Please enter a valid number or leave blank for default:");
+            threshold = scanner.nextLine();
+            if (threshold.isEmpty())
+                failures_per_ip = 20;
+            else {
+                try {
+                    failures_per_ip = Integer.parseInt(threshold);
+                } catch (NumberFormatException e) {}
+            }
+        }
+
+        System.out.println("Enter the threshold for maximum total number of failures per day: (leave blank for default = 200)");
+        threshold = scanner.nextLine();
+        Integer total_failures = -1;
+        if (threshold.isEmpty())
+            total_failures = 200;
+        else {
+            try {
+                total_failures = Integer.parseInt(threshold);
+            } catch (NumberFormatException e) {}
+        }
+        while (total_failures == -1) {
+            System.out.println("Please enter a valid number or leave blank for default:");
+            threshold = scanner.nextLine();
+            if (threshold.isEmpty())
+                total_failures = 200;
+            else {
+                try {
+                    total_failures = Integer.parseInt(threshold);
+                } catch (NumberFormatException e) {}
+            }
+        }
+
+
+
+
 
         String server;
         Integer dbPort;
@@ -97,7 +166,8 @@ public class ServerView {
         String finalPassword = password;
         Thread t = new Thread(() -> {
             while(true) try {
-                new IntrusionDetection(server, dbPort, finalUsername, finalPassword);
+                new IntrusionDetection(server, dbPort, finalUsername, finalPassword,
+                        failures_per_uid, failures_per_ip, total_failures);
                 Thread.sleep(1000 * 60 * 60 * 24);
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
