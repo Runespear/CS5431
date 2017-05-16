@@ -94,6 +94,10 @@ java -jar ./cs5431-parent/cs5431-server/target/cs5431-server-0.3-MILESTONE-BETA.
 13) Keep the server up and running, we re now going to run the client GUI,
     where most of the nice actions happen
 
+14) POTENTIAL ADMIN EMAIL
+    
+    USERNAME: psfs5431@gmail.com
+    PASSWORD: theroadtoA+
 
 
 ============================RUN CLIENTVIEW======================================
