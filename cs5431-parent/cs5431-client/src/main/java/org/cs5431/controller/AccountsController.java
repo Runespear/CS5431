@@ -332,10 +332,11 @@ public class AccountsController {
 
                 JSONObject update = new JSONObject();
                 update.put("msgType", "updateUserKeyFile");
+                update.put("uid", user.getId());
                 update.put("privKey", packet.encPrivKey);
                 update.put("privKeySalt", Base64.getEncoder().encodeToString(packet.salt));
                 update.put("pubKey", Base64.getEncoder().encodeToString(packet.keyPair.getPublic().getEncoded()));
-                update.put("fsoid", fsoid);
+                update.put("fsoids", fsoid);
                 update.put("encFileKeys", newFileKeys);
                 update.put("groupUid", groupUid);
                 update.put("secrets", newSecrets);

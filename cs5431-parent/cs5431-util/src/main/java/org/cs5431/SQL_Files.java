@@ -370,7 +370,7 @@ public class SQL_Files {
     public boolean addParentPermissions(int uid, int fsoid, int parentFolderid, String sourceIp,
                                  JSONArray editors, JSONArray viewers, JSONArray editorsKeys, JSONArray viewersKeys) {
         for (int i=0; i<editors.length(); i++) {
-            int editor =  Integer.parseInt((String)editors.get(i)) ;
+            int editor =  (int) editors.get(i);
             if (editor != uid) {
                 String editorKey = (String) editorsKeys.get(i);
                 if (addViewPriv(uid, fsoid, parentFolderid, editor, editorKey, sourceIp) == -1) return false;
@@ -412,7 +412,7 @@ public class SQL_Files {
             PreparedStatement createLog = null;
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV, F.fileIV " +
+            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV, F.fileIV, F.lastKeyUpdate  " +
                     "FROM FileSystemObjects F " +
                     "WHERE EXISTS (SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid);";
             String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
@@ -437,6 +437,7 @@ public class SQL_Files {
                         fso.put("lastModified", rs.getTimestamp(4));
                         fso.put("fsoNameIV", rs.getString(6));
                         fso.put("fileIV", rs.getString(7));
+                        fso.put("timestamp", rs.getTimestamp(8).getTime());
 
                         if (rs.getBoolean(5)) {
                             fso.put("FSOType", "FILE");
