@@ -412,7 +412,7 @@ public class SQL_Files {
             PreparedStatement createLog = null;
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
 
-            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV, F.fileIV " +
+            String selectFiles = "SELECT F.fsoid, F.fsoName, F.size, F.lastModified, F.isFile, F.fsoNameIV, F.fileIV, F.lastKeyUpdate  " +
                     "FROM FileSystemObjects F " +
                     "WHERE EXISTS (SELECT C.childid FROM FolderChildren C WHERE C.parentid = ? AND C.childid = F.fsoid);";
             String selectKey = "SELECT F.encKey FROM FsoEncryption F WHERE F.fsoid = ? AND F.uid = ?";
@@ -437,6 +437,7 @@ public class SQL_Files {
                         fso.put("lastModified", rs.getTimestamp(4));
                         fso.put("fsoNameIV", rs.getString(6));
                         fso.put("fileIV", rs.getString(7));
+                        fso.put("timestamp", rs.getTimestamp(8).getTime());
 
                         if (rs.getBoolean(5)) {
                             fso.put("FSOType", "FILE");
