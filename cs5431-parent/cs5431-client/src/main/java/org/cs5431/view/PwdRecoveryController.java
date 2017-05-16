@@ -191,7 +191,7 @@ public class PwdRecoveryController implements Initializable {
         Task<JSONObject> task = new Task<JSONObject>() {
             @Override
             protected JSONObject call() throws Exception {
-                return uc.getRecoveryInfo();
+                return UserController.getRecoveryInfo();
             }
         };
         task.setOnFailed(t -> {
@@ -267,7 +267,7 @@ public class PwdRecoveryController implements Initializable {
 
     private void updateRecoveryInfo(boolean hasRecovery, int neededUsers,
                                     List<Integer> nominatedUids, List<String> encSecrets) throws Exception {
-        uc.saveRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
+        UserController.saveRecoveryInfo(hasRecovery, neededUsers, nominatedUids, encSecrets);
     }
 
     /**

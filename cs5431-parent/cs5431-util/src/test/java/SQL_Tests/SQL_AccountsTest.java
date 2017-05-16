@@ -315,8 +315,12 @@ class SQL_AccountsTest {
         String test =account.getUserLog();
         //user logs successfully extracted
         assertNotNull(test);
-        Path p1 = Paths.get("C:/ProgramData/MySQL/MySQL Server 5.7/Uploads/userlogs.csv");
-        Files.deleteIfExists(p1);
+        try {//only works for windows
+            Path p1 = Paths.get("C:/ProgramData/MySQL/MySQL Server 5.7/Uploads/userlogs.csv");
+            Files.deleteIfExists(p1);
+        }
+        catch (Error e){
+        }
     }
 
     @Test
@@ -712,6 +716,54 @@ class SQL_AccountsTest {
         assertEquals(false,test);
     }
 
+    @Test
+    void testgetKeyUpdate(){
+
+        JSONObject test = account.getKeyUpdate(account.getUserId("username"));
+        boolean test_boo = true;
+        if (test == null){
+            test_boo = false;
+        }
+        assertEquals(true,test_boo);
+        //account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
+        account.dropUserLogs();
+    }
+
+    @Test
+    void test_updateuserkeyfile() {
+        String username = "username";
+        String pubKey = "pubKey";
+        String privKey = "privKey";
+        String privKeySalt = "privKeySalt";
+        int uid = 1;
+        int folderid = 1;
+        String email = "email@email.com";
+        JSONObject jsonUser = new JSONObject();
+        JSONArray array = new JSONArray();
+        jsonUser.put("msgType", "registrationAck");
+        jsonUser.put("username", username);
+        jsonUser.put("uid", uid);
+        jsonUser.put("parentFolderid", folderid);
+        jsonUser.put("email", email);
+        jsonUser.put("privKey", privKey);
+        jsonUser.put("privKeySalt", privKeySalt);
+        jsonUser.put("pubKey", pubKey);
+        jsonUser.put("has2fa", 0);
+        jsonUser.put("hasPwdRec", true);
+        jsonUser.put("phoneNo", "6073799856");
+        jsonUser.put("hashedPwd",  "password");
+        jsonUser.put("newPrivKey", "newPrivKey");
+        jsonUser.put("encFileKeys", array);
+        jsonUser.put("groupUid", array);
+        jsonUser.put("secrets", array);
+        jsonUser.put("fsoids", array);
+        account.createUser(jsonUser, "password", "salt", "192.168.0.1");
+        int test = account.updateUserKeyFile(jsonUser,"192.168.0.1");
+        assertEquals(1, test);
+        account.adminDeleteUser(account.getUserId("username"), "192.168.0.1");
+        account.dropUserLogs();
+
+    }
     @AfterEach
     void tearDown() {
     }

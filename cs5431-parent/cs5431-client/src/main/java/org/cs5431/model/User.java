@@ -24,7 +24,10 @@ public class User extends Account {
         this.pubKey = pubKey;
         this.has2fa = has2fa;
         this.phoneNo = phoneNo;
-        this.keyLastUpdated = keyLastUpdated;
+        if (keyLastUpdated != null)
+            this.keyLastUpdated = new Timestamp(keyLastUpdated.getTime());
+        else
+            this.keyLastUpdated = null;
     }
 
     public Folder getUserParentFolder() {

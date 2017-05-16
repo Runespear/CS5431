@@ -93,11 +93,11 @@ class test_Encryption {
         secureRandom = new SecureRandom();
         random = new Random();
 
-        PrintWriter pw = new PrintWriter(new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test.txt"));
+        PrintWriter pw = new PrintWriter(new File(System.getProperty("user.dir")+ "/Encryption_Test_Folder/Stuff_To_Encrypt/test.txt"));
         Random random = new Random();
         pw.println(getRandomString(10,random.nextInt()));
         pw.close();
-        PrintWriter pw2 = new PrintWriter(new File("./Encryption_Test_Folder/Stuff_To_Encrypt/test2.txt"));
+        PrintWriter pw2 = new PrintWriter(new File(System.getProperty("user.dir")+ "/Encryption_Test_Folder/Stuff_To_Encrypt/test2.txt"));
         Random random2 = new Random();
         pw2.println(getRandomString(20,random.nextInt()));
         pw2.close();

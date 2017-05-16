@@ -122,10 +122,10 @@ public class LoginController implements Initializable {
             }
         });
         try {
-                    Client.exec.submit(task);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            Client.exec.submit(task);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         loginButton.setDisable(true);
         task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
             loginButton.setDisable(false);
