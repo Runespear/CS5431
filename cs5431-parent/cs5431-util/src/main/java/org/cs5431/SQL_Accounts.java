@@ -298,7 +298,7 @@ public class SQL_Accounts {
             PreparedStatement createLog = null;
 
             String selectDetails = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt, U.has2fa, " +
-                    "U.hasPwdRec, U.phoneNo FROM Users U WHERE U.uid = ?";
+                    "U.hasPwdRec, U.phoneNo, U.lastKeyUpdate FROM Users U WHERE U.uid = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -321,6 +321,7 @@ public class SQL_Accounts {
                     user.put("has2fa", rs.getInt(7));
                     user.put("hasPwdRec", rs.getBoolean(8));
                     user.put("phoneNo", rs.getString(9));
+                    user.put("timestamp", rs.getTimestamp(10).getTime());
 
                     createLog.setInt(1, 0);
                     createLog.setInt(2, uid);
@@ -424,7 +425,7 @@ public class SQL_Accounts {
             PreparedStatement getEmail = null;
 
             String checkPassword = "SELECT U.uid, U.parentFolderid, U.email, U.privKey, U.pubKey, U.privKeySalt, U.has2fa, " +
-                    "U.hasPwdRec, U.phoneNo FROM Users U WHERE U.username = ? AND U.pwd = ?";
+                    "U.hasPwdRec, U.phoneNo, U.lastKeyUpdate FROM Users U WHERE U.username = ? AND U.pwd = ?";
             String insertLog = "INSERT INTO UserLog (userLogid, uid, simulatedUsername, lastModified, actionType, status, sourceIp, failureType)"
                     + "values (?, ?, ?, ?, ?, ?, ?, ?)";
             String countIp = "SELECT COUNT(*) FROM UserLog U \n" +
@@ -518,6 +519,7 @@ public class SQL_Accounts {
                     user.put("has2fa", has2fa);
                     user.put("hasPwdRec", hasPwdRec);
                     user.put("phoneNo", phoneNo);
+                    user.put("timestamp", rs.getTimestamp(10).getTime());
                     addLog.setInt(1, 0);
                     addLog.setInt(2, uid);
                     addLog.setString(3, username);
@@ -2023,13 +2025,13 @@ public class SQL_Accounts {
                 ResultSet rs = getEnc.executeQuery();
 
                 JSONArray fsoids = new JSONArray();
-                JSONArray EncFileKeys = new JSONArray();
+                JSONArray encFileKeys = new JSONArray();
                 JSONArray secrets = new JSONArray();
                 JSONArray groupUid = new JSONArray();
 
                 while (rs.next()) {
                     fsoids.put(rs.getInt(1));
-                    EncFileKeys.put(rs.getString(2));
+                    encFileKeys.put(rs.getString(2));
                 }
 
                 getSecrets.setInt(1, uid);
@@ -2041,9 +2043,11 @@ public class SQL_Accounts {
                 }
 
                 JSONObject json = new JSONObject();
+                json.put("msgType", "updateUserKeyAck");
+                json.put("uid", uid);
                 json.put("fsoids", fsoids);
                 json.put("groupUid", groupUid);
-                json.put("EncFileKeys", EncFileKeys);
+                json.put("encFileKeys", encFileKeys);
                 json.put("secrets", secrets);
 
                 connection.commit();
