@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -343,6 +344,29 @@ class SQL_FilesTest {
         assertEquals(null,result);
     }
 
-    
+    @Test
+
+    void check_isFolder(){
+        boolean result = files.isFolder(fso.getInt("fsoid"),fso.getInt("uid"),IP);
+
+        assertEquals(false,result);
+
+    }
+
+    @Test
+
+    void check_getChildrenId(){
+        List<Integer> result = files.getChildrenId(fso.getInt("fsoid"),fso.getInt("uid"),IP);
+
+        assertEquals(null,result);
+    }
+
+    @Test
+
+    void check_getPubKey(){
+        String result = files.getPubKey(fso.getInt("uid"));
+
+        assertEquals(null,result);
+    }
 
 }
