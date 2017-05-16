@@ -36,9 +36,19 @@ public class Encryption {
         byte[] fileBytes = new byte[inputStream.available()];
         inputStream.read(fileBytes);
         inputStream.close();
+        return encryptFileContents(fileBytes, secretKey, ivSpec);
+    }
+
+    private static byte[] encryptFileContents(byte[] fileBytes, SecretKey secretKey,
+                                       IvParameterSpec ivSpec)  throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
         return cipher.doFinal(fileBytes);
+
     }
 
     public static byte[] encryptFileName(String fileName, SecretKey secretKey,
@@ -175,18 +185,33 @@ public class Encryption {
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException {
         String values[] = new String[3];
+        UserKeyPacket packet = generateKeyPacket(password);
+        values[0] = Base64.getEncoder().encodeToString(packet.keyPair.getPublic().getEncoded());
+        values[1] = packet.encPrivKey;
+        values[2] = Base64.getEncoder().encodeToString(packet.salt);
+        return values;
+    }
+
+    public static UserKeyPacket generateKeyPacket(String password) throws
+            NoSuchAlgorithmException, NoSuchProviderException,
+            NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException  {
+        UserKeyPacket packet = new UserKeyPacket();
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", new
                 BouncyCastleProvider());
         kpg.initialize(4096, new SecureRandom());
         KeyPair keyPair = kpg.generateKeyPair();
-        values[0] = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+        packet.keyPair = keyPair;
+
         //encrypt secret key using password based key
         //symmetric, uses AES
         byte salt[] = newPwdSalt();
-        values[1] = encryptPrivateKey(password, keyPair.getPrivate()
+        packet.salt = salt;
+
+        packet.encPrivKey = encryptPrivateKey(password, keyPair.getPrivate()
                 .getEncoded(), salt);
-        values[2] = Base64.getEncoder().encodeToString(salt);
-        return values;
+        return packet;
     }
 
     public static String encryptPrivateKey(String password, byte[]
@@ -259,12 +284,24 @@ public class Encryption {
             NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException,
             BadPaddingException, IOException {
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] fileBytes = new byte[inputStream.available()];
+        inputStream.read(fileBytes);
+        inputStream.close();
+        return generateAndEncFileContents(fileBytes, name, editorsKeys, viewersKeys);
+    }
+
+    public static EncFilePacket generateAndEncFileContents(byte[] fileContents, String name, PublicKey
+            editorsKeys[], PublicKey viewersKeys[]) throws NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException, IOException {
         EncFilePacket efp = new EncFilePacket();
         SecretKey fileSK = generateSecretKey();
         IvParameterSpec fileIVSpec = generateIV();
         IvParameterSpec fsoNameIVSpec = generateIV();
 
-        byte[] encFile = encryptFile(file, fileSK, fileIVSpec);
+        byte[] encFile = encryptFileContents(fileContents, fileSK, fileIVSpec);
         efp.encFile = Base64.getEncoder().encodeToString(encFile);
         efp.encFileName = Base64.getEncoder().encodeToString(encryptFileName(name,fileSK, fsoNameIVSpec));
         List<String> editorsSK = new ArrayList<>();

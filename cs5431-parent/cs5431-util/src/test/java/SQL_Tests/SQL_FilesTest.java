@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -87,6 +88,13 @@ class SQL_FilesTest {
         fso.put("fileIV","123");
         fso.put("fsoNameIV","666");
         fso.put("fsoid","32123");
+
+
+        fso.put("editorList",editorsArr);
+        fso.put("viewerList",viewersArr);
+        fso.put("editorKeys",editorsKeysArr);
+        fso.put("viewerKeys",viewersKeysArr);
+        fso.put("file","asd");
     }
 
     @Test
@@ -273,11 +281,115 @@ class SQL_FilesTest {
 
     @Test
     void check_removeViewPriv(){
+        int result = files.removeViewPriv(151,112,555,IP);
+
+        assertEquals(result,-1);
+    }
+
+    @Test
+    void check_removeEditPriv(){
+        int result = files.removeEditPriv(151,112,555,IP);
+        assertEquals(result,-1);
+    }
+
+    @Test
+
+    void check_getFileSK(){
+        String wtf = files.getFileSK(151,112,IP);
+        String result = files.getFileSK(1881,1122,IP);
+        assertEquals(wtf,result);
+    }
+
+    @Test
+
+    void check_overwrite(){
+        //(int fsoid, int uid, String newFileIV, String encFile, String sourceIp)
+        SecureRandom generator = new SecureRandom();
+
+        byte[] keyBytes = new byte[256];
+
+        generator.nextBytes(keyBytes);
+
+        String file = new String(keyBytes);
+
+        int result = files.overwrite(322,3154, "1511" ,file,IP);
+
+        assertEquals(result,-1);
 
     }
 
+    @Test
 
+    void check_deleteForUser(){
+        int result = files.deleteForUser(322,3154,IP);
 
+        assertEquals(result,-1);
+    }
+
+    @Test
+
+    void check_deleteIfOrphanFile(){
+        files.deleteIfOrphanFile(111,333,IP);
+
+        assert(true);
+    }
+
+    @Test
+
+    void check_getAllFileLogs(){
+
+        String result = files.getAllFileLogs();
+        // "/var/lib/mysql-files/filelogs.csv"
+        assertEquals(null,result);
+    }
+
+    @Test
+
+    void check_adminGetFileLog(){
+        String result = files.adminGetFileLog(fso.getInt("fsoid"));
+        // "/var/lib/mysql-files/fso32123logs.csv"
+        assertEquals(null,result);
+    }
+
+    @Test
+
+    void check_isFolder(){
+        boolean result = files.isFolder(fso.getInt("fsoid"),fso.getInt("uid"),IP);
+
+        assertEquals(false,result);
+
+    }
+
+    @Test
+
+    void check_getChildrenId(){
+        List<Integer> result = files.getChildrenId(fso.getInt("fsoid"),fso.getInt("uid"),IP);
+
+        assertEquals(null,result);
+    }
+
+    @Test
+
+    void check_getPubKey(){
+        String result = files.getPubKey(fso.getInt("uid"));
+
+        assertEquals(null,result);
+    }
+
+    @Test
+
+    void check_getEncFileSK(){
+        String result = files.getEncFileSK(fso.getInt("fsoid"),fso.getInt("uid"),IP);
+        assertEquals(null,result);
+    }
+
+    @Test
+    void check_updateFileKeys(){
+
+        JSONObject wtf = files.updateFileKeys(fso,IP);
+
+        assertEquals(null,wtf);
+    }
 
 
 }

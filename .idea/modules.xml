@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CS5431.iml" filepath="$PROJECT_DIR$/CS5431.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cs5431.iml" filepath="$PROJECT_DIR$/cs5431.iml" />
       <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-client/cs5431-client.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-client/cs5431-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-parent.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-parent.iml" />
       <module fileurl="file://$PROJECT_DIR$/cs5431-parent/cs5431-server/cs5431-server.iml" filepath="$PROJECT_DIR$/cs5431-parent/cs5431-server/cs5431-server.iml" />

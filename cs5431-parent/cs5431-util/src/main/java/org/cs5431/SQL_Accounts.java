@@ -2004,7 +2004,7 @@ public class SQL_Accounts {
         return false;
     }
 
-    JSONObject getKeyUpdate(int uid) {
+    public JSONObject getKeyUpdate(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {
 
@@ -2066,7 +2066,7 @@ public class SQL_Accounts {
         return null;
     }
 
-    int updateUserKeyFile(JSONObject json, String sourceIp) {
+    public int updateUserKeyFile(JSONObject json, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         Timestamp lastModified = new Timestamp(System.currentTimeMillis());
         try (Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD)) {

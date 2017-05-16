@@ -2,16 +2,19 @@ package org.cs5431.controller;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cs5431.SSS;
+import org.cs5431.UserKeyPacket;
 import org.cs5431.model.FileSystemObject;
 import org.cs5431.model.Folder;
 import org.cs5431.model.User;
 import org.cs5431.view.PwdRecoveryBundle;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
@@ -19,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -91,7 +95,7 @@ public class AccountsController {
             Folder parentFolder = new Folder(parentFolderid, username,
                     lastModified, true);
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey, twoFa, phoneNumber);
+                    privKey, pubKey, twoFa, phoneNumber, new Timestamp(System.currentTimeMillis()));
         } else if (newUser.getString("msgType").equals("error")) {
             throw new RegistrationFailException(newUser.getString
                     ("message"));
@@ -171,8 +175,9 @@ public class AccountsController {
 
             Folder parentFolder = getFolderFromId(parentFolderid, uid,
                     privKey);
+            Timestamp keyLastUpdated = new Timestamp(user.getLong("timestamp"));
             return new User(uid, username, email, parentFolder,
-                    privKey, pubKey, has2fa, phoneNo);
+                    privKey, pubKey, has2fa, phoneNo, keyLastUpdated);
         } catch (NoSuchAlgorithmException |
                 NoSuchPaddingException | InvalidKeyException |
                 IllegalBlockSizeException | BadPaddingException |
@@ -281,6 +286,84 @@ public class AccountsController {
             throw new UserRetrieveException(response.getString("message"));
         else
             throw new UserRetrieveException("Received bad response from " +
+                    "server");
+    }
+
+    public User updateUserKeys(User user, String password) throws IOException, ClassNotFoundException,
+            LoginFailException, NoSuchAlgorithmException, NoSuchProviderException,
+    NoSuchPaddingException, InvalidKeyException,
+    InvalidAlgorithmParameterException, IllegalBlockSizeException,
+    BadPaddingException {
+        UserKeyPacket packet = generateKeyPacket(password);
+        JSONObject getKeys = new JSONObject();
+        getKeys.put("msgType", "updateUserKey");
+        getKeys.put("uid", user.getId());
+        sendJson(getKeys, sslSocket);
+
+        JSONObject response = receiveJson(sslSocket);
+        if (response.getString("msgType").equals("updateUserKeyAck")) {
+            if (response.getInt("uid") == user.getId()) {
+                List<Integer> fsoid = new ArrayList<>();
+                JSONArray fsoArray = response.getJSONArray("fsoids");
+                List<String> newFileKeys = new ArrayList<>();
+                JSONArray encArray = response.getJSONArray("encFileKeys");
+                for (int i = 0; i < fsoArray.length(); i++) {
+                    fsoid.add(fsoArray.getInt(i));
+                    String oldFileKeyStr = encArray.getString(i);
+                    SecretKey fileSK = decFileSecretKey(
+                            Base64.getDecoder().decode(oldFileKeyStr), user.getPrivKey());
+                    String newFileSK = Base64.getEncoder().encodeToString(
+                            encFileSecretKey(fileSK, packet.keyPair.getPublic())
+                    );
+                    newFileKeys.add(newFileSK);
+                }
+                List<Integer> groupUid = new ArrayList<>();
+                JSONArray groupArray = response.getJSONArray("groupUid");
+                List<PublicKey> publicKeys = new ArrayList<>();
+                List<String> plainSecrets = new ArrayList<>();
+                JSONArray secretArray = response.getJSONArray("secrets");
+                for (int i = 0; i < groupArray.length(); i++) {
+                    groupUid.add(groupArray.getInt(i));
+                    String currSecret = secretArray.getString(i);
+                    plainSecrets.add(decryptSecret(user.getPrivKey(), currSecret));
+                    publicKeys.add(packet.keyPair.getPublic());
+                }
+                List<String> newSecrets = encryptSecrets(publicKeys, plainSecrets);
+
+                JSONObject update = new JSONObject();
+                update.put("msgType", "updateUserKeyFile");
+                update.put("privKey", packet.encPrivKey);
+                update.put("privKeySalt", Base64.getEncoder().encodeToString(packet.salt));
+                update.put("pubKey", Base64.getEncoder().encodeToString(packet.keyPair.getPublic().getEncoded()));
+                update.put("fsoid", fsoid);
+                update.put("encFileKeys", newFileKeys);
+                update.put("groupUid", groupUid);
+                update.put("secrets", newSecrets);
+
+                sendJson(update, sslSocket);
+
+                JSONObject upRes = receiveJson(sslSocket);
+                if (response.getString("msgType").equals("updateUserKeyAck")) {
+                    if (response.getInt("uid") == user.getId()) {
+                        return new User(user.getId(), user.getUsername(), user.getEmail(),
+                                user.getUserParentFolder(), packet.keyPair.getPrivate(),
+                                packet.keyPair.getPublic(), user.getHas2fa(),
+                                user.getPhoneNo(), new Timestamp(System.currentTimeMillis()));
+                    } else {
+                        throw new LoginFailException("Could not update user keys");
+                    }
+                } else if (upRes.getString("msgType").equals("error"))
+                    throw new LoginFailException(response.getString("message"));
+                else
+                    throw new LoginFailException("Received bad response from " +
+                            "server");
+            } else {
+                throw new LoginFailException("Could not update user keys");
+            }
+        } else if (response.getString("msgType").equals("error"))
+            throw new LoginFailException(response.getString("message"));
+        else
+            throw new LoginFailException("Received bad response from " +
                     "server");
     }
 
