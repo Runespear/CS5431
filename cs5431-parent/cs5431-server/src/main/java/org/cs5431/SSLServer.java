@@ -264,6 +264,7 @@ public class SSLServer extends Thread {
         if (response == null)
             return makeErrJson("Failed to register user");
         if (jsonObject.getBoolean("hasPwdRec")) {
+            jsonObject.put("uid", response.getInt("uid"));
             JSONObject pwdRec = setPwdRecovery(jsonObject, sql_accounts);
             if (pwdRec.getString("msgType").equals("error"))
                 return pwdRec;
@@ -779,11 +780,8 @@ public class SSLServer extends Thread {
 
     private JSONObject setPwdRecovery(JSONObject jsonObject, SQL_Accounts sql_accounts) {
         boolean hasRec = jsonObject.getBoolean("hasPwdRec");
-        boolean removedOldSecrets = true;
-        if (jsonObject.has("uid")) {
-            int uid = jsonObject.getInt("uid");
-            removedOldSecrets = sql_accounts.removeSecrets(uid, sourceIp);
-        }
+        int uid = jsonObject.getInt("uid");
+        boolean removedOldSecrets = sql_accounts.removeSecrets(uid, sourceIp);
         if (removedOldSecrets) {
             if (hasRec) {
                 boolean setGroup = sql_accounts.createRecoveryGroup(jsonObject, sourceIp);
