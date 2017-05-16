@@ -164,10 +164,13 @@ public class ServerView {
 
         String finalUsername = username;
         String finalPassword = password;
+        Integer finalFailures_per_uid = failures_per_uid;
+        Integer finalFailures_per_ip = failures_per_ip;
+        Integer finalTotal_failures = total_failures;
         Thread t = new Thread(() -> {
             while(true) try {
                 new IntrusionDetection(server, dbPort, finalUsername, finalPassword,
-                        failures_per_uid, failures_per_ip, total_failures);
+                        finalFailures_per_uid, finalFailures_per_ip, finalTotal_failures);
                 Thread.sleep(1000 * 60 * 60 * 24);
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
