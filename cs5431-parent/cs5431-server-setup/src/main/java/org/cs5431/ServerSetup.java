@@ -142,12 +142,12 @@ public class ServerSetup {
         String createFSO = "CREATE TABLE FileSystemObjects (fsoid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, \n" +
                 "ownerid INT UNSIGNED, \n" +
                 "fsoName VARCHAR(255) NOT NULL, size VARCHAR(20) NOT NULL, \n" +
-                "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV CHAR(255), fileIV CHAR(32, lastKeyUpdate TIMESTAMP));";
+                "lastModified TIMESTAMP, isFile boolean NOT NULL, fsoNameIV CHAR(255), fileIV CHAR(32), lastKeyUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP);";
         String createUsers = "CREATE TABLE Users (uid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL, \n" +
                 "pwd VARCHAR(50) NOT NULL, parentFolderid INT UNSIGNED NOT NULL, email VARCHAR(50), \n" +
                 "privKey BLOB NOT NULL, pubKey BLOB NOT NULL, pwdSalt CHAR(255) NOT NULL, privKeySalt CHAR(255) NOT NULL," +
                 "has2fa TINYINT UNSIGNED NOT NULL, hasPwdRec BOOLEAN NOT NULL, phoneNo CHAR(20), neededUsers INT UNSIGNED," +
-                "lastKeyUpdate TIMESTAMP, \n" +
+                "lastKeyUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \n" +
                 "FOREIGN KEY (parentFolderid) REFERENCES FileSystemObjects(fsoid) ON DELETE CASCADE);";
         String createEditors = "CREATE TABLE Editors (fsoid INT UNSIGNED NOT NULL,\n" +
                 "uid INT UNSIGNED NOT NULL,\n" +

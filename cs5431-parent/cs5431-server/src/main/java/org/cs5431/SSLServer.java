@@ -916,7 +916,9 @@ public class SSLServer extends Thread {
             try {
                 JSONObject file = sql_files.getFile(jsonObject, sourceIp);
                 String encFile = file.getString("encFile");
+                String fileIV = file.getString("fileIV");
                 response.put("fileContents", encFile);
+                response.put("fileIV", fileIV);
             } catch (Exception e) {
                 e.printStackTrace();
             }
