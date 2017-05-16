@@ -8,10 +8,11 @@ public abstract class FileSystemObject {
     private String name;
     protected long size;
     private Timestamp lastModified;
+    private Timestamp keyLastUpdated;
     FSOType type;
 
     FileSystemObject(int id, String name, Timestamp lastModified, boolean
-            isEditor) {
+            isEditor, Timestamp keyLastUpdated) {
         this.id = id;
         this.name = name;
         if (lastModified != null)
@@ -19,6 +20,7 @@ public abstract class FileSystemObject {
         else
             this.lastModified = null;
         this.isEditor = isEditor;
+        this.keyLastUpdated = keyLastUpdated;
     }
 
     public String getFileName() {return name; }
@@ -28,6 +30,12 @@ public abstract class FileSystemObject {
     public Timestamp getLastModified() {
         if (lastModified == null)
             return null;        return new Timestamp(lastModified.getTime()); }
+
+    public Timestamp getKeyLastUpdated() {
+        if (keyLastUpdated == null)
+            return null;
+        return new Timestamp(keyLastUpdated.getTime());
+    }
 
     public int getId() {return id;}
 
