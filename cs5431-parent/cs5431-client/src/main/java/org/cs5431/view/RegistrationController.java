@@ -237,8 +237,8 @@ public class RegistrationController implements Initializable {
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
-                    return accountsController.createUser(username, password, email, phoneNumber, finalTwoFa,
-                            hasRecovery, nominatedUids, neededUsers, publicKeys);
+                return accountsController.createUser(username, password, email, phoneNumber, finalTwoFa,
+                        hasRecovery, nominatedUids, neededUsers, publicKeys);
                 }
             };
             task.setOnSucceeded(t -> {
@@ -258,10 +258,10 @@ public class RegistrationController implements Initializable {
             cancelButton.setDisable(true);
             pwdRecoveryButton.setDisable(true);
             try {
-                    Client.exec.submit(task);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Client.exec.submit(task);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             task.exceptionProperty().addListener((observable, oldValue, newValue) ->  {
                 if(newValue != null) {
                     Exception ex = (Exception) newValue;

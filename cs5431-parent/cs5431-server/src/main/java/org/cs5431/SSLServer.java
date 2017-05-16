@@ -263,6 +263,11 @@ public class SSLServer extends Thread {
                 pwdSalt, sourceIp);
         if (response == null)
             return makeErrJson("Failed to register user");
+        if (jsonObject.getBoolean("hasPwdRec")) {
+            JSONObject pwdRec = setPwdRecovery(jsonObject, sql_accounts);
+            if (pwdRec.getString("msgType").equals("error"))
+                return pwdRec;
+        }
         return response;
     }
 
