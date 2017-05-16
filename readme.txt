@@ -3,6 +3,11 @@ Refer to README.md
 INSTRUCTIONS TO RUN OUR PROJECT ON
 UBUNTU 16.04
 
+WORST CASE SCENARIO:
+
+    REFER TO THE PDF FOR A MORE PICTORIAL GUIDE
+
+
 +++++++++++++++++++++++++PREREQUISITES+++++++++++++++++++++++++++++++++++++++++++
 
 1) Install maven:
