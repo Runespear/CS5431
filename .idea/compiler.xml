@@ -9,13 +9,6 @@
       <file url="file://$PROJECT_DIR$/cs5431-parent/cs5431-util/src/test/java/Validator_Tests/test_validPort.java" />
       <file url="file://$PROJECT_DIR$/cs5431-parent/cs5431-util/src/test/java/Validator_Tests/test_validFileName.java" />
     </excludeFromCompile>
-    <annotationProcessing>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-      </profile>
-    </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
       <module name="cs5431" target="1.8" />
       <module name="CS5431" target="1.8" />

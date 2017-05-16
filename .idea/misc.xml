@@ -62,6 +62,14 @@
         <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/cs5431-parent/cs5431-client/pom.xml" />
+        <option value="$PROJECT_DIR$/cs5431-parent/cs5431-server-setup/pom.xml" />
+        <option value="$PROJECT_DIR$/cs5431-parent/cs5431-server/pom.xml" />
+        <option value="$PROJECT_DIR$/cs5431-parent/cs5431-util/pom.xml" />
+      </set>
+    </option>
   </component>
   <component name="ProjectKey">
     <option name="state" value="project://e2804f05-5315-4fc6-a121-c522a6c26470" />
