@@ -260,13 +260,13 @@ public class SQL_Files {
                     if (DEBUG_MODE) {
                         System.out.println("added owner as editor");
                     }
-                    System.out.println(" editors " + editors);
-                    System.out.println(" viewers " + viewers);
+                    //System.out.println(" editors " + editors);
+                    //System.out.println(" viewers " + viewers);
 
                     for (int i=0; i<editors.length(); i++) {
                         int editor = (int) editors.get(i);
                         if (editor == uid) {
-                            System.out.println("editor is owner " + uid);
+                            //System.out.println("editor is owner " + uid);
                             addKey.setInt(1, fsoid);
                             addKey.setInt(2, uid);
                             addKey.setString(3, (String) editorsKeys.get(i));
@@ -312,7 +312,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     isFile = fso.getBoolean("isFile");
@@ -449,7 +449,7 @@ public class SQL_Files {
                         ResultSet encRS = getKey.executeQuery();
 
                         if (encRS.next()) {
-                            System.out.println("get enc key");
+                            //System.out.println("get enc key");
                             fso.put("encKey", encRS.getString(1));
                         }
 
@@ -473,7 +473,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -594,7 +594,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -705,7 +705,7 @@ public class SQL_Files {
         if (permissions != null) {
             try {
                 JSONArray editors = permissions.getJSONArray("editors");
-                System.out.println("editors retrieved:"+ editors);
+                //System.out.println("editors retrieved:"+ editors);
                 for (int i = 0; i < editors.length(); i++) {
                     int editorid = (int) editors.get(i);
                     if (editorid == uid) {
@@ -713,7 +713,7 @@ public class SQL_Files {
                     }
                 }
             } catch (JSONException e1) {
-                System.out.println("Unable to parse JSON object.");
+                //System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
             }
         }
@@ -732,7 +732,7 @@ public class SQL_Files {
                     }
                 }
             } catch (JSONException e1) {
-                System.out.println("Unable to parse JSON object.");
+                //System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
                 return false;
             }
@@ -759,7 +759,7 @@ public class SQL_Files {
                     }
                 }
             } catch (JSONException e1) {
-                System.out.println("Unable to parse JSON object.");
+                //System.out.println("Unable to parse JSON object.");
                 e1.printStackTrace();
             }
         }
@@ -920,7 +920,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -1095,7 +1095,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -1144,7 +1144,7 @@ public class SQL_Files {
     public int addViewPriv(int uid, int fsoid, int parentid, int newUid, String encKey,
                            String sourceIp) {
         boolean hasPermission = verifyEditPermission(fsoid, uid);
-        System.out.println("has permssion to add viewer: " + hasPermission);
+        //System.out.println("has permssion to add viewer: " + hasPermission);
         boolean wasEditor = verifyEditPermission(fsoid, newUid);
         boolean viewerExists = verifyViewPermission(fsoid, newUid);
         boolean editorExists = verifyEditPermission(fsoid, newUid);
@@ -1177,7 +1177,7 @@ public class SQL_Files {
                 connection.setAutoCommit(false);
                 createLog = connection.prepareStatement(insertLog);
                 if (editorExists || viewerExists) {
-                    System.out.println(newUid + "WAS A VIEWER OR EDITOR" + fsoid);
+                    //System.out.println(newUid + "WAS A VIEWER OR EDITOR" + fsoid);
                     getParentFolder = connection.prepareStatement(selectParent);
                     getParentFolder.setInt(1, newUid);
                     ResultSet rs = getParentFolder.executeQuery();
@@ -1281,7 +1281,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -1403,7 +1403,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -1514,7 +1514,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -1712,7 +1712,7 @@ public class SQL_Files {
             } catch (SQLException | IOException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -1854,7 +1854,7 @@ public class SQL_Files {
             } catch (SQLException e) {
                 e.printStackTrace();
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     createLog = connection.prepareStatement(insertLog);
                     createLog.setInt(1, 0);
@@ -2070,7 +2070,7 @@ public class SQL_Files {
                 }
             } catch (SQLException e) {
                 try {
-                    System.err.println("Transaction is being rolled back");
+                    //System.err.println("Transaction is being rolled back");
                     connection.rollback();
                     logDeleteObject = connection.prepareStatement(deleteLog);
                     logDeleteObject.setInt(1, 0);
