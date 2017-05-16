@@ -6,7 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IntrusionDetection {
     private int port;
@@ -22,7 +23,22 @@ public class IntrusionDetection {
         this.port = dbPort;
         this.DB_USER = username;
         this.DB_PASSWORD = password;
+        detectIntrusion();
+    }
 
+    public IntrusionDetection(String ip, int dbPort, String username, String password, int failPerUidPerDay,
+                              int failPerIpPerDay, int totalFailure) {
+        this.ip = ip;
+        this.port = dbPort;
+        this.DB_USER = username;
+        this.DB_PASSWORD = password;
+        this.FAILURE_PER_UID_PER_DAY = failPerUidPerDay;
+        this.FAILURE_PER_IP_PER_DAY = failPerIpPerDay;
+        this.TOTAL_FAILED_LOGIN_PER_DAY = totalFailure;
+        detectIntrusion();
+    }
+
+    public void detectIntrusion() {
         String log = "OK, no intrusion has been detected.";
 
         List<String> attackerIp = noPermissionAlert();
