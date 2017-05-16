@@ -315,8 +315,12 @@ class SQL_AccountsTest {
         String test =account.getUserLog();
         //user logs successfully extracted
         assertNotNull(test);
-        Path p1 = Paths.get("C:/ProgramData/MySQL/MySQL Server 5.7/Uploads/userlogs.csv");
-        Files.deleteIfExists(p1);
+        try {//only works for windows
+            Path p1 = Paths.get("C:/ProgramData/MySQL/MySQL Server 5.7/Uploads/userlogs.csv");
+            Files.deleteIfExists(p1);
+        }
+        catch (Error e){
+        }
     }
 
     @Test
