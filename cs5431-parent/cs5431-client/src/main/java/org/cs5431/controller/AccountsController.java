@@ -64,7 +64,7 @@ public class AccountsController {
         user.put("has2fa", twoFa);
         user.put("hasPwdRec", hasRecovery);
         if (hasRecovery) {
-            user.put("nominatedUids", nominatedUids);
+            user.put("groupUid", nominatedUids);
             user.put("neededUsers", neededUsers);
             SSS secretGen = new SSS(nominatedUids.size(), neededUsers,
                     new BigInteger(password.getBytes(StandardCharsets.UTF_8)));
