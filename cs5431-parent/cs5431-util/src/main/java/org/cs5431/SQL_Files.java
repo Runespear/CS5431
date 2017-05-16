@@ -2363,7 +2363,7 @@ public class SQL_Files {
         return null;
     }
 
-    String getEncFileSK(int fsoid, int uid, String sourceIp) {
+    public String getEncFileSK(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getSecretKey = null;
         PreparedStatement createLog = null;
