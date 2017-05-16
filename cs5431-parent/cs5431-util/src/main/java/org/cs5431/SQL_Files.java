@@ -1441,7 +1441,7 @@ public class SQL_Files {
         return -1;
     }
 
-    int removeEditPriv(int fsoid, int uid, int rmUid, String sourceIp) {
+    public int removeEditPriv(int fsoid, int uid, int rmUid, String sourceIp) {
 
         boolean hasPermission = verifyEditPermission(fsoid, uid);
 
@@ -1559,7 +1559,7 @@ public class SQL_Files {
      * @param uid the id of the requesting user
      * @return The file secret key associated with this fso and user
      */
-    String getFileSK(int fsoid, int uid, String sourceIp) {
+    public String getFileSK(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1635,7 +1635,7 @@ public class SQL_Files {
      *                the database
      * @return the fsoid if successful, -1 otherwise
      */
-    int overwrite(int fsoid, int uid, String newFileIV, String encFile, String sourceIp) {
+    public int overwrite(int fsoid, int uid, String newFileIV, String encFile, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -1796,7 +1796,7 @@ public class SQL_Files {
      * @param uid the id of the requesting user
      * @return The fsoid if successful, -1 otherwise
      */
-    int deleteForUser(int fsoid, int uid, String sourceIp) {
+    public int deleteForUser(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -2001,7 +2001,7 @@ public class SQL_Files {
         return -1;
     }
 
-    void deleteIfOrphanFile(int fsoid, int uid, String sourceIp) {
+    public void deleteIfOrphanFile(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         if (DEBUG_MODE) {
             System.out.println("Connecting to database...");
@@ -2120,7 +2120,7 @@ public class SQL_Files {
         }
     }
 
-    String getAllFileLogs() {
+    public String getAllFileLogs() {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         PreparedStatement getSecureFilePriv = null;
@@ -2165,7 +2165,7 @@ public class SQL_Files {
         }
         return null;
     }
-    String adminGetFileLog(int fsoid) {
+    public String adminGetFileLog(int fsoid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getFileLog = null;
         PreparedStatement getSecureFilePriv = null;
@@ -2217,7 +2217,7 @@ public class SQL_Files {
         return null;
     }
 
-    boolean isFolder(int fsoid, int uid, String sourceIp) {
+    public boolean isFolder(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement isFolder = null;
         PreparedStatement createLog = null;
@@ -2271,7 +2271,7 @@ public class SQL_Files {
         return false;
     }
 
-    List<Integer> getChildrenId (int fsoid, int uid, String sourceIp) {
+    public List<Integer> getChildrenId (int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getSecretKey = null;
         PreparedStatement createLog = null;
@@ -2329,7 +2329,7 @@ public class SQL_Files {
         return null;
     }
 
-    String getPubKey(int uid) {
+    public String getPubKey(int uid) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getPubKey = null;
         if (DEBUG_MODE) {
@@ -2363,7 +2363,7 @@ public class SQL_Files {
         return null;
     }
 
-    String getEncFileSK(int fsoid, int uid, String sourceIp) {
+    public String getEncFileSK(int fsoid, int uid, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
         PreparedStatement getSecretKey = null;
         PreparedStatement createLog = null;
@@ -2420,7 +2420,7 @@ public class SQL_Files {
     }
 
 
-    JSONObject updateFileKeys(JSONObject json, String sourceIp) {
+    public JSONObject updateFileKeys(JSONObject json, String sourceIp) {
         String url = "jdbc:mysql://" + ip + ":" + Integer.toString(port) + "/PSFS5431?autoReconnect=true&useSSL=false";
 
         int fsoid = json.getInt("fsoid");

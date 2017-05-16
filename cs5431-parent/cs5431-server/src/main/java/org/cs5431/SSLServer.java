@@ -224,7 +224,7 @@ public class SSLServer extends Thread {
                         sendJson(response, s);
                         break;
                     case "updateFileReq":
-                        response = updateFileReq(jsonObject, sql_files);
+                        response = updateFileReq(jsonObject, sql_files, sql_accounts);
                         sendJson(response, s);
                         break;
                     case "updateFile":
@@ -882,23 +882,63 @@ public class SSLServer extends Thread {
     }
 
     private JSONObject updateUserKey(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO hi ruixin
-        return null;
+        JSONObject response = sql_accounts.getKeyUpdate(jsonObject.getInt("uid"));
+        if (response != null) {
+            return response;
+        }
+        return makeErrJson("Unable to get key pair information. ");
     }
 
     private JSONObject updateUserKeyFile(JSONObject jsonObject, SQL_Accounts sql_accounts) {
-        //TODO hi ruixin
-        return null;
+        int uid = sql_accounts.updateUserKeyFile(jsonObject, sourceIp);
+        if (uid != -1) {
+            JSONObject response = new JSONObject();
+            response.put("msgType", "updateUserKeyFileAck");
+            response.put("uid", uid);
+            return response;
+        }
+        return makeErrJson("Unable to update the user'skeys.");
     }
 
-    private JSONObject updateFileReq(JSONObject jsonObject, SQL_Files sql_files) {
-        //TODO hi ruixin
-        return null;
+    private JSONObject updateFileReq(JSONObject jsonObject, SQL_Files sql_files, SQL_Accounts sql_accounts) {
+        JSONArray editorList = jsonObject.getJSONArray("editorList");
+        JSONArray viewerList = jsonObject.getJSONArray("viewerList");
+        boolean isFile = jsonObject.getBoolean("isFile");
+        int uid = jsonObject.getInt("uid");
+        int fsoid = jsonObject.getInt("fsoid");
+
+        List<String> editorPubKeys = sql_accounts.getPubKeys(editorList);
+        List<String> viewerPubKeys = sql_accounts.getPubKeys(viewerList);
+
+        JSONObject response = new JSONObject();
+
+        if (isFile) {
+            try {
+                JSONObject file = sql_files.getFile(jsonObject, sourceIp);
+                String encFile = file.getString("encFile");
+                String fileIV = file.getString("fileIV");
+                response.put("fileContents", encFile);
+                response.put("fileIV", fileIV);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        response.put("msgType", "updateFileReqAck");
+        response.put("uid", uid);
+        response.put("fsoid", fsoid);
+        response.put("editorList", editorList);
+        response.put("viewerList", viewerList);
+        response.put("editorPubKeys", editorPubKeys);
+        response.put("viewerPubKeys", viewerPubKeys);
+        return response;
     }
 
     private JSONObject updateFile(JSONObject jsonObject, SQL_Files sql_files) {
-        //TODO hi ruixin
-        return null;
+        JSONObject response = sql_files.updateFileKeys(jsonObject, sourceIp);
+        if (response != null) {
+            return response;
+        }
+        return makeErrJson("Unable to update file keys.");
     }
 
     private JSONObject makeErrJson(String message) {
