@@ -2105,7 +2105,7 @@ public class SQL_Accounts {
                 for (int i=0; i<fsoids.length();i++) {
                     editFileEnc = connection.prepareStatement(updateFileEnc);
                     editFileEnc.setString(1, encFileKeys.getString(i));
-                    editFileEnc.setInt(2, groupUid.getInt(i));
+                    editFileEnc.setInt(2, fsoids.getInt(i));
                     editFileEnc.setInt(3, uid);
                     editFileEnc.execute();
                 }
@@ -2113,7 +2113,7 @@ public class SQL_Accounts {
                 for (int j=0; j<groupUid.length(); j++) {
                     editSecrets = connection.prepareStatement(updateSecrets);
                     editSecrets.setString(1, secrets.getString(j));
-                    editSecrets.setInt(2, fsoids.getInt(j));
+                    editSecrets.setInt(2, groupUid.getInt(j));
                     editSecrets.setInt(3, uid);
                     editSecrets.execute();
                 }
