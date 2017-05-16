@@ -47,7 +47,7 @@ public class SSLServer extends Thread {
 
                 JSONObject response;
                 boolean check = true;
-                if (type.equals("editPassword") || type.equals("upload") ||
+                if (type.equals("upload") ||
                         type.equals("download") || type.equals("rename") ||
                         type.equals("renameKeys") || type.equals("addEditor")
                         || type.equals("addViewer") || type.equals("addViewerKeys") ||
@@ -59,7 +59,6 @@ public class SSLServer extends Thread {
                         || type.equals("logout") || type.equals
                         ("getEditorViewerList") || type.equals("deleteUser")
                         || type.equals("uploadKeys") || type.equals("2faToggle") ||
-                        type.equals("setPwdGroup") || type.equals("pwdRecoveryInfo") ||
                         type.equals("changePhoneNo") || type.equals("checkPwd") ||
                         type.equals("updateUserKey") || type.equals("updateUserKeyFile") ||
                         type.equals("updateFileReq") || type.equals("updateFile")) {
