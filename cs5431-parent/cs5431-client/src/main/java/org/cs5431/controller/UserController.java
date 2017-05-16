@@ -1,8 +1,9 @@
 package org.cs5431.controller;
 
 import org.cs5431.Encryption;
-import org.cs5431.model.Account;
+import org.cs5431.SSS;
 import org.cs5431.model.User;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,13 +13,15 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 import static org.cs5431.Constants.DEBUG_MODE;
-import static org.cs5431.Encryption.SHA256;
-import static org.cs5431.Encryption.encryptPrivateKey;
+import static org.cs5431.Encryption.*;
 import static org.cs5431.JSON.receiveJson;
 import static org.cs5431.JSON.sendJson;
 
@@ -27,16 +30,16 @@ import static org.cs5431.JSON.sendJson;
  * The controller for all accounts is called AccountController.
  */
 public class UserController {
-    private User user;
-    private Socket sslSocket;
+    private static User user;
+    private static Socket sslSocket;
 
     /**
      * Creates a new UserController
      * @param user The user to control
      */
     public UserController(User user, Socket sslSocket) {
-        this.user = user;
-        this.sslSocket = sslSocket;
+        UserController.user = user;
+        UserController.sslSocket = sslSocket;
     }
 
     /**
@@ -47,7 +50,10 @@ public class UserController {
      * a message explaining why
      */
     public void changePassword(String oldPassword, String newPassword) throws
-            ChangePwdFailException {
+            ChangePwdFailException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException, IOException, ClassNotFoundException,
+            PwdRecoveryException, InvalidKeySpecException {
         try {
             JSONObject getSalt = new JSONObject();
             getSalt.put("msgType", "getPrivKeySalt");
@@ -78,7 +84,8 @@ public class UserController {
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException, IOException, ClassNotFoundException,
-            UserController.ChangePwdFailException {
+            UserController.ChangePwdFailException, PwdRecoveryException, InvalidKeySpecException
+            {
         JSONObject allegedUser = new JSONObject();
         byte[] privKeySalt = Base64.getDecoder().decode(strSalt);
         allegedUser.put("newPrivKey", encryptPrivateKey(newPassword, privateKey.getEncoded()
@@ -100,9 +107,31 @@ public class UserController {
         }
 
         if (jsonAck.getString("msgType").equals("changePwdAck")) {
-            if (jsonAck.getInt("uid") != uid)
+            if (jsonAck.getInt("uid") == uid) {
+                JSONObject recoveryInfo = getRecoveryInfo();
+                boolean hasPwdRec = recoveryInfo.getBoolean("hasPwdRec");
+                if (hasPwdRec) {
+                    int neededUsers = recoveryInfo.getInt("neededUsers");
+                    JSONArray groupArr = recoveryInfo.getJSONArray("groupUid");
+                    List<Integer> nominatedUids = new ArrayList<>();
+                    for (int i = 0; i < groupArr.length(); i++) {
+                        nominatedUids.add(groupArr.getInt(i));
+                    }
+                    JSONArray pubKeyArr = recoveryInfo.getJSONArray("pubKeys");
+                    List<PublicKey> publicKeys = new ArrayList<>();
+                    for (int i = 0; i < pubKeyArr.length(); i++) {
+                        publicKeys.add(getPubKeyFromJSON(pubKeyArr.getString(i)));
+                    }
+
+                    SSS secretGen = new SSS(nominatedUids.size(), neededUsers,
+                            new BigInteger(newPassword.getBytes(StandardCharsets.UTF_8)));
+                    List<String> encSecrets = encryptSecrets(publicKeys, secretGen.generateSecrets());
+                    saveRecoveryInfo(true, neededUsers, nominatedUids, encSecrets);
+                }
+            } else {
                 throw new ChangePwdFailException("Received bad response " +
                         "from server - user id does not match up");
+            }
         } else if (jsonAck.getString("msgType").equals("error")) {
             throw new ChangePwdFailException(jsonAck.getString
                     ("message"));
@@ -221,7 +250,7 @@ public class UserController {
         }
     }
 
-    public void saveRecoveryInfo(boolean hasRecovery,
+    public static void saveRecoveryInfo(boolean hasRecovery,
                                  int neededUsers, List<Integer> nominatedUids,
                                  List<String> encSecrets)
             throws IOException, ClassNotFoundException, PwdRecoveryException {
@@ -273,7 +302,7 @@ public class UserController {
         }
     }
 
-    public JSONObject getRecoveryInfo() throws IOException, ClassNotFoundException,
+    public static JSONObject getRecoveryInfo() throws IOException, ClassNotFoundException,
             PwdRecoveryException {
         JSONObject recover = new JSONObject();
         recover.put("msgType", "pwdRecoveryInfo");
