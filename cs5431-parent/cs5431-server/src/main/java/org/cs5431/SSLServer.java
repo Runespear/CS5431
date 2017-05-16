@@ -871,10 +871,10 @@ public class SSLServer extends Thread {
 
             for (int i = 0; i < groupUid.length(); i++) {
                 email.send(emails.getString(i), "PSFS: Password Recovery", "The user " + username + " has " +
-                        "requested to recover the password to his/her Pretty Secure File Sharing account. Please access " +
-                        "your acccount and enter the following code in order to generate a password recovery code: " +
-                        secrets.getString(i) + "\n" +
-                        "Then, inform " + username + " of the code generated.");
+                        "requested to recover the password to his/her Pretty Secure File Sharing account. \n \n" +
+                        "1. Please access your account and enter the following code in order to generate a password recovery code: " +
+                        secrets.getString(i) + "\n \n" +
+                        "2. inform " + username + " of the code generated.");
             }
 
             JSONObject response = new JSONObject();
