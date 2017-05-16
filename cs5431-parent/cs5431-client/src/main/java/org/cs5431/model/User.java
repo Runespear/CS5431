@@ -53,5 +53,9 @@ public class User extends Account {
 
     public void setPhoneNo(String phoneNo) {this.phoneNo = phoneNo;}
 
-    public Timestamp getKeyLastUpdated() {return new Timestamp(keyLastUpdated.getTime());}
+    public Timestamp getKeyLastUpdated() {
+        if (keyLastUpdated == null)
+            return null;
+        return new Timestamp(keyLastUpdated.getTime());
+    }
 }

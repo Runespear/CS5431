@@ -29,13 +29,13 @@ import static org.cs5431.Encryption.*;
 import static org.cs5431.JSON.*;
 
 public class FileController {
-    private org.cs5431.model.User user;
-    private Socket sslSocket;
+    private static org.cs5431.model.User user;
+    private static Socket sslSocket;
     private Map<Integer, String> uidToUsername = new HashMap<>();
 
     public FileController(User user, Socket sslSocket) {
-        this.user = user;
-        this.sslSocket = sslSocket;
+        FileController.user = user;
+        FileController.sslSocket = sslSocket;
     }
 
     public boolean isEditor(FileSystemObject fso) {
@@ -193,7 +193,8 @@ public class FileController {
 
                     if (folderSentId != -1) {
                         Folder folderSent = new Folder(folderSentId, folderName,
-                                lastModified, true);
+                                lastModified, true,
+                                new Timestamp(System.currentTimeMillis()));
                         parentFolder.addChild(folderSent);
                     } else {
                         throw new FileControllerException("Failed to create folder");
@@ -402,6 +403,7 @@ public class FileController {
 
     static List<FileSystemObject> getChildrenWithId(int folderid, int
             uid, Socket s, PrivateKey userPrivKey) throws Exception {
+        Timestamp currTime = new Timestamp(System.currentTimeMillis());
         ArrayList<FileSystemObject> children = new ArrayList<>();
         JSONObject json = new JSONObject();
         json.put("msgType", "getChildren");
@@ -427,14 +429,21 @@ public class FileController {
                         .decode(ivNameString));
                 String name = decryptFileName(Base64.getDecoder().decode
                         (encName), fileSK, ivSpec);
+                Timestamp keyLastModified = new Timestamp(c.getLong("timestamp"));
 
                 String type = c.getString("FSOType");
                 FileSystemObject child;
                 if (type.equals("FOLDER")) {
-                    child = new Folder(id, name, lastModified, isEditor);
+                    child = new Folder(id, name, lastModified, isEditor, keyLastModified);
                 } else {
-                    child = new File(id, name, longSize, lastModified, isEditor);
+                    child = new File(id, name, longSize, lastModified, isEditor, keyLastModified);
                 }
+
+                if (child.isEditor() &&
+                        currTime.getTime() - child.getKeyLastUpdated().getTime() > 31536000000L) {
+                    child = renewKey(child, fileSK);
+                }
+
                 children.add(child);
                 if (CAN_KEYS_BE_DESTROYED) {
                     try {
@@ -882,7 +891,7 @@ public class FileController {
     }
 
 
-    public JSONObject getEditorsViewers(FileSystemObject fso)
+    public static JSONObject getEditorsViewers(FileSystemObject fso)
             throws IOException, ClassNotFoundException, FileControllerException{
         JSONObject request = new JSONObject();
         request.put("msgType", "getEditorViewerList");
@@ -901,9 +910,108 @@ public class FileController {
         }
     }
 
-    public FileSystemObject renewKey(FileSystemObject fso) {
+    private static FileSystemObject renewKey(FileSystemObject fso,
+                                             SecretKey fileSK) throws IOException,
+    ClassNotFoundException, FileControllerException,
+    NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+    InvalidKeyException, InvalidAlgorithmParameterException,
+    IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+        JSONObject editorViewer = getEditorsViewers(fso);
+        JSONObject req = new JSONObject();
+        req.put("msgType", "updateFileReq");
+        req.put("uid", user.getId());
+        req.put("fsoid", fso.getId());
+        req.put("editorList", editorViewer.getJSONArray("editorList"));
+        req.put("viewerList", editorViewer.getJSONArray("viewerList"));
+        if (fso instanceof File) {
+            req.put("isFile", true);
+        } else {
+            req.put("isFile", false);
+        }
+        sendJson(req, sslSocket);
 
-        return null;
+        JSONObject reqAck = receiveJson(sslSocket);
+        if (reqAck.getString("msgType").equals("updateFileReqAck")) {
+            if (reqAck.getInt("uid") == user.getId() &&
+                    reqAck.getInt("fsoid") == fso.getId()) {
+                JSONObject update = new JSONObject();
+                update.put("msgType", "updateFile");
+                update.put("uid", user.getId());
+                update.put("fsoid", fso.getId());
+
+                JSONArray editorPubKeyArr = reqAck.getJSONArray("editorPubKeys");
+                PublicKey editorPubKey[] = new PublicKey[editorPubKeyArr.length()];
+                for (int i = 0; i < editorPubKeyArr.length(); i++) {
+                    editorPubKey[i] = getPubKeyFromJSON(editorPubKeyArr.getString(i));
+                }
+                JSONArray viewerPubKeyArr = reqAck.getJSONArray("viewerPubKeys");
+                PublicKey viewerPubKey[] = new PublicKey[viewerPubKeyArr.length()];
+                for (int i = 0; i < viewerPubKeyArr.length(); i++) {
+                    viewerPubKey[i] = getPubKeyFromJSON(viewerPubKeyArr.getString(i));
+                }
+                update.put("editorList", editorPubKeyArr);
+                update.put("viewerList", viewerPubKeyArr);
+
+                if (fso instanceof File) {
+                    String fileContents = reqAck.getString("fileContents");
+                    String fileIVString = reqAck.getString("fileIV");
+                    IvParameterSpec fileIV = new IvParameterSpec(Base64.getDecoder()
+                            .decode(fileIVString));
+                    byte[] decryptedFileContent = decryptFileContents(
+                            Base64.getDecoder().decode(fileContents), fileSK, fileIV);
+                    EncFilePacket packet = generateAndEncFileContents(decryptedFileContent,
+                            fso.getFileName(), editorPubKey, viewerPubKey);
+                    update.put("isFile", true);
+                    update.put("fileIV", packet.fileIV);
+                    update.put("fsoNameIV", packet.fsoNameIV);
+                    update.put("file", packet.encFile);
+                    update.put("fsoName", packet.encFileName);
+                    update.put("editorKeys", packet.editorsFileSK);
+                    update.put("viewerKeys", packet.viewersFileSK);
+                } else {
+                    EncFilePacket packet = generateAndEncFileName(fso.getFileName(),
+                            editorPubKey, viewerPubKey);
+                    update.put("isFile", false);
+                    update.put("fsoNameIV", packet.fsoNameIV);
+                    update.put("fsoName", packet.encFileName);
+                    update.put("editorKeys", packet.editorsFileSK);
+                    update.put("viewerKeys", packet.viewersFileSK);
+                }
+
+                sendJson(update, sslSocket);
+
+                JSONObject updateRes = receiveJson(sslSocket);
+
+                if (updateRes.getString("msgType").equals("updateFileAck")) {
+                    if (updateRes.getInt("uid") == user.getId() &&
+                            reqAck.getInt("fsoid") == fso.getId()) {
+                        if (fso instanceof File) {
+                            return new File(fso.getId(), fso.getFileName(), fso.getFileSize(),
+                                    fso.getLastModified(), fso.isEditor(),
+                                    new Timestamp(System.currentTimeMillis()));
+                        } else {
+                            return new Folder(fso.getId(), fso.getFileName(),
+                                    fso.getLastModified(), fso.isEditor(),
+                                    new Timestamp(System.currentTimeMillis()));
+                        }
+                    } else {
+                        throw new FileControllerException("Could not renew key for file");
+                    }
+                } else if (updateRes.getString("msgType").equals("error")) {
+                    throw new FileControllerException(reqAck.getString("message"));
+                } else {
+                    throw new FileControllerException("Received bad response " +
+                            "from server");
+                }
+            } else {
+                throw new FileControllerException("Could not renew key for file");
+            }
+        } else if (reqAck.getString("msgType").equals("error")) {
+            throw new FileControllerException(reqAck.getString("message"));
+        } else {
+            throw new FileControllerException("Received bad response " +
+                    "from server");
+        }
     }
 
     public int getLoggedInUid() {

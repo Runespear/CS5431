@@ -73,15 +73,23 @@ public class Encryption {
         return cipher.doFinal(secretKey.getEncoded());
     }
 
+    public static byte[] decryptFileContents(byte[] encFile,
+             SecretKey secretKey, IvParameterSpec ivSpec) throws
+            NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
+        return cipher.doFinal(encFile);
+    }
+
     public static boolean decryptFile(byte[] encFile, String fileName,
                                 SecretKey secretKey, IvParameterSpec ivSpec,
                                 java.io.File directory)
             throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException, IOException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-        byte[] fileDec = cipher.doFinal(encFile);
+        byte[] fileDec = decryptFileContents(encFile, secretKey, ivSpec);
         java.io.File fileToWrite = new java.io.File(directory, fileName);
         FileOutputStream fos = new FileOutputStream(fileToWrite);
         fos.write(fileDec);

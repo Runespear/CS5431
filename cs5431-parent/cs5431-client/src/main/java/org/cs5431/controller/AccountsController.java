@@ -93,7 +93,7 @@ public class AccountsController {
 
             Timestamp lastModified = new Timestamp(System.currentTimeMillis());
             Folder parentFolder = new Folder(parentFolderid, username,
-                    lastModified, true);
+                    lastModified, true, new Timestamp(System.currentTimeMillis()));
             return new User(uid, username, email, parentFolder,
                     privKey, pubKey, twoFa, phoneNumber, new Timestamp(System.currentTimeMillis()));
         } else if (newUser.getString("msgType").equals("error")) {
@@ -191,7 +191,7 @@ public class AccountsController {
     private Folder getFolderFromId(int folderId, int uid, PrivateKey
             userPrivKey) {
         try {
-            Folder parentFolder = new Folder(folderId, "", null, true);
+            Folder parentFolder = new Folder(folderId, "", null, true, null);
             List<FileSystemObject> contents = FileController.getChildrenWithId
                     (folderId, uid, sslSocket, userPrivKey);
             for (FileSystemObject child : contents)
