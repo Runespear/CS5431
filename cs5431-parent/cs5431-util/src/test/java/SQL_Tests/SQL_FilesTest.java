@@ -88,6 +88,13 @@ class SQL_FilesTest {
         fso.put("fileIV","123");
         fso.put("fsoNameIV","666");
         fso.put("fsoid","32123");
+
+
+        fso.put("editorList",editorsArr);
+        fso.put("viewerList",viewersArr);
+        fso.put("editorKeys",editorsKeysArr);
+        fso.put("viewerKeys",viewersKeysArr);
+        fso.put("file","asd");
     }
 
     @Test
@@ -368,5 +375,21 @@ class SQL_FilesTest {
 
         assertEquals(null,result);
     }
+
+    @Test
+
+    void check_getEncFileSK(){
+        String result = files.getEncFileSK(fso.getInt("fsoid"),fso.getInt("uid"),IP);
+        assertEquals(null,result);
+    }
+
+    @Test
+    void check_updateFileKeys(){
+
+        JSONObject wtf = files.updateFileKeys(fso,IP);
+
+        assertEquals(null,wtf);
+    }
+
 
 }
