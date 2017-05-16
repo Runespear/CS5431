@@ -106,7 +106,7 @@ class SQL_FilesTest {
         jsonObject.put("fsoid",1);
         jsonObject.put("uid",322);
         JSONObject k = files.uploadKeys(jsonObject,IP);
-        assertEquals(k,null);
+        assertNull(k);
     }
 
     @Test
@@ -168,7 +168,7 @@ class SQL_FilesTest {
 
         JSONArray result = files.getChildren(asd,IP);
 
-        assertEquals(result,null);
+        assertNull(result);
     }
 
     @Test
@@ -184,7 +184,7 @@ class SQL_FilesTest {
             ;
         }
 
-        assertEquals(result,null);
+        assertNull(result);
     }
     @Test
     void check_getPermissions(){
