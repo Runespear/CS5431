@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<?import javafx.scene.shape.Circle?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.cs5431.view.RegistrationController">
+    <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0">
+        <Text strokeType="OUTSIDE" strokeWidth="0.0"
+              text="This secure file sharing system allows you to retrieve files securely from a server. All files and folders are encrypted - even the admins don't know the contents of your files!"
+              textAlignment="CENTER" wrappingWidth="400.0"/>
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Username*" GridPane.columnIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Password*" GridPane.columnIndex="1"
+                  GridPane.rowIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm Password*" GridPane.columnIndex="1"
+                  GridPane.rowIndex="2"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Email"
+                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Phone Number"
+                  GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            <TextField fx:id="txtUsername" promptText="username"
+                       GridPane.columnIndex="2"/>
+            <PasswordField fx:id="txtPassword" promptText="password"
+                           GridPane.columnIndex="2"
+                           GridPane.rowIndex="1"/>
+            <PasswordField fx:id="txtConfirmPassword"
+                           promptText="password"
+                           GridPane.columnIndex="2"
+                           GridPane.rowIndex="2"/>
+            <TextField fx:id="txtEmail" promptText="email"
+                       GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+            <TextField fx:id="txtPhoneNumber" promptText="phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+            <HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                <Label text="  "/>
+                <Circle fx:id="passwordCircle" radius="6.0"/>
+            </HBox>
+        </GridPane>
+        <Text strokeType="OUTSIDE" strokeWidth="0.0"
+              text="* indicates compulsory fields" textAlignment="CENTER"
+              wrappingWidth="400.0"/>
+        <HBox alignment="TOP_CENTER" prefWidth="200.0">
+            <Label text="Enable two-factor authentication"/>
+            <Hyperlink fx:id="email2faLink" text="(?)"/>
+            <Label text=": "/>
+            <RadioButton fx:id="noneRadio" text="None"/>
+            <RadioButton fx:id="email2faRadio" text="Email"/>
+            <RadioButton fx:id="phone2faRadio" text="Phone"/>
+        </HBox>
+        <Button fx:id="pwdRecoveryButton" text="Enable password recovery"/>
+        <HBox alignment="TOP_CENTER" prefWidth="200.0">
+            <Button fx:id="registerButton" mnemonicParsing="false"
+                    text="Register"/>
+            <Button fx:id="cancelButton" mnemonicParsing="false"
+                    text="Cancel"/>
+        </HBox>
+    </VBox>
+</AnchorPane>

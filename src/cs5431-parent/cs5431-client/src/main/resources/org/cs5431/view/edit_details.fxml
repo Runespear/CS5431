@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.Circle?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.cs5431.view.EditDetailsController">
+    <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0">
+        <Text strokeType="OUTSIDE" strokeWidth="0.0"
+              text="Edit Account Details" textAlignment="CENTER"
+              wrappingWidth="400.0"/>
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                   prefWidth="100.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Old Password" GridPane.columnIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="New Password" GridPane.columnIndex="1"
+                  GridPane.rowIndex="1"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm New Password" GridPane.columnIndex="1"
+                  GridPane.rowIndex="2"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Old Email" GridPane.columnIndex="1"
+                  GridPane.rowIndex="3"/>
+            <PasswordField fx:id="txtNewPassword"
+                           promptText="new password"
+                           GridPane.columnIndex="2"
+                           GridPane.rowIndex="1"/>
+            <PasswordField fx:id="txtConfirmNewPassword"
+                           promptText="new password"
+                           GridPane.columnIndex="2"
+                           GridPane.rowIndex="2"/>
+            <TextField fx:id="txtOldEmail" promptText="old email"
+                       GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+            <TextField fx:id="txtNewEmail" promptText="new email"
+                       GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+            <TextField fx:id="txtConfirmNewEmail" promptText="new email"
+                       GridPane.columnIndex="2" GridPane.rowIndex="5"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="New Email" GridPane.columnIndex="1"
+                  GridPane.rowIndex="4"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm New Email" GridPane.columnIndex="1"
+                  GridPane.rowIndex="5"/>
+            <PasswordField fx:id="txtOldPassword"
+                           promptText="old password"
+                           GridPane.columnIndex="2"/>
+            <HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                <Label text="  "/>
+                <Circle fx:id="passwordCircle" radius="6.0"/>
+            </HBox>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Old Phone Number" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="New Phone Number" GridPane.columnIndex="1"
+                  GridPane.rowIndex="7"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0"
+                  text="Confirm Phone Number" GridPane.columnIndex="1"
+                  GridPane.rowIndex="8"/>
+            <TextField fx:id="txtOldPhoneNo" promptText="old phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="6"/>
+            <TextField fx:id="txtNewPhoneNo" promptText="new phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="7"/>
+            <TextField fx:id="txtConfirmNewPhoneNo" promptText="new phone number"
+                       GridPane.columnIndex="2" GridPane.rowIndex="8"/>
+        </GridPane>
+        <HBox alignment="TOP_CENTER" prefWidth="200.0">
+            <Label text="Enable two-factor authentication"/>
+            <Hyperlink fx:id="email2faLink" text="(?)"/>
+            <Label text=": "/>
+            <RadioButton fx:id="noneRadio" text="None"/>
+            <RadioButton fx:id="email2faRadio" text="Email"/>
+            <RadioButton fx:id="phone2faRadio" text="Phone"/>
+        </HBox>
+        <Button fx:id="helpRecoveryButton" text="Help someone else recover their password"/>
+        <Button fx:id="pwdRecoveryButton" text="Change password recovery settings"/>
+        <Button fx:id="deleteButton" mnemonicParsing="false"
+                text="Delete this account"/>
+        <HBox alignment="TOP_CENTER" prefWidth="200.0">
+            <Button fx:id="saveButton" mnemonicParsing="false"
+                    text="Save"/>
+            <Button fx:id="exitButton" mnemonicParsing="false"
+                    text="Exit"/>
+        </HBox>
+    </VBox>
+</AnchorPane>

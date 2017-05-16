@@ -293,7 +293,7 @@ public class SQL_Files {
                     if (!addParentPermissions(uid, fsoid, parentFolderid, sourceIp, editors,
                             viewers, editorsKeys, viewersKeys)) {
                         //TODO: DO SOMETHING THROW EXCEPTION?
-                        //System.out.println("failed somewhere should delete and reupload the object");
+                        System.out.println("failed somewhere should delete and reupload the object");
                     }
                     return fsoid;
                 } else {
