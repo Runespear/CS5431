@@ -1,4 +1,4 @@
-# CS5431
+# CS5431: An End-to-End Encrypted File Sharing System 
 
 Maven
 
